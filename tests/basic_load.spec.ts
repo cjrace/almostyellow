@@ -6,7 +6,7 @@ test('Homepage has the title "Almost yellow"', async ({ page }) => {
   await page.waitForLoadState('load');
 
   await expect(page.locator('h1')).toContainText('Almost yellow');
-  // await expect(page).toHaveTitle(/Almost yellow/); Change to this once there is a title set
+  await expect(page).toHaveTitle(/Almost yellow/);
 });
 
 test('Can navigate to the games page and find the "Games" heading', async ({ page }) => {
