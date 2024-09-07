@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import styles from '../app/page.module.css'; // Your existing styles
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Sample cocktail data (you can replace this with your actual data)
 const cocktails = [
@@ -104,7 +105,7 @@ const CocktailsPage: React.FC = () => {
             <div key={cocktail.name} className={styles.cocktailCard}>
               <div className={styles.cocktailBox}>
                 <div className={styles.cocktailImageContainer}>
-                  <img src={cocktail.photoUrl} alt={cocktail.name} className={styles.cocktailImage} />
+                  <Image src={cocktail.photoUrl} alt={cocktail.name} className={styles.cocktailImage} />
                   <div className={styles.cocktailName}>
                     <h2>{cocktail.name}</h2>
                     <div className={styles.ratingContainer}>
