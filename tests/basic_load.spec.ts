@@ -36,7 +36,7 @@ test('Can navigate to the cocktails page and find the "Cocktails" heading', asyn
   await expect(page).toHaveURL('http://localhost:3000/cocktails');
   await expect(page.locator('h1')).toContainText('Cocktails');
 
-  await page.click('text=Back to homepage!');
+  await page.click('text=Back to homepage');
 
   await page.waitForLoadState('load');
   await expect(page).toHaveURL('http://localhost:3000/');

@@ -1,11 +1,9 @@
-// CocktailsPage.tsx
-
 import React, { useState } from 'react';
-import styles from '../app/page.module.css'; // Your existing styles
+import styles from '../app/page.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Sample cocktail data (you can replace this with your actual data)
+// List of cocktails
 const cocktails = [
   {
     name: 'Old Fashioned',
@@ -52,7 +50,6 @@ const cocktails = [
   // Add more cocktails...
 ];
 
-
 // Function to convert numeric rating to moons (was stars but the half star emoji doesn't exist so I am being creative)
 const renderRatingMoons = (rating: number) => {
   const fullMoons = Math.floor(rating);
@@ -90,11 +87,11 @@ const CocktailsPage: React.FC = () => {
         <h1>Cocktails</h1>
         <p>Filter by spirit:</p>
         <select
-            value={selectedSpirits}
-            onChange={(e) => setSelectedSpirits(Array.from(e.target.selectedOptions, (option) => option.value))}
-            multiple
-            className="form-select" // Add this class
-          >
+          value={selectedSpirits}
+          onChange={(e) => setSelectedSpirits(Array.from(e.target.selectedOptions, (option) => option.value))}
+          multiple
+          className="form-select"
+        >
           <option value="All spirits">All spirits</option>
           <option value="Bourbon">Bourbon</option>
           <option value="Rum">Rum</option>
@@ -105,7 +102,14 @@ const CocktailsPage: React.FC = () => {
             <div key={cocktail.name} className={styles.cocktailCard}>
               <div className={styles.cocktailBox}>
                 <div className={styles.cocktailImageContainer}>
-                  <Image src={cocktail.photoUrl} alt={cocktail.name} className={styles.cocktailImage} />
+                  <Image
+                    aria-hidden
+                    src={cocktail.photoUrl}
+                    alt={cocktail.name}
+                    className={styles.cocktailImage}
+                    // height={150}
+                    // width={150}
+                  />
                   <div className={styles.cocktailName}>
                     <h2>{cocktail.name}</h2>
                     <div className={styles.ratingContainer}>
@@ -135,8 +139,6 @@ const CocktailsPage: React.FC = () => {
       </main>
     </div>
   );
-
-
 };
 
 export default CocktailsPage;

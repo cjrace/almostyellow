@@ -13,7 +13,7 @@
   min-height: 100svh;
   padding: 80px;
   gap: 64px;
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-family);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -202,13 +202,12 @@ a.secondary {
 }
 
 .cocktailImage {
-  height: 120px; /* Adjust as needed */
   border-radius: 4px;
 }
 
 /* Cocktail details */
 .cocktailDetails {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
   font-size: 14px;
   color: #333;
   background-color: white;
