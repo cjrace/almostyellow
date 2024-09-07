@@ -1,4 +1,6 @@
-## Almost yellow
+[![Playwright Tests](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml)
+
+# Almost yellow
 
 This site is a work in progress.
 
@@ -6,19 +8,19 @@ This site is a work in progress.
 
 This project was created with `npx create-react-app`.
 
-Start by installing dependencies
+Start by installing dependencies:
 
 ```bash
 npm install
 ```
 
-To run the development server (use Ctrl-c if running in VSCode to cancel the development server)
+To run the development server (use Ctrl-c if running in VSCode to cancel the development server):
 
 ```bash
 npm run dev
 ```
 
-View other available commands using
+View other available commands using:
 
 ```bash
 npm run
