@@ -36,4 +36,8 @@ From the `main` branch:
 
 ## Tests
 
-...
+Basic end to end tests have been set up using [Playwright](https://playwright.dev/), to run them locally run:
+
+```bash
+npx playwright test
+```
