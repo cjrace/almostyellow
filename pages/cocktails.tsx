@@ -87,7 +87,7 @@ const CocktailsPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <h1>Cocktails Page</h1>
+        <h1>Cocktails</h1>
         <p>Filter by spirit:</p>
         <select
             value={selectedSpirits}
