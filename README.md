@@ -28,12 +28,11 @@ npm run
 
 This site is deployed to the following places using [Vercel](https://vercel.com/):
 
-From the `development` branch:
-* https://almostyellow-nu.vercel.app/
-
 From the `main` branch:
 * https://www.almostyellow.co.uk/
 * https://almostyellow.co.uk/ (redirects to www)
+* https://almostyellow-nu.vercel.app/ (redirects to first link)
+
 
 ## Tests
 
