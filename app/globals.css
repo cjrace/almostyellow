@@ -42,4 +42,16 @@ a {
   }
 }
 
+.panel-row {
+  display: flex;
+  justify-content: space-between;
+  /* Other row-specific styles */
+}
 
+.panel {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  /* Other panel-specific styles */
+}

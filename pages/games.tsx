@@ -5,8 +5,18 @@ const GamesPage = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <h1>Games Page</h1>
-        <p>Some content here, likely related to Irish Bingo...</p>
+        <h1>Our games</h1>
+        <div className="panel-row">
+          <Link href="/games/irishbingo" className="panel">
+            Irish bingo
+          </Link>
+          <Link href="/games/uno" className="panel">
+            Uno
+          </Link>
+          <Link href="" className="panel">
+            ???
+          </Link>
+        </div>
         <div className={styles.ctas}>
           <Link href="/" className={styles.secondary}>
             Back to homepage
