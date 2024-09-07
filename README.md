@@ -4,20 +4,37 @@ This site is a work in progress.
 
 ## Getting Started
 
-Install dependencies
+This project was created with `npx create-react-app`.
+
+Start by installing dependencies
 
 ```bash
 npm install
 ```
 
-To run the development server
+To run the development server (use Ctrl-c if running in VSCode to cancel the development server)
 
 ```bash
 npm run dev
 ```
 
-To run linting (using ESLint)
+View other available commands using
 
 ```bash
-npm run lint
+npm run
 ```
+
+## Deployment
+
+This site is deployed to the following places using [Vercel](https://vercel.com/):
+
+From the `development` branch:
+* https://almostyellow-nu.vercel.app/
+
+From the `main` branch:
+* https://www.almostyellow.co.uk/
+* https://almostyellow.co.uk/ (redirects to www)
+
+## Tests
+
+...

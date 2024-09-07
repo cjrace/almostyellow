@@ -7,12 +7,7 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         <h1>Almost yellow</h1>
-        <ol>
-          <li>
-            Edit this page on <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <p>This is our homepage, we should make it prettier.</p>
 
         <div className={styles.ctas}>
           <Link
