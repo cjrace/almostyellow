@@ -1,4 +1,6 @@
-## Almost yellow
+[![Playwright Tests](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml)
+
+# Almost yellow
 
 This site is a work in progress.
 
