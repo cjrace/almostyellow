@@ -22,6 +22,12 @@ export default function Home() {
           >
             View our recipe magic
           </Link>
+          <Link
+            className={styles.secondary}
+            href="/cocktails"
+          >
+            Cocktail time! 
+          </Link>
         </div>
       </main>
       <footer className={styles.footer}>
