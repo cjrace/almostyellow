@@ -9,9 +9,6 @@ test('Homepage has the title "Almost yellow"', async ({ page }) => {
   // await expect(page).toHaveTitle(/Almost yellow/); Change to this once there is a title set
 });
 
-// For these next two tests we can't always reliably catch uncaught errors, so we test the page 
-// has loaded by looking for a button and trying to navigate away.
-
 test('Can navigate to the games page and find the "Games" heading', async ({ page }) => {
   await page.goto('http://localhost:3000/');
   await page.click('text=View our games');
