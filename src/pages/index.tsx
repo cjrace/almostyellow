@@ -1,0 +1,50 @@
+import styles from '../app/page.module.css';
+import Image from "next/image";
+import Link from 'next/link';
+
+export default function Home() {
+  return (
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <h1>Almost yellow</h1>
+        <ol>
+          <li>
+            Edit this page on <code>src/app/page.tsx</code>.
+          </li>
+          <li>Save and see your changes instantly.</li>
+        </ol>
+
+        <div className={styles.ctas}>
+          <Link
+            className={styles.primary}
+            href="/games"
+          >
+            View our games
+          </Link>
+          <Link
+            className={styles.secondary}
+            href=""
+          >
+            View our recipe magic
+          </Link>
+        </div>
+      </main>
+      <footer className={styles.footer}>
+        <a
+          href="https://github.com/cjrace/almostyellow"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            aria-hidden
+            src="/icons/github-mark-white.png"
+            alt="GitHub icon"
+            width={16}
+            height={16}
+          />
+          GitHub
+        </a>
+      </footer>
+    </div>
+  );
+}
