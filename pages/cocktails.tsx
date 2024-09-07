@@ -107,8 +107,8 @@ const CocktailsPage: React.FC = () => {
                     src={cocktail.photoUrl}
                     alt={cocktail.name}
                     className={styles.cocktailImage}
-                    // height={150}
-                    // width={150}
+                    height={150}
+                    width={150}
                   />
                   <div className={styles.cocktailName}>
                     <h2>{cocktail.name}</h2>
