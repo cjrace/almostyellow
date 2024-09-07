@@ -164,3 +164,66 @@ a.secondary {
     filter: invert();
   }
 }
+
+
+/* Cocktail card container */
+.cocktailBox {
+  padding: 5px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: orange;
+}
+
+/* Styles for the cocktail name */
+.cocktailName {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: flex-start; /* Align items to the start (left) */
+  padding: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  color: black;
+}
+
+/* Styles for the cocktail rating */
+.ratingContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Cocktail image */
+.cocktailImageContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  background-color: #ffff65;
+}
+
+.cocktailImage {
+  height: 120px; /* Adjust as needed */
+  border-radius: 4px;
+}
+
+/* Cocktail details */
+.cocktailDetails {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  padding: 20px
+}
+
+/* Ingredients list */
+.ingredientsList {
+  list-style-type: disc;
+  margin-left: 20px;
+  margin-top: 10px;
+  margin-bottom: 20px
+}
+
+/* Instructions paragraph */
+.cocktailDetails p {
+  margin-top: 10px;
+}
