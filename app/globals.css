@@ -1,51 +1,49 @@
+/* globals.css */
+
 :root {
-  --background: #000000;
-  --foreground: #f4b808;
-  --font-family: Helvetica, sans-serif;
+  --background-light: #ffffff; /* Light background */
+  --background-dark: #000000; /* Dark background */
+  --color-light: #000000; /* Light background */
+  --color-dark: #fae25d; /* Dark background */
+  --primary-color: #fae25d;
+  --secondary-color: #FF851B; 
+  --font-family: Helvetica, sans-serif;  
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #f4b808;
+/* For light mode */
+body {
+  background-color: var(--background-light);
+  color: var(--color-light);
+}
+
+/* For dark mode */
+body.dark-mode {
+  background-color: var(--background-dark);
+  color: var(--color-dark);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+
+@media (max-width: 768px) {
+  /* Adjust styles for smaller screens */
+  .container {
+    padding: 10px;
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-family);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
 
 .panel-row {
   display: flex;
   justify-content: space-between;
-  /* Other row-specific styles */
 }
 
 .panel {
@@ -53,7 +51,6 @@ a {
   border: 1px solid #ddd;
   background-color: #f9f9f9;
   cursor: pointer;
-  /* Other panel-specific styles */
 }
 
 h3 {
@@ -61,5 +58,14 @@ h3 {
 }
 
 ol {
-  text-align: left;
+  text-align: left !important;
+  padding-inline-start: 20px;
+}
+
+ul li {
+  margin-bottom: 10px; /* Space below each list item */
+}
+
+ul li:first-child {
+  margin-top: 10px; /* Space above the first list item */
 }
