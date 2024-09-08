@@ -29,6 +29,7 @@
 .ctas a {
   appearance: none;
   border-radius: 128px;
+  padding: 20px;
   border: 1px solid transparent;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
   cursor: pointer;
