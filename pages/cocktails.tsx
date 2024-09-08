@@ -1,141 +1,54 @@
 import React, { useState } from 'react';
+import { useForm, FieldValues } from 'react-hook-form';
 import styles from '../app/page.module.css';
 import Link from 'next/link';
-import Image from 'next/image';
-
-// List of cocktails
-const cocktails = [
-  {
-    name: 'Old Fashioned',
-    spirits: ['Bourbon'],
-    rating: 2.0 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Bourbon', 'Sugar', 'Water', 'Bitters'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add bourbon, sugar, water, and bitters.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  {
-    name: 'Cocktail 2',
-    spirits: ['Rum'],
-    rating: 4.5 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Rum', 'Something fruity', 'Ice'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add alcohol and then something fruity.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  {
-    name: 'Cocktail 3',
-    spirits: ['Rum', 'Bourbon'],
-    rating: 5.0 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Rum', 'Bourbon', 'Something fruity', 'Ice'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add alcohol and then something fruity.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  // Add more cocktails...
-];
-
-// Function to convert numeric rating to moons (was stars but the half star emoji doesn't exist so I am being creative)
-const renderRatingMoons = (rating: number) => {
-  const fullMoons = Math.floor(rating);
-  const remaining = rating - fullMoons;
-  const hasHalfMoon = remaining >= 0.25 && remaining < 0.75;
-  const emptyMoons = 5 - fullMoons - (hasHalfMoon ? 1 : 0);
-
-  const moons = [];
-  for (let i = 0; i < fullMoons; i++) {
-    moons.push(<span key={i} className={styles.moon}>🌝</span>);
-  }
-  if (hasHalfMoon) {
-    moons.push(<span key="half" className={styles.moon}>🌗</span>);
-  }
-  for (let i = 0; i < emptyMoons; i++) {
-    moons.push(<span key={`empty-${i}`} className={styles.moon}>🌚</span>);
-  }
-
-  return <>{moons}</>;
-};
+import { SpiritSelect } from '../components/cocktails/spiritselect';
+import { cocktails } from '../components/cocktails/cocktails';
+import CocktailBox from '../components/cocktails/cocktailbox';
 
 const CocktailsPage: React.FC = () => {
-  const [selectedSpirits, setSelectedSpirits] = useState<string[]>([]);
 
+  // Logic for the cocktail selection and filtering
+  const { control, handleSubmit } = useForm();
+  const [selectedSpirits, setSelectedSpirits] = useState<{ value: string; label: string }[]>([]);
+  const handleFormSubmit = (data: FieldValues) => {console.log('Selected spirits:', data.selectedSpirits);};
+
+  // Show all cocktails if no specific spirits are selected or if "All Spirits" is selected
   const filteredCocktails = cocktails.filter((cocktail) => {
-    if (selectedSpirits.length === 0 || selectedSpirits.includes("All spirits")) {
-      return true; // Show all cocktails if no specific spirits are selected or if "All Spirits" is selected
+    if (selectedSpirits.length === 0 || selectedSpirits.some((spirit) => spirit.value === 'All spirits')) {
+      return true;
     }
-    return cocktail.spirits.some((spirit) => selectedSpirits.includes(spirit));
+    return cocktail.spirits.some((spirit) => selectedSpirits.some((selectedSpirit) => selectedSpirit.value === spirit));
   });
 
+  // Main page
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        
         <h1>Cocktails</h1>
-        <p>Filter by spirit:</p>
-        <select
-          value={selectedSpirits}
-          onChange={(e) => setSelectedSpirits(Array.from(e.target.selectedOptions, (option) => option.value))}
-          multiple
-          className="form-select"
-        >
-          <option value="All spirits">All spirits</option>
-          <option value="Bourbon">Bourbon</option>
-          <option value="Rum">Rum</option>
-          {/* Add other spirit options */}
-        </select>
+
+        {/* Dropdown selector */}
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <p>Filter by spirit:</p>
+          <SpiritSelect control={control} setSelectedSpirits={setSelectedSpirits} />
+        </form>
+
+        {/* List of cocktails */}
         <ul className={styles.cocktailList}>
           {filteredCocktails.map((cocktail) => (
             <div key={cocktail.name} className={styles.cocktailCard}>
-              <div className={styles.cocktailBox}>
-                <div className={styles.cocktailImageContainer}>
-                  <Image
-                    aria-hidden
-                    src={cocktail.photoUrl}
-                    alt={cocktail.name}
-                    className={styles.cocktailImage}
-                    height={150}
-                    width={150}
-                  />
-                  <div className={styles.cocktailName}>
-                    <h2>{cocktail.name}</h2>
-                    <div className={styles.ratingContainer}>
-                      {renderRatingMoons(cocktail.rating)}
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.cocktailDetails}>
-                  <h3>Ingredients:</h3>
-                  <ul className={styles.ingredientsList}>
-                    {cocktail.recipe.ingredients.map((ingredient) => (
-                      <li key={ingredient}>{ingredient}</li>
-                    ))}
-                  </ul>
-                  <h3>Instructions:</h3>
-                  <p>{cocktail.recipe.instructions}</p>
-                </div>
+              <CocktailBox {...cocktail} />
               </div>
-            </div>
           ))}
         </ul>
+
         <div className={styles.ctas}>
           <Link href="/" className={styles.secondary}>
             Back to homepage
           </Link>
         </div>
+
       </main>
     </div>
   );
