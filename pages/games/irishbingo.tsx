@@ -36,9 +36,7 @@ const IrishBingoPage = () => {
                 <h1>Irish bingo</h1>
 
                 <div className={styles.ctas}>
-                    <Link href="/games" className={styles.secondary}>
-                        Back to games
-                    </Link>
+                    <Link href="/games" className={styles.secondary}>Back to games</Link>
                 </div>
 
                 <button onClick={drawCard}>Draw a Card</button>

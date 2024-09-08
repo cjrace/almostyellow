@@ -5,13 +5,14 @@ const unoPage = () => {
     return (
         <div className={styles.page}>
             <main className={styles.main}>
+
                 <h1>Uno</h1>
                 <p>Under construction...</p>
+
                 <div className={styles.ctas}>
-                    <Link href="/games" className={styles.secondary}>
-                        Back to games
-                    </Link>
+                    <Link href="/games" className={styles.secondary}>Back to games</Link>
                 </div>
+                
             </main>
         </div>
     );
