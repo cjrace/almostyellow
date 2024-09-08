@@ -2,7 +2,7 @@
 
 # Almost yellow
 
-This site is a work in progress.
+Our own personal site of games, cocktails and all the other good stuff.
 
 ## Getting Started
 
