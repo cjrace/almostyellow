@@ -1,65 +1,61 @@
+import React, { useState } from 'react';
 import styles from '../../app/page.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Card, getCardName } from '../../components/games/card';
+import { createCardDeck } from '../../components/games/createcarddeck';
 
-const irishbingoPage = () => {
-  const [deck, setDeck] = useState([
-    // Add your card IDs or objects here (e.g., ["card1", "card2", "card3"])
-  ]);
-  const [drawnCards, setDrawnCards] = useState([]);
+const IrishBingoPage = () => {
+    // Initialize state for the decks
+    const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
+    const [drawnCards, setDrawnCards] = useState<Card[]>([]);
 
-  const drawCard = () => {
-    if (deck.length === 0) {
-      alert('No more cards!');
-      return;
-    }
+    // Function to draw a random card
+    const drawCard = () => {
+        if (mainDeck.length > 0) {
+            // Shuffle the main deck
+            const shuffledDeck = [...mainDeck].sort(() => Math.random() - 0.5);
 
-    const randomIndex = Math.floor(Math.random() * deck.length);
-    const drawnCard = deck[randomIndex];
+            // Draw the top card from the shuffled deck
+            const [drawnCard, ...remainingMainDeck] = shuffledDeck;
 
-    setDeck((prevDeck) => prevDeck.filter((card) => card !== drawnCard));
-    setDrawnCards([...drawnCards, drawnCard]);
-  };
+            setDrawnCards([...drawnCards, drawnCard]);
+            setMainDeck(remainingMainDeck);
+        }
+    };
 
-  const renderCard = (card) => {
-    return <div className={styles.card}>Card: {card}</div>;
-  };
+    return (
+        <div className={styles.page}>
+            <main className={styles.main}>
+                <h1>Irish bingo</h1>
 
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <h1>Irish bingo</h1>
+                <div className={styles.ctas}>
+                    <Link href="/games" className={styles.secondary}>
+                        Back to games
+                    </Link>
+                </div>
 
-        <div className={styles.cardDeck}>
-          {deck.map((card) => (
-            <button key={card} onClick={drawCard} className={styles.cardButton}>
-              {/* Initially show face down card UI */}
-            </button>
-          ))}
+                <button onClick={drawCard}>Draw a Card</button>
+
+                {/* Display the drawn cards */}
+                <ul>
+                    {drawnCards.map((card, index) => (
+                        <li key={index}>{getCardName(card.suit, card.rank)}</li>
+                    ))}
+                </ul>
+
+                <Image
+                    aria-hidden
+                    src="/images/tayto.svg"
+                    alt="Mr. Tayto"
+                    height={300}
+                    width={300}
+                    style={{ display: 'block', margin: '0 auto' }}
+                />
+
+            </main>
         </div>
-
-        <div className={styles.drawnCards}>
-          {drawnCards.map(renderCard)}
-        </div>
-
-        <Image
-          aria-hidden
-          src="/images/tayto.svg"
-          alt="Mr. Tayto"
-          height={300}
-          width={300}
-          style={{ display: 'block', margin: '0 auto' }}
-        />
-
-        <div className={styles.ctas}>
-          <Link href="/games" className={styles.secondary}>
-            Back to games
-          </Link>
-        </div>
-
-      </main>
-    </div>
-  );
+    );
 };
 
-export default irishbingoPage;
+export default IrishBingoPage;
