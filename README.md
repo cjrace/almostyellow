@@ -1,4 +1,4 @@
-[![Playwright Tests](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml)
+[![Playwright tests](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml)
 
 # Almost yellow
 
@@ -14,7 +14,7 @@ Start by installing dependencies:
 npm install
 ```
 
-To run the development server (use Ctrl-c if running in VSCode to cancel the development server):
+To run the development server (use `Ctrl-C` if running in VSCode to cancel the development server):
 
 ```bash
 npm run dev
