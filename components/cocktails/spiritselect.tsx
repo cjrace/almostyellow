@@ -5,8 +5,14 @@ import { Controller, Control, FieldValues } from 'react-hook-form';
 // List the dropdown options
 export const spiritOptions = [
     { value: 'All spirits', label: 'All spirits' },
-    { value: 'Bourbon', label: 'Bourbon' },
+    { value: 'Baileys', label: 'Baileys' },
+    { value: 'Gin', label: 'Gin' },
+    { value: 'Kahlua', label: 'Kahlua' },
     { value: 'Rum', label: 'Rum' },
+    { value: 'Tequila', label: 'Tequila' },
+    { value: 'Vodka', label: 'Vodka' },
+    
+    
     // Add other spirit options
 ];
 

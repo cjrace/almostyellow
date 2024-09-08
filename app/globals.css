@@ -72,3 +72,11 @@ a {
   cursor: pointer;
   /* Other panel-specific styles */
 }
+
+h3 {
+  padding-bottom: 10px;
+}
+
+ol {
+  text-align: left;
+}
