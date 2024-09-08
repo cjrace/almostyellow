@@ -17,7 +17,7 @@ Before you start contributing to the code, please take a moment to review the fo
 ## How to Contribute
 
 1. **Create a branch**
-   - Create a new branch based on the `main` branch
+   - Create a new branch based off the latest version of the `main` branch
 
 3. **Make changes**
    - Make your desired changes (bug fixes, new features, documentation updates, etc.)
@@ -36,6 +36,7 @@ Before you start contributing to the code, please take a moment to review the fo
    - Push your changes
    - Open a PR against the `main` branch of this repository
    - Follow the template to create a detailed description of your changes
+   - Once approved, you may merge the PR by squashing the commits into a single PR commit
 
 ## Code of Conduct
 
