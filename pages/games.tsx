@@ -1,6 +1,5 @@
 import styles from '../app/page.module.css';
 import Link from 'next/link';
-// import React from 'react';
 
 const GamesPage = () => {
   return (
