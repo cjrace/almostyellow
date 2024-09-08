@@ -1,27 +1,26 @@
 /* globals.css */
 
 :root {
-  --primary-color: #0074D9; /* Blue */
-  --secondary-color: #FFD700; /* Almost yellow */
-  --accent-color: #FF851B; /* Orange */
-
-  --background: #000000;
-  --foreground: #f4b808;
-  --font-family: Helvetica, sans-serif;
-
+  --background-light: #ffffff; /* Light background */
+  --background-dark: #000000; /* Dark background */
+  --color-light: #000000; /* Light background */
+  --color-dark: #fae25d; /* Dark background */
+  --primary-color: #fae25d;
+  --secondary-color: #FF851B; 
+  --font-family: Helvetica, sans-serif;  
 }
 
+/* For light mode */
 body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-light);
+  color: var(--color-light);
 }
 
-h1, h2, h3 {
-  font-family: Georgia, serif;
+/* For dark mode */
+body.dark-mode {
+  background-color: var(--background-dark);
+  color: var(--color-dark);
 }
-
-
-
 
 .container {
   max-width: 1200px;
@@ -33,23 +32,6 @@ h1, h2, h3 {
   margin-bottom: 40px;
 }
 
-.button {
-  display: inline-block;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.button-primary {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-a {
-  color: var(--secondary-color);
-  text-decoration: none;
-}
 
 @media (max-width: 768px) {
   /* Adjust styles for smaller screens */
@@ -62,7 +44,6 @@ a {
 .panel-row {
   display: flex;
   justify-content: space-between;
-  /* Other row-specific styles */
 }
 
 .panel {
@@ -70,7 +51,6 @@ a {
   border: 1px solid #ddd;
   background-color: #f9f9f9;
   cursor: pointer;
-  /* Other panel-specific styles */
 }
 
 h3 {
@@ -78,5 +58,14 @@ h3 {
 }
 
 ol {
-  text-align: left;
+  text-align: left !important;
+  padding-inline-start: 20px;
+}
+
+ul li {
+  margin-bottom: 10px; /* Space below each list item */
+}
+
+ul li:first-child {
+  margin-top: 10px; /* Space above the first list item */
 }
