@@ -1,89 +1,54 @@
 import React, { useState } from 'react';
-import Select from 'react-select';
-import { useForm, Controller, FieldValues } from 'react-hook-form';
+import { useForm, FieldValues } from 'react-hook-form';
 import styles from '../app/page.module.css';
 import Link from 'next/link';
-import Image from 'next/image';
-import { cocktails, spiritOptions } from '../components/cocktails/cocktails';
-import { renderRatingMoons } from '../components/cocktails/renderratingmoons';
+import { SpiritSelect } from '../components/cocktails/spiritselect';
+import { cocktails } from '../components/cocktails/cocktails';
+import CocktailBox from '../components/cocktails/cocktailbox';
 
 const CocktailsPage: React.FC = () => {
-  const [selectedSpirits, setSelectedSpirits] = useState<{ value: string; label: string }[]>([]);
 
+  // Logic for the cocktail selection and filtering
+  const { control, handleSubmit } = useForm();
+  const [selectedSpirits, setSelectedSpirits] = useState<{ value: string; label: string }[]>([]);
+  const handleFormSubmit = (data: FieldValues) => {console.log('Selected spirits:', data.selectedSpirits);};
+
+  // Show all cocktails if no specific spirits are selected or if "All Spirits" is selected
   const filteredCocktails = cocktails.filter((cocktail) => {
     if (selectedSpirits.length === 0 || selectedSpirits.some((spirit) => spirit.value === 'All spirits')) {
-      return true; // Show all cocktails if no specific spirits are selected or if "All Spirits" is selected
+      return true;
     }
     return cocktail.spirits.some((spirit) => selectedSpirits.some((selectedSpirit) => selectedSpirit.value === spirit));
   });
 
-  const { control, handleSubmit } = useForm();
-
-  const handleFormSubmit = (data: FieldValues) => {
-    // Use the selected spirits from data.selectedSpirits
-    console.log('Selected spirits:', data.selectedSpirits);
-  };
-
+  // Main page
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        
         <h1>Cocktails</h1>
+
+        {/* Dropdown selector */}
         <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <p>Filter by spirit:</p>
-        <Controller
-          name="selectedSpirits"
-          control={control}
-          render={({ field }) => (
-            <Select
-              {...field}
-              options={spiritOptions}
-              onChange={(selectedOption) => {
-                setSelectedSpirits(selectedOption ? [selectedOption] : []);
-                handleFormSubmit({ selectedSpirits: selectedOption });
-              }}
-            />
-          )}
-        />
+          <p>Filter by spirit:</p>
+          <SpiritSelect control={control} setSelectedSpirits={setSelectedSpirits} />
         </form>
+
+        {/* List of cocktails */}
         <ul className={styles.cocktailList}>
           {filteredCocktails.map((cocktail) => (
             <div key={cocktail.name} className={styles.cocktailCard}>
-              <div className={styles.cocktailBox}>
-                <div className={styles.cocktailImageContainer}>
-                  <Image
-                    aria-hidden
-                    src={cocktail.photoUrl}
-                    alt={cocktail.name}
-                    className={styles.cocktailImage}
-                    height={150}
-                    width={150}
-                  />
-                  <div className={styles.cocktailName}>
-                    <h2>{cocktail.name}</h2>
-                    <div className={styles.ratingContainer}>
-                      {renderRatingMoons(cocktail.rating)}
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.cocktailDetails}>
-                  <h3>Ingredients:</h3>
-                  <ul className={styles.ingredientsList}>
-                    {cocktail.recipe.ingredients.map((ingredient) => (
-                      <li key={ingredient}>{ingredient}</li>
-                    ))}
-                  </ul>
-                  <h3>Instructions:</h3>
-                  <p>{cocktail.recipe.instructions}</p>
-                </div>
+              <CocktailBox {...cocktail} />
               </div>
-            </div>
           ))}
         </ul>
+
         <div className={styles.ctas}>
           <Link href="/" className={styles.secondary}>
             Back to homepage
           </Link>
         </div>
+
       </main>
     </div>
   );

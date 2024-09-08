@@ -1,10 +1,4 @@
-export const spiritOptions = [
-    { value: 'All spirits', label: 'All spirits' },
-    { value: 'Bourbon', label: 'Bourbon' },
-    { value: 'Rum', label: 'Rum' },
-    // Add other spirit options
-];
-
+// Create the options for the cocktails page, could be a database table eventually
 export const cocktails = [
     {
         name: 'Old Fashioned',
