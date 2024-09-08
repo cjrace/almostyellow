@@ -2,74 +2,8 @@ import React, { useState } from 'react';
 import styles from '../app/page.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
-
-// List of cocktails
-const cocktails = [
-  {
-    name: 'Old Fashioned',
-    spirits: ['Bourbon'],
-    rating: 2.0 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Bourbon', 'Sugar', 'Water', 'Bitters'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add bourbon, sugar, water, and bitters.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  {
-    name: 'Cocktail 2',
-    spirits: ['Rum'],
-    rating: 4.5 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Rum', 'Something fruity', 'Ice'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add alcohol and then something fruity.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  {
-    name: 'Cocktail 3',
-    spirits: ['Rum', 'Bourbon'],
-    rating: 5.0 as number, // Rated out of 5
-    photoUrl: "/images/cocktail-placeholder.jpg",
-    recipe: {
-      ingredients: ['Rum', 'Bourbon', 'Something fruity', 'Ice'],
-      instructions:
-        '1. Add a load of crushed ice to the cocktail shaker.\n' +
-        '2. Add alcohol and then something fruity.\n' +
-        '3. Shake loads.\n' +
-        '4. Pour into glasses and enjoy.',
-    },
-  },
-  // Add more cocktails...
-];
-
-// Function to convert numeric rating to moons (was stars but the half star emoji doesn't exist so I am being creative)
-const renderRatingMoons = (rating: number) => {
-  const fullMoons = Math.floor(rating);
-  const remaining = rating - fullMoons;
-  const hasHalfMoon = remaining >= 0.25 && remaining < 0.75;
-  const emptyMoons = 5 - fullMoons - (hasHalfMoon ? 1 : 0);
-
-  const moons = [];
-  for (let i = 0; i < fullMoons; i++) {
-    moons.push(<span key={i} className={styles.moon}>🌝</span>);
-  }
-  if (hasHalfMoon) {
-    moons.push(<span key="half" className={styles.moon}>🌗</span>);
-  }
-  for (let i = 0; i < emptyMoons; i++) {
-    moons.push(<span key={`empty-${i}`} className={styles.moon}>🌚</span>);
-  }
-
-  return <>{moons}</>;
-};
+import { cocktails } from '../components/cocktails/cocktails'; 
+import { renderRatingMoons } from '../components/cocktails/renderratingmoons';
 
 const CocktailsPage: React.FC = () => {
   const [selectedSpirits, setSelectedSpirits] = useState<string[]>([]);

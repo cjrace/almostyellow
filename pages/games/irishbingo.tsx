@@ -12,8 +12,9 @@ const irishbingoPage = () => {
                     aria-hidden
                     src="/images/tayto.svg"
                     alt="Mr. Tayto"
-                    height={500}
-                    width={500}
+                    height={300}
+                    width={300}
+                    style={{ display: 'block', margin: '0 auto' }}
                 />
                 <div className={styles.ctas}>
                     <Link href="/games" className={styles.secondary}>
