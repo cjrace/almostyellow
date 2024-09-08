@@ -207,6 +207,8 @@ a.secondary {
 
 /* Cocktail details */
 .cocktailDetails {
+  display: flex; /* Flexbox layout */
+  gap: 20px; /* Spacing between columns (adjust as needed) */
   font-family: var(--font-family);
   font-size: 14px;
   color: #333;
@@ -214,15 +216,18 @@ a.secondary {
   padding: 20px
 }
 
+/* Each column (ingredients and instructions) */
+.column {
+  flex: 1; /* Distribute available space equally between columns */
+}
+
 /* Ingredients list */
 .ingredientsList {
   list-style-type: disc;
   margin-left: 20px;
   margin-top: 10px;
-  margin-bottom: 20px
+  margin-bottom: 20px;
 }
 
-/* Instructions paragraph */
-.cocktailDetails p {
-  margin-top: 10px;
-}
+
+

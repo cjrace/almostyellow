@@ -10,7 +10,7 @@ interface Cocktail {
   rating: number;
   recipe: {
     ingredients: string[];
-    instructions: string;
+    instructions: string[];
   };
 }
 
@@ -34,15 +34,23 @@ const CocktailBox: React.FC<Cocktail> = ({ photoUrl, name, rating, recipe }) => 
         </div>
       </div>
       <div className={styles.cocktailDetails}>
+      <div className={styles.column}>
         <h3>Ingredients:</h3>
         <ul className={styles.ingredientsList}>
           {recipe.ingredients.map((ingredient) => (
             <li key={ingredient}>{ingredient}</li>
           ))}
         </ul>
-        <h3>Instructions:</h3>
-        <p>{recipe.instructions}</p>
       </div>
+      <div className={styles.column}>
+        <h3>Instructions:</h3>
+        <ol className={styles.instructionsList}>
+          {recipe.instructions.map((instruction, index) => (
+            <li key={index}>{instruction}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
     </div>
   );
 };
