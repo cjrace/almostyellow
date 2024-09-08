@@ -3,6 +3,10 @@ import Head from 'next/head';
 import { AppProps } from 'next/app';
 import React, { useEffect } from 'react';
 
+const toggleDarkMode = () => {
+  document.body.classList.toggle('dark-mode');
+};
+
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const script = document.createElement('script');
@@ -16,6 +20,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>Almost yellow</title>
       </Head>
+
+      <button onClick={toggleDarkMode}>Toggle Dark Mode</button>
+      
       <Component {...pageProps} />
     </>
   );
