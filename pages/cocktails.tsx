@@ -4,15 +4,8 @@ import { useForm, Controller, FieldValues } from 'react-hook-form';
 import styles from '../app/page.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
-import { cocktails } from '../components/cocktails/cocktails';
+import { cocktails, spiritOptions } from '../components/cocktails/cocktails';
 import { renderRatingMoons } from '../components/cocktails/renderratingmoons';
-
-const spiritOptions = [
-  { value: 'All spirits', label: 'All spirits' },
-  { value: 'Bourbon', label: 'Bourbon' },
-  { value: 'Rum', label: 'Rum' },
-  // Add other spirit options
-];
 
 const CocktailsPage: React.FC = () => {
   const [selectedSpirits, setSelectedSpirits] = useState<{ value: string; label: string }[]>([]);
@@ -43,11 +36,10 @@ const CocktailsPage: React.FC = () => {
           render={({ field }) => (
             <Select
               {...field}
-              isMulti
               options={spiritOptions}
-              onChange={(selectedOptions) => {
-                setSelectedSpirits(selectedOptions as { value: string; label: string }[]);
-                handleFormSubmit({ selectedSpirits: selectedOptions });
+              onChange={(selectedOption) => {
+                setSelectedSpirits(selectedOption ? [selectedOption] : []);
+                handleFormSubmit({ selectedSpirits: selectedOption });
               }}
             />
           )}
