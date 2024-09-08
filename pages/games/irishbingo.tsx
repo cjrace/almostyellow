@@ -24,11 +24,17 @@ const IrishBingoPage = () => {
         }
     };
 
+    // Reset the deck to start drawing again
+    const resetDeck = () => {
+        setMainDeck(createCardDeck());
+        setDrawnCards([]); // Clear the drawn cards as well
+    };
+
     return (
         <div className={styles.page}>
             <main className={styles.main}>
                 <h1>Irish bingo</h1>
-              
+
                 <div className={styles.ctas}>
                     <Link href="/games" className={styles.secondary}>
                         Back to games
@@ -36,6 +42,7 @@ const IrishBingoPage = () => {
                 </div>
 
                 <button onClick={drawCard}>Draw a Card</button>
+                <button onClick={resetDeck}>Reset Deck</button>
 
                 {/* Display the drawn cards */}
                 <ul>
