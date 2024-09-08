@@ -46,9 +46,7 @@ const CocktailsPage: React.FC = () => {
         </ul>
 
         <div className={styles.ctas}>
-          <Link href="/" className={styles.secondary}>
-            Back to homepage
-          </Link>
+          <Link href="/" className={styles.secondary}>Back to homepage</Link>
         </div>
 
       </main>
