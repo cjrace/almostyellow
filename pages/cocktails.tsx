@@ -36,11 +36,13 @@ const CocktailsPage: React.FC = () => {
 
         {/* List of cocktails */}
         <ul className={styles.cocktailList}>
-          {filteredCocktails.map((cocktail) => (
-            <div key={cocktail.name} className={styles.cocktailCard}>
-              <CocktailBox {...cocktail} />
+          {filteredCocktails
+            .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
+            .map((cocktail) => (
+              <div key={cocktail.name} className={styles.cocktailCard}>
+                <CocktailBox {...cocktail} />
               </div>
-          ))}
+            ))}
         </ul>
 
         <div className={styles.ctas}>
