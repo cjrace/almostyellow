@@ -28,7 +28,7 @@ const IrishBingoPage = () => {
         <div className={styles.page}>
             <main className={styles.main}>
                 <h1>Irish bingo</h1>
-
+              
                 <div className={styles.ctas}>
                     <Link href="/games" className={styles.secondary}>
                         Back to games
