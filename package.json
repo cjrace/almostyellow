@@ -7,16 +7,21 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prebuild": "npx prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^5.19.1",
+    "@prisma/extension-pulse": "^1.2.0",
     "eslint": "^8.57.0",
-    "next": "14.2.8",
+    "next": "^14.2.9",
+    "prisma": "^5.19.1",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
     "react-select": "^5.8.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

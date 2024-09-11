@@ -6,6 +6,10 @@ interface Item {
   checked: boolean;
 }
 
+// TODO: Create function for saving checklist items
+// TODO: Create function for checking / unchecking checklist items
+// TODO: Create function for removing checklist items
+
 const Checklist: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [newItemText, setNewItemText] = useState('');

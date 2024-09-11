@@ -17,7 +17,7 @@ const AdminPage = () => {
         <div className={styles.ctas}>
           <Link href="/" className={styles.secondary}>Back to homepage</Link>
         </div>
-
+        
       </main>
     </div>
   );

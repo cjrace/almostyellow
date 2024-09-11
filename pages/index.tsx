@@ -1,8 +1,21 @@
 import styles from '../app/page.module.css';
 import Image from "next/image";
 import Link from 'next/link';
+import { prisma } from "../prisma";
 
 export default function Home() {
+
+  // Listent to the database
+  async function main() {
+    const stream = await prisma.notification.stream({ name: 'notification-stream' })
+
+    for await (const event of stream) {
+      console.log('New event:', event)
+    }
+  }
+
+  main()
+
   return (
     <div className={styles.page}
     >
