@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import styles from '../../app/page.module.css';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, getCardName } from '../../components/games/card';
-import { createCardDeck } from '../../components/games/createcarddeck';
+import { Card, getCardName } from '../../src/components/games/card';
+import { createCardDeck } from '../../src/components/games/createcarddeck';
 
 const IrishBingoPage = () => {
     // Initialize state for the decks

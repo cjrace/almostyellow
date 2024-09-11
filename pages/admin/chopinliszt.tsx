@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../../app/page.module.css';
-import Checklist from '../../components/checklist';
+import Checklist from '../../src/components/checklist';
 
 const ChopinLiszt: React.FC = () => {
   return (

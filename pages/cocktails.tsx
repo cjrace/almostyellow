@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useForm, FieldValues } from 'react-hook-form';
 import styles from '../app/page.module.css';
 import Link from 'next/link';
-import { SpiritSelect } from '../components/cocktails/spiritselect';
-import { cocktails } from '../components/cocktails/cocktails';
-import CocktailBox from '../components/cocktails/cocktailbox';
+import { SpiritSelect } from '../src/components/cocktails/spiritselect';
+import { cocktails } from '../src/components/cocktails/cocktails';
+import CocktailBox from '../src/components/cocktails/cocktailbox';
 
 const CocktailsPage: React.FC = () => {
 
