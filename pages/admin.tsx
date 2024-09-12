@@ -1,16 +1,17 @@
 import styles from '../app/page.module.css';
 import Link from 'next/link';
 
-const GamesPage = () => {
+const AdminPage = () => {
   return (
     <div className={styles.page}>
+
       <main className={styles.main}>
-        <h1>Our games</h1>
+        <h1>Welcome to our admin page</h1>
 
         <div className={styles.ctas}>
-          <Link className={styles.primary} href="/games/irishbingo">Irish bingo</Link>
-          <Link className={styles.primary} href="/games/uno">Uno</Link>
-          <Link className={styles.primary} href="/games">???</Link>
+          <Link className={styles.primary} href="/admin/chopinliszt">Chopin Liszt</Link>
+          <Link className={styles.primary} href="/admin">???</Link>
+          <Link className={styles.primary} href="/admin">???</Link>
         </div>
 
         <div className={styles.ctas}>
@@ -22,4 +23,4 @@ const GamesPage = () => {
   );
 };
 
-export default GamesPage;
+export default AdminPage;

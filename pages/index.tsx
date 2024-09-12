@@ -4,7 +4,8 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className={styles.page}>
+    <div className={styles.page}
+    >
       <main className={styles.main}>
         <h1>Almost yellow</h1>
         <p>This is our homepage, we should make it prettier.</p>
@@ -17,26 +18,12 @@ export default function Home() {
         <button onClick ={ () => window.ConfettiPage.play()}> Play confetti!</button>
 
         <div className={styles.ctas}>
-          <Link
-            className={styles.primary}
-            href="/games"
-          >
-            View our games
-          </Link>
-          <Link
-            className={styles.secondary}
-            href=""
-          >
-            View our recipe magic
-          </Link>
-          <Link
-            className={styles.secondary}
-            href="/cocktails"
-          >
-            Cocktail time!
-          </Link>
+          <Link className={styles.primary} href="/games">View our games</Link>
+          <Link className={styles.primary} href="/">View our recipes</Link>
+          <Link className={styles.primary} href="/cocktails">Cocktail time!</Link>
         </div>
       </main>
+
       <footer className={styles.footer}>
         <a
           href="https://github.com/cjrace/almostyellow"
@@ -52,7 +39,11 @@ export default function Home() {
           />
           GitHub
         </a>
+        <div className={styles.ctas}>
+          <Link className={styles.secondary} href="/admin">Admin area</Link>
+        </div>
       </footer>
+
     </div>
   );
 }
