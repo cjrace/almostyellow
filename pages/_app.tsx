@@ -1,28 +1,26 @@
 import '../app/globals.css';
 import Head from 'next/head';
 import { AppProps } from 'next/app';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const toggleDarkMode = () => {
   document.body.classList.toggle('dark-mode');
 };
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.async = true;
-    script.src = `https://www.clarity.ms/tag/${process.env.NEXT_PUBLIC_CLARITY_ID}`;
-    document.body.appendChild(script);
-  }, []);
-
   return (
     <>
       <Head>
         <title>Almost yellow</title>
+        <script
+          async
+          src="https://www.clarity.ms/tag/o05b82hwae"
+          type="text/javascript"
+        />
       </Head>
 
       <button onClick={toggleDarkMode}>Toggle Dark Mode</button>
-      
+
       <Component {...pageProps} />
     </>
   );
