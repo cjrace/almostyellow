@@ -1,45 +1,52 @@
-// pages/decisionmaker.tsx
-
+// import styles from '../app/page.module.css';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { Textarea, Button, Grid, GridCol } from '@mantine/core';
 
-type FormValues = {
-    items: string;
+type decisionOptions = {
+    options: string;
 };
 
 const DecisionMaker: React.FC = () => {
-    const { register, handleSubmit } = useForm<FormValues>();
-    const [chosenItem, setChosenItem] = useState<string | null>(null);
+    const { register, handleSubmit } = useForm<decisionOptions>();
+    const [decidedOption, setChosenItem] = useState<string | null>(null);
 
-    const makeDecision: SubmitHandler<FormValues> = (data) => {
-        const items = data.items.split('\n').filter((item) => item.trim() !== '');
-        if (items.length > 0) {
-            const randomIndex = Math.floor(Math.random() * items.length);
-            setChosenItem(items[randomIndex]);
+    const makeDecision: SubmitHandler<decisionOptions> = (data) => {
+        const options = data.options.split('\n').filter((option) => option.trim() !== '');
+        if (options.length > 0) {
+            const randomIndex = Math.floor(Math.random() * options.length);
+            setChosenItem(options[randomIndex]);
         }
     };
 
     return (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <h1 style={{ textAlign: 'center' }}>The Decision Maker</h1>
-            <div style={{ width: '50%', padding: '20px' }}>
+        <Grid grow>
+            <Grid.Col span={5}>
+                <div style={{margin: 20}}>
+            <h1 style={{textAlign: 'center'}}>The Decision Maker</h1>
                 <form onSubmit={handleSubmit(makeDecision)}>
-                    <textarea
-                        {...register('items')}
-                        placeholder="Type your items (one per line)"
-                        style={{ width: '100%', height: '200px' }}
+                    <Textarea
+                        {...register('options')}
+                        label="Type the options for your decision, one per line..."
+                        autosize
+                        minRows={10}
+                        maxRows={20}
                     />
-                    <button type="submit">Make a decision</button>
+                    <Button type="submit" fullWidth>Make a decision</Button>
                 </form>
-            </div>
-            <div style={{ width: '50%', padding: '20px' }}>
-                {chosenItem && (
+                </div>
+            </Grid.Col>
+
+            <Grid.Col span={7}>
+                {decidedOption && (
                     <div style={{ fontSize: '24px', textAlign: 'center' }}>
-                        {chosenItem}
+                        <p>The decision has been made, and you should choose:</p>
+                        {decidedOption}
                     </div>
                 )}
-            </div>
-        </div>
+            </Grid.Col>
+
+        </Grid>
     );
 };
 
