@@ -19,7 +19,8 @@ export default function Home() {
 
         <div className={styles.ctas}>
           <Link className={styles.primary} href="/games">View our games</Link>
-          <Link className={styles.primary} href="/">View our recipes</Link>
+          <Link className={styles.primary} href="/decisionmaker">Random decision picker</Link>
+          <Link className={styles.primary} href="/recipes">Our recipes</Link>
           <Link className={styles.primary} href="/cocktails">Cocktail time!</Link>
         </div>
       </main>
