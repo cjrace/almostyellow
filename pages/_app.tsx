@@ -7,10 +7,6 @@ const toggleDarkMode = () => {
   document.body.classList.toggle('dark-mode');
 };
 
-const toggleDarkMode = () => {
-  document.body.classList.toggle('dark-mode');
-};
-
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     const script = document.createElement('script');
