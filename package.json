@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "playwright test"
+    "test": "next build && playwright test"
   },
   "dependencies": {
     "@mantine/core": "^7.12.2",
