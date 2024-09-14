@@ -58,7 +58,7 @@ const DecisionMaker: React.FC = () => {
               label="Type the options for your decision, one per line..."
               error={error}
               autosize
-              minRows={10}
+              minRows={5}
               maxRows={20}
               onChange={(e) => {
                 setValue('options', e.target.value);
@@ -67,6 +67,7 @@ const DecisionMaker: React.FC = () => {
                 }
               }}
             />
+            <br></br>
             <Button type="submit" fullWidth>
               Make a decision
             </Button>
