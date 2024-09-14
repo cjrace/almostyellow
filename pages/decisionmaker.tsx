@@ -11,8 +11,21 @@ type decisionOptions = {
 };
 
 const DecisionMaker: React.FC = () => {
-  const { register, handleSubmit } = useForm<decisionOptions>();
+  const { register, handleSubmit, setValue } = useForm<decisionOptions>();
   const [decidedOption, setChosenItem] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const validateInput = (value: string) => {
+    const lineCount = value.trim().split(/\n+/).length;
+    if (lineCount < 2) {
+      setError('Please enter at least 2 options.');
+      return false
+    } else {
+      setError('');
+      return true
+    }
+  };
 
   const makeDecision: SubmitHandler<decisionOptions> = (data) => {
     const options = data.options
@@ -32,13 +45,27 @@ const DecisionMaker: React.FC = () => {
 
       <Grid.Col span={5}>
         <div style={{ margin: 20 }}>
-          <form onSubmit={handleSubmit(makeDecision)}>
+          <form
+            onSubmit={handleSubmit((data) => {
+            setIsSubmitted(true);
+            if (validateInput(data.options)) {
+              makeDecision(data);
+            }
+          })}
+          >
             <Textarea
-              {...register("options")}
+              {...register('options')}
               label="Type the options for your decision, one per line..."
+              error={error}
               autosize
               minRows={10}
               maxRows={20}
+              onChange={(e) => {
+                setValue('options', e.target.value);
+                if (isSubmitted) {
+                  validateInput(e.target.value);
+                }
+              }}
             />
             <Button type="submit" fullWidth>
               Make a decision
