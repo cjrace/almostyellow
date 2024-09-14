@@ -51,6 +51,10 @@ npm run pretty # format all scripts
 npm run pretty-check # check format of all scripts but don't make changes
 ```
 
+### Pre-commit hooks
+
+[Husky](https://typicode.github.io/husky) is used to manage pre-commit hooks, currently this is used to enforce [Prettier](https://prettier.io/) formatting on all code.
+
 ### Handy scripts
 
 View other available commands using:
