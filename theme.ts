@@ -8,7 +8,7 @@ export const theme = createTheme({
       styles: (theme: any) => ({
         root: {
           "--mantine-color-default-hover": "#fffa5d",
-          "border-radius": "var(--mantine-radius-xl)",
+          borderRadius: "var(--mantine-radius-xl)",
         },
       }),
     },
