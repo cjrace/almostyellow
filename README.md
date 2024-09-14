@@ -31,10 +31,30 @@ npm run build
 
 ### Tests
 
-Basic end to end tests have been set up using [Playwright](https://playwright.dev/), to run them locally run:
+Basic end to end tests have been set up using [Playwright](https://playwright.dev/), to run them locally (and automatically trigger a new production build) run:
 
 ```bash
 npm run test
+```
+
+### Formatting / linting
+
+[ESLint](https://eslint.org/) is used for linting and [Prettier](https://prettier.io/) is used for code formatting. 
+
+Run this to check for issues with the code and automatically format all scripts:
+
+```bash
+npm run lint-style
+```
+
+Or if you want to run each part separately, you can using the following:
+
+e linting checks run:
+
+```bash
+npm run lint # just lint
+npm run pretty # format all scripts
+npm run pretty-check # check format of all scripts but don't make changes
 ```
 
 ### Handy scripts 

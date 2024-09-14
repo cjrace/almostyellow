@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "next build && playwright test"
+    "test": "next build && playwright test",
+    "lint-style": "next lint && prettier . --write",
+    "pretty": "prettier . --write",
+    "pretty-check": "npx prettier . --check"
   },
   "dependencies": {
     "@mantine/core": "^7.12.2",
@@ -25,9 +28,11 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint-config-next": "14.2.8",
+    "eslint-config-prettier": "^9.1.0",
     "postcss": "^8.4.45",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
+    "prettier": "3.3.3",
     "typescript": "^5.5.4"
   }
 }
