@@ -13,20 +13,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: Get installed Playwright version
-        id: playwright-version
-        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
       - name: Cache playwright binaries
         uses: actions/cache@v4
-        id: playwright-cache
+          id: playwright-cache
         with:
           path: |
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
-        run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+         run: npm ci
+       - run: npx playwright install --with-deps
+         if: steps.playwright-cache.outputs.cache-hit != 'true'
+       - run: npx playwright install-deps
+         if: steps.playwright-cache.outputs.cache-hit == 'true'
       - name: Cache Next.js build artifacts
         uses: actions/cache@v4
         with:
