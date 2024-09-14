@@ -3,49 +3,60 @@ import { test, expect } from '@playwright/test';
 test('Can navigate to the cocktails page', async ({ page }) => {
     await page.goto('/');
 
-    await page.click('text=Cocktail time!');
+    await page.getByRole('link', { name: 'Cocktail time!' }).click();
     await expect(page).toHaveURL('/cocktails');
     await expect(page.locator('h1')).toContainText('Cocktails');
 
-    await page.click('text=Back to homepage');
+    await page.getByRole('link', { name: 'Back to homepage' }).click();
     await expect(page).toHaveURL('/');
 });
 
 test('Can navigate to the games page and through its subpages', async ({ page }) => {
     await page.goto('/');
 
-    await page.click('text=View our games');
+    await page.getByRole('link', { name: 'View our games' }).click();
     await expect(page).toHaveURL('/games');
-    await expect(page.locator('h1')).toContainText('games');
+    await expect(page.locator('h1')).toContainText('Our games');
 
-    await page.click('text=Irish bingo');
+    await page.getByRole('link', { name: 'Irish bingo' }).click();
     await expect(page).toHaveURL('/games/irishbingo');
+    await expect(page.locator('h1')).toContainText('Irish bingo');
 
-    await page.click('text=Back to games');
-    await page.click('text=Uno');
+    await page.getByRole('link', { name: 'Back to games' }).click();
+    await page.getByRole('link', { name: 'Uno' }).click();
     await expect(page).toHaveURL('/games/uno');
+    await expect(page.locator('h1')).toContainText('Uno');
 
-    await page.click('text=Back to games');
-    await expect(page).toHaveURL('/games');
+    await page.getByRole('link', { name: 'Back to games' }).click();
+    await page.getByRole('link', { name: 'Back to homepage' }).click();
+    await expect(page).toHaveURL('/');
+});
 
-    await page.click('text=Back to homepage');
+test('Navigate to the decision maker page', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('link', { name: 'How we make decisions' }).click();
+    await expect(page).toHaveURL('/decisionmaker');
+    await expect(page.locator('h1')).toContainText('The Decision Maker');
+
+    await page.getByRole('link', { name: 'Back to homepage' }).click();
     await expect(page).toHaveURL('/');
 });
 
 test('Navigate through admin pages', async ({ page }) => {
     await page.goto('/');
 
-    await page.click('text=Admin area');
+    await page.getByRole('link', { name: 'Admin area' }).click();
     await expect(page).toHaveURL('/admin');
     await expect(page.locator('h1')).toContainText('Welcome to our admin page');
 
-    await page.click('text=Chopin Liszt');
+    await page.getByRole('link', { name: 'Chopin Liszt' }).click();
     await expect(page).toHaveURL('/admin/chopinliszt');
     await expect(page.locator('h1')).toContainText('Chopin Liszt');
 
-    await page.click('text=Back to admin');
+    await page.getByRole('link', { name: 'Back to admin' }).click();
     await expect(page).toHaveURL('/admin');
 
-    await page.click('text=Back to homepage');
+    await page.getByRole('link', { name: 'Back to homepage' }).click();
     await expect(page).toHaveURL('/');
 });

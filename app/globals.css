@@ -14,12 +14,14 @@
 body {
   background-color: var(--background-light);
   color: var(--color-light);
+  font-family: Helvetica, sans-serif;
 }
 
 /* For dark mode */
 body.dark-mode {
   background-color: var(--background-dark);
   color: var(--color-dark);
+  font-family: Helvetica, sans-serif;
 }
 
 .container {
