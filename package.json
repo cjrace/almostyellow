@@ -24,6 +24,7 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "@eslint/config-array": "^0.18.0",
     "@playwright/test": "^1.47.0",
     "@types/node": "^20",
     "@types/react": "^18",
