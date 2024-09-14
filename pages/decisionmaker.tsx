@@ -14,6 +14,17 @@ const DecisionMaker: React.FC = () => {
   const { register, handleSubmit } = useForm<decisionOptions>();
   const [decidedOption, setChosenItem] = useState<string | null>(null);
 
+  const [error, setError] = useState('');
+
+  const validateInput = (value: any) => {
+    const wordCount = value.trim().split(/\s+/).length;
+    if (wordCount < 2) {
+      setError('Please enter at least 2 words.');
+    } else {
+      setError('');
+    }
+  };
+
   const makeDecision: SubmitHandler<decisionOptions> = (data) => {
     const options = data.options
       .split("\n")
@@ -32,13 +43,23 @@ const DecisionMaker: React.FC = () => {
 
       <Grid.Col span={5}>
         <div style={{ margin: 20 }}>
-          <form onSubmit={handleSubmit(makeDecision)}>
+          <form
+            onSubmit={handleSubmit((data) => {
+              validateInput(data.options);
+              if (!error) {
+                makeDecision(data);
+              }
+            })}
+          >
+
             <Textarea
-              {...register("options")}
+              {...register('options')}
               label="Type the options for your decision, one per line..."
+              error={error}
               autosize
               minRows={10}
               maxRows={20}
+              onChange={(e) => validateInput(e.target.value)}
             />
             <Button type="submit" fullWidth>
               Make a decision
