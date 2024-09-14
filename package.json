@@ -11,8 +11,9 @@
   },
   "dependencies": {
     "@mantine/core": "^7.12.2",
+    "@mantine/hooks": "^7.12.2",
     "eslint": "^8.57.0",
-    "next": "14.2.8",
+    "next": "^14.2.11",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.53.0",
