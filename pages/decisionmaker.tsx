@@ -1,7 +1,7 @@
 // import styles from '../app/page.module.css';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { Textarea, Button, Grid, GridCol } from '@mantine/core';
+import { Textarea, Button, Grid } from '@mantine/core';
 
 type decisionOptions = {
     options: string;
