@@ -29,9 +29,7 @@ Before you start contributing to the code, please take a moment to review the fo
 3. **Test your changes**
 
    - Ensure that your changes work as expected in your local environment using `npm run dev`
-   - Make sure the changes build using `npm run build`
-   - Run the playwright tests `npx playwright test`
-   - Run the linting script `npm run lint`
+   - Make sure the changes build and run tests using `npm run test`
    - Resolve any errors that you find and repeat until tests and linting all pass
    - If you haven't already, consider adding additional playwright tests for your changes
 

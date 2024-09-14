@@ -8,7 +8,7 @@
 
 ## Checklist
 
-- [ ] I have tested these changes locally using `npm run build` and `npx run playwright`
+- [ ] I have tested these changes locally using `npm run test`
 - [ ] I have updated the documentation (if needed)
 - [ ] I have added or updated tests for these changes (if applicable)
 
