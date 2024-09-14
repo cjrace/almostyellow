@@ -3,6 +3,9 @@ import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Textarea, Button, Grid } from "@mantine/core";
 
+// TODO: Make the decision clear if text is entered into the box
+// TODO: Add a validation error when pressing the button if only one line of text or less is present in the box
+
 type decisionOptions = {
   options: string;
 };
@@ -50,7 +53,7 @@ const DecisionMaker: React.FC = () => {
 
       <Grid.Col span={7}>
         {decidedOption && (
-          <div style={{ fontSize: "24px", textAlign: "center" }}>
+          <div id="decision" style={{ fontSize: "24px", textAlign: "center" }}>
             <p>The decision has been made, and you should choose:</p>
             {decidedOption}
           </div>
