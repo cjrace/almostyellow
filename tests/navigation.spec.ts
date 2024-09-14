@@ -32,6 +32,17 @@ test('Can navigate to the games page and through its subpages', async ({ page })
     await expect(page).toHaveURL('/');
 });
 
+test('Navigate to the decision maker page', async ({ page }) => {
+    await page.goto('/');
+
+    await page.click('text=Random decision maker');
+    await expect(page).toHaveURL('/decisionmaker');
+    await expect(page.locator('h1')).toContainText('The Decision Maker');
+
+    await page.click('text=Back to homepage');
+    await expect(page).toHaveURL('/');
+});
+
 test('Navigate through admin pages', async ({ page }) => {
     await page.goto('/');
 
