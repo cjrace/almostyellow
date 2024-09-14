@@ -21,14 +21,6 @@ To run the development server (use `Ctrl-C` if running in VSCode to cancel the d
 npm run dev
 ```
 
-### Build / compile
-
-To compile the code, which you should do before running the tests, run:
-
-```bash
-npm run build
-```
-
 ### Tests
 
 Basic end to end tests have been set up using [Playwright](https://playwright.dev/).
@@ -43,21 +35,13 @@ npm run test
 
 [ESLint](https://eslint.org/) is used for linting and [Prettier](https://prettier.io/) is used for code formatting.
 
-If you want to run each part separately, you can using the following:
-
-```bash
-npm run lint # just lint
-npm run pretty # format all scripts
-npm run pretty-check # check format of all scripts but don't make changes
-```
-
 ### Pre-commit hooks
 
 [Husky](https://typicode.github.io/husky) is used to manage pre-commit hooks, currently this is used to enforce [Prettier](https://prettier.io/) formatting on all code.
 
 ### Handy scripts
 
-View other available commands using:
+View other available commands, including for running linting, formatting (including how to check format without making changes), compiling and more using:
 
 ```bash
 npm run
