@@ -1,4 +1,4 @@
-import Script from 'next/script';
+import Script from "next/script";
 
 const MicrosoftClarity = () => {
   const trackingCode = process.env.NEXT_PUBLIC_MICROSOFT_CLARITY;

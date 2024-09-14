@@ -1,11 +1,10 @@
 // import styles from '../app/page.module.css';
-import Link from 'next/link';
+import Link from "next/link";
 
 const AdminPage = () => {
   return (
     <div>
-
-    <main>
+      <main>
         <h1>Welcome to our admin page</h1>
 
         <div>
@@ -17,7 +16,6 @@ const AdminPage = () => {
         <div>
           <Link href="/">Back to homepage</Link>
         </div>
-
       </main>
     </div>
   );

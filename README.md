@@ -39,7 +39,7 @@ npm run test
 
 ### Formatting / linting
 
-[ESLint](https://eslint.org/) is used for linting and [Prettier](https://prettier.io/) is used for code formatting. 
+[ESLint](https://eslint.org/) is used for linting and [Prettier](https://prettier.io/) is used for code formatting.
 
 Run this to check for issues with the code and automatically format all scripts:
 
@@ -57,7 +57,7 @@ npm run pretty # format all scripts
 npm run pretty-check # check format of all scripts but don't make changes
 ```
 
-### Handy scripts 
+### Handy scripts
 
 View other available commands using:
 
@@ -70,6 +70,7 @@ npm run
 This site is deployed to the following places using [Vercel](https://vercel.com/):
 
 From the `main` branch:
-* https://www.almostyellow.co.uk/
-* https://almostyellow.co.uk/ (redirects to www)
-* https://almostyellow-nu.vercel.app/ (redirects to first link)
+
+- https://www.almostyellow.co.uk/
+- https://almostyellow.co.uk/ (redirects to www)
+- https://almostyellow-nu.vercel.app/ (redirects to first link)

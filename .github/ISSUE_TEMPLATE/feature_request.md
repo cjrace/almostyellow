@@ -9,8 +9,8 @@ about: Suggest an enhancement or new feature
 
 ## Use case
 
-<!-- 
-Explain the use case or scenario where this feature would be valuable. 
+<!--
+Explain the use case or scenario where this feature would be valuable.
 Ideally through a user story, e.g.
 As a ...
 I want ...
