@@ -11,14 +11,15 @@ type decisionOptions = {
 };
 
 const DecisionMaker: React.FC = () => {
-  const { register, handleSubmit } = useForm<decisionOptions>();
+  const { register, handleSubmit, setValue } = useForm<decisionOptions>();
   const [decidedOption, setChosenItem] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const validateInput = (value: string) => {
-    const wordCount = value.trim().split(/\s+/).length;
-    if (wordCount < 2) {
-      setError('Please enter at least 2 words.');
+    const lineCount = value.trim().split(/\n+/).length;
+    if (lineCount < 2) {
+      setError('Please enter at least 2 options.');
       return false
     } else {
       setError('');
@@ -46,11 +47,11 @@ const DecisionMaker: React.FC = () => {
         <div style={{ margin: 20 }}>
           <form
             onSubmit={handleSubmit((data) => {
-              validateInput(data.options);
-              if (!error) {
-                makeDecision(data);
-              }
-            })}
+            setIsSubmitted(true);
+            if (validateInput(data.options)) {
+              makeDecision(data);
+            }
+          })}
           >
             <Textarea
               {...register('options')}
@@ -59,6 +60,12 @@ const DecisionMaker: React.FC = () => {
               autosize
               minRows={10}
               maxRows={20}
+              onChange={(e) => {
+                setValue('options', e.target.value);
+                if (isSubmitted) {
+                  validateInput(e.target.value);
+                }
+              }}
             />
             <Button type="submit" fullWidth>
               Make a decision
