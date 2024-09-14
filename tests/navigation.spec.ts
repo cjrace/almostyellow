@@ -35,7 +35,7 @@ test('Can navigate to the games page and through its subpages', async ({ page })
 test('Navigate to the decision maker page', async ({ page }) => {
     await page.goto('/');
 
-    await page.getByRole('link', { name: 'Random decision maker' }).click();
+    await page.getByRole('link', { name: 'How we make decisions' }).click();
     await expect(page).toHaveURL('/decisionmaker');
     await expect(page.locator('h1')).toContainText('The Decision Maker');
 

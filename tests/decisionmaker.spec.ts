@@ -3,22 +3,32 @@ import { test, expect } from "@playwright/test";
 test("Hasn't prematurely made a decision", async ({ page }) => {
   await page.goto("/decisionmaker");
 
-  // Check the decision div hasn't appeared yet  
-  expect(page.locator("div#decision")).not.toBeVisible();
+  // Check the decision div hasn't appeared yet
+  await expect(page.locator('#decision')).toHaveCount(0);
 });
 
 test("Won't make a decision if nothing to decide", async ({ page }) => {
   await page.goto("/decisionmaker");
 
   // Prematurely press the button
-  await page.click("text=Make a decision");
-  // Expect an error
+  await page.getByRole('button', { name: 'Make a decision' }).click();
+
+  // Expect an error and no decision
+  // expect error
+  await expect(page.locator('#decision')).toHaveCount(0);
+
   // Enter one thing in the box
-  // Expect an error
-  await page.click("text=Make a decision");
+  await page.getByLabel('Type the options for your').fill("Only one road ahead");
+  await page.getByRole('button', { name: 'Make a decision' }).click();
+
+  // Expect an error and no decision
+  // expect error
+  await expect(page.locator('#decision')).toHaveCount(0);
 });
 
 test("Makes a valid decision", async ({ page }) => {
+  await page.goto("/decisionmaker");
+
   // Some example initial options
   const takeawayOptions = [
     "Nandos",
@@ -33,11 +43,13 @@ test("Makes a valid decision", async ({ page }) => {
   const optionsToEnter = takeawayOptions.join("\n");
 
   // Add some options and make a decision
-  await page.getByRole('textbox', { name: 'options' }).fill(optionsToEnter);
-  await page.click("text=Make a decision");
+  await page.getByLabel('Type the options for your').fill(optionsToEnter);
+  await page.getByRole('button', { name: 'Make a decision' }).click();
 
   // Ensure decision has been made
-  const decisionDiv = await page.locator("div#decision");
+  await expect(page.locator('#decision')).toContainText('The decision has been made, and you should choose:');
+
+  const decisionDiv = page.locator("#decision");
   const decisionText = await decisionDiv.textContent();
   expect(decisionText).not.toBeNull();
 
