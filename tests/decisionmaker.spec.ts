@@ -4,26 +4,32 @@ test("Hasn't prematurely made a decision", async ({ page }) => {
   await page.goto("/decisionmaker");
 
   // Check the decision div hasn't appeared yet
-  await expect(page.locator('#decision')).toHaveCount(0);
+  await expect(page.locator("#decision")).toHaveCount(0);
 });
 
 test("Won't make a decision if nothing to decide", async ({ page }) => {
   await page.goto("/decisionmaker");
 
   // Prematurely press the button
-  await page.getByRole('button', { name: 'Make a decision' }).click();
+  await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Expect an error and no decision
-  // expect error
-  await expect(page.locator('#decision')).toHaveCount(0);
+  await expect(page.getByRole("paragraph")).toContainText(
+    "Please enter at least 2 options."
+  );
+  await expect(page.locator("#decision")).toHaveCount(0);
 
   // Enter one thing in the box
-  await page.getByLabel('Type the options for your').fill("Only one road ahead");
-  await page.getByRole('button', { name: 'Make a decision' }).click();
+  await page
+    .getByLabel("Type the options for your")
+    .fill("Only one road ahead");
+  await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Expect an error and no decision
-  // expect error
-  await expect(page.locator('#decision')).toHaveCount(0);
+  await expect(page.getByRole("paragraph")).toContainText(
+    "Please enter at least 2 options."
+  );
+  await expect(page.locator("#decision")).toHaveCount(0);
 });
 
 test("Makes a valid decision", async ({ page }) => {
@@ -43,11 +49,13 @@ test("Makes a valid decision", async ({ page }) => {
   const optionsToEnter = takeawayOptions.join("\n");
 
   // Add some options and make a decision
-  await page.getByLabel('Type the options for your').fill(optionsToEnter);
-  await page.getByRole('button', { name: 'Make a decision' }).click();
+  await page.getByLabel("Type the options for your").fill(optionsToEnter);
+  await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Ensure decision has been made
-  await expect(page.locator('#decision')).toContainText('The decision has been made, and you should choose:');
+  await expect(page.locator("#decision")).toContainText(
+    "The decision has been made, and you should choose:"
+  );
 
   const decisionDiv = page.locator("#decision");
   const decisionText = await decisionDiv.textContent();
