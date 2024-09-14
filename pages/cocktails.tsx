@@ -21,13 +21,15 @@ const CocktailsPage: React.FC = () => {
     return cocktail.spirits.some((spirit) => selectedSpirits.some((selectedSpirit) => selectedSpirit.value === spirit));
   });
 
+
+
   // Main page
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         
         <h1>Cocktails</h1>
-
+        
         {/* Dropdown selector */}
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <p>Filter by spirit:</p>
