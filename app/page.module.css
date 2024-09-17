@@ -29,16 +29,19 @@
   border-radius: 128px;
   padding: 20px;
   border: 1px solid transparent;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-color: #d6d5d3; 
+  border-color: #d6d5d3;
   gap: 8px;
   min-width: 180px;
   text-decoration: none;
-  color: inherit
+  color: inherit;
 }
 
 /* Footer */
@@ -114,7 +117,7 @@
 
 /* Dark mode logo */
 .dark-mode .logo {
-    filter: invert();
+  filter: invert();
 }
 
 /* Cocktail card container */
@@ -164,7 +167,7 @@
   font-size: 14px;
   color: #333;
   background-color: white;
-  padding: 20px
+  padding: 20px;
 }
 
 /* Each column (ingredients and instructions) */

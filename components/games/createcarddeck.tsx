@@ -1,4 +1,4 @@
-import { Card, RankNames, SuitNames } from './card';
+import { Card, RankNames, SuitNames } from "./card";
 
 export function createCardDeck(): Card[] {
   const deck: Card[] = [];

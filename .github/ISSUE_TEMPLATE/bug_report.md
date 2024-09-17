@@ -9,7 +9,7 @@ about: Report a bug or unexpected behaviour
 
 ## Steps to Reproduce
 
-<!-- 
+<!--
 * Describe the steps to reproduce the bug.
 * Include any relevant code snippets or screenshots.
 -->

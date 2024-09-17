@@ -17,22 +17,23 @@ Before you start contributing to the code, please take a moment to review the fo
 ## How to Contribute
 
 1. **Create a branch**
+
    - Create a new branch based off the latest version of the `main` branch
 
-3. **Make changes**
+2. **Make changes**
+
    - Make your desired changes (bug fixes, new features, documentation updates, etc.)
    - Write clear commit messages that describe your changes
    - Keep scripts short and break out separate components where possible
 
-4. **Test your changes**
+3. **Test your changes**
+
    - Ensure that your changes work as expected in your local environment using `npm run dev`
-   - Make sure the changes build using `npm run build`
-   - Run the playwright tests `npx playwright test`
-   - Run the linting script `npm run lint`
+   - Make sure the changes build and run tests using `npm run test`
    - Resolve any errors that you find and repeat until tests and linting all pass
    - If you haven't already, consider adding additional playwright tests for your changes
 
-5. **Submit a Pull Request (PR)**
+4. **Submit a Pull Request (PR)**
    - Push your changes
    - Open a PR against the `main` branch of this repository
    - Follow the template to create a detailed description of your changes

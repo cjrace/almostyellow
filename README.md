@@ -1,6 +1,8 @@
-![Vercel Deploy](https://deploy-badge.vercel.app/vercel/almostyellow)
+[![Vercel Deploy](https://deploy-badge.vercel.app/vercel/almostyellow)](https://www.almostyellow.co.uk/)
 [![Playwright tests](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/playwright.yml)
 [![CodeQL](https://github.com/cjrace/almostyellow/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/github-code-scanning/codeql)
+[![Linting](https://github.com/cjrace/almostyellow/actions/workflows/lint.yml/badge.svg)](https://github.com/cjrace/almostyellow/actions/workflows/lint.yml)
+[![Code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat)](https://github.com/prettier/prettier)
 
 # Almost yellow
 
@@ -22,25 +24,23 @@ To run the development server (use `Ctrl-C` if running in VSCode to cancel the d
 npm run dev
 ```
 
-### Build / compile
+## Tests
 
-To compile the code, which you should do before running the tests, run:
+[Prettier](https://prettier.io/) is used for code formatting, [ESLint](https://eslint.org/) is used for linting and basic end to end tests have been set up using [Playwright](https://playwright.dev/).
 
-```bash
-npm run build
-```
-
-### Tests
-
-Basic end to end tests have been set up using [Playwright](https://playwright.dev/), to run them locally run:
+To format all scripts, run linting checks, compile a production build, and then run the end to end tests run:
 
 ```bash
 npm run test
 ```
 
-### Handy scripts 
+### Pre-commit hooks
 
-View other available commands using:
+[Husky](https://typicode.github.io/husky) is used to manage pre-commit hooks, currently this is used to enforce [Prettier](https://prettier.io/) formatting on all code.
+
+### Handy scripts
+
+View other available commands, including for running linting, formatting (including how to check format without making changes), compiling and more using:
 
 ```bash
 npm run
@@ -48,9 +48,8 @@ npm run
 
 ## Deployment
 
-This site is deployed to the following places using [Vercel](https://vercel.com/):
+This site is deployed to the following places using [Vercel](https://vercel.com/), trigger from pushes to the `main` branch:
 
-From the `main` branch:
-* https://www.almostyellow.co.uk/
-* https://almostyellow.co.uk/ (redirects to www)
-* https://almostyellow-nu.vercel.app/ (redirects to first link)
+- https://www.almostyellow.co.uk/
+- https://almostyellow.co.uk/ (redirects to www)
+- https://almostyellow-nu.vercel.app/ (redirects to first link)
