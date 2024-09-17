@@ -16,6 +16,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Check code styling
-        run: npx prettier . --check
-      - name: Check code linting
+        run: npx next lint
+      - name: Check code for issues
         run: npx prettier . --check
