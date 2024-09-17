@@ -35,7 +35,7 @@ const CocktailsPage: React.FC = () => {
       <main className={styles.main}>
         <h1>Cocktails</h1>
 
-        {/* Dropdown selector */}
+        {/* The dropdown selector */}
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <p>Filter by spirit:</p>
           <SpiritSelect
