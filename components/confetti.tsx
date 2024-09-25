@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Button } from "@mantine/core";
 
 const Confetti: React.FC = () => {
   const [confettiInitialized, setConfettiInitialized] = useState(false);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://run.confettipage.com/here.js';
+    const script = document.createElement("script");
+    script.src = "https://run.confettipage.com/here.js";
     script.async = true;
     script.onload = () => {
       setConfettiInitialized(true);
@@ -24,9 +24,7 @@ const Confetti: React.FC = () => {
     }
   };
 
-  return (
-    <Button onClick={playConfetti}>Play confetti!</Button>
-  );
+  return <Button onClick={playConfetti}>Play confetti!</Button>;
 };
 
 export default Confetti;
