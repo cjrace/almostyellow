@@ -15,7 +15,7 @@ test("Won't make a decision if nothing to decide", async ({ page }) => {
 
   // Expect an error and no decision
   await expect(page.getByRole("paragraph")).toContainText(
-    "Please enter at least 2 options."
+    "Please enter at least 2 options.",
   );
   await expect(page.locator("#decision")).toHaveCount(0);
 
@@ -27,7 +27,7 @@ test("Won't make a decision if nothing to decide", async ({ page }) => {
 
   // Expect an error and no decision
   await expect(page.getByRole("paragraph")).toContainText(
-    "Please enter at least 2 options."
+    "Please enter at least 2 options.",
   );
   await expect(page.locator("#decision")).toHaveCount(0);
 });
@@ -54,7 +54,7 @@ test("Makes a valid decision", async ({ page }) => {
 
   // Ensure decision has been made
   await expect(page.locator("#decision")).toContainText(
-    "The decision has been made, and you should choose:"
+    "The decision has been made, and you should choose:",
   );
 
   const decisionDiv = page.locator("#decision");
@@ -65,7 +65,7 @@ test("Makes a valid decision", async ({ page }) => {
   if (decisionText !== null) {
     // Check the devision was an actual option in the list
     const endsWithInitialOption = takeawayOptions.some((option) =>
-      decisionText.endsWith(option)
+      decisionText.endsWith(option),
     );
     expect(endsWithInitialOption).toBeTruthy();
   }

@@ -1,7 +1,7 @@
-import React from 'react';
-import Image from 'next/image';
-import { renderRatingMoons } from './renderratingmoons';
-import styles from '../../app/page.module.css';
+import React from "react";
+import Image from "next/image";
+import { renderRatingMoons } from "./renderratingmoons";
+import styles from "../../app/page.module.css";
 
 // Create the design for each cocktail entry on the cocktails page
 interface Cocktail {
@@ -14,7 +14,12 @@ interface Cocktail {
   };
 }
 
-const CocktailBox: React.FC<Cocktail> = ({ photoUrl, name, rating, recipe }) => {
+const CocktailBox: React.FC<Cocktail> = ({
+  photoUrl,
+  name,
+  rating,
+  recipe,
+}) => {
   return (
     <div className={styles.cocktailBox}>
       <div className={styles.cocktailImageContainer}>
@@ -34,23 +39,23 @@ const CocktailBox: React.FC<Cocktail> = ({ photoUrl, name, rating, recipe }) => 
         </div>
       </div>
       <div className={styles.cocktailDetails}>
-      <div className={styles.column}>
-        <h3>Ingredients:</h3>
-        <ul className={styles.ingredientsList}>
-          {recipe.ingredients.map((ingredient) => (
-            <li key={ingredient}>{ingredient}</li>
-          ))}
-        </ul>
+        <div className={styles.column}>
+          <h3>Ingredients:</h3>
+          <ul className={styles.ingredientsList}>
+            {recipe.ingredients.map((ingredient) => (
+              <li key={ingredient}>{ingredient}</li>
+            ))}
+          </ul>
+        </div>
+        <div className={styles.column}>
+          <h3>Instructions:</h3>
+          <ol className={styles.instructionsList}>
+            {recipe.instructions.map((instruction, index) => (
+              <li key={index}>{instruction}</li>
+            ))}
+          </ol>
+        </div>
       </div>
-      <div className={styles.column}>
-        <h3>Instructions:</h3>
-        <ol className={styles.instructionsList}>
-          {recipe.instructions.map((instruction, index) => (
-            <li key={index}>{instruction}</li>
-          ))}
-        </ol>
-      </div>
-    </div>
     </div>
   );
 };

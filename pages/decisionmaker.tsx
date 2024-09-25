@@ -13,17 +13,17 @@ type decisionOptions = {
 const DecisionMaker: React.FC = () => {
   const { register, handleSubmit, setValue } = useForm<decisionOptions>();
   const [decidedOption, setChosenItem] = useState<string | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const validateInput = (value: string) => {
     const lineCount = value.trim().split(/\n+/).length;
     if (lineCount < 2) {
-      setError('Please enter at least 2 options.');
-      return false
+      setError("Please enter at least 2 options.");
+      return false;
     } else {
-      setError('');
-      return true
+      setError("");
+      return true;
     }
   };
 
@@ -47,21 +47,21 @@ const DecisionMaker: React.FC = () => {
         <div style={{ margin: 20 }}>
           <form
             onSubmit={handleSubmit((data) => {
-            setIsSubmitted(true);
-            if (validateInput(data.options)) {
-              makeDecision(data);
-            }
-          })}
+              setIsSubmitted(true);
+              if (validateInput(data.options)) {
+                makeDecision(data);
+              }
+            })}
           >
             <Textarea
-              {...register('options')}
+              {...register("options")}
               label="Type the options for your decision, one per line..."
               error={error}
               autosize
               minRows={5}
               maxRows={20}
               onChange={(e) => {
-                setValue('options', e.target.value);
+                setValue("options", e.target.value);
                 if (isSubmitted) {
                   validateInput(e.target.value);
                 }
@@ -73,9 +73,7 @@ const DecisionMaker: React.FC = () => {
             </Button>
           </form>
           <br></br>
-          <Link href="/">
-            Back to homepage
-          </Link>
+          <Link href="/">Back to homepage</Link>
         </div>
       </Grid.Col>
 

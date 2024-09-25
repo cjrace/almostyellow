@@ -6,8 +6,8 @@
   --color-light: #000000; /* Light background */
   --color-dark: #fae25d; /* Dark background */
   --primary-color: #fae25d;
-  --secondary-color: #FF851B; 
-  --font-family: Helvetica, sans-serif;  
+  --secondary-color: #ff851b;
+  --font-family: Helvetica, sans-serif;
 }
 
 /* For light mode */
@@ -34,14 +34,12 @@ body.dark-mode {
   margin-bottom: 40px;
 }
 
-
 @media (max-width: 768px) {
   /* Adjust styles for smaller screens */
   .container {
     padding: 10px;
   }
 }
-
 
 .panel-row {
   display: flex;

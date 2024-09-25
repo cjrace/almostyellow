@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface Item {
   id: number;
@@ -8,7 +8,7 @@ interface Item {
 
 const Checklist: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
-  const [newItemText, setNewItemText] = useState('');
+  const [newItemText, setNewItemText] = useState("");
 
   const addItem = () => {
     if (newItemText.trim()) {
@@ -16,7 +16,7 @@ const Checklist: React.FC = () => {
         ...prevItems,
         { id: Date.now(), text: newItemText, checked: false },
       ]);
-      setNewItemText('');
+      setNewItemText("");
     }
   };
 
@@ -27,8 +27,8 @@ const Checklist: React.FC = () => {
   const toggleItem = (itemId: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.id === itemId ? { ...item, checked: !item.checked } : item
-      )
+        item.id === itemId ? { ...item, checked: !item.checked } : item,
+      ),
     );
   };
 

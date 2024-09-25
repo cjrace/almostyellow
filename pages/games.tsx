@@ -1,5 +1,5 @@
-import styles from '../app/page.module.css';
-import Link from 'next/link';
+import styles from "../app/page.module.css";
+import Link from "next/link";
 
 const GamesPage = () => {
   return (
@@ -8,15 +8,22 @@ const GamesPage = () => {
         <h1>Our games</h1>
 
         <div className={styles.ctas}>
-          <Link className={styles.primary} href="/games/irishbingo">Irish bingo</Link>
-          <Link className={styles.primary} href="/games/uno">Uno</Link>
-          <Link className={styles.primary} href="/games">???</Link>
+          <Link className={styles.primary} href="/games/irishbingo">
+            Irish bingo
+          </Link>
+          <Link className={styles.primary} href="/games/uno">
+            Uno
+          </Link>
+          <Link className={styles.primary} href="/games">
+            ???
+          </Link>
         </div>
 
         <div className={styles.ctas}>
-          <Link href="/" className={styles.secondary}>Back to homepage</Link>
+          <Link href="/" className={styles.secondary}>
+            Back to homepage
+          </Link>
         </div>
-
       </main>
     </div>
   );
