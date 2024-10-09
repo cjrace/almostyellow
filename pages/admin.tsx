@@ -1,4 +1,3 @@
-// import styles from '../app/page.module.css';
 import Link from "next/link";
 
 const AdminPage = () => {
