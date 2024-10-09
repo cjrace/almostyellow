@@ -16,11 +16,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>Almost yellow</title>
       </Head>
 
-      <Script
-        src="https://www.clarity.ms/tag/o05b82hwae"
-        type="text/javascript"
-      />
-
       <Component {...pageProps} />
     </MantineProvider>
   );
