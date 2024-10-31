@@ -62,6 +62,15 @@ export default function Home() {
           >
             Cocktail time!
           </Button>
+
+          <Button
+            leftSection="😎"
+            variant="default"
+            component="a"
+            href="/holidays"
+          >
+            Our holidays!
+          </Button>
         </Group>
       </Grid.Col>
 
