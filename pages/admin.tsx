@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+import styles from "../app/page.module.css";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -12,8 +13,8 @@ const crumbitems = [
 
 const AdminPage = () => {
   return (
-    <div>
-      <main>
+    <div className={styles.page}>
+      <main className={styles.main}>
         <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
         <h1>Welcome to our admin page</h1>

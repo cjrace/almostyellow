@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Textarea, Button, Grid, Breadcrumbs, Anchor } from "@mantine/core";
+import styles from "../app/page.module.css";
 
 // TODO: Make the decision clear if text is entered into the box
-// TODO: Add a validation error when pressing the button if only one line of text or less is present in the box
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -47,66 +47,68 @@ const DecisionMaker: React.FC = () => {
   };
 
   return (
-    <div>
-      <div>
-        <Grid grow>
-          <Grid.Col span={12}>
-            <Breadcrumbs>{crumbitems}</Breadcrumbs>
-            <h1 style={{ textAlign: "center" }}>The Decision Maker</h1>
-          </Grid.Col>
+    <div className={styles.page}>
+      <main className={styles.main}>
+        <div>
+          <Grid grow>
+            <Grid.Col span={12}>
+              <Breadcrumbs>{crumbitems}</Breadcrumbs>
+              <h1 style={{ textAlign: "center" }}>The Decision Maker</h1>
+            </Grid.Col>
 
-          <Grid.Col span={5}>
-            <div style={{ margin: 20 }}>
-              <form
-                onSubmit={handleSubmit((data) => {
-                  setIsSubmitted(true);
-                  if (validateInput(data.options)) {
-                    makeDecision(data);
-                  }
-                })}
-              >
-                <Textarea
-                  {...register("options")}
-                  label="Type the options for your decision, one per line..."
-                  error={error}
-                  autosize
-                  minRows={5}
-                  maxRows={20}
-                  onChange={(e) => {
-                    setValue("options", e.target.value);
-                    if (isSubmitted) {
-                      validateInput(e.target.value);
+            <Grid.Col span={5}>
+              <div style={{ margin: 20 }}>
+                <form
+                  onSubmit={handleSubmit((data) => {
+                    setIsSubmitted(true);
+                    if (validateInput(data.options)) {
+                      makeDecision(data);
                     }
-                  }}
-                />
+                  })}
+                >
+                  <Textarea
+                    {...register("options")}
+                    label="Type the options for your decision, one per line..."
+                    error={error}
+                    autosize
+                    minRows={5}
+                    maxRows={20}
+                    onChange={(e) => {
+                      setValue("options", e.target.value);
+                      if (isSubmitted) {
+                        validateInput(e.target.value);
+                      }
+                    }}
+                  />
+                  <br></br>
+                  <Button type="submit" fullWidth>
+                    Make a decision
+                  </Button>
+                </form>
                 <br></br>
-                <Button type="submit" fullWidth>
-                  Make a decision
-                </Button>
-              </form>
-              <br></br>
-            </div>
-          </Grid.Col>
-
-          <Grid.Col span={7}>
-            {decidedOption && (
-              <div
-                id="decision"
-                style={{ fontSize: "24px", textAlign: "center" }}
-              >
-                <p>The decision has been made, and you should choose:</p>
-                {decidedOption}
               </div>
-            )}
-          </Grid.Col>
-        </Grid>
-      </div>
+            </Grid.Col>
 
-      <div>
-        <Button leftSection="🏠" variant="default" component="a" href="/">
-          Back to homepage
-        </Button>
-      </div>
+            <Grid.Col span={7}>
+              {decidedOption && (
+                <div
+                  id="decision"
+                  style={{ fontSize: "24px", textAlign: "center" }}
+                >
+                  <p>The decision has been made, and you should choose:</p>
+                  {decidedOption}
+                </div>
+              )}
+            </Grid.Col>
+          </Grid>
+        </div>
+
+        <div>
+          <Button leftSection="🏠" variant="default" component="a" href="/">
+            Back to homepage
+          </Button>
+        </div>
+      </main>
     </div>
   );
 };
