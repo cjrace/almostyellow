@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import styles from "../../app/page.module.css";
 import Checklist from "../../components/checklist";
+import { Button } from "@mantine/core";
 
 const ChopinLiszt: React.FC = () => {
   return (
@@ -10,11 +11,9 @@ const ChopinLiszt: React.FC = () => {
         <h1>Our Chopin Liszt</h1>
         <Checklist />
 
-        <div className={styles.ctas}>
-          <Link href="/admin" className={styles.secondary}>
-            Back to admin page
-          </Link>
-        </div>
+        <Button leftSection="🏠" variant="default" component="a" href="/admin">
+          Back to admin page
+        </Button>
       </main>
     </div>
   );

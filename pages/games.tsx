@@ -1,5 +1,6 @@
 import styles from "../app/page.module.css";
 import Link from "next/link";
+import { Button } from "@mantine/core";
 
 const GamesPage = () => {
   return (
@@ -19,11 +20,9 @@ const GamesPage = () => {
           </Link>
         </div>
 
-        <div className={styles.ctas}>
-          <Link href="/" className={styles.secondary}>
-            Back to homepage
-          </Link>
-        </div>
+        <Button leftSection="🏠" variant="default" component="a" href="/">
+          Back to homepage
+        </Button>
       </main>
     </div>
   );

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@mantine/core";
 
 const AdminPage = () => {
   return (
@@ -12,9 +13,9 @@ const AdminPage = () => {
           <Link href="/admin">???</Link>
         </div>
 
-        <div>
-          <Link href="/">Back to homepage</Link>
-        </div>
+        <Button leftSection="🏠" variant="default" component="a" href="/">
+          Back to homepage
+        </Button>
       </main>
     </div>
   );

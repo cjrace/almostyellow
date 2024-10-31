@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
+import { Button } from "@mantine/core";
 
 const CocktailsPage: React.FC = () => {
   // Logic for the cocktail selection and filtering
@@ -55,11 +56,9 @@ const CocktailsPage: React.FC = () => {
             ))}
         </ul>
 
-        <div className={styles.ctas}>
-          <Link href="/" className={styles.secondary}>
-            Back to homepage
-          </Link>
-        </div>
+        <Button leftSection="🏠" variant="default" component="a" href="/">
+          Back to homepage
+        </Button>
       </main>
     </div>
   );
