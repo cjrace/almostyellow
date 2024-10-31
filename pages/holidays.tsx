@@ -19,7 +19,10 @@ const HolidaysPage: React.FC = () => {
     <div className={styles.page}>
       <main className={styles.main}>
         <h1>Our trips and holidays</h1>
-        <Timeline color="yellow" active={12} bulletSize={24} lineWidth={2}>
+
+        <h2>2022</h2>
+
+        <Timeline color="yellow" active={1} bulletSize={24} lineWidth={2}>
           <Timeline.Item
             title="Adramatic loop"
             bullet={<IconCar size="1rem" />}
@@ -58,7 +61,11 @@ const HolidaysPage: React.FC = () => {
               12th December - 14th December 2022
             </Text>
           </Timeline.Item>
+        </Timeline>
 
+        <h2>2023</h2>
+
+        <Timeline color="yellow" active={4} bulletSize={24} lineWidth={2}>
           <Timeline.Item
             title="Sparkly sky"
             bullet={<IconSnowflake size="1rem" />}
@@ -130,7 +137,11 @@ const HolidaysPage: React.FC = () => {
               6th September - 10th September 2023
             </Text>
           </Timeline.Item>
+        </Timeline>
 
+        <h2>2024</h2>
+
+        <Timeline color="yellow" active={5} bulletSize={24} lineWidth={2}>
           <Timeline.Item
             title="Christmas Schtarshh"
             bullet={<IconGift size="1rem" />}
