@@ -1,10 +1,21 @@
 import Link from "next/link";
-import { Button } from "@mantine/core";
+import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Admin", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 const AdminPage = () => {
   return (
     <div>
       <main>
+        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+
         <h1>Welcome to our admin page</h1>
 
         <div>

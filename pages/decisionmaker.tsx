@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Textarea, Button, Grid } from "@mantine/core";
+import { Textarea, Button, Grid, Breadcrumbs, Anchor } from "@mantine/core";
 
 // TODO: Make the decision clear if text is entered into the box
 // TODO: Add a validation error when pressing the button if only one line of text or less is present in the box
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Decision maker", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 type decisionOptions = {
   options: string;
@@ -42,6 +51,7 @@ const DecisionMaker: React.FC = () => {
       <div>
         <Grid grow>
           <Grid.Col span={12}>
+            <Breadcrumbs>{crumbitems}</Breadcrumbs>
             <h1 style={{ textAlign: "center" }}>The Decision Maker</h1>
           </Grid.Col>
 

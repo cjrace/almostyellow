@@ -5,7 +5,16 @@ import Link from "next/link";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
-import { Button } from "@mantine/core";
+import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Cocktails", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 const CocktailsPage: React.FC = () => {
   // Logic for the cocktail selection and filtering
@@ -34,6 +43,8 @@ const CocktailsPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+
         <h1>Cocktails</h1>
 
         {/* The dropdown selector */}

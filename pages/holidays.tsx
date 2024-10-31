@@ -1,5 +1,5 @@
-import { Text, Timeline, Button } from "@mantine/core";
 import React from "react";
+import { Text, Timeline, Button, Breadcrumbs, Anchor } from "@mantine/core";
 import styles from "../app/page.module.css";
 import {
   IconSun,
@@ -11,12 +11,23 @@ import {
   IconBriefcase,
 } from "@tabler/icons-react";
 
-// View more icons at https://tabler.io/icons?form=MG0AV3 //
+// https://tabler.io/icons?form=MG0AV3 //
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Holidays", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 const HolidaysPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+
         <h1>Our trips and holidays</h1>
 
         <h2>2022</h2>
