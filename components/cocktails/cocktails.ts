@@ -233,6 +233,39 @@ export const cocktails = [
       ],
     },
   },
+  {
+    name: "Laura's cloudy surprise",
+    spirits: ["Rum"],
+    rating: 4.5 as number, // Rated out of 5
+    photoUrl: "/images/cocktail-placeholder.jpg",
+    recipe: {
+      ingredients: [
+        "1 x Dark rum",
+        "1 x Cherry rum",
+        "1 x Triple sec",
+        "Cloudy cider (some)",
+        "Sugar syrup (1 splash)",
+      ],
+      instructions: ["Pour everything into glass and shake or stir"],
+    },
+  },
+  {
+    name: "Cam's cloudy surprise",
+    spirits: ["Rum", "Whisky"],
+    rating: 4.5 as number, // Rated out of 5
+    photoUrl: "/images/cocktail-placeholder.jpg",
+    recipe: {
+      ingredients: [
+        "1 x Dark rum",
+        "1 x Cherry rum",
+        "1 x Whisky (smoky)",
+        "1 x Triple sec",
+        "Cloudy cider (some)",
+        "Sugar syrup (1 splash)",
+      ],
+      instructions: ["Pour everything into glass and shake or stir"],
+    },
+  },
 
   // Add more cocktails...
 ];
