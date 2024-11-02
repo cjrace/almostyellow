@@ -1,29 +1,22 @@
-import "../app/globals.css";
-import Head from "next/head";
 import { AppProps } from "next/app";
-import React from "react";
+import Head from "next/head";
 import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
-import MicrosoftClarity from "../components/MicrosoftClarity";
-
-const toggleDarkMode = () => {
-  document.body.classList.toggle("dark-mode");
-};
+import { theme } from "../theme";
+import { ColorSchemeToggle } from "../components/ColorSchemeToggle";
+import React from "react";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <>
+    <MantineProvider theme={theme}>
+      <ColorSchemeToggle />
+
       <Head>
-        <MicrosoftClarity />
         <title>Almost yellow</title>
       </Head>
 
-      <MantineProvider>
-        <button onClick={toggleDarkMode}>Toggle Dark Mode</button>
-
-        <Component {...pageProps} />
-      </MantineProvider>
-    </>
+      <Component {...pageProps} />
+    </MantineProvider>
   );
 }
 

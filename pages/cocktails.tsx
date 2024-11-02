@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import { useForm, FieldValues } from "react-hook-form";
 import styles from "../app/page.module.css";
-import Link from "next/link";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
+import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Cocktails", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 const CocktailsPage: React.FC = () => {
   // Logic for the cocktail selection and filtering
@@ -33,6 +42,8 @@ const CocktailsPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+
         <h1>Cocktails</h1>
 
         {/* The dropdown selector */}
@@ -55,11 +66,9 @@ const CocktailsPage: React.FC = () => {
             ))}
         </ul>
 
-        <div className={styles.ctas}>
-          <Link href="/" className={styles.secondary}>
-            Back to homepage
-          </Link>
-        </div>
+        <Button leftSection="🏠" variant="default" component="a" href="/">
+          Back to homepage
+        </Button>
       </main>
     </div>
   );
