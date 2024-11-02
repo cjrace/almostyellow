@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+import { Breadcrumbs, Anchor } from "@mantine/core";
 import styles from "../app/page.module.css";
 
 const crumbitems = [
@@ -24,10 +24,6 @@ const AdminPage = () => {
           <Link href="/admin">???</Link>
           <Link href="/admin">???</Link>
         </div>
-
-        <Button leftSection="🏠" variant="default" component="a" href="/">
-          Back to homepage
-        </Button>
       </main>
     </div>
   );

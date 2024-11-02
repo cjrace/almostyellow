@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../../app/page.module.css";
 import Checklist from "../../components/checklist";
-import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -21,10 +21,6 @@ const ChopinLiszt: React.FC = () => {
 
         <h1>Our Chopin Liszt</h1>
         <Checklist />
-
-        <Button leftSection="🏠" variant="default" component="a" href="/admin">
-          Back to admin page
-        </Button>
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Timeline, Button, Breadcrumbs, Anchor } from "@mantine/core";
+import { Text, Timeline, Breadcrumbs, Anchor } from "@mantine/core";
 import styles from "../app/page.module.css";
 import {
   IconSun,
@@ -254,10 +254,6 @@ const HolidaysPage: React.FC = () => {
             </Text>
           </Timeline.Item>
         </Timeline>
-
-        <Button leftSection="🏠" variant="default" component="a" href="/">
-          Back to homepage
-        </Button>
       </main>
     </div>
   );

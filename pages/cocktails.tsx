@@ -4,7 +4,7 @@ import styles from "../app/page.module.css";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
-import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -65,10 +65,6 @@ const CocktailsPage: React.FC = () => {
               </div>
             ))}
         </ul>
-
-        <Button leftSection="🏠" variant="default" component="a" href="/">
-          Back to homepage
-        </Button>
       </main>
     </div>
   );
