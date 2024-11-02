@@ -11,7 +11,7 @@ import {
   IconBriefcase,
 } from "@tabler/icons-react";
 
-// https://tabler.io/icons?form=MG0AV3 //
+// View more icons at https://tabler.io/icons?form=MG0AV3 //
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -160,7 +160,7 @@ const HolidaysPage: React.FC = () => {
               No stars but kitchen roll kebabs
             </Text>
             <ul>
-              <li>Wild Northumberland glamping, Hexam</li>
+              <li>Wild Northumberland glamping, Hexham</li>
             </ul>
             <Text size="xs" mt={4}>
               26th January - 27th January 2024
