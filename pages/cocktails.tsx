@@ -5,6 +5,7 @@ import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import BackToTopButton from "../components/backtotop";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -65,6 +66,8 @@ const CocktailsPage: React.FC = () => {
               </div>
             ))}
         </ul>
+
+        <BackToTopButton className={styles.backToTopButton} />
       </main>
     </div>
   );
