@@ -155,7 +155,7 @@ export const cocktails = [
         "2 x Tequila",
         "1 x Triple sec",
         "1 x Lemon juice",
-        "4 x orange juice",
+        "4 x Orange juice",
         "Grenadine",
       ],
       instructions: [
@@ -164,6 +164,72 @@ export const cocktails = [
         "Add all other ingredients to a cocktail shaker with ice",
         "Shake loads",
         "Pour slowly into glass on top of grenadine",
+      ],
+    },
+  },
+  {
+    name: "Luigi",
+    spirits: ["Gin"],
+    rating: 4.0 as number, // Rated out of 5
+    photoUrl: "/images/cocktail-placeholder.jpg",
+    recipe: {
+      ingredients: [
+        "4 x Gin",
+        "2 x Orange Juice",
+        "2 x Vermouth (dry officially, but sweet is usually nicer)",
+        "1 x Cointreau",
+        "Grenadine",
+      ],
+      instructions: [
+        "Need to redo this to retest the method",
+        "Add all ingredients to a cocktail shaker with ice",
+        "Shake loads",
+        "Pour into glass",
+        "Optional - pour a dash of grenadine on top once in the glass",
+        "Optional - orange twist to garnish",
+      ],
+    },
+  },
+  {
+    name: "Honolulu",
+    spirits: ["Gin"],
+    rating: 4.0 as number, // Rated out of 5
+    photoUrl: "/images/cocktail-placeholder.jpg",
+    recipe: {
+      ingredients: [
+        "3 x Gin",
+        "1 x Pineapple juice",
+        "1 x Orange juice",
+        "1 x Lemon juice",
+        "Grenadine",
+      ],
+      instructions: [
+        "Need to redo this to retest the method",
+        "Add all ingredients to a cocktail shaker with ice",
+        "Shake loads",
+        "Pour into glass",
+        "Optional - pour a dash of grenadine on top once in the glass",
+        "Optional - cherries on top",
+      ],
+    },
+  },
+  {
+    name: "Manhattan",
+    spirits: ["Whisky"],
+    rating: 3.0 as number, // Rated out of 5
+    photoUrl: "/images/cocktail-placeholder.jpg",
+    recipe: {
+      ingredients: [
+        "2 x Whisky (Rye)",
+        "1 x Vermouth (sweet)",
+        "Angostura bitters (2 dashes)",
+        "Orange bitters (1 dash)",
+      ],
+      instructions: [
+        "Need to redo this to retest the method",
+        "Add all ingredients to a cocktail shaker with ice",
+        "Shake loads",
+        "Pour into glass",
       ],
     },
   },

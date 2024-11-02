@@ -11,6 +11,7 @@ export const spiritOptions = [
   { value: "Rum", label: "Rum" },
   { value: "Tequila", label: "Tequila" },
   { value: "Vodka", label: "Vodka" },
+  { value: "Whisky", label: "Whisky" },
 
   // Add other spirit options
 ];
