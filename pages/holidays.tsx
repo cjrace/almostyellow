@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, Timeline, Breadcrumbs, Anchor } from "@mantine/core";
 import styles from "../app/page.module.css";
-import BackToTopButton from "../components/backtotop";
+import BackToTop from "../components/backtotop";
 import {
   IconSun,
   IconShip,
@@ -256,7 +256,7 @@ const HolidaysPage: React.FC = () => {
           </Timeline.Item>
         </Timeline>
 
-        <BackToTopButton className={styles.backToTopButton} />
+        <BackToTop />
       </main>
     </div>
   );
