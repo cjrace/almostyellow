@@ -1,6 +1,6 @@
 import React from "react";
-import Select from "react-select";
-import { Controller, Control, FieldValues } from "react-hook-form";
+import { Control, Controller, FieldValues } from "react-hook-form";
+import { RadioGroup, Radio } from "@mantine/core";
 
 // List the dropdown options
 export const spiritOptions = [
@@ -16,7 +16,6 @@ export const spiritOptions = [
   // Add other spirit options
 ];
 
-// Create and export the dropdown selection code
 interface SpiritSelectProps {
   control: Control<FieldValues>;
   setSelectedSpirits: React.Dispatch<
@@ -30,19 +29,35 @@ export const SpiritSelect: React.FC<SpiritSelectProps> = ({
 }) => {
   return (
     <Controller
-      name="selectedSpirits"
+      name="selectedSpirit"
       control={control}
       render={({ field }) => (
-        <Select
-          {...field}
-          options={spiritOptions}
-          onChange={(selectedOption) => {
-            setSelectedSpirits(selectedOption ? [selectedOption] : []);
+        <RadioGroup
+          label="Filter by spirit"
+          variant="vertical"
+          size="lg"
+          value={field.value}
+          onChange={(value) => {
+            field.onChange(value);
+            setSelectedSpirits([
+              {
+                value,
+                label:
+                  spiritOptions.find((option) => option.value === value)
+                    ?.label || "",
+              },
+            ]);
           }}
-        />
+        >
+          {spiritOptions.map((option) => (
+            <Radio
+              key={option.value}
+              value={option.value}
+              label={option.label}
+            />
+          ))}
+        </RadioGroup>
       )}
     />
   );
 };
-
-export default SpiritSelect;
