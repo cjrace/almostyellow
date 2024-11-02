@@ -1,6 +1,6 @@
 import styles from "../app/page.module.css";
 import Link from "next/link";
-import { Button, Breadcrumbs, Anchor } from "@mantine/core";
+import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -30,10 +30,6 @@ const GamesPage = () => {
             ???
           </Link>
         </div>
-
-        <Button leftSection="🏠" variant="default" component="a" href="/">
-          Back to homepage
-        </Button>
       </main>
     </div>
   );

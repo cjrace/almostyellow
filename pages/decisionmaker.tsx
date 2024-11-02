@@ -101,12 +101,6 @@ const DecisionMaker: React.FC = () => {
             </Grid.Col>
           </Grid>
         </div>
-
-        <div>
-          <Button leftSection="🏠" variant="default" component="a" href="/">
-            Back to homepage
-          </Button>
-        </div>
       </main>
     </div>
   );

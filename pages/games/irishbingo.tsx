@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import styles from "../../app/page.module.css";
-import Link from "next/link";
 import Image from "next/image";
 import { Card, getCardName } from "../../components/games/card";
 import { createCardDeck } from "../../components/games/createcarddeck";
+import { Breadcrumbs, Anchor } from "@mantine/core";
+
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Games", href: "/games" },
+  { title: "Irish Bingo", href: "" },
+].map((item, index) => (
+  <Anchor href={item.href} key={index}>
+    {item.title}
+  </Anchor>
+));
 
 const IrishBingoPage = () => {
   // Initialize state for the decks
@@ -33,13 +43,8 @@ const IrishBingoPage = () => {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        <Breadcrumbs>{crumbitems}</Breadcrumbs>
         <h1>Irish bingo</h1>
-
-        <div className={styles.ctas}>
-          <Link href="/games" className={styles.secondary}>
-            Back to games
-          </Link>
-        </div>
 
         <button onClick={drawCard}>Draw a Card</button>
         <button onClick={resetDeck}>Reset Deck</button>
