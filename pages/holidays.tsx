@@ -202,7 +202,7 @@ const HolidaysPage: React.FC = () => {
             bullet={<IconGift size="1rem" />}
           >
             <Text c="dimmed" size="sm">
-              Golf, fancy Green Egg cabin, meerkats and getting engaged!
+              Golf x2, fancy Green Egg cabin, meerkats and getting engaged!
             </Text>
             <ul>
               <li>Lebberston</li>
@@ -232,7 +232,7 @@ const HolidaysPage: React.FC = () => {
             bullet={<IconMoodSurprised size="1rem" />}
           >
             <Text c="dimmed" size="sm">
-              Being fancy with the old leathery people
+              Clinking our G&Ts through the graveyard
             </Text>
             <ul>
               <li>Lindisfarne (Holy Island)</li>
