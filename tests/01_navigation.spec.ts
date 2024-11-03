@@ -59,7 +59,7 @@ test("Navigate to the holidays page", async ({ page }) => {
 test("Navigate through admin pages", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("link", { name: "Admin area" }).click();
+  await page.getByRole("link", { name: "Admin stuff" }).click();
   await expect(page).toHaveURL("/admin");
   await expect(page.locator("h1")).toContainText("Welcome to our admin page");
 
