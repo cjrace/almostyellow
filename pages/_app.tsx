@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   // </ActionIcon>
 
   return (
-    <MantineProvider theme={acalat}>
+    <MantineProvider defaultColorScheme="dark" theme={acalat}>
       <Head>
         <title>Almost yellow</title>
         <meta
