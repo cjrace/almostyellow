@@ -13,7 +13,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   //  setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
   //};
 
-  // This is the code for a colour scheme toggle
+  // This our previous colour scheme toggle
   // <ActionIcon
   // onClick={() => toggleColorScheme()}
   // variant="default"
@@ -25,9 +25,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   // </ActionIcon>
 
   return (
-    <MantineProvider defaultColorScheme="light">
+    <MantineProvider defaultColorScheme="dark">
       <Head>
         <title>Almost yellow</title>
+        <meta
+          name="description"
+          content="Our website of games, cocktails and the good stuff."
+        />
       </Head>
 
       <Component {...pageProps} />
