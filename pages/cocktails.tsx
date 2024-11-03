@@ -46,7 +46,6 @@ const CocktailsPage: React.FC = () => {
 
       {/* The dropdown selector */}
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <p>Filter by spirit:</p>
         <SpiritSelect
           control={control}
           setSelectedSpirits={setSelectedSpirits}
