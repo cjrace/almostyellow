@@ -64,7 +64,7 @@ const CocktailsPage: React.FC = () => {
             </div>
           ))}
       </ul>
-      
+
       <BackToTop />
     </div>
   );
