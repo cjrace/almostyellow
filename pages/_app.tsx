@@ -1,9 +1,13 @@
 import { AppProps } from "next/app";
 import Head from "next/head";
 import { MantineProvider } from "@mantine/core";
-//import { ActionIcon, MantineProvider, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
-// import { IconSun, IconMoon } from "@tabler/icons-react";
 import "@mantine/core/styles.css";
+import "../app/global.css";
+import { acalat } from "../app/acalat";
+
+// Colour scheme toggle icons and imports
+// import { ActionIcon, MantineProvider, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
+// import { IconSun, IconMoon } from "@tabler/icons-react";
 
 function MyApp({ Component, pageProps }: AppProps) {
   // Colour scheme toggle
@@ -25,7 +29,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   // </ActionIcon>
 
   return (
-    <MantineProvider defaultColorScheme="dark">
+    <MantineProvider theme={acalat}>
       <Head>
         <title>Almost yellow</title>
         <meta

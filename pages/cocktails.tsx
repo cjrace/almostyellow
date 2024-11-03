@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Breadcrumbs, Anchor, Grid } from "@mantine/core";
 import { useForm, FieldValues } from "react-hook-form";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
@@ -45,25 +45,30 @@ const CocktailsPage: React.FC = () => {
 
       <h1>Cocktails</h1>
 
-      {/* The dropdown selector */}
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <p>Filter by spirit:</p>
-        <SpiritSelect
-          control={control}
-          setSelectedSpirits={setSelectedSpirits}
-        />
-      </form>
+      <Grid>
+        <Grid.Col span={{ base: 12, sm: 2 }}>
+          <div style={{ position: "sticky", top: "10px" }}>
+            <form onSubmit={handleSubmit(handleFormSubmit)}>
+              <SpiritSelect
+                control={control}
+                setSelectedSpirits={setSelectedSpirits}
+              />
+            </form>
+          </div>
+        </Grid.Col>
 
-      {/* List of cocktails */}
-      <ul className={styles.cocktailList}>
-        {filteredCocktails
-          .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-          .map((cocktail) => (
-            <div key={cocktail.name} className={styles.cocktailCard}>
-              <CocktailBox {...cocktail} />
-            </div>
-          ))}
-      </ul>
+        <Grid.Col span={{ base: 12, sm: 9 }}>
+          <ul className={styles.cocktailList}>
+            {filteredCocktails
+              .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
+              .map((cocktail) => (
+                <div key={cocktail.name} className={styles.cocktailCard}>
+                  <CocktailBox {...cocktail} />
+                </div>
+              ))}
+          </ul>
+        </Grid.Col>
+      </Grid>
 
       <BackToTop />
     </div>

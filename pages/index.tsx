@@ -1,12 +1,12 @@
-import Image from "next/image";
 import { Button, Group, Grid, Anchor } from "@mantine/core";
 import Confetti from "../components/confetti";
+import { IconBrandGithub } from "@tabler/icons-react";
 
 export default function Home() {
   return (
     <div>
-      <Grid justify="center" align="flex-start">
-        <Grid.Col span={8}>
+      <Grid justify="center">
+        <Grid.Col>
           <h1 style={{ textAlign: "center" }}>Almost yellow</h1>
           <p style={{ textAlign: "center" }}>
             This is our homepage, we should make it prettier.
@@ -24,12 +24,13 @@ export default function Home() {
           </Group>
         </Grid.Col>
 
-        <Grid.Col span={8}>
+        <Grid.Col>
           <Group justify="center">
             <Button
               leftSection="🎲"
               variant="default"
               component="a"
+              size="xl"
               href="/games"
             >
               View our games
@@ -39,6 +40,7 @@ export default function Home() {
               leftSection="🤔"
               variant="default"
               component="a"
+              size="xl"
               href="/decisionmaker"
             >
               How we make decisions
@@ -48,6 +50,7 @@ export default function Home() {
               leftSection="🥄"
               variant="default"
               component="a"
+              size="xl"
               href="/recipes"
             >
               Our recipes
@@ -57,6 +60,7 @@ export default function Home() {
               leftSection="🍹"
               variant="default"
               component="a"
+              size="xl"
               href="/cocktails"
             >
               Cocktail time!
@@ -66,40 +70,34 @@ export default function Home() {
               leftSection="😎"
               variant="default"
               component="a"
+              size="xl"
               href="/holidays"
             >
               Our holidays!
             </Button>
-          </Group>
-        </Grid.Col>
 
-        <Grid.Col span={8}>
-          <footer
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              padding: "20px",
-              gap: "10px",
-            }}
-          >
-            <Anchor
-              href="https://github.com/cjrace/almostyellow"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              leftSection="📎"
+              variant="default"
+              component="a"
+              size="xl"
+              href="/admin"
             >
-              <Image
-                aria-hidden
-                src="/icons/github-mark-white.png"
-                alt="GitHub icon"
-                width={16}
-                height={16}
-              />
-              GitHub
-            </Anchor>
-            <div>
-              <Anchor href="/admin">Admin area</Anchor>
-            </div>
-          </footer>
+              Admin stuff
+            </Button>
+
+            <Button
+              leftSection={<IconBrandGithub size={25} />}
+              target="_blank"
+              variant="default"
+              rel="noopener noreferrer"
+              component="a"
+              size="xl"
+              href="https://github.com/cjrace/almostyellow"
+            >
+              Source code
+            </Button>
+          </Group>
         </Grid.Col>
       </Grid>
     </div>

@@ -89,7 +89,7 @@ const DecisionMaker: React.FC = () => {
               id="decision"
               style={{ fontSize: "24px", textAlign: "center" }}
             >
-              <p>The decision has been made, and you should choose:</p>
+              <p>The decision has been made, you choose...</p>
               {decidedOption}
             </div>
           )}

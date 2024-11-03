@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Checkbox, Button, TextInput, Space } from "@mantine/core";
 
 interface Item {
   id: number;
@@ -34,26 +35,30 @@ const Checklist: React.FC = () => {
 
   return (
     <div>
-      <input
-        type="text"
-        placeholder="Add a new item..."
-        value={newItemText}
-        onChange={(e) => setNewItemText(e.target.value)}
-      />
-      <button onClick={addItem}>Add</button>
-      <ul>
-        {items.map((item) => (
-          <li key={item.id}>
-            <input
-              type="checkbox"
-              checked={item.checked}
-              onChange={() => toggleItem(item.id)}
-            />
-            <span>{item.text}</span>
-            <button onClick={() => removeItem(item.id)}>Remove</button>
-          </li>
-        ))}
-      </ul>
+      <div style={{ display: "flex" }}>
+        <TextInput
+          placeholder="Add a new item..."
+          value={newItemText}
+          onChange={(e) => setNewItemText(e.target.value)}
+        />
+        <Button onClick={addItem}>Add</Button>
+      </div>
+
+      {items.map((item) => (
+        <div key={item.id} style={{ display: "flex" }}>
+          <Checkbox
+            checked={item.checked}
+            onChange={() => toggleItem(item.id)}
+            label={item.text}
+            labelPosition="left"
+            size="xl"
+          />
+          <Space w="lg" />
+          <Button onClick={() => removeItem(item.id)} variant="subtle">
+            Remove
+          </Button>
+        </div>
+      ))}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import Checklist from "../../components/checklist";
+import Checklist from "../../components/admin/checklist";
 import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [

@@ -8,6 +8,8 @@ import {
   Anchor,
   Alert,
   Grid,
+  Button,
+  Space,
 } from "@mantine/core";
 
 const crumbitems = [
@@ -58,6 +60,7 @@ const IrishBingoPage: React.FC = () => {
             alt="Mr. Tayto"
             height={300}
             width={300}
+            style={{ filter: "invert(0.3)" }} // Wants a bit of fine tuning, currently a little creepy looking
           />
         </Grid.Col>
 
@@ -69,10 +72,12 @@ const IrishBingoPage: React.FC = () => {
             label={`${drawnCards.length} out of 52 Cards Drawn`}
           />
 
-          <button disabled={mainDeck.length === 0} onClick={drawCard}>
+          <Space h="lg" />
+
+          <Button disabled={mainDeck.length === 0} onClick={drawCard}>
             Draw a Card
-          </button>
-          <button onClick={newDeck}>Shuffle new deck</button>
+          </Button>
+          <Button onClick={newDeck}>Shuffle new deck</Button>
 
           {mainDeck.length === 0 && (
             <Alert title="Deck Exhausted" color="red">

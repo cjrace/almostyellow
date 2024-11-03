@@ -16,9 +16,17 @@ const AdminPage = () => {
 
       <h1>Welcome to our admin page</h1>
 
-      <Anchor href="/admin/chopinliszt">Chopin Liszt</Anchor>
-      <Anchor href="/admin">???</Anchor>
-      <Anchor href="/admin">???</Anchor>
+      <ul>
+        <li>
+          <Anchor href="/admin/chopinliszt">Chopin Liszt</Anchor>
+        </li>
+        <li>
+          <Anchor href="/admin">???</Anchor>
+        </li>
+        <li>
+          <Anchor href="/admin">???</Anchor>
+        </li>
+      </ul>
     </div>
   );
 };
