@@ -4,7 +4,7 @@ import { useForm, FieldValues } from "react-hook-form";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
-import BackToTopButton from "../components/backtotop";
+import BackToTop from "../components/backtotop";
 import styles from "../app/cocktails.module.css";
 
 const crumbitems = [
@@ -66,7 +66,7 @@ const CocktailsPage: React.FC = () => {
           ))}
       </ul>
 
-      <BackToTopButton />
+      <BackToTop />
     </div>
   );
 };
