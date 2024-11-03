@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import styles from "../../app/page.module.css";
+import { useState } from "react";
 import Image from "next/image";
 import { Card, getCardName } from "../../components/games/card";
 import { createCardDeck } from "../../components/games/createcarddeck";
@@ -9,7 +8,6 @@ import {
   Anchor,
   Alert,
   Grid,
-  GridCol,
 } from "@mantine/core";
 
 const crumbitems = [
@@ -48,51 +46,49 @@ const IrishBingoPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Breadcrumbs>{crumbitems}</Breadcrumbs>
-        <h1>Irish bingo</h1>
+    <div>
+      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <h1>Irish bingo</h1>
 
-        <Grid>
-          <GridCol span={4}>
-            <SemiCircleProgress
-              size={250}
-              value={drawnCards.length * 1.923} // To make each draw 1/52 of the way
-              label={`${drawnCards.length} out of 52 Cards Drawn`}
-            />
+      <Grid gutter={{ base: 5, xs: "md", md: "xl", xl: 50 }}>
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <Image
+            aria-hidden
+            src="/images/tayto.svg"
+            alt="Mr. Tayto"
+            height={300}
+            width={300}
+          />
+        </Grid.Col>
 
-            <button disabled={mainDeck.length === 0} onClick={drawCard}>
-              Draw a Card
-            </button>
-            <button onClick={newDeck}>Shuffle new deck</button>
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <SemiCircleProgress
+            size={250}
+            // Make each draw 1/52 of the way
+            value={drawnCards.length * 1.923}
+            label={`${drawnCards.length} out of 52 Cards Drawn`}
+          />
 
-            {mainDeck.length === 0 && (
-              <Alert title="Deck Exhausted" color="red">
-                You have drawn a full deck, please reshuffle.
-              </Alert>
-            )}
-          </GridCol>
+          <button disabled={mainDeck.length === 0} onClick={drawCard}>
+            Draw a Card
+          </button>
+          <button onClick={newDeck}>Shuffle new deck</button>
 
-          <Grid.Col span={4}>
-            <ul>
-              {drawnCards.map((card, index) => (
-                <li key={index}>{getCardName(card.suit, card.rank)}</li>
-              ))}
-            </ul>
-          </Grid.Col>
+          {mainDeck.length === 0 && (
+            <Alert title="Deck Exhausted" color="red">
+              You have drawn a full deck, please reshuffle.
+            </Alert>
+          )}
+        </Grid.Col>
 
-          <GridCol span={4}>
-            <Image
-              aria-hidden
-              src="/images/tayto.svg"
-              alt="Mr. Tayto"
-              height={300}
-              width={300}
-              style={{ display: "block", margin: "0 auto" }}
-            />
-          </GridCol>
-        </Grid>
-      </main>
+        <Grid.Col span={{ base: 12, sm: 4 }}>
+          <ul>
+            {drawnCards.map((card, index) => (
+              <li key={index}>{getCardName(card.suit, card.rank)}</li>
+            ))}
+          </ul>
+        </Grid.Col>
+      </Grid>
     </div>
   );
 };

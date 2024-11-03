@@ -1,5 +1,3 @@
-import React from "react";
-import styles from "../../app/page.module.css";
 import Checklist from "../../components/checklist";
 import { Breadcrumbs, Anchor } from "@mantine/core";
 
@@ -15,13 +13,11 @@ const crumbitems = [
 
 const ChopinLiszt: React.FC = () => {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+    <div>
+      <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
-        <h1>Our Chopin Liszt</h1>
-        <Checklist />
-      </main>
+      <h1>Our Chopin Liszt</h1>
+      <Checklist />
     </div>
   );
 };

@@ -1,5 +1,3 @@
-import styles from "../app/page.module.css";
-import Link from "next/link";
 import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [
@@ -13,24 +11,24 @@ const crumbitems = [
 
 const GamesPage = () => {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+    <div>
+      <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
-        <h1>Our games</h1>
+      <h1>Our games</h1>
 
-        <div className={styles.ctas}>
-          <Link className={styles.primary} href="/games/irishbingo">
-            Irish bingo
-          </Link>
-          <Link className={styles.primary} href="/games/uno">
-            Uno
-          </Link>
-          <Link className={styles.primary} href="/games">
-            ???
-          </Link>
-        </div>
-      </main>
+      <ul>
+        <li>
+          {" "}
+          <Anchor href="/games/irishbingo">Irish bingo</Anchor>
+        </li>
+        <li>
+          <Anchor href="/games/uno">Uno</Anchor>
+        </li>
+        <li>
+          {" "}
+          <Anchor href="/games">???</Anchor>
+        </li>
+      </ul>
     </div>
   );
 };

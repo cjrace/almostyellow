@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { renderRatingMoons } from "./renderratingmoons";
-import styles from "../../app/page.module.css";
+import styles from "../../app/cocktails.module.css";
 
 // Create the design for each cocktail entry on the cocktails page
 interface Cocktail {

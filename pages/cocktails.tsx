@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Breadcrumbs, Anchor } from "@mantine/core";
 import { useForm, FieldValues } from "react-hook-form";
-import styles from "../app/page.module.css";
 import { SpiritSelect } from "../components/cocktails/spiritselect";
 import { cocktails } from "../components/cocktails/cocktails";
 import CocktailBox from "../components/cocktails/cocktailbox";
-import { Breadcrumbs, Anchor } from "@mantine/core";
 import BackToTopButton from "../components/backtotop";
+import styles from "../app/cocktails.module.css";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -41,34 +41,32 @@ const CocktailsPage: React.FC = () => {
 
   // Main page
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+    <div>
+      <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
-        <h1>Cocktails</h1>
+      <h1>Cocktails</h1>
 
-        {/* The dropdown selector */}
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <p>Filter by spirit:</p>
-          <SpiritSelect
-            control={control}
-            setSelectedSpirits={setSelectedSpirits}
-          />
-        </form>
+      {/* The dropdown selector */}
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <p>Filter by spirit:</p>
+        <SpiritSelect
+          control={control}
+          setSelectedSpirits={setSelectedSpirits}
+        />
+      </form>
 
-        {/* List of cocktails */}
-        <ul className={styles.cocktailList}>
-          {filteredCocktails
-            .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-            .map((cocktail) => (
-              <div key={cocktail.name} className={styles.cocktailCard}>
-                <CocktailBox {...cocktail} />
-              </div>
-            ))}
-        </ul>
+      {/* List of cocktails */}
+      <ul className={styles.cocktailList}>
+        {filteredCocktails
+          .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
+          .map((cocktail) => (
+            <div key={cocktail.name} className={styles.cocktailCard}>
+              <CocktailBox {...cocktail} />
+            </div>
+          ))}
+      </ul>
 
-        <BackToTopButton className={styles.backToTopButton} />
-      </main>
+      <BackToTopButton />
     </div>
   );
 };
