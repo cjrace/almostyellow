@@ -39,36 +39,31 @@ const CocktailsPage: React.FC = () => {
     );
   });
 
-  // Main page
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <h1>Cocktails</h1>
 
-        <h1>Cocktails</h1>
+      {/* The dropdown selector */}
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <SpiritSelect
+          control={control}
+          setSelectedSpirits={setSelectedSpirits}
+        />
+      </form>
 
-        {/* The dropdown selector */}
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
-          <p>Filter by spirit:</p>
-          <SpiritSelect
-            control={control}
-            setSelectedSpirits={setSelectedSpirits}
-          />
-        </form>
+      {/* List of cocktails */}
+      <ul className={styles.cocktailList}>
+        {filteredCocktails
+          .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
+          .map((cocktail) => (
+            <div key={cocktail.name} className={styles.cocktailCard}>
+              <CocktailBox {...cocktail} />
+            </div>
+          ))}
+      </ul>
 
-        {/* List of cocktails */}
-        <ul className={styles.cocktailList}>
-          {filteredCocktails
-            .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-            .map((cocktail) => (
-              <div key={cocktail.name} className={styles.cocktailCard}>
-                <CocktailBox {...cocktail} />
-              </div>
-            ))}
-        </ul>
-
-        <BackToTop />
-      </main>
+      <BackToTop />
     </div>
   );
 };
