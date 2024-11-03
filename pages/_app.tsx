@@ -1,16 +1,31 @@
 import { AppProps } from "next/app";
 import Head from "next/head";
-import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
-import { theme } from "../theme";
-import { ColorSchemeToggle } from "../components/colourschemetoggle";
-import React from "react";
+//import { ActionIcon, MantineProvider, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
+// import { IconSun, IconMoon } from "@tabler/icons-react";
+import "@mantine/core/styles.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <MantineProvider theme={theme}>
-      <ColorSchemeToggle />
+  // Colour scheme toggle
+  //const { setColorScheme } = useMantineColorScheme();
+  //const computedColorScheme = useComputedColorScheme('light');
+  //const toggleColorScheme = () => {
+  //  setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
+  //};
 
+  // This is the code for a colour scheme toggle
+  // <ActionIcon
+  // onClick={() => toggleColorScheme()}
+  // variant="default"
+  // size="xl"
+  // aria-label="Toggle color scheme"
+  // >
+  // <IconSun stroke={1.5} />
+  // <IconMoon stroke={1.5} />
+  // </ActionIcon>
+
+  return (
+    <MantineProvider defaultColorScheme="light">
       <Head>
         <title>Almost yellow</title>
       </Head>

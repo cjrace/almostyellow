@@ -1,5 +1,4 @@
 import { Text, Timeline, Breadcrumbs, Anchor } from "@mantine/core";
-import styles from "../app/cocktails.module.css";
 import BackToTop from "../components/backtotop";
 import {
   IconSun,
