@@ -39,7 +39,6 @@ const CocktailsPage: React.FC = () => {
     );
   });
 
-  // Main page
   return (
     <div>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
@@ -65,7 +64,7 @@ const CocktailsPage: React.FC = () => {
             </div>
           ))}
       </ul>
-
+      
       <BackToTop />
     </div>
   );
