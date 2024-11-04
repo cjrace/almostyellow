@@ -18,7 +18,7 @@ Start by installing dependencies:
 pnpm install
 ```
 
-To run the development server (use `Ctrl-C` if running in VSCode to cancel the development server):
+Run the development server (automatically opens a browser tab to preview the site):
 
 ```bash
 pnpm dev

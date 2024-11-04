@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { SuitNames, RankNames, getCardName } from "../components/games/card";
+import {
+  SuitNames,
+  RankNames,
+  getCardName,
+} from "../src/components/games/card";
 
 test("No card drawn on load", async ({ page }) => {
   await page.goto("/games/irishbingo");
