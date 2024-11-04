@@ -4,6 +4,7 @@ const nextConfig = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  bundlePagesRouterDependencies: true,
 };
 
 export default nextConfig;
