@@ -23,3 +23,19 @@ export type Card = {
 export function getCardName(suit: string, rank: string): string {
   return `${rank} of ${suit}`;
 }
+
+export function createCardDeck(): Card[] {
+  const deck: Card[] = [];
+
+  for (const suit of Object.values(SuitNames)) {
+    for (const rank of Object.values(RankNames)) {
+      const card: Card = {
+        suit,
+        rank,
+      };
+      deck.push(card);
+    }
+  }
+
+  return deck;
+}

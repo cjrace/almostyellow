@@ -1,5 +1,5 @@
-import { Button, Group, Grid, Anchor } from "@mantine/core";
-import Confetti from "../components/confetti";
+import { Button, Group, Grid } from "@mantine/core";
+import Confetti from "@/components/confetti";
 import { IconBrandGithub } from "@tabler/icons-react";
 
 export default function Home() {

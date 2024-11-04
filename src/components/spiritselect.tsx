@@ -1,4 +1,3 @@
-import React from "react";
 import { Control, Controller, FieldValues } from "react-hook-form";
 import { RadioGroup, Radio } from "@mantine/core";
 

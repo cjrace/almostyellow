@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Checkbox, Button, TextInput, Space } from "@mantine/core";
 
 interface Item {

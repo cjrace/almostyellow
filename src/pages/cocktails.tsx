@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Breadcrumbs, Anchor, Grid } from "@mantine/core";
 import { useForm, FieldValues } from "react-hook-form";
-import { SpiritSelect } from "../components/cocktails/spiritselect";
-import { cocktails } from "../components/cocktails/cocktails";
-import CocktailBox from "../components/cocktails/cocktailbox";
-import BackToTop from "../components/backtotop";
-import styles from "../app/cocktails.module.css";
+import { SpiritSelect } from "@/components/spiritselect";
+import { cocktails } from "@/components/cocktails";
+import CocktailBox from "@/components/cocktailbox";
+import BackToTop from "@/components/backtotop";
+import styles from "@/styles/cocktails.module.css";
 
 const crumbitems = [
   { title: "Home", href: "/" },

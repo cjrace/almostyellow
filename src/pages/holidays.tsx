@@ -1,5 +1,5 @@
 import { Text, Timeline, Breadcrumbs, Anchor, Grid } from "@mantine/core";
-import BackToTop from "../components/backtotop";
+import BackToTop from "@/components/backtotop";
 import {
   IconSun,
   IconShip,

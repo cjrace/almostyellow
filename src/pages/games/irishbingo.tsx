@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
-import { Card, getCardName } from "../../components/games/card";
-import { createCardDeck } from "../../components/games/createcarddeck";
+import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   SemiCircleProgress,
   Breadcrumbs,

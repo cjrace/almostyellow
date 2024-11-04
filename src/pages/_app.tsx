@@ -2,8 +2,8 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
-import "../app/global.css";
-import { acalat } from "../app/acalat";
+import { acalat } from "@/styles/acalat";
+import "@/styles/global.css";
 
 // Colour scheme toggle icons and imports
 // import { ActionIcon, MantineProvider, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
