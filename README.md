@@ -10,18 +10,22 @@ Our own personal site of games, cocktails and all the other good stuff.
 
 ## Getting Started
 
-This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app).
+This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app). Package management is handled by [pnpm](https://pnpm.io/). Main libraries used so far are:
+
+- [Mantine](https://mantine.dev/)
+- [React Hook Form](https://www.react-hook-form.com/)
+- [Tabler icons](https://tabler-icons.io/)
 
 Start by installing dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
-To run the development server (use `Ctrl-C` if running in VSCode to cancel the development server):
+Run the development server (automatically opens a browser tab to preview the site):
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ## Tests
@@ -31,7 +35,7 @@ npm run dev
 To format all scripts, run linting checks, compile a production build, and then run the end to end tests run:
 
 ```bash
-npm run test
+pnpm test
 ```
 
 ### Pre-commit hooks
@@ -43,7 +47,7 @@ npm run test
 View other available commands, including for running linting, formatting (including how to check format without making changes), compiling and more using:
 
 ```bash
-npm run
+pnpm run
 ```
 
 ## Deployment

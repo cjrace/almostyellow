@@ -10,12 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+      - uses: pnpm/action-setup@v4
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
       - name: Check code styling
-        run: npx next lint
+        run: pnpm lint
       - name: Check code for issues
-        run: npx prettier . --check
+        run: pnpm pretty-check

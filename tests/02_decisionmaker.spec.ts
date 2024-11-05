@@ -54,7 +54,7 @@ test("Makes a valid decision", async ({ page }) => {
 
   // Ensure decision has been made
   await expect(page.locator("#decision")).toContainText(
-    "The decision has been made, and you should choose:",
+    "The decision has been made, you choose...",
   );
 
   const decisionDiv = page.locator("#decision");
