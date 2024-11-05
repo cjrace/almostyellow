@@ -30,7 +30,7 @@ export const cocktails = [
     recipe: {
       ingredients: [
         "2 x Toffee vodka",
-        "1 x Khalua (or Tia Maria)",
+        "1 x Kahlua (or Tia Maria)",
         "1 x Espresso pod",
       ],
       instructions: [
