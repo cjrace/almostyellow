@@ -7,8 +7,6 @@ const nextConfig: NextConfig = {
       "@mantine/hooks",
       "@mantine/form",
       "@tabler/icons-react",
-      "react-hook-form",
-      "react-select",
       "sharp",
     ],
   },
