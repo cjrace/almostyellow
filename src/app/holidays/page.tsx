@@ -11,8 +11,11 @@ import {
   IconMoodSurprised,
   IconBriefcase,
 } from "@tabler/icons-react";
+import { Metadata } from "next";
 
-// View more icons at https://tabler.io/icons?form=MG0AV3 //
+export const metadata: Metadata = {
+  title: "Holidays",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },

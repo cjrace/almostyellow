@@ -1,4 +1,9 @@
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Games",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },

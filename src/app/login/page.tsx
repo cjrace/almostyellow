@@ -6,8 +6,13 @@ import {
   Container,
   Button,
 } from "@mantine/core";
+import { Metadata } from "next";
 
-export default function AuthenticationTitle() {
+export const metadata: Metadata = {
+  title: "Login",
+};
+
+export default function Login() {
   return (
     <Container size={420} my={40}>
       <Title ta="center">Want to access the good stuff?</Title>

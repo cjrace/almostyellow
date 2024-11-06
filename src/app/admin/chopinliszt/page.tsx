@@ -1,5 +1,10 @@
 import Checklist from "@/components/checklist";
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Chopin Liszt",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },
