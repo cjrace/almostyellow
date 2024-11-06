@@ -3,7 +3,15 @@
 import Script from "next/script";
 import { Button, Group, Grid } from "@mantine/core";
 import Confetti from "@/components/confetti";
-import { IconBrandGithub } from "@tabler/icons-react";
+import {
+  IconDeviceGamepad2,
+  IconMoodPuzzled,
+  IconCheese,
+  IconGlassCocktail,
+  IconBeach,
+  IconPaperclip,
+  IconBrandGithub,
+} from "@tabler/icons-react";
 
 export default function Home() {
   return (
@@ -30,7 +38,7 @@ export default function Home() {
         <Grid.Col>
           <Group justify="center">
             <Button
-              leftSection="🎲"
+              leftSection={<IconDeviceGamepad2 />}
               variant="default"
               component="a"
               size="xl"
@@ -40,7 +48,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection="🤔"
+              leftSection={<IconMoodPuzzled />}
               variant="default"
               component="a"
               size="xl"
@@ -50,7 +58,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection="🥄"
+              leftSection={<IconCheese />}
               variant="default"
               component="a"
               size="xl"
@@ -60,7 +68,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection="🍹"
+              leftSection={<IconGlassCocktail />}
               variant="default"
               component="a"
               size="xl"
@@ -70,7 +78,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection="😎"
+              leftSection={<IconBeach />}
               variant="default"
               component="a"
               size="xl"
@@ -80,7 +88,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection="📎"
+              leftSection={<IconPaperclip />}
               variant="default"
               component="a"
               size="xl"
@@ -90,7 +98,7 @@ export default function Home() {
             </Button>
 
             <Button
-              leftSection={<IconBrandGithub size={25} />}
+              leftSection={<IconBrandGithub />}
               target="_blank"
               variant="default"
               rel="noopener noreferrer"
