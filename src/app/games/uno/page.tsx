@@ -17,10 +17,10 @@ const crumbitems = [
 
 export default async function UnoPage() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
       <h1>Uno</h1>
       <p>Under construction...</p>
-    </div>
+    </>
   );
 }

@@ -14,6 +14,7 @@ import {
   Progress,
   Accordion,
 } from "@mantine/core";
+import Confetti from "@/components/confetti";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -90,7 +91,7 @@ export default function IrishBingoPage() {
   };
 
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
       <h1>Irish Bingo</h1>
 
@@ -136,6 +137,8 @@ export default function IrishBingoPage() {
             </Alert>
           )}
           <Space h="md" />
+          <Confetti buttonText="Has someone won?" size="md" />
+          <Space h="md" />
           <Accordion variant="filled">
             <Accordion.Item key="All cards called" value="All cards called">
               <Accordion.Control>All cards called</Accordion.Control>
@@ -150,6 +153,6 @@ export default function IrishBingoPage() {
           </Accordion>
         </Grid.Col>
       </Grid>
-    </div>
+    </>
   );
 }

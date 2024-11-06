@@ -16,7 +16,7 @@ const crumbitems = [
 
 export default async function Games() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Our games</h1>
@@ -34,6 +34,6 @@ export default async function Games() {
           <Anchor href="/games">???</Anchor>
         </li>
       </ul>
-    </div>
+    </>
   );
 }

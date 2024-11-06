@@ -42,7 +42,7 @@ export default function CocktailsPage() {
   });
 
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Cocktails</h1>
@@ -73,6 +73,6 @@ export default function CocktailsPage() {
       </Grid>
 
       <BackToTop />
-    </div>
+    </>
   );
 }

@@ -16,7 +16,7 @@ const crumbitems = [
 
 export default async function Admin() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Welcome to our admin page</h1>
@@ -32,6 +32,6 @@ export default async function Admin() {
           <Anchor href="/admin">???</Anchor>
         </li>
       </ul>
-    </div>
+    </>
   );
 }

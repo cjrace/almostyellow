@@ -23,7 +23,7 @@ const crumbitems = [
 
 export default function HolidaysPage() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <Grid>
@@ -258,6 +258,6 @@ export default function HolidaysPage() {
           <BackToTop />
         </Grid.Col>
       </Grid>
-    </div>
+    </>
   );
 }

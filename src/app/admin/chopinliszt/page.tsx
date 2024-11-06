@@ -18,11 +18,11 @@ const crumbitems = [
 
 export default async function ChopinLiszt() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Our Chopin Liszt</h1>
       <Checklist />
-    </div>
+    </>
   );
 }
