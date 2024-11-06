@@ -5,7 +5,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@mantine/core",
       "@mantine/hooks",
-      '@tabler/icons-react", "react-hook-form',
+      "@mantine/form",
+      "@tabler/icons-react",
+      "react-hook-form",
       "react-select",
       "sharp",
     ],
