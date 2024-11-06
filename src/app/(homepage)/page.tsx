@@ -9,19 +9,15 @@ import {
   IconPaperclip,
   IconBrandGithub,
 } from "@tabler/icons-react";
-import { headers } from "next/headers";
 
-export default async function Home() {
-  // Setting a nonce to allow the confetti to run
-  const nonce = (await headers()).get("x-nonce")?.toString();
-
+export default function Home() {
   return (
     <>
       <h1 style={{ textAlign: "center" }}>Almost yellow</h1>
       <p style={{ textAlign: "center" }}>
         This is our homepage, we should make it prettier.
       </p>
-      <Confetti nonce={nonce} />
+      <Confetti />
 
       <Group justify="center">
         <Button

@@ -7,8 +7,6 @@ import ToggleColour from "@/components/togglecolour";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: {
     template: "%s | Almost Yellow",
