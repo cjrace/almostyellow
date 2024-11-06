@@ -59,12 +59,9 @@ export default function DecisionMaker() {
 
       <Grid.Col span={7}>
         {chosenOption && (
-          <div
-            data-testid="decision"
-            style={{ fontSize: "24px", textAlign: "center" }}
-          >
+          <div style={{ fontSize: "24px", textAlign: "center" }}>
             <p>The decision has been made, you choose...</p>
-            {chosenOption}
+            <p data-testid="choice_made">{chosenOption}</p>
           </div>
         )}
       </Grid.Col>
