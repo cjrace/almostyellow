@@ -20,9 +20,9 @@ test("Can navigate to the games page and through its subpages", async ({
   await expect(page).toHaveURL("/games");
   await expect(page.locator("h1")).toContainText("Our games");
 
-  await page.getByRole("link", { name: "Irish bingo" }).click();
+  await page.getByRole("link", { name: "Irish Bingo" }).click();
   await expect(page).toHaveURL("/games/irishbingo");
-  await expect(page.locator("h1")).toContainText("Irish bingo");
+  await expect(page.locator("h1")).toContainText("Irish Bingo");
 
   await page.getByRole("link", { name: "Games" }).click();
   await page.getByRole("link", { name: "Uno" }).click();

@@ -3,8 +3,8 @@ import { SuitNames, RankNames, getCardName } from "@/components/carddeck";
 
 test("No card drawn on load", async ({ page }) => {
   await page.goto("/games/irishbingo");
-  await expect(page.getByRole("paragraph")).toContainText(
-    "0 out of 52 Cards Drawn",
+  await expect(page.locator("#latest_card")).toContainText(
+    "No cards drawn yet",
   );
 });
 
@@ -20,22 +20,25 @@ test("Gameplay works", async ({ page }) => {
     });
   });
 
-  // Check if you click the button 52 times it draws an accurate full deck
-  // Bonus check that the counter shows the right text for number of button presses
+  // Cycle through a full 52 clicks and...
+  // 1. Check it draws an accurate full deck (no dupes or missing cards)
+  // 2. Check that the counter shows the right text for number of button presses
+  const drawnCards: string[] = [];
+
   for (let buttonpress = 0; buttonpress < 52; buttonpress++) {
     const buttonpress_reindexed = buttonpress + 1; // adjusting for zero indexing...
     await page.getByRole("button", { name: "Draw a Card" }).click();
-    await expect(page.getByRole("paragraph")).toContainText(
-      `${buttonpress_reindexed} out of 52 Cards Drawn`,
+
+    const drawnCard = (await page.locator("#latest_card").textContent()) ?? "";
+    drawnCards.push(drawnCard);
+
+    await expect(page.locator("#card_count")).toContainText(
+      `${buttonpress_reindexed} / 52 cards`,
     );
   }
 
-  for (let i = 0; i < allCardNames.length; i++) {
-    const card = allCardNames[i];
-    const cardElement = await page.waitForSelector(`text=${card}`);
-    const cardText = await cardElement.textContent();
-    expect(cardText).toBe(card);
-  }
+  // Force both lists to alphabetical order to remove randomness
+  expect(drawnCards.sort()).toEqual(allCardNames.sort());
 
   // Button disables after full deck is drawn
   await expect(page.getByLabel("Deck Exhausted")).toContainText(
@@ -44,21 +47,15 @@ test("Gameplay works", async ({ page }) => {
 
   // Shuffle a new deck resets
   await page.getByRole("button", { name: "Shuffle new deck" }).click();
-  await expect(page.getByRole("paragraph")).toContainText(
-    "0 out of 52 Cards Drawn",
-  );
+  await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
 
   // Can draw after reshuffle
   await page.getByRole("button", { name: "Draw a Card" }).click();
   await page.getByRole("button", { name: "Draw a Card" }).click();
   await page.getByRole("button", { name: "Draw a Card" }).click();
-  await expect(page.getByRole("paragraph")).toContainText(
-    "3 out of 52 Cards Drawn",
-  );
+  await expect(page.locator("#card_count")).toContainText("3 / 52 cards");
 
   // Reset works after just a handful of cards
   await page.getByRole("button", { name: "Shuffle new deck" }).click();
-  await expect(page.getByRole("paragraph")).toContainText(
-    "0 out of 52 Cards Drawn",
-  );
+  await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
 });
