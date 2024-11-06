@@ -1,5 +1,5 @@
 // Create the options for the cocktails page, could be a database table eventually
-export const cocktails = [
+export const cocktaildata = [
   {
     name: "Stone cold margarita",
     spirits: ["Tequila"],

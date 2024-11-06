@@ -20,7 +20,6 @@ export default async function ChopinLiszt() {
   return (
     <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
-
       <h1>Our Chopin Liszt</h1>
       <Checklist />
     </>
