@@ -8,9 +8,9 @@ const cspHeader = `
   form-action 'self';
   frame-ancestors 'none';
   upgrade-insecure-requests;
-  referrer-policy: 'no-referrer-when-downgrade'; 
-  x-content-type-options: 'nosniff';
-  permissions-policy: 'geolocation=(none), microphone=(none), camera=(none)';   
+  referrer-policy 'no-referrer-when-downgrade'; 
+  x-content-type-options 'nosniff';
+  permissions-policy geolocation 'none', microphone 'none', camera 'none';   
 `;
 
 const nextConfig: NextConfig = {
