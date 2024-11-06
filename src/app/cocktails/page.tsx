@@ -8,11 +8,6 @@ import { cocktails } from "@/components/cocktails";
 import CocktailBox from "@/components/cocktailbox";
 import BackToTop from "@/components/backtotop";
 import styles from "@/styles/cocktails.module.css";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Cocktails",
-};
 
 const crumbitems = [
   { title: "Home", href: "/" },

@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { Textarea, Button, Grid, Breadcrumbs, Anchor } from "@mantine/core";
+import {
+  Textarea,
+  Button,
+  Grid,
+  Breadcrumbs,
+  Anchor,
+  Container,
+} from "@mantine/core";
+import { useForm, Form } from "@mantine/form";
+import classes from "@/styles/textarea.module.css";
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -13,28 +21,28 @@ const crumbitems = [
   </Anchor>
 ));
 
-type decisionOptions = {
+type DecisionOptions = {
   options: string;
 };
 
 export default function DecisionMaker() {
-  const { register, handleSubmit, setValue } = useForm<decisionOptions>();
-  const [decidedOption, setChosenItem] = useState<string | null>(null);
-  const [error, setError] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [chosenOption, setChosenItem] = useState<string | null>(null);
+  const error = useState("");
 
-  const validateInput = (value: string) => {
-    const lineCount = value.trim().split(/\n+/).length;
-    if (lineCount < 2) {
-      setError("Please enter at least 2 options.");
-      return false;
-    } else {
-      setError("");
-      return true;
-    }
-  };
+  const form = useForm<DecisionOptions>({
+    initialValues: { options: "" },
+    validate: {
+      options: (value) => {
+        const lineCount = value.trim().split(/\n+/).length;
+        if (lineCount < 2) {
+          return "Please enter at least 2 options.";
+        }
+        return null;
+      },
+    },
+  });
 
-  const makeDecision: SubmitHandler<decisionOptions> = (data) => {
+  const makeDecision = (data: DecisionOptions) => {
     const options = data.options
       .split("\n")
       .filter((option) => option.trim() !== "");
@@ -53,46 +61,32 @@ export default function DecisionMaker() {
         </Grid.Col>
 
         <Grid.Col span={5}>
-          <div style={{ margin: 20 }}>
-            <form
-              onSubmit={handleSubmit((data) => {
-                setIsSubmitted(true);
-                if (validateInput(data.options)) {
-                  makeDecision(data);
-                }
-              })}
-            >
+          <Container>
+            <Form form={form} onSubmit={makeDecision}>
               <Textarea
-                {...register("options")}
-                label="Type the options for your decision, one per line..."
+                label="List out your options"
+                placeholder="One option per line..."
                 error={error}
-                autosize
-                minRows={5}
-                maxRows={20}
-                onChange={(e) => {
-                  setValue("options", e.target.value);
-                  if (isSubmitted) {
-                    validateInput(e.target.value);
-                  }
-                }}
+                rows={5}
+                classNames={{ label: classes.label }} // Add an extra space before the text area box
+                {...form.getInputProps("options")}
               />
-              <br></br>
+              <br />
               <Button type="submit" fullWidth>
                 Make a decision
               </Button>
-            </form>
-            <br></br>
-          </div>
+            </Form>
+          </Container>
         </Grid.Col>
 
         <Grid.Col span={7}>
-          {decidedOption && (
+          {chosenOption && (
             <div
               id="decision"
               style={{ fontSize: "24px", textAlign: "center" }}
             >
               <p>The decision has been made, you choose...</p>
-              {decidedOption}
+              {chosenOption}
             </div>
           )}
         </Grid.Col>

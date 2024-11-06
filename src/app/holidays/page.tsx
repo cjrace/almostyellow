@@ -11,11 +11,6 @@ import {
   IconMoodSurprised,
   IconBriefcase,
 } from "@tabler/icons-react";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Holidays",
-};
 
 const crumbitems = [
   { title: "Home", href: "/" },

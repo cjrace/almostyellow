@@ -14,11 +14,6 @@ import {
   Progress,
   Accordion,
 } from "@mantine/core";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Irish Bingo",
-};
 
 const crumbitems = [
   { title: "Home", href: "/" },
