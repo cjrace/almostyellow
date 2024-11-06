@@ -1,8 +1,9 @@
-import { MantineProvider } from "@mantine/core";
-import { acalat } from "@/styles/acalat";
 import "@mantine/core/styles.css";
+import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import { acalat } from "@/styles/acalat";
 import "@/styles/global.css";
 import type { Metadata } from "next";
+import ToggleColour from "@/components/togglecolour";
 
 export const metadata: Metadata = {
   title: {
@@ -19,37 +20,19 @@ export const metadata: Metadata = {
   },
 };
 
-// Colour scheme toggle icons and imports
-// import { ActionIcon, MantineProvider, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
-// import { IconSun, IconMoon } from "@tabler/icons-react";
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Colour scheme toggle
-  //const { setColorScheme } = useMantineColorScheme();
-  //const computedColorScheme = useComputedColorScheme('light');
-  //const toggleColorScheme = () => {
-  //  setColorScheme(computedColorScheme === 'dark' ? 'light' : 'dark');
-  //};
-
-  // This our previous colour scheme toggle
-  // <ActionIcon
-  // onClick={() => toggleColorScheme()}
-  // variant="default"
-  // size="xl"
-  // aria-label="Toggle color scheme"
-  // >
-  // <IconSun stroke={1.5} />
-  // <IconMoon stroke={1.5} />
-  // </ActionIcon>
-
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ColorSchemeScript defaultColorScheme="dark" />
+      </head>
       <body>
         <MantineProvider defaultColorScheme="dark" theme={acalat}>
+          <ToggleColour />
           {children}
         </MantineProvider>
       </body>
