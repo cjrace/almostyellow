@@ -8,10 +8,10 @@ base-uri 'self';
 form-action 'self';
 frame-ancestors 'none';
 upgrade-insecure-requests;
-referrer-policy 'no-referrer-when-downgrade';
-x-content-type-options 'nosniff';
-permissions-policy geolocation='none', microphone='none', camera='none';  
+permissions-policy 'none';  
 `;
+
+// duplicating or incorrect? referrer-policy 'strict-origin'; X-Content-Type-Options: nosniff;
 
 const nextConfig: NextConfig = {
   experimental: {
