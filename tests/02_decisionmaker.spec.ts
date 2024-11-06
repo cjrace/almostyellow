@@ -20,9 +20,7 @@ test("Won't make a decision if nothing to decide", async ({ page }) => {
   await expect(page.locator("#decision")).toHaveCount(0);
 
   // Enter one thing in the box
-  await page
-    .getByLabel("Type the options for your")
-    .fill("Only one road ahead");
+  await page.getByLabel("List out your options").fill("Only one road ahead");
   await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Expect an error and no decision
@@ -49,7 +47,7 @@ test("Makes a valid decision", async ({ page }) => {
   const optionsToEnter = takeawayOptions.join("\n");
 
   // Add some options and make a decision
-  await page.getByLabel("Type the options for your").fill(optionsToEnter);
+  await page.getByLabel("List out your options").fill(optionsToEnter);
   await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Ensure decision has been made
@@ -63,7 +61,7 @@ test("Makes a valid decision", async ({ page }) => {
 
   // Forcing this as it really doesn't like it when there's a possibility it is null
   if (decisionText !== null) {
-    // Check the devision was an actual option in the list
+    // Check the decision was an actual option in the list
     const endsWithInitialOption = takeawayOptions.some((option) =>
       decisionText.endsWith(option),
     );

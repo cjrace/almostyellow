@@ -4,7 +4,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  /* Adjust styles for smaller screens */
+  /* Smaller margin for smaller screens */
   body {
     margin: 10px;
   }

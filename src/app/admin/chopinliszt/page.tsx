@@ -1,5 +1,10 @@
 import Checklist from "@/components/checklist";
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Chopin Liszt",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -11,15 +16,12 @@ const crumbitems = [
   </Anchor>
 ));
 
-const ChopinLiszt: React.FC = () => {
+export default async function ChopinLiszt() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
-
       <h1>Our Chopin Liszt</h1>
       <Checklist />
-    </div>
+    </>
   );
-};
-
-export default ChopinLiszt;
+}

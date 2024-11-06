@@ -1,4 +1,9 @@
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Admin",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -9,9 +14,9 @@ const crumbitems = [
   </Anchor>
 ));
 
-const AdminPage = () => {
+export default async function Admin() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Welcome to our admin page</h1>
@@ -27,8 +32,6 @@ const AdminPage = () => {
           <Anchor href="/admin">???</Anchor>
         </li>
       </ul>
-    </div>
+    </>
   );
-};
-
-export default AdminPage;
+}

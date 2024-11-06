@@ -10,7 +10,7 @@ Our own personal site of games, cocktails and all the other good stuff.
 
 ## Getting Started
 
-This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app). Package management is handled by [pnpm](https://pnpm.io/). Main libraries used so far are:
+This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app), and uses [App Router](https://nextjs.org/docs/app). Package management is handled by [pnpm](https://pnpm.io/). Main libraries used so far are:
 
 - [Mantine](https://mantine.dev/)
 - [React Hook Form](https://www.react-hook-form.com/)

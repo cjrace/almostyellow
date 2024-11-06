@@ -1,4 +1,9 @@
 import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Games",
+};
 
 const crumbitems = [
   { title: "Home", href: "/" },
@@ -9,9 +14,9 @@ const crumbitems = [
   </Anchor>
 ));
 
-const GamesPage = () => {
+export default async function Games() {
   return (
-    <div>
+    <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
 
       <h1>Our games</h1>
@@ -29,8 +34,6 @@ const GamesPage = () => {
           <Anchor href="/games">???</Anchor>
         </li>
       </ul>
-    </div>
+    </>
   );
-};
-
-export default GamesPage;
+}

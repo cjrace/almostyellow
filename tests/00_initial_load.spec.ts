@@ -5,5 +5,5 @@ test('Homepage has the title "Almost yellow"', async ({ page }) => {
   // Check the h1 exists
   await expect(page.locator("h1")).toContainText("Almost yellow");
   // Check the overall website title exists
-  await expect(page).toHaveTitle(/Almost yellow/);
+  await expect(page).toHaveTitle("Almost Yellow");
 });
