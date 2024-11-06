@@ -9,7 +9,7 @@ const crumbitems = [
   </Anchor>
 ));
 
-const GamesPage = () => {
+export default async function Games() {
   return (
     <div>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
@@ -31,6 +31,4 @@ const GamesPage = () => {
       </ul>
     </div>
   );
-};
-
-export default GamesPage;
+}

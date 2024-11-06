@@ -1,3 +1,5 @@
+"use client";
+
 import { Text, Timeline, Breadcrumbs, Anchor, Grid } from "@mantine/core";
 import BackToTop from "@/components/backtotop";
 import {
@@ -21,7 +23,7 @@ const crumbitems = [
   </Anchor>
 ));
 
-const HolidaysPage: React.FC = () => {
+export default function HolidaysPage() {
   return (
     <div>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
@@ -260,6 +262,4 @@ const HolidaysPage: React.FC = () => {
       </Grid>
     </div>
   );
-};
-
-export default HolidaysPage;
+}

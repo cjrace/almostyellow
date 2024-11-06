@@ -9,7 +9,7 @@ const crumbitems = [
   </Anchor>
 ));
 
-const AdminPage = () => {
+export default async function Admin() {
   return (
     <div>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
@@ -29,6 +29,4 @@ const AdminPage = () => {
       </ul>
     </div>
   );
-};
-
-export default AdminPage;
+}

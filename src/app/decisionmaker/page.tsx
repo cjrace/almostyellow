@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Textarea, Button, Grid, Breadcrumbs, Anchor } from "@mantine/core";
@@ -15,7 +17,7 @@ type decisionOptions = {
   options: string;
 };
 
-const DecisionMaker: React.FC = () => {
+export default function DecisionMaker() {
   const { register, handleSubmit, setValue } = useForm<decisionOptions>();
   const [decidedOption, setChosenItem] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -97,6 +99,4 @@ const DecisionMaker: React.FC = () => {
       </Grid>
     </div>
   );
-};
-
-export default DecisionMaker;
+}

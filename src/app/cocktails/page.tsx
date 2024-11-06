@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Breadcrumbs, Anchor, Grid } from "@mantine/core";
 import { useForm, FieldValues } from "react-hook-form";
@@ -16,7 +18,7 @@ const crumbitems = [
   </Anchor>
 ));
 
-const CocktailsPage: React.FC = () => {
+export default function CocktailsPage() {
   // Logic for the cocktail selection and filtering
   const { control, handleSubmit } = useForm();
   const [selectedSpirits, setSelectedSpirits] = useState<
@@ -73,6 +75,4 @@ const CocktailsPage: React.FC = () => {
       <BackToTop />
     </div>
   );
-};
-
-export default CocktailsPage;
+}

@@ -1,5 +1,6 @@
+"use client";
+
 import { useState } from "react";
-import Image from "next/image";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   SemiCircleProgress,
@@ -21,7 +22,7 @@ const crumbitems = [
   </Anchor>
 ));
 
-const IrishBingoPage: React.FC = () => {
+export default function IrishBingoPage() {
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
@@ -52,18 +53,7 @@ const IrishBingoPage: React.FC = () => {
       <h1>Irish bingo</h1>
 
       <Grid gutter={{ base: 5, xs: "md", md: "xl", xl: 50 }}>
-        <Grid.Col span={{ base: 12, sm: 4 }}>
-          <Image
-            aria-hidden
-            src="/images/tayto.svg"
-            alt="Mr. Tayto"
-            height={300}
-            width={300}
-            style={{ filter: "invert(0.3)" }} // Wants a bit of fine tuning, currently a little creepy looking
-          />
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, sm: 4 }}>
+        <Grid.Col span={{ base: 12, sm: 6 }}>
           <SemiCircleProgress
             size={250}
             // Make each draw 1/52 of the way
@@ -85,7 +75,7 @@ const IrishBingoPage: React.FC = () => {
           )}
         </Grid.Col>
 
-        <Grid.Col span={{ base: 12, sm: 4 }}>
+        <Grid.Col span={{ base: 12, sm: 6 }}>
           <ul>
             {drawnCards.map((card, index) => (
               <li key={index}>{getCardName(card.suit, card.rank)}</li>
@@ -95,6 +85,4 @@ const IrishBingoPage: React.FC = () => {
       </Grid>
     </div>
   );
-};
-
-export default IrishBingoPage;
+}

@@ -1,25 +1,21 @@
-import Checklist from "@/components/checklist";
 import { Breadcrumbs, Anchor } from "@mantine/core";
 
 const crumbitems = [
   { title: "Home", href: "/" },
-  { title: "Admin", href: "/admin" },
-  { title: "Chopin Liszt", href: "" },
+  { title: "Games", href: "/games" },
+  { title: "Uno", href: "" },
 ].map((item, index) => (
   <Anchor href={item.href} key={index}>
     {item.title}
   </Anchor>
 ));
 
-const ChopinLiszt: React.FC = () => {
+export default async function UnoPage() {
   return (
     <div>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
-
-      <h1>Our Chopin Liszt</h1>
-      <Checklist />
+      <h1>Uno</h1>
+      <p>Under construction...</p>
     </div>
   );
-};
-
-export default ChopinLiszt;
+}

@@ -1,3 +1,5 @@
+"use client";
+
 import Script from "next/script";
 import { Button, Group, Grid } from "@mantine/core";
 import Confetti from "@/components/confetti";
