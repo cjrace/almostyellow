@@ -4,7 +4,7 @@ test("Hasn't prematurely made a decision", async ({ page }) => {
   await page.goto("/decisionmaker");
 
   // Check the decision div hasn't appeared yet
-  await expect(page.locator("#decision")).toHaveCount(0);
+  await expect(page.getByTestId("decision")).toHaveCount(0);
 });
 
 test("Won't make a decision if nothing to decide", async ({ page }) => {
@@ -17,7 +17,7 @@ test("Won't make a decision if nothing to decide", async ({ page }) => {
   await expect(page.getByRole("paragraph")).toContainText(
     "Please enter at least 2 options.",
   );
-  await expect(page.locator("#decision")).toHaveCount(0);
+  await expect(page.getByTestId("decision")).toHaveCount(0);
 
   // Enter one thing in the box
   await page.getByLabel("List out your options").fill("Only one road ahead");
@@ -27,7 +27,7 @@ test("Won't make a decision if nothing to decide", async ({ page }) => {
   await expect(page.getByRole("paragraph")).toContainText(
     "Please enter at least 2 options.",
   );
-  await expect(page.locator("#decision")).toHaveCount(0);
+  await expect(page.getByTestId("decision")).toHaveCount(0);
 });
 
 test("Makes a valid decision", async ({ page }) => {
@@ -51,11 +51,11 @@ test("Makes a valid decision", async ({ page }) => {
   await page.getByRole("button", { name: "Make a decision" }).click();
 
   // Ensure decision has been made
-  await expect(page.locator("#decision")).toContainText(
+  await expect(page.getByTestId("decision")).toContainText(
     "The decision has been made, you choose...",
   );
 
-  const decisionDiv = page.locator("#decision");
+  const decisionDiv = page.getByTestId("decision");
   const decisionText = await decisionDiv.textContent();
   expect(decisionText).not.toBeNull();
 
