@@ -8,10 +8,7 @@ base-uri 'self';
 form-action 'self';
 frame-ancestors 'none';
 upgrade-insecure-requests;
-permissions-policy 'none';  
 `;
-
-// duplicating or incorrect? referrer-policy 'strict-origin'; X-Content-Type-Options: nosniff;
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -32,6 +29,18 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value: cspHeader.replace(/\n/g, ""),
+          },
+          {
+            key: "Permissions-Policy",
+            value: "geolocation 'none'",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin",
+          },
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
         ],
       },
