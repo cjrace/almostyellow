@@ -4,6 +4,8 @@ import { acalat } from "@/styles/acalat";
 import "@/styles/global.css";
 import type { Metadata } from "next";
 import ToggleColour from "@/components/togglecolour";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: {
@@ -34,6 +36,8 @@ export default function RootLayout({
         <MantineProvider defaultColorScheme="dark" theme={acalat}>
           <ToggleColour />
           {children}
+          <Analytics />
+          <SpeedInsights />
         </MantineProvider>
       </body>
     </html>

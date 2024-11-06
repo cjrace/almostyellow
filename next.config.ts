@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       "@mantine/hooks",
       "@mantine/form",
       "@tabler/icons-react",
+      "@vercel/analytics",
       "sharp",
     ],
   },
