@@ -50,7 +50,11 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   </Box>
 );
 
-export default function IrishBingo() {
+interface IrishBingoProps {
+  nonce?: string;
+}
+
+export default function IrishBingo({ nonce = "" }: IrishBingoProps) {
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
@@ -119,7 +123,7 @@ export default function IrishBingo() {
           </Alert>
         )}
         <Space h="md" />
-        <Confetti buttonText="Has someone won?" size="md" />
+        <Confetti buttonText="Has someone won?" size="md" nonce={nonce} />
         <Space h="md" />
         <Accordion variant="filled">
           <Accordion.Item key="All cards called" value="All cards called">

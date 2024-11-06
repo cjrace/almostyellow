@@ -1,6 +1,7 @@
 import { Breadcrumbs, Anchor, Space } from "@mantine/core";
 import IrishBingo from "@/components/irishbingo";
 import { Metadata } from "next";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Irish Bingo",
@@ -16,7 +17,10 @@ const crumbitems = [
   </Anchor>
 ));
 
-export default function IrishBingoPage() {
+export default async function IrishBingoPage() {
+  // Setting a nonce to allow the confetti to run
+  const nonce = (await headers()).get("x-nonce")?.toString();
+
   return (
     <>
       <Breadcrumbs>{crumbitems}</Breadcrumbs>
@@ -24,7 +28,7 @@ export default function IrishBingoPage() {
 
       <Space h="xl" />
 
-      <IrishBingo />
+      <IrishBingo nonce={nonce} />
     </>
   );
 }
