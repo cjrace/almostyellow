@@ -1,21 +1,28 @@
 "use client";
 
-import { useForm, FieldValues } from "react-hook-form";
+import { Grid, RadioGroup, Radio } from "@mantine/core";
 import { useState } from "react";
-import { Grid } from "@mantine/core";
-import { SpiritSelect } from "@/components/spiritselect";
 import { cocktaildata } from "@/components/cocktaildata";
 import styles from "@/styles/cocktails.module.css";
 import CocktailBox from "@/components/cocktailbox";
 
+// List the dropdown options
+const spiritOptions = [
+  { value: "All spirits", label: "All spirits" },
+  { value: "Baileys", label: "Baileys" },
+  { value: "Gin", label: "Gin" },
+  { value: "Kahlua", label: "Kahlua" },
+  { value: "Rum", label: "Rum" },
+  { value: "Tequila", label: "Tequila" },
+  { value: "Vodka", label: "Vodka" },
+  { value: "Whisky", label: "Whisky" },
+  // Add other spirit options as they get added. // TODO: auto generate from data
+];
+
 export default function Cocktails() {
-  const { control, handleSubmit } = useForm();
   const [selectedSpirits, setSelectedSpirits] = useState<
     { value: string; label: string }[]
   >([]);
-  const handleFormSubmit = (data: FieldValues) => {
-    console.log("Selected spirits:", data.selectedSpirits);
-  };
 
   // Show all cocktails if no specific spirits are selected or if "All Spirits" is selected
   const filteredCocktails = cocktaildata.filter((cocktail) => {
@@ -30,16 +37,46 @@ export default function Cocktails() {
     );
   });
 
+  const [selectedSpirit, setSelectedSpirit] = useState("All spirits");
+
+  const handleChange = (value: string) => {
+    setSelectedSpirit(value);
+
+    // If the selected spirit is "All spirits", set the selectedSpirits to an empty array
+    if (value === "All spirits") {
+      setSelectedSpirits([]);
+      return;
+    }
+
+    // Otherwise, update the selectedSpirits array
+    setSelectedSpirits([
+      {
+        value,
+        label:
+          spiritOptions.find((option) => option.value === value)?.label || "",
+      },
+    ]);
+  };
+
   return (
     <Grid>
       <Grid.Col span={{ base: 12, sm: 2 }}>
         <div style={{ position: "sticky", top: "10px" }}>
-          <form onSubmit={handleSubmit(handleFormSubmit)}>
-            <SpiritSelect
-              control={control}
-              setSelectedSpirits={setSelectedSpirits}
-            />
-          </form>
+          <RadioGroup
+            label="Filter by spirit"
+            variant="vertical"
+            size="lg"
+            value={selectedSpirit}
+            onChange={handleChange}
+          >
+            {spiritOptions.map((option) => (
+              <Radio
+                key={option.value}
+                value={option.value}
+                label={option.label}
+              />
+            ))}
+          </RadioGroup>
         </div>
       </Grid.Col>
 
