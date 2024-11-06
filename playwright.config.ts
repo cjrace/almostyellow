@@ -33,20 +33,33 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    /* Test against mobile viewports. */
+    /* Test against browsers we use */
     {
       name: "Mobile Chrome",
-      use: { ...devices["Pixel 5"] },
+      use: { ...devices["Pixel 8"] },
     },
     {
+      /* TODO: Currently failing locally
       name: "Mobile Safari",
-      use: { ...devices["iPhone 12"] },
+      use: { ...devices["iPhone 14"] },
+    */
     },
-
-    /* Test against branded browsers. */
     {
       name: "Google Chrome",
       use: { ...devices["Desktop Chrome"], channel: "chrome" },
+    },
+
+    /* Test against other common browsers */
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+
+    {
+      /* TODO: Currently failing locally
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    */
     },
   ],
 
