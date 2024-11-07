@@ -13,10 +13,7 @@ import {
 } from "@mantine/core";
 
 export default function LoginForm() {
-  const [errorMessage, formAction, isPending] = useActionState(
-    authenticate,
-    undefined,
-  );
+  const [errorMessage, formAction] = useActionState(authenticate, undefined);
 
   return (
     <Container size={420} my={40}>
