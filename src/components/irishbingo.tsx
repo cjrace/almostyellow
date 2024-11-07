@@ -55,6 +55,7 @@ export default function IrishBingo() {
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
+  const progressColor = drawnCards.length > 35 ? "red" : "";
 
   // Function to draw a random card
   const drawCard = () => {
@@ -102,6 +103,7 @@ export default function IrishBingo() {
           // Make each draw 1/52 of the way
           value={drawnCards.length * 1.923}
           size="lg"
+          color={progressColor}
         />
         <p id="card_count">{`${drawnCards.length} / 52 cards`}</p>
         <Space h="md" />
