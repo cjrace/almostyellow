@@ -1,9 +1,8 @@
 import "@mantine/core/styles.css";
-import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import { MantineProvider, ColorSchemeScript, AppShell } from "@mantine/core";
 import { acalat } from "@/styles/acalat";
 import "@/styles/global.css";
 import type { Metadata } from "next";
-import ToggleColour from "@/components/togglecolour";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -34,8 +33,12 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider defaultColorScheme="dark" theme={acalat}>
-          <ToggleColour />
-          {children}
+          <AppShell
+            header={{ height: { base: 60, md: 70, lg: 80 } }}
+            padding="md"
+          >
+            {children}
+          </AppShell>
           <Analytics />
           <SpeedInsights />
         </MantineProvider>

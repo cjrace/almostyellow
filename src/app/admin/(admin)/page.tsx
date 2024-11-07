@@ -1,5 +1,6 @@
-import { Breadcrumbs, Anchor } from "@mantine/core";
+import { Anchor } from "@mantine/core";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -8,16 +9,12 @@ export const metadata: Metadata = {
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Admin", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+];
 
 export default async function Admin() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
 
       <h1>Welcome to our admin page</h1>
 

@@ -1,5 +1,5 @@
-import { Breadcrumbs, Anchor } from "@mantine/core";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Uno",
@@ -8,17 +8,13 @@ export const metadata: Metadata = {
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Games", href: "/games" },
-  { title: "Uno", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+  { title: "Uno", href: "/games/uno" },
+];
 
 export default async function UnoPage() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
       <h1>Uno</h1>
       <p>Under construction...</p>
     </>
