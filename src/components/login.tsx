@@ -2,7 +2,6 @@
 
 import { useActionState } from "react";
 import { authenticate } from "@/services/authentication";
-import { IconExclamationCircle } from "@tabler/icons-react";
 import {
   TextInput,
   PasswordInput,
@@ -22,23 +21,28 @@ export default function LoginForm() {
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form action={formAction}>
           <TextInput
+            id="email"
             label="Email"
             placeholder="e.g. simply@thebest.co.uk"
             required
             type="email"
           />
-          <PasswordInput label="Password" placeholder="" required mt="md" />
+          <PasswordInput
+            id="password"
+            label="Password"
+            placeholder=""
+            required
+            mt="md"
+            visibilityToggleButtonProps={{
+              "aria-label": "Toggle password visibility",
+            }}
+          />
 
-          <Button fullWidth mt="xl">
+          <Button type="submit" fullWidth mt="lg">
             Sign in
           </Button>
 
-          {errorMessage && (
-            <>
-              <IconExclamationCircle stroke={2} />
-              <p color="red">{errorMessage}</p>
-            </>
-          )}
+          {errorMessage && <p>{errorMessage}</p>}
         </form>
       </Paper>
     </Container>
