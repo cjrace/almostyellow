@@ -80,6 +80,7 @@ const SnakesAndLadders = () => {
   );
   const [isRolling, setIsRolling] = useState(false);
   const [showDiceResult, setShowDiceResult] = useState(false);
+  const [gameInitialized, setGameInitialized] = useState(false);
 
   useEffect(() => {
     setSpecialSpaces(generateSpecialSpaces());
@@ -88,10 +89,9 @@ const SnakesAndLadders = () => {
   const initializePlayers = () => {
     setPlayerPositions(Array(numPlayers).fill(0));
     setPlayerNames(
-      Array(numPlayers)
-        .fill("")
-        .map((_, i) => `Player ${i + 1}`),
-    );
+      Array.from({ length: numPlayers }, (_, i) => `Player ${i + 1}`),
+    ); // Generate default player names
+    setGameInitialized(true); // Transition to the game view
   };
 
   const handleNameChange = (index: number, name: string) => {
@@ -184,6 +184,10 @@ const SnakesAndLadders = () => {
     setPopupMessage(null);
     setWinner(null);
     setSpecialMove(null);
+    setPlayerNames(
+      Array.from({ length: numPlayers }, (_, i) => `Player ${i + 1}`),
+    ); // Reset player names
+    setGameInitialized(false); // Reset to show initiation step
   };
 
   return (
@@ -192,103 +196,98 @@ const SnakesAndLadders = () => {
         Snakes and Ladders
       </Text>
 
-      {/* Form to set up the players */}
-      <NumberInput
-        value={numPlayers}
-        onChange={(value) => setNumPlayers(Number(value) || 2)}
-        label="Number of Players"
-        min={2}
-        max={10}
-      />
+      {!gameInitialized && (
+        <>
+          {/* Form to set up the players */}
+          <NumberInput
+            value={numPlayers}
+            onChange={(value) => setNumPlayers(Number(value) || 2)}
+            label="Number of Players"
+            min={2}
+            max={10}
+          />
 
-      <Button onClick={initializePlayers} mt="sm">
-        Initialize Players
-      </Button>
-      <Space h="md" />
-
-      {playerNames.map((name, index) => (
-        <TextInput
-          key={index}
-          value={name}
-          onChange={(event) =>
-            handleNameChange(index, event.currentTarget.value)
-          }
-          label={`Player ${index + 1} Name`}
-        />
-      ))}
-      <Space h="md" />
-
-      <Text size="xl" ta="center" mb="md">
-        Player {currentPlayer + 1}'s turn
-      </Text>
-
-      {/* Button to roll the dice */}
-
-      <Button
-        onClick={rollDice}
-        fullWidth
-        mt="md"
-        disabled={!!winner || playerPositions.length === 0 || isRolling}
-      >
-        {isRolling ? <IconDice3 className="rolling-dice" /> : "Roll Dice"}
-      </Button>
-
-      {showDiceResult && diceResult && (
-        <Text mt="md">Dice result: {diceResult}</Text>
+          <Button onClick={initializePlayers} mt="sm">
+            Initialize Players
+          </Button>
+          <Space h="md" />
+        </>
       )}
 
-      <Space h="md" />
+      {gameInitialized && (
+        <>
+          <Text size="xl" ta="center" mb="md">
+            Player {currentPlayer + 1}'s turn
+          </Text>
 
-      <Button onClick={restartGame} fullWidth mt="md">
-        Restart Game
-      </Button>
+          <Button
+            onClick={rollDice}
+            fullWidth
+            mt="md"
+            disabled={!!winner || playerPositions.length === 0 || isRolling}
+          >
+            {isRolling ? <IconDice3 className="rolling-dice" /> : "Roll Dice"}
+          </Button>
 
-      <Space h="md" />
+          {showDiceResult && diceResult && (
+            <Text mt="md">Dice result: {diceResult}</Text>
+          )}
 
-      <Grid>
-        {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-          const pos = index + 1;
-          const playerAtPos = playerPositions.findIndex(
-            (playerPos) => playerPos === pos,
-          );
-          return (
-            <Grid.Col
-              span={1}
-              key={pos}
-              style={{
-                border: "1px solid #ddd",
-                height: "50px",
-                position: "relative",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {/* Show player position */}
-              {playerAtPos !== -1 && (
-                <Text>{`${playerNames[playerAtPos]}`}</Text>
-              )}
-              {/* Show special event icon */}
-              {specialSpaces.has(pos) && (
-                <IconQuestionMark size={24} color="white" />
-              )}
-              {/* Show winning icon */}
-              {pos === 100 && <IconTrophy size={24} color="gold" />}
-            </Grid.Col>
-          );
-        })}
-      </Grid>
+          <Space h="md" />
 
-      <Space h="md" />
-
-      <Modal opened={!!popupMessage} onClose={closePopup} title="Game Update">
-        {popupMessage}
-        {winner !== null && (
           <Button onClick={restartGame} fullWidth mt="md">
             Restart Game
           </Button>
-        )}
-      </Modal>
+
+          <Space h="md" />
+
+          <Grid>
+            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
+              const pos = index + 1;
+              const playerAtPos = playerPositions.findIndex(
+                (playerPos) => playerPos === pos,
+              );
+              return (
+                <Grid.Col
+                  span={1}
+                  key={pos}
+                  style={{
+                    border: "1px solid #ddd",
+                    height: "50px",
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {playerAtPos !== -1 && (
+                    <Text>{playerNames[playerAtPos]}</Text>
+                  )}
+                  {specialSpaces.has(pos) && (
+                    <IconQuestionMark size={24} color="white" />
+                  )}
+                  {pos === 100 && <IconTrophy size={24} color="gold" />}
+                </Grid.Col>
+              );
+            })}
+          </Grid>
+
+          <Space h="md" />
+
+          <Modal
+            opened={!!popupMessage}
+            onClose={closePopup}
+            title="Game Update"
+          >
+            {popupMessage}
+            {winner !== null && (
+              <Button onClick={restartGame} fullWidth mt="md">
+                Restart Game
+              </Button>
+            )}
+          </Modal>
+        </>
+      )}
     </Box>
   );
 };
