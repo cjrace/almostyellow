@@ -88,9 +88,6 @@ const SnakesAndLadders = () => {
 
   const initializePlayers = () => {
     setPlayerPositions(Array(numPlayers).fill(0));
-    setPlayerNames(
-      Array.from({ length: numPlayers }, (_, i) => `Player ${i + 1}`),
-    ); // Generate default player names
     setGameInitialized(true); // Transition to the game view
   };
 
@@ -206,6 +203,17 @@ const SnakesAndLadders = () => {
             min={2}
             max={10}
           />
+
+          {Array.from({ length: numPlayers }).map((_, index) => (
+            <TextInput
+              key={index}
+              value={playerNames[index] || ""}
+              onChange={(event) =>
+                handleNameChange(index, event.currentTarget.value)
+              }
+              label={`Player ${index + 1} Name`}
+            />
+          ))}
 
           <Button onClick={initializePlayers} mt="sm">
             Initialize Players
