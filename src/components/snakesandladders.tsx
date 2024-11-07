@@ -121,6 +121,8 @@ const SnakesAndLadders = () => {
       return newPositions;
     });
 
+    setShowDiceResult(false); // Clear the previous dice result message
+
     setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % playerPositions.length);
   };
 
@@ -285,7 +287,6 @@ const SnakesAndLadders = () => {
 
           {showDiceResult && diceResult && (
             <Text ta="center" mt="md">
-              {" "}
               {playerNames[currentPlayer]} moves {diceResult} places!
             </Text>
           )}
