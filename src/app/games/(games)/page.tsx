@@ -29,6 +29,10 @@ export default async function Games() {
           <Anchor href="/games/irishbingo">Irish bingo</Anchor>
         </li>
         <li>
+          {" "}
+          <Anchor href="/games/snakesandladders">Snakes and Ladders</Anchor>
+        </li>
+        <li>
           <Anchor href="/games/uno">Uno</Anchor>
         </li>
         <li>
