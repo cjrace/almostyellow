@@ -91,7 +91,7 @@ export default function IrishBingo() {
           fit="contain"
           h="auto"
           w="auto"
-          style={{ maxWidth: "100%", height: "auto" }}
+          style={{ ta: "top", maxWidth: "100%", height: "auto" }}
         />
       </Grid.Col>
 
