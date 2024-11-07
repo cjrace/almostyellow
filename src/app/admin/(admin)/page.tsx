@@ -1,6 +1,7 @@
-import { Anchor } from "@mantine/core";
+import { Anchor, Button } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import { signOut } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -11,7 +12,7 @@ const crumbitems = [
   { title: "Admin", href: "" },
 ];
 
-export default async function Admin() {
+export default function Admin() {
   return (
     <>
       <Header crumbs={crumbitems} />
@@ -29,6 +30,15 @@ export default async function Admin() {
           <Anchor href="/admin">???</Anchor>
         </li>
       </ul>
+
+      <Button
+        onClick={async () => {
+          "use server";
+          await signOut();
+        }}
+      >
+        Sign out
+      </Button>
     </>
   );
 }
