@@ -11,7 +11,16 @@ import {
   TextInput,
   NumberInput,
 } from "@mantine/core";
-import { IconQuestionMark, IconTrophy, IconDice3 } from "@tabler/icons-react";
+import {
+  IconQuestionMark,
+  IconTrophy,
+  IconDice1,
+  IconDice2,
+  IconDice3,
+  IconDice4,
+  IconDice5,
+  IconDice6,
+} from "@tabler/icons-react";
 
 // Define the grid size
 const GRID_SIZE = 10;
@@ -81,6 +90,7 @@ const SnakesAndLadders = () => {
   const [isRolling, setIsRolling] = useState(false);
   const [showDiceResult, setShowDiceResult] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);
+  const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
 
   useEffect(() => {
     setSpecialSpaces(generateSpecialSpaces());
@@ -114,15 +124,56 @@ const SnakesAndLadders = () => {
     setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % playerPositions.length);
   };
 
+  const cycleDiceIcons = () => {
+    const diceIcons = [
+      <IconDice1 />,
+      <IconDice2 />,
+      <IconDice3 />,
+      <IconDice4 />,
+      <IconDice5 />,
+      <IconDice6 />,
+    ];
+    let count = 0;
+    const intervalId = setInterval(() => {
+      setRollingDiceIcon(diceIcons[count]);
+      count = (count + 1) % diceIcons.length;
+    }, 100); // Change icon every 100ms
+
+    return intervalId;
+  };
+
+  const getDiceIcon = (result: number) => {
+    switch (result) {
+      case 1:
+        return <IconDice1 />;
+      case 2:
+        return <IconDice2 />;
+      case 3:
+        return <IconDice3 />;
+      case 4:
+        return <IconDice4 />;
+      case 5:
+        return <IconDice5 />;
+      case 6:
+        return <IconDice6 />;
+      default:
+        return <IconDice1 />;
+    }
+  };
+
   const rollDice = () => {
     setIsRolling(true); // Start rolling animation
     setDiceResult(null); // Clear previous dice result
     setShowDiceResult(false); // Hide dice result
 
+    const intervalId = cycleDiceIcons(); // Start cycling dice icons
+
     setTimeout(() => {
       const result = Math.floor(Math.random() * 6) + 1; // Roll a dice (1-6)
       setDiceResult(result);
       setShowDiceResult(true); // Show dice result
+      clearInterval(intervalId); // Stop cycling dice icons
+      setRollingDiceIcon(getDiceIcon(result)); // Set final dice icon
 
       setTimeout(() => {
         let stepsRemaining = result;
@@ -144,13 +195,12 @@ const SnakesAndLadders = () => {
             // Handle snakes and ladders after the final position is reached
             let finalPosition = tempPosition;
             if (specialSpaces.has(finalPosition)) {
-              setSpecialMove(specialSpaces.get(finalPosition)!);
-              const moveType =
-                specialSpaces.get(finalPosition)! < finalPosition
-                  ? "snake"
-                  : "ladder";
+              const specialEnd = specialSpaces.get(finalPosition)!;
+              setSpecialMove(specialEnd);
+              const moveType = specialEnd < finalPosition ? "snake" : "ladder";
+              const moveDifference = Math.abs(finalPosition - specialEnd);
               setPopupMessage(
-                `Oops! ${playerNames[currentPlayer]} landed on a ${moveType}!`,
+                `Oops! ${playerNames[currentPlayer]} landed on a ${moveType} and moved ${moveDifference} spaces!`,
               );
             } else {
               finalizeMove(finalPosition);
@@ -189,10 +239,6 @@ const SnakesAndLadders = () => {
 
   return (
     <Box>
-      <Text size="xl" ta="center" mb="md">
-        Snakes and Ladders
-      </Text>
-
       {!gameInitialized && (
         <>
           {/* Form to set up the players */}
@@ -216,7 +262,7 @@ const SnakesAndLadders = () => {
           ))}
 
           <Button onClick={initializePlayers} mt="sm">
-            Initialize Players
+            Start game!
           </Button>
           <Space h="md" />
         </>
@@ -225,7 +271,7 @@ const SnakesAndLadders = () => {
       {gameInitialized && (
         <>
           <Text size="xl" ta="center" mb="md">
-            Player {currentPlayer + 1}'s turn
+            {playerNames[currentPlayer]}'s turn
           </Text>
 
           <Button
@@ -234,11 +280,14 @@ const SnakesAndLadders = () => {
             mt="md"
             disabled={!!winner || playerPositions.length === 0 || isRolling}
           >
-            {isRolling ? <IconDice3 className="rolling-dice" /> : "Roll Dice"}
+            {isRolling ? rollingDiceIcon : "Roll Dice"}
           </Button>
 
           {showDiceResult && diceResult && (
-            <Text mt="md">Dice result: {diceResult}</Text>
+            <Text ta="center" mt="md">
+              {" "}
+              {playerNames[currentPlayer]} moves {diceResult} places!
+            </Text>
           )}
 
           <Space h="md" />
@@ -247,9 +296,9 @@ const SnakesAndLadders = () => {
             Restart Game
           </Button>
 
-          <Space h="md" />
+          <Space h="xl" />
 
-          <Grid>
+          <Grid columns={10}>
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
               const pos = index + 1;
               const playerAtPos = playerPositions.findIndex(
@@ -271,9 +320,7 @@ const SnakesAndLadders = () => {
                   {playerAtPos !== -1 && (
                     <Text>{playerNames[playerAtPos]}</Text>
                   )}
-                  {specialSpaces.has(pos) && (
-                    <IconQuestionMark size={24} color="white" />
-                  )}
+                  {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
                   {pos === 100 && <IconTrophy size={24} color="gold" />}
                 </Grid.Col>
               );
