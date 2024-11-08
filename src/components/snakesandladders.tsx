@@ -128,12 +128,12 @@ const SnakesAndLadders = () => {
 
   const cycleDiceIcons = () => {
     const diceIcons = [
-      <IconDice1 />,
-      <IconDice2 />,
-      <IconDice3 />,
-      <IconDice4 />,
-      <IconDice5 />,
-      <IconDice6 />,
+      <IconDice1 key="dice1" />,
+      <IconDice2 key="dice2" />,
+      <IconDice3 key="dice3" />,
+      <IconDice4 key="dice4" />,
+      <IconDice5 key="dice5" />,
+      <IconDice6 key="dice6" />,
     ];
     let count = 0;
     const intervalId = setInterval(() => {
@@ -273,7 +273,7 @@ const SnakesAndLadders = () => {
       {gameInitialized && (
         <>
           <Text size="xl" ta="center" mb="md">
-            {playerNames[currentPlayer]}'s turn
+            {playerNames[currentPlayer]}&apos;s turn
           </Text>
 
           <Button
