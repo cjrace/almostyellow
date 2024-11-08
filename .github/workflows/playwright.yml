@@ -11,6 +11,7 @@ jobs:
 
     env:
       AUTH_URL: ${{ secrets.AUTH_URL }}
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
