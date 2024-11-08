@@ -4,6 +4,11 @@ import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Games",
+  description: "Our collection of online games.",
+  openGraph: {
+    title: "Games | Almost Yellow",
+    description: "Our collection of online games.",
+  },
 };
 
 const crumbitems = [

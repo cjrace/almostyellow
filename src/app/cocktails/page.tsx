@@ -5,6 +5,11 @@ import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Cocktails",
+  description: "Our selection of cocktail recipes.",
+  openGraph: {
+    title: "Cocktails | Almost Yellow",
+    description: "Our selection of top cocktail recipes.",
+  },
 };
 
 const crumbitems = [

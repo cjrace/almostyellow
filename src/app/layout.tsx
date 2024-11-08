@@ -29,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="apple-mobile-web-app-title" content="Almost Yellow" />
         <ColorSchemeScript defaultColorScheme="dark" />
         <link
           rel="icon"
@@ -43,7 +44,6 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon.png"
         />
-        <meta name="apple-mobile-web-app-title" content="Almost Yellow" />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body>
