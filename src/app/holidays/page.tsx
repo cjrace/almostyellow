@@ -1,25 +1,26 @@
-import { Breadcrumbs, Anchor } from "@mantine/core";
 import BackToTop from "@/components/backtotop";
 import HolidayTimeline from "@/components/timeline";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Holidays",
+  description: "A timeline of our adventures.",
+  openGraph: {
+    title: "Holidays | Almost Yellow",
+    description: "A timeline of our adventures.",
+  },
 };
 
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Holidays", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+];
 
 export default function HolidaysPage() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
 
       <h1>Our trips and holidays</h1>
 

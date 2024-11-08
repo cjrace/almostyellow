@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "geolocation=(none)",
+            value: "geolocation=()",
           },
           {
             key: "Referrer-Policy",

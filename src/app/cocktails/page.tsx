@@ -1,25 +1,26 @@
-import { Breadcrumbs, Anchor } from "@mantine/core";
 import Cocktails from "@/components/cocktails";
 import BackToTop from "@/components/backtotop";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Cocktails",
+  description: "Our selection of cocktail recipes.",
+  openGraph: {
+    title: "Cocktails | Almost Yellow",
+    description: "Our selection of top cocktail recipes.",
+  },
 };
 
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Cocktails", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+];
 
 export default function CocktailsPage() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
 
       <h1>Cocktails</h1>
 
