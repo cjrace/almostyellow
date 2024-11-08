@@ -10,59 +10,63 @@ import {
   Container,
   Button,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
 
 export default function LoginForm() {
   const [errorMessage, formAction] = useActionState(authenticate, undefined);
 
-  return (
-    <form action={formAction}>
-      <Container size={420} my={40}>
-        <Title ta="center">Want to access the good stuff?</Title>
+  const form = useForm({
+    initialValues: {
+      email: "",
+      password: "",
+    },
 
-        <Paper>
-          <div>
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="email"
-                type="email"
-                name="email"
-                placeholder="Enter your email address"
-                required
-              />
-            </div>
-          </div>
-          <div className="mt-4">
-            <label
-              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <div className="relative">
-              <input
-                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Enter password"
-                required
-                minLength={6}
-              />
-            </div>
-          </div>
+    validate: {
+      email: (val) => (/^\S+@\S+$/.test(val) ? null : "Invalid email"),
+    },
+  });
+
+  const handleFormSubmit = () => {
+    const { email, password } = form.values;
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+    formAction(formData);
+  };
+
+  return (
+    <Container size={420} my={40}>
+      <Title ta="center">Want to access the good stuff?</Title>
+
+      <Paper>
+        <form onSubmit={form.onSubmit(handleFormSubmit)}>
+          <TextInput
+            required
+            label="Email"
+            placeholder="e.g. simply@thebest.co.uk"
+            value={form.values.email}
+            onChange={(event) =>
+              form.setFieldValue("email", event.currentTarget.value)
+            }
+            error={form.errors.email && "Invalid email"}
+            radius="md"
+          />
+          <PasswordInput
+            required
+            label="Password"
+            placeholder="Enter password"
+            value={form.values.password}
+            onChange={(event) =>
+              form.setFieldValue("password", event.currentTarget.value)
+            }
+            radius="md"
+          />
           <Button type="submit" fullWidth mt="lg">
             Log in
           </Button>
           {errorMessage && <p>{errorMessage}</p>}
-        </Paper>
-      </Container>
-    </form>
+        </form>
+      </Paper>
+    </Container>
   );
 }

@@ -41,4 +41,5 @@ next-env.d.ts
 /playwright/.cache/
 
 # seed data
+seed.ts
 /src/app/seed/route.ts
