@@ -51,20 +51,18 @@ export default defineConfig({
       },
     },
 
-    /* TODO: Fix as webkit is currently failing locally
     {
       name: "webkit",
-      use: { 
-      ...devices["Desktop Safari"], 
+      use: {
+        ...devices["Desktop Safari"],
       },
     },
     {
       name: "Mobile Safari",
-      use: { 
-      ...devices["iPhone 14"], 
+      use: {
+        ...devices["iPhone 14"],
       },
     },
-    */
   ],
 
   // Run local server before starting the tests
