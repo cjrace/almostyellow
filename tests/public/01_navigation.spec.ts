@@ -35,6 +35,12 @@ test("Can navigate to the games page and through its subpages", async ({
   await expect(page.locator("h1")).toContainText("Uno");
 
   await page.getByRole("link", { name: "Games" }).click();
+  await page.getByRole("link", { name: "Snakes and Ladders" }).click();
+  await expect(page).toHaveTitle("Snakes and Ladders | Almost Yellow");
+  await expect(page).toHaveURL("/games/snakesandladders");
+  await expect(page.locator("h1")).toContainText("Snakes");
+
+  await page.getByRole("link", { name: "Games" }).click();
   await page.getByRole("link", { name: "Home" }).click();
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Almost Yellow");

@@ -25,15 +25,13 @@ export default async function Games() {
 
       <ul>
         <li>
-          {" "}
           <Anchor href="/games/irishbingo">Irish bingo</Anchor>
         </li>
         <li>
-          <Anchor href="/games/uno">Uno</Anchor>
+          <Anchor href="/games/snakesandladders">Snakes and Ladders</Anchor>
         </li>
         <li>
-          {" "}
-          <Anchor href="/games">???</Anchor>
+          <Anchor href="/games/uno">Uno</Anchor>
         </li>
       </ul>
     </>

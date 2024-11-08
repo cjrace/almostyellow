@@ -85,15 +85,17 @@ export default function IrishBingo() {
         span={{ base: 4, sm: 6, lg: 6 }}
         style={{ display: "flex", justifyContent: "center" }}
       >
-        <Image
-          aria-hidden
-          src="/images/tayto.png"
-          alt="Mr. Tayto"
-          fit="contain"
-          h="auto"
-          w="auto"
-          style={{ maxWidth: "100%", height: "auto" }}
-        />
+        <Box style={{ display: "flex", alignItems: "flex-start" }}>
+          <Image
+            aria-hidden
+            src="/images/tayto.png"
+            alt="Mr. Tayto"
+            fit="contain"
+            h="auto"
+            w="auto"
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+        </Box>
       </Grid.Col>
 
       <Grid.Col span={{ base: 8, sm: 5, lg: 4 }}>
