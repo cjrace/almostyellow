@@ -1,25 +1,29 @@
-import { Breadcrumbs, Anchor, Space } from "@mantine/core";
+import { Anchor, Space } from "@mantine/core";
 import SnakesAndLadders from "@/components/snakesandladders";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Snakes and Ladders",
+  description: "There are snakes, there are ladders, what more could you want?",
+  openGraph: {
+    title: "Snakes and Ladders | Almost Yellow",
+    description:
+      "There are snakes, there are ladders, what more could you want?",
+  },
 };
 
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Games", href: "/games" },
   { title: "Snakes and Ladders", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+];
 
 export default function SnakesAndLaddersPage() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
+
       <h1>Snakes and Ladders</h1>
 
       <Space h="xl" />
