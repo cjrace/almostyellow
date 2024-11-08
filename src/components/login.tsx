@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { authenticate } from "@/services/authentication";
+import { authenticate } from "@/services/authenticate";
 import {
   TextInput,
   PasswordInput,
