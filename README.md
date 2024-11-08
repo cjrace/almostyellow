@@ -34,9 +34,9 @@ Start by installing dependencies:
 pnpm install
 ```
 
-Then you'll need to setup an `.env` file with the credentials needed to access the user database and manage the auth.
+Then you'll need to setup an `.env` file with the credentials needed to access the user database and manage the auth, follow the example from `.env.example`.
 
-Once you've got what you need in place, then you can run the development server (automatically opens a browser tab to preview the site):
+You can run the development server (automatically opens a browser tab to preview the site):
 
 ```bash
 pnpm dev
