@@ -20,10 +20,6 @@ export default function LoginForm() {
       email: "",
       password: "",
     },
-
-    validate: {
-      email: (val) => (/^\S+@\S+$/.test(val) ? null : "Invalid email"),
-    },
   });
 
   const handleFormSubmit = () => {

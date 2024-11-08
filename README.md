@@ -10,9 +10,7 @@ Our own personal site of games, cocktails and all the other good stuff.
 
 ## Getting Started
 
-This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app), and uses [App Router](https://nextjs.org/docs/app). Package management is handled by [pnpm](https://pnpm.io/). There is a supporting Postgres database that can be managed within [Vercel](https://vercel.com/) and is hosted by [Neon](https://neon.tech/).
-
-Main libraries used so far are:
+This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app), and uses [App Router](https://nextjs.org/docs/app). Package management is handled by [pnpm](https://pnpm.io/). There is a supporting Postgres database that can be managed within [Vercel](https://vercel.com/) and is hosted by [Neon](https://neon.tech/). Main libraries used so far are:
 
 Styling and components
 
@@ -36,7 +34,7 @@ Start by installing dependencies:
 pnpm install
 ```
 
-Then you'll need to setup an `.env.local` file with the credentials needed to access the user database and manage the auth.
+Then you'll need to setup an `.env` file with the credentials needed to access the user database and manage the auth.
 
 Once you've got what you need in place, then you can run the development server (automatically opens a browser tab to preview the site):
 

@@ -1,11 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv"; /* https://github.com/motdotla/dotenv */
+import path from "path";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -33,37 +30,44 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
-    /* Test against browsers we use */
+    /* Test against different browsers we use */
     {
       name: "Mobile Chrome",
-      use: { ...devices["Pixel 8"] },
-    },
-    {
-      /* TODO: Currently failing locally
-      name: "Mobile Safari",
-      use: { ...devices["iPhone 14"] },
-    */
+      use: {
+        ...devices["Pixel 8"],
+      },
     },
     {
       name: "Google Chrome",
-      use: { ...devices["Desktop Chrome"], channel: "chrome" },
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+      },
     },
-
-    /* Test against other common browsers */
     {
       name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
+      use: {
+        ...devices["Desktop Firefox"],
+      },
     },
 
+    /* TODO: Fix as webkit is currently failing locally
     {
-      /* TODO: Currently failing locally
       name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    */
+      use: { 
+      ...devices["Desktop Safari"], 
+      },
     },
+    {
+      name: "Mobile Safari",
+      use: { 
+      ...devices["iPhone 14"], 
+      },
+    },
+    */
   ],
 
-  /* Run your local server before starting the tests */
+  // Run local server before starting the tests
   webServer: {
     command: "next start",
     url: "http://127.0.0.1:3000",

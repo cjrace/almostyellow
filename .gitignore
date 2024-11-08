@@ -43,3 +43,5 @@ next-env.d.ts
 # seed data
 seed.ts
 /src/app/seed/route.ts
+
+playwright/.auth
