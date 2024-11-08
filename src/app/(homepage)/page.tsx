@@ -1,5 +1,5 @@
-import { Button, Group, ActionIcon } from "@mantine/core";
-import Confetti from "@/components/confetti";
+import { Button, Group, ActionIcon, Space } from "@mantine/core";
+import playConfetti from "@/components/playconfetti";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -8,6 +8,7 @@ import {
   IconBeach,
   IconPaperclip,
   IconBrandGithub,
+  IconConfetti,
 } from "@tabler/icons-react";
 import ToggleColour from "@/components/togglecolour";
 
@@ -15,6 +16,15 @@ export default function Home() {
   return (
     <>
       <Group h="100%" px="md" justify="flex-end">
+        <ActionIcon
+          onClick={playConfetti}
+          variant="default"
+          size="xl"
+          aria-label="Fire confetti canons"
+        >
+          <IconConfetti />
+        </ActionIcon>
+
         <ActionIcon
           component="a"
           href="https://github.com/cjrace/almostyellow"
@@ -85,8 +95,9 @@ export default function Home() {
         </Button>
       </Group>
 
+      <Space h="lg" />
+
       <Group justify="center">
-        <Confetti />
         <Button
           leftSection={<IconPaperclip />}
           variant="default"
