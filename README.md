@@ -10,7 +10,9 @@ Our own personal site of games, cocktails and all the other good stuff.
 
 ## Getting Started
 
-This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app), and uses [App Router](https://nextjs.org/docs/app). Package management is handled by [pnpm](https://pnpm.io/). Main libraries used so far are:
+This project was bootstrapped with [Create Next App](https://nextjs.org/docs/api-reference/create-next-app), and uses [App Router](https://nextjs.org/docs/app). Package management is handled by [pnpm](https://pnpm.io/). There is a supporting Postgres database that can be managed within [Vercel](https://vercel.com/) and is hosted by [Neon](https://neon.tech/).
+
+Main libraries used so far are:
 
 Styling and components
 
@@ -19,11 +21,12 @@ Styling and components
 
 Database
 
-- ?
+- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
 
 Auth
 
-- something around auth?
+- [Auth.js](https://authjs.dev/)
+- [bcrypt](https://github.com/kelektiv/node.bcrypt.js)
 
 ### Run locally
 
@@ -33,7 +36,9 @@ Start by installing dependencies:
 pnpm install
 ```
 
-Then you'll need to setup an `.env.local` file with the credentials needed to access the user database and manage the auth. The database can be managed within [Vercel](https://vercel.com/) and is hosted by [Neon](https://neon.tech/). Once you've got what you need in place, then you can run the development server (automatically opens a browser tab to preview the site):
+Then you'll need to setup an `.env.local` file with the credentials needed to access the user database and manage the auth.
+
+Once you've got what you need in place, then you can run the development server (automatically opens a browser tab to preview the site):
 
 ```bash
 pnpm dev
@@ -63,7 +68,7 @@ pnpm run
 
 ## Deployment
 
-This site is deployed to the following places using [Vercel](https://vercel.com/), trigger from pushes to the `main` branch:
+This site is deployed to the following places using [Vercel](https://vercel.com/), deploys are triggered from pushes to the `main` branch:
 
 - https://www.almostyellow.co.uk/
 - https://almostyellow.co.uk/ (redirects to www)
