@@ -21,7 +21,7 @@ export default function ToggleColour() {
 
   return (
     <ActionIcon
-      onClick={() => toggleColorScheme()}
+      onClick={toggleColorScheme}
       variant="default"
       size="xl"
       aria-label="Toggle color scheme"
