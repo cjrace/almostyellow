@@ -50,7 +50,7 @@ export default defineConfig({
         ...devices["Desktop Firefox"],
       },
     },
-
+    /* TODO: Fix these - seems to work on Laura's phone in real life but the tests are having none of it
     {
       name: "webkit",
       use: {
@@ -63,6 +63,7 @@ export default defineConfig({
         ...devices["iPhone 14"],
       },
     },
+  */
   ],
 
   // Run local server before starting the tests

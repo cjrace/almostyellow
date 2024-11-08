@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: "https://www.almostyellow.co.uk/games/snakesandladders",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.9,
+    },
+    {
       url: "https://www.almostyellow.co.uk/games/uno",
       lastModified: new Date(),
       changeFrequency: "yearly",
