@@ -10,7 +10,7 @@ If you find a security vulnerability, please:
 
 3. Include a description, steps to reproduce, and affected versions.
 
-4. We'll acknowledge your report as soon as practicable.
+4. We will acknowledge your report as soon as practicable.
 
 ## Supported Versions
 

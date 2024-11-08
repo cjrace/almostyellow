@@ -1,24 +1,25 @@
-import { Breadcrumbs, Anchor } from "@mantine/core";
 import DecisionMaker from "@/components/decisionmaker";
 import { Metadata } from "next";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Decision Maker",
+  description: "The best way to make life's most important decisions.",
+  openGraph: {
+    title: "Decision Maker | Almost Yellow",
+    description: "The best way to make life's most important decisions.",
+  },
 };
 
 const crumbitems = [
   { title: "Home", href: "/" },
   { title: "Decision maker", href: "" },
-].map((item, index) => (
-  <Anchor href={item.href} key={index}>
-    {item.title}
-  </Anchor>
-));
+];
 
 export default function DecisionMakerPage() {
   return (
     <>
-      <Breadcrumbs>{crumbitems}</Breadcrumbs>
+      <Header crumbs={crumbitems} />
       <h1>The Decision Maker</h1>
 
       <DecisionMaker />

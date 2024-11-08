@@ -35,7 +35,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+playwright/.auth
+
+# seed data
+/src/app/seed/route.ts
