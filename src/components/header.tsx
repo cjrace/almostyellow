@@ -10,20 +10,23 @@ interface BreadcrumbItem {
 
 interface HeaderProps {
   crumbs: BreadcrumbItem[];
+  noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
 }
 
-export default function Header({ crumbs }: HeaderProps) {
+export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
   return (
     <Group justify="space-between">
-      <Group>
-        <Breadcrumbs>
-          {crumbs?.map((item, index) => (
-            <Anchor href={item.href} key={index}>
-              {item.title}
-            </Anchor>
-          ))}
-        </Breadcrumbs>
-      </Group>
+      {!noCrumbs && (
+        <Group>
+          <Breadcrumbs>
+            {crumbs?.map((item, index) => (
+              <Anchor href={item.href} key={index}>
+                {item.title}
+              </Anchor>
+            ))}
+          </Breadcrumbs>
+        </Group>
+      )}
 
       <Group h="100%" px="md" justify="flex-end">
         <ActionIcon
