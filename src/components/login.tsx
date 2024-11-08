@@ -15,36 +15,54 @@ export default function LoginForm() {
   const [errorMessage, formAction] = useActionState(authenticate, undefined);
 
   return (
-    <Container size={420} my={40}>
-      <Title ta="center">Want to access the good stuff?</Title>
+    <form action={formAction}>
+      <Container size={420} my={40}>
+        <Title ta="center">Want to access the good stuff?</Title>
 
-      <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-        <form action={formAction}>
-          <TextInput
-            id="email"
-            label="Email"
-            placeholder="e.g. simply@thebest.co.uk"
-            required
-            type="email"
-          />
-          <PasswordInput
-            id="password"
-            label="Password"
-            placeholder=""
-            required
-            mt="md"
-            visibilityToggleButtonProps={{
-              "aria-label": "Toggle password visibility",
-            }}
-          />
-
+        <Paper>
+          <div>
+            <label
+              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              htmlFor="email"
+            >
+              Email
+            </label>
+            <div className="relative">
+              <input
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Enter your email address"
+                required
+              />
+            </div>
+          </div>
+          <div className="mt-4">
+            <label
+              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Enter password"
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
           <Button type="submit" fullWidth mt="lg">
-            Sign in
+            Log in
           </Button>
-
           {errorMessage && <p>{errorMessage}</p>}
-        </form>
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
+    </form>
   );
 }
