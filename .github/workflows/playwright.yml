@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
-      TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+      AUTH_URL: ${{ secrets.AUTH_URL }}
 
     steps:
       - uses: actions/checkout@v4
