@@ -1,3 +1,4 @@
+import Header from "@/components/header";
 import LoginForm from "@/components/login";
 import { Metadata } from "next";
 
@@ -6,5 +7,10 @@ export const metadata: Metadata = {
 };
 
 export default function Login() {
-  return <LoginForm />;
+  return (
+    <>
+      <Header noCrumbs={true} />
+      <LoginForm />
+    </>
+  );
 }

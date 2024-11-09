@@ -38,7 +38,8 @@ import {
   PiRabbit,
   PiShootingStar,
 } from "react-icons/pi";
-
+import playConfetti from "@/components/playconfetti";
+        
 interface IconSelectionProps {
   selectedIcon: string;
   onChange: (value: string) => void;
@@ -209,6 +210,7 @@ const SnakesAndLadders = () => {
       setPopupMessage(
         `Congratulations! ${players[currentPlayer]?.name} won the game!`,
       );
+      playConfetti();
     }
 
     setPlayerPositions((prevPositions) => {
