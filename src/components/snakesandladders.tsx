@@ -333,10 +333,15 @@ const SnakesAndLadders = () => {
     setPopupMessage(null);
     setWinner(null);
     setSpecialMove(null);
-    setPlayerNames(
-      Array.from({ length: numPlayers }, (_, i) => `Player ${i + 1}`),
-    ); // Reset player names
-    setGameInitialized(false); // Reset to show initiation step
+
+    // Reset players to default names and icons
+    const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
+      name: `Player ${i + 1}`,
+      icon: "user", // Adjust if needed
+    }));
+    setPlayers(defaultPlayers);
+
+    setGameInitialized(false); // Reset to show initiation step };
   };
 
   return (
