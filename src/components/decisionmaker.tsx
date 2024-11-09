@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Textarea, Button, Grid, Container } from "@mantine/core";
+import { Textarea, Button, SimpleGrid, Stack, Text } from "@mantine/core";
 import { useForm, Form } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
 
@@ -37,34 +37,32 @@ export default function DecisionMaker() {
   };
 
   return (
-    <Grid grow>
-      <Grid.Col span={5}>
-        <Container>
-          <Form form={form} onSubmit={makeDecision}>
-            <Textarea
-              label="List out your options"
-              placeholder="One option per line..."
-              error={error}
-              rows={5}
-              classNames={{ label: classes.label }} // Add an extra space before the text area box
-              {...form.getInputProps("options")}
-            />
-            <br />
-            <Button type="submit" fullWidth>
-              Make a decision
-            </Button>
-          </Form>
-        </Container>
-      </Grid.Col>
+    <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
+      <Form form={form} onSubmit={makeDecision}>
+        <Textarea
+          label="List out your options"
+          placeholder="One option per line..."
+          error={error}
+          autosize
+          minRows={5}
+          classNames={{ label: classes.label }} // Add an extra space before the text area box
+          {...form.getInputProps("options")}
+        />
+        <Button mt="xl" type="submit" fullWidth>
+          Make a decision
+        </Button>
+      </Form>
 
-      <Grid.Col span={7}>
-        {chosenOption && (
-          <div style={{ fontSize: "24px", textAlign: "center" }}>
-            <p>The decision has been made, you choose...</p>
-            <p data-testid="choice_made">{chosenOption}</p>
-          </div>
-        )}
-      </Grid.Col>
-    </Grid>
+      {chosenOption && (
+        <Stack>
+          <Text ta="center" size="xl">
+            The decision has been made, you choose...
+          </Text>
+          <Text ta="center" size="xl">
+            <span data-testid="choice_made">{chosenOption}</span>
+          </Text>
+        </Stack>
+      )}
+    </SimpleGrid>
   );
 }

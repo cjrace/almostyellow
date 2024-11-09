@@ -1,4 +1,12 @@
-import { Button, Group, ActionIcon } from "@mantine/core";
+import {
+  Button,
+  Group,
+  ActionIcon,
+  Title,
+  Text,
+  Stack,
+  Space,
+} from "@mantine/core";
 import Confetti from "@/components/confetti";
 import {
   IconDeviceGamepad2,
@@ -28,10 +36,15 @@ export default function Home() {
         </ActionIcon>
         <ToggleColour />
       </Group>
-      <h1 style={{ textAlign: "center" }}>Almost yellow</h1>
-      <p style={{ textAlign: "center" }}>
-        This is our homepage, we should make it prettier.
-      </p>
+
+      <Stack>
+        <Title ta="center">Almost yellow</Title>
+        <Text ta="center">
+          This is our homepage, we should make it prettier.
+        </Text>
+      </Stack>
+
+      <Space h="xl" />
 
       <Group justify="center">
         <Button

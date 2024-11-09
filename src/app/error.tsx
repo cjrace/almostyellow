@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Container, Anchor } from "@mantine/core";
+import { Container, Anchor, Title, Button, Stack } from "@mantine/core";
 
 export default function Error({
   error,
@@ -15,27 +15,21 @@ export default function Error({
   }, [error]);
 
   return (
-    <Container size="sm">
-      <h2>Something went very wrong!</h2>
-      <p>
-        We suggest you try to{" "}
-        <Anchor
+    <Container size="xs">
+      <Stack gap="xl">
+        <Title ta="center">Something went very wrong!</Title>
+        <Button
           onClick={
             // Attempt to recover by trying to re-render the segment
             () => reset()
           }
         >
-          reset the page
-        </Anchor>
-        .
-      </p>
-      <p>
-        If this keeps persisting{" "}
-        <Anchor href="/" component="a">
-          return home
-        </Anchor>
-        .
-      </p>
+          Reset the page
+        </Button>
+        <Button component="a" href="/" variant="default">
+          Return home
+        </Button>
+      </Stack>
     </Container>
   );
 }

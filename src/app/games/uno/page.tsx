@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Title, Text } from "@mantine/core";
 import Header from "@/components/header";
 
 export const metadata: Metadata = {
@@ -15,8 +16,8 @@ export default async function UnoPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <h1>Uno</h1>
-      <p>Under construction...</p>
+      <Title>Uno</Title>
+      <Text>Under construction...</Text>
     </>
   );
 }
