@@ -30,7 +30,14 @@ export default function GamesCard({
     >
       <Card.Section>
         <Center>
-          <Image aria-hidden src={imagePath} h={200} w="auto" fit="contain" />
+          <Image
+            aria-hidden
+            alt=""
+            src={imagePath}
+            h={200}
+            w="auto"
+            fit="contain"
+          />
         </Center>
       </Card.Section>
       <div style={{ flex: "1" }}>
