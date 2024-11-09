@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Text, Image, Button, Center } from "@mantine/core";
+import { Card, Text, Image, Button, Center, Stack } from "@mantine/core";
 
 interface GamesCardProps {
   imagePath: string;
@@ -41,13 +41,10 @@ export default function GamesCard({
         </Center>
       </Card.Section>
       <div style={{ flex: "1" }}>
-        {/*This helps keep titles aligned across cards*/}
         <Text fw={500} mt="md">
           {title}
         </Text>
-        <Text mt="xs" c="dimmed">
-          {description}
-        </Text>
+        <Text c="dimmed">{description}</Text>
       </div>
       <Button
         variant="default"

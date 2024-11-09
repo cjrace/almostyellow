@@ -1,4 +1,4 @@
-import { Button, Group, Space } from "@mantine/core";
+import { Button, Group, Title, Text, Space, Stack } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -14,10 +14,14 @@ export default function Home() {
     <>
       <Header noCrumbs={true} />
 
-      <h1 style={{ textAlign: "center" }}>Almost yellow</h1>
-      <p style={{ textAlign: "center" }}>
-        This is our homepage, we should make it prettier.
-      </p>
+      <Stack>
+        <Title ta="center">Almost yellow</Title>
+        <Text ta="center">
+          This is our homepage, we should make it prettier.
+        </Text>
+      </Stack>
+
+      <Space h="xl" />
 
       <Group justify="center">
         <Button
