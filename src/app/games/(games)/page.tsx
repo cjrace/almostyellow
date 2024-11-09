@@ -24,7 +24,7 @@ export default async function Games() {
 
       <h1>Our games</h1>
 
-      <SimpleGrid cols={3} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
         <GamesCard
           imagePath="/images/cow.svg"
           title="Irish Bingo"
