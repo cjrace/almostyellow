@@ -16,8 +16,11 @@ export default async function UnoPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>Uno</Title>
-      <Text>Under construction...</Text>
+
+      <main>
+        <Title>Uno</Title>
+        <Text>Under construction...</Text>
+      </main>
     </>
   );
 }

@@ -18,10 +18,12 @@ export default async function ChopinLiszt() {
     <>
       <Header crumbs={crumbitems} />
 
-      <Container size="lg">
-        <Title mb="xl">Our Chopin Liszt</Title>
-        <Checklist />
-      </Container>
+      <main>
+        <Container size="lg">
+          <Title mb="xl">Our Chopin Liszt</Title>
+          <Checklist />
+        </Container>
+      </main>
     </>
   );
 }

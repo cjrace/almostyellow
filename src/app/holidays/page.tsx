@@ -22,9 +22,12 @@ export default function HolidaysPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>Our trips and holidays</Title>
-      <HolidayTimeline />
-      <BackToTop />
+
+      <main>
+        <Title>Our trips and holidays</Title>
+        <HolidayTimeline />
+        <BackToTop />
+      </main>
     </>
   );
 }

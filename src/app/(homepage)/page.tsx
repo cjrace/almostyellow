@@ -14,80 +14,82 @@ export default function Home() {
     <>
       <Header noCrumbs={true} />
 
-      <Stack>
-        <Title ta="center">Almost yellow</Title>
-        <Text ta="center">
-          This is our homepage, we should make it prettier.
-        </Text>
-      </Stack>
+      <main>
+        <Stack>
+          <Title ta="center">Almost yellow</Title>
+          <Text ta="center">
+            This is our homepage, we should make it prettier.
+          </Text>
+        </Stack>
 
-      <Space h="xl" />
+        <Space h="xl" />
 
-      <Group justify="center">
-        <Button
-          leftSection={<IconDeviceGamepad2 />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/games"
-        >
-          View our games
-        </Button>
+        <Group justify="center">
+          <Button
+            leftSection={<IconDeviceGamepad2 />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/games"
+          >
+            View our games
+          </Button>
 
-        <Button
-          leftSection={<IconMoodPuzzled />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/decisionmaker"
-        >
-          How we make decisions
-        </Button>
+          <Button
+            leftSection={<IconMoodPuzzled />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/decisionmaker"
+          >
+            How we make decisions
+          </Button>
 
-        <Button
-          leftSection={<IconCheese />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/recipes"
-        >
-          Our recipes
-        </Button>
+          <Button
+            leftSection={<IconCheese />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/recipes"
+          >
+            Our recipes
+          </Button>
 
-        <Button
-          leftSection={<IconGlassCocktail />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/cocktails"
-        >
-          Cocktail time!
-        </Button>
+          <Button
+            leftSection={<IconGlassCocktail />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/cocktails"
+          >
+            Cocktail time!
+          </Button>
 
-        <Button
-          leftSection={<IconBeach />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/holidays"
-        >
-          Our holidays!
-        </Button>
-      </Group>
+          <Button
+            leftSection={<IconBeach />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/holidays"
+          >
+            Our holidays!
+          </Button>
+        </Group>
 
-      <Space h="lg" />
+        <Space h="lg" />
 
-      <Group justify="center">
-        <Button
-          leftSection={<IconPaperclip />}
-          variant="default"
-          component="a"
-          size="xl"
-          href="/admin"
-        >
-          Admin stuff
-        </Button>
-      </Group>
+        <Group justify="center">
+          <Button
+            leftSection={<IconPaperclip />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/admin"
+          >
+            Admin stuff
+          </Button>
+        </Group>
+      </main>
     </>
   );
 }

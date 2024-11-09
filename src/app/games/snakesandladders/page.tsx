@@ -23,9 +23,12 @@ export default function SnakesAndLaddersPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>Snakes and Ladders</Title>
-      <Space h="xl" />
-      <SnakesAndLadders />
+
+      <main>
+        <Title>Snakes and Ladders</Title>
+        <Space h="xl" />
+        <SnakesAndLadders />
+      </main>
     </>
   );
 }

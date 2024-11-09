@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { Container, Anchor, Title, Button, Stack } from "@mantine/core";
+import { Container, Title, Button, Stack } from "@mantine/core";
+import Header from "@/components/header";
 
 export default function Error({
   error,
@@ -15,21 +16,27 @@ export default function Error({
   }, [error]);
 
   return (
-    <Container size="xs">
-      <Stack gap="xl">
-        <Title ta="center">Something went very wrong!</Title>
-        <Button
-          onClick={
-            // Attempt to recover by trying to re-render the segment
-            () => reset()
-          }
-        >
-          Reset the page
-        </Button>
-        <Button component="a" href="/" variant="default">
-          Return home
-        </Button>
-      </Stack>
-    </Container>
+    <>
+      <Header noCrumbs={true} />
+
+      <main>
+        <Container size="xs">
+          <Stack gap="xl">
+            <Title ta="center">Something went very wrong!</Title>
+            <Button
+              onClick={
+                // Attempt to recover by trying to re-render the segment
+                () => reset()
+              }
+            >
+              Reset the page
+            </Button>
+            <Button component="a" href="/" variant="default">
+              Return home
+            </Button>
+          </Stack>
+        </Container>
+      </main>
+    </>
   );
 }

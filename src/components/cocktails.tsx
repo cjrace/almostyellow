@@ -81,7 +81,7 @@ export default function Cocktails() {
       </Grid.Col>
 
       <Grid.Col span={{ base: 12, sm: 9 }}>
-        <ul className={styles.cocktailList}>
+        <div className={styles.cocktailList}>
           {filteredCocktails
             .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
             .map((cocktail) => (
@@ -89,7 +89,7 @@ export default function Cocktails() {
                 <CocktailBox {...cocktail} />
               </div>
             ))}
-        </ul>
+        </div>
       </Grid.Col>
     </Grid>
   );

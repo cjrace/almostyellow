@@ -56,7 +56,12 @@ const Checklist: React.FC = () => {
 
   return (
     <>
-      <Modal opened={opened} onClose={close} title="Add new items" centered>
+      <Modal
+        opened={opened}
+        onClose={close}
+        closeButtonProps={{ "aria-label": "Close modal" }}
+        title="Add new items"
+      >
         <Textarea
           data-autofocus
           placeholder="Add new items, one per line..."
@@ -65,7 +70,11 @@ const Checklist: React.FC = () => {
           autosize
           minRows={7}
         />
-        <Button mt="md" onClick={addItem}>
+        <Button
+          mt="md"
+          onClick={addItem}
+          aria-label="Add items and close modal"
+        >
           Add item(s)
         </Button>
       </Modal>
