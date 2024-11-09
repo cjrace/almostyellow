@@ -9,9 +9,9 @@
     "lint": "next lint",
     "test": "prettier . --write && next lint && next build && playwright test",
     "test-only": "next lint && playwright test",
-    "lint-style": "next lint && prettier . --write",
     "pretty": "prettier . --write",
     "pretty-check": "prettier . --check",
+    "pretty-lint": "prettier . --write && next lint",
     "prepare": "husky"
   },
   "dependencies": {
