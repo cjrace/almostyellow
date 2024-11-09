@@ -1,4 +1,4 @@
-import { Anchor, Space } from "@mantine/core";
+import { Title, Space } from "@mantine/core";
 import SnakesAndLadders from "@/components/snakesandladders";
 import { Metadata } from "next";
 import Header from "@/components/header";
@@ -24,11 +24,11 @@ export default function SnakesAndLaddersPage() {
     <>
       <Header crumbs={crumbitems} />
 
-      <h1>Snakes and Ladders</h1>
-
-      <Space h="xl" />
-
-      <SnakesAndLadders />
+      <main>
+        <Title>Snakes and Ladders</Title>
+        <Space h="xl" />
+        <SnakesAndLadders />
+      </main>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Space } from "@mantine/core";
+import { Space, Title } from "@mantine/core";
 import IrishBingo from "@/components/irishbingo";
 import { Metadata } from "next";
 import Header from "@/components/header";
@@ -22,11 +22,12 @@ export default function IrishBingoPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <h1>Irish Bingo</h1>
 
-      <Space h="xl" />
-
-      <IrishBingo />
+      <main>
+        <Title>Irish Bingo</Title>
+        <Space h="xl" />
+        <IrishBingo />
+      </main>
     </>
   );
 }

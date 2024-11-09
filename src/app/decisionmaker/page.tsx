@@ -1,6 +1,7 @@
 import DecisionMaker from "@/components/decisionmaker";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import { Title, Space } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Decision Maker",
@@ -20,9 +21,12 @@ export default function DecisionMakerPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <h1>The Decision Maker</h1>
 
-      <DecisionMaker />
+      <main>
+        <Title>The Decision Maker</Title>
+        <Space h="xl" />
+        <DecisionMaker />
+      </main>
     </>
   );
 }

@@ -2,6 +2,7 @@ import Cocktails from "@/components/cocktails";
 import BackToTop from "@/components/backtotop";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import { Title } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Cocktails",
@@ -22,10 +23,11 @@ export default function CocktailsPage() {
     <>
       <Header crumbs={crumbitems} />
 
-      <h1>Cocktails</h1>
-
-      <Cocktails />
-      <BackToTop />
+      <main>
+        <Title>Cocktails</Title>
+        <Cocktails />
+        <BackToTop />
+      </main>
     </>
   );
 }
