@@ -139,7 +139,7 @@ const IconSelection: React.FC<IconSelectionProps> = ({
 
 const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
   <div>
-    <Text size="xl" ta="center" mb="md">
+    <Text size="xl" ta="left" mb="md" fw={700}>
       Players
     </Text>
     {players.map((player, index) => (
@@ -297,9 +297,13 @@ const SnakesAndLadders = () => {
               setSpecialMove(specialEnd);
               const moveType = specialEnd < finalPosition ? "snake" : "ladder";
               const moveDifference = Math.abs(finalPosition - specialEnd);
-              setPopupMessage(
-                `Oops! ${players[currentPlayer]?.name} landed on a ${moveType} and moved ${moveDifference} spaces!`,
-              );
+
+              const message =
+                moveType === "snake"
+                  ? `Oh no! ${players[currentPlayer]?.name} landed on a ${moveType} and slid down ${moveDifference} spaces!`
+                  : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${moveDifference} spaces!`;
+
+              setPopupMessage(message);
             } else {
               finalizeMove(finalPosition);
             }
@@ -386,7 +390,7 @@ const SnakesAndLadders = () => {
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
             {showDiceResult && diceResult && (
-              <Text ta="center" mt="md">
+              <Text ta="left" mt="md">
                 {players[currentPlayer]?.name} moves {diceResult} places!
               </Text>
             )}
