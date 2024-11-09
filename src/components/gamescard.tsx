@@ -40,12 +40,12 @@ export default function GamesCard({
           />
         </Center>
       </Card.Section>
-      <Stack gap="xs">
+      <div style={{ flex: "1" }}>
         <Text fw={500} mt="md">
           {title}
         </Text>
         <Text c="dimmed">{description}</Text>
-      </Stack>
+      </div>
       <Button
         variant="default"
         component="a"
