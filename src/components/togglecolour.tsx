@@ -8,7 +8,11 @@ import {
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import { useEffect } from "react";
 
-export default function ToggleColour() {
+interface ToggleColourProps {
+  size?: string;
+}
+
+export default function ToggleColour({ size }: ToggleColourProps) {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light");
   const toggleColorScheme = () => {
@@ -23,7 +27,7 @@ export default function ToggleColour() {
     <ActionIcon
       onClick={toggleColorScheme}
       variant="default"
-      size="xl"
+      size={size}
       aria-label="Toggle color scheme"
     >
       {colorScheme === "light" ? (
