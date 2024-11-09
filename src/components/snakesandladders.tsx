@@ -10,6 +10,9 @@ import {
   Space,
   TextInput,
   NumberInput,
+  SimpleGrid,
+  Avatar,
+  Group,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -20,6 +23,7 @@ import {
   IconDice4,
   IconDice5,
   IconDice6,
+  IconUser,
 } from "@tabler/icons-react";
 
 // Define the grid size
@@ -97,6 +101,13 @@ const SnakesAndLadders = () => {
   }, []);
 
   const initializePlayers = () => {
+    if (playerNames.length === 0) {
+      const defaultPlayerNames = Array.from(
+        { length: numPlayers },
+        (_, i) => `Player ${i + 1}`,
+      );
+      setPlayerNames(defaultPlayerNames);
+    }
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
   };
@@ -106,6 +117,32 @@ const SnakesAndLadders = () => {
     newNames[index] = name;
     setPlayerNames(newNames);
   };
+
+  const avatars = [
+    "/images/avatar1.png",
+    "/images/avatar2.png",
+    "/images/avatar3.png",
+    "/images/avatar4.png",
+    // Add more avatar paths as needed
+  ];
+
+  const PlayerList = ({ playerNames, avatars }) => (
+    <div>
+      <Text size="xl" ta="center" mb="md">
+        Players
+      </Text>
+      {playerNames.map((name, index) => (
+        <Group key={index} mb="sm" noWrap>
+          <Avatar
+            src={avatars[index % avatars.length]}
+            alt={name}
+            radius="xl"
+          />
+          <Text>{name}</Text>
+        </Group>
+      ))}
+    </div>
+  );
 
   const finalizeMove = (finalPosition: number) => {
     if (finalPosition === 100) {
@@ -240,111 +277,129 @@ const SnakesAndLadders = () => {
   };
 
   return (
-    <Box>
-      {!gameInitialized && (
-        <>
-          {/* Form to set up the players */}
-          <NumberInput
-            value={numPlayers}
-            onChange={(value) => setNumPlayers(Number(value) || 2)}
-            label="Number of Players"
-            min={2}
-            max={10}
-          />
-
-          {Array.from({ length: numPlayers }).map((_, index) => (
-            <TextInput
-              key={index}
-              value={playerNames[index] || ""}
-              onChange={(event) =>
-                handleNameChange(index, event.currentTarget.value)
-              }
-              label={`Player ${index + 1} Name`}
+    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+      <Box>
+        {!gameInitialized && (
+          <>
+            {/* Form to set up the players */}
+            <NumberInput
+              value={numPlayers}
+              onChange={(value) => setNumPlayers(Number(value) || 2)}
+              label="Number of Players"
+              min={2}
+              max={10}
             />
-          ))}
 
-          <Button onClick={initializePlayers} mt="sm">
-            Start game!
-          </Button>
-          <Space h="md" />
-        </>
-      )}
+            {Array.from({ length: numPlayers }).map((_, index) => (
+              <TextInput
+                key={index}
+                value={playerNames[index] || ""}
+                onChange={(event) =>
+                  handleNameChange(index, event.currentTarget.value)
+                }
+                label={`Player ${index + 1} Name`}
+              />
+            ))}
 
-      {gameInitialized && (
-        <>
-          <Text size="xl" ta="center" mb="md">
-            {playerNames[currentPlayer]}&apos;s turn
-          </Text>
+            <Button onClick={initializePlayers} mt="sm">
+              Start game!
+            </Button>
+          </>
+        )}
 
-          <Button
-            onClick={rollDice}
-            fullWidth
-            mt="md"
-            disabled={!!winner || playerPositions.length === 0 || isRolling}
-          >
-            {isRolling ? rollingDiceIcon : "Roll Dice"}
-          </Button>
+        {gameInitialized && (
+          <Box>
+            <PlayerList playerNames={playerNames} avatars={avatars} />
 
-          {showDiceResult && diceResult && (
-            <Text ta="center" mt="md">
-              {playerNames[currentPlayer]} moves {diceResult} places!
+            <Space h="md" />
+
+            <Text size="xl" ta="center" mb="md">
+              {playerNames[currentPlayer]}&apos;s turn
             </Text>
-          )}
 
-          <Space h="md" />
+            <Space h="md" />
 
-          <Button onClick={restartGame} fullWidth mt="md">
-            Restart Game
-          </Button>
+            <Button
+              onClick={rollDice}
+              fullWidth
+              mt="md"
+              w="50%"
+              disabled={!!winner || playerPositions.length === 0 || isRolling}
+            >
+              {isRolling ? rollingDiceIcon : "Roll Dice"}
+            </Button>
 
-          <Space h="xl" />
+            <Space h="md" />
 
-          <Grid columns={10}>
-            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-              const pos = index + 1;
-              const playerAtPos = playerPositions.findIndex(
-                (playerPos) => playerPos === pos,
-              );
-              return (
-                <Grid.Col
-                  span={1}
-                  key={pos}
-                  style={{
-                    border: "1px solid #ddd",
-                    height: "50px",
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {playerAtPos !== -1 && (
-                    <Text>{playerNames[playerAtPos]}</Text>
-                  )}
-                  {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
-                  {pos === 100 && <IconTrophy size={24} color="gold" />}
-                </Grid.Col>
-              );
-            })}
-          </Grid>
-
-          <Space h="md" />
-
-          <Modal
-            opened={!!popupMessage}
-            onClose={closePopup}
-            title="Game Update"
-          >
-            {popupMessage}
-            {winner !== null && (
-              <Button onClick={restartGame} fullWidth mt="md">
-                Restart Game
-              </Button>
+            {showDiceResult && diceResult && (
+              <Text ta="center" mt="md">
+                {playerNames[currentPlayer]} moves {diceResult} places!
+              </Text>
             )}
-          </Modal>
-        </>
-      )}
-    </Box>
+
+            <Space h="md" />
+
+            <Button onClick={restartGame} w="50%" mt="md">
+              Restart Game
+            </Button>
+          </Box>
+        )}
+      </Box>
+
+      <Box>
+        {gameInitialized && (
+          <>
+            <Space h="md" />
+
+            <Space h="xl" />
+
+            <Grid columns={10}>
+              {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
+                const pos = index + 1;
+                const playerAtPos = playerPositions.findIndex(
+                  (playerPos) => playerPos === pos,
+                );
+                return (
+                  <Grid.Col
+                    span={1}
+                    key={pos}
+                    style={{
+                      border: "1px solid #ddd",
+                      height: "50px",
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {playerAtPos !== -1 && (
+                      <Text>{playerNames[playerAtPos]}</Text>
+                    )}
+                    {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
+                    {pos === 100 && <IconTrophy size={24} color="gold" />}
+                  </Grid.Col>
+                );
+              })}
+            </Grid>
+
+            <Space h="md" />
+
+            <Modal
+              opened={!!popupMessage}
+              onClose={closePopup}
+              title="Game Update"
+            >
+              {popupMessage}
+              {winner !== null && (
+                <Button onClick={restartGame} fullWidth mt="md">
+                  Restart Game
+                </Button>
+              )}
+            </Modal>
+          </>
+        )}
+      </Box>
+    </SimpleGrid>
   );
 };
 
