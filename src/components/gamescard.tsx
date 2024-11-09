@@ -41,7 +41,6 @@ export default function GamesCard({
         </Center>
       </Card.Section>
       <div style={{ flex: "1" }}>
-        {" "}
         {/*This helps keep titles aligned across cards*/}
         <Text fw={500} mt="md">
           {title}
