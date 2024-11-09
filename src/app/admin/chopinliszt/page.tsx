@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 };
 
 const crumbitems = [
+  { title: "Home", href: "/" },
   { title: "Admin", href: "/admin" },
   { title: "Chopin Liszt", href: "" },
 ];

@@ -9,12 +9,15 @@ test("Can sign in and navigate admin", async ({ page }) => {
     process.exit(1);
   }
 
-  await page.goto("/login");
+  await page.goto("/admin/login");
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
 
   await expect(page).toHaveURL("/");
+  await expect(page).toHaveTitle("Almost Yellow");
+  await page.getByRole("link", { name: "Admin stuff" }).click();
+
   await expect(page).toHaveTitle("Admin | Almost Yellow");
   await expect(page.locator("h1")).toContainText("Welcome to our admin page");
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
@@ -38,7 +41,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
 }) => {
   await page.goto("/admin");
   await expect(page).toHaveURL(
-    "/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
+    "/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -47,7 +50,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
 
   await page.goto("/admin/chopinliszt");
   await expect(page).toHaveURL(
-    "http://localhost:3000/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fchopinliszt",
+    "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fchopinliszt",
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -56,7 +59,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
 
   await page.goto("/admin/dummylink");
   await expect(page).toHaveURL(
-    "http://localhost:3000/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fdummylink",
+    "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fdummylink",
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(

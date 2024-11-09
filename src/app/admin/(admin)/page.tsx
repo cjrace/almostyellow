@@ -7,7 +7,10 @@ export const metadata: Metadata = {
   title: "Admin",
 };
 
-const crumbitems = [{ title: "Admin", href: "" }];
+const crumbitems = [
+  { title: "Home", href: "/" },
+  { title: "Admin", href: "" },
+];
 
 export default function Admin() {
   return (
