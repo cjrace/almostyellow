@@ -11,8 +11,9 @@ import {
   TextInput,
   NumberInput,
   SimpleGrid,
-  Avatar,
   Group,
+  Radio,
+  RadioGroup,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -23,8 +24,19 @@ import {
   IconDice4,
   IconDice5,
   IconDice6,
-  IconUser,
+  IconCat,
+  IconPig,
+  IconBat,
+  IconFlower,
 } from "@tabler/icons-react";
+import {
+  PiDog,
+  PiFishSimple,
+  PiButterfly,
+  PiCow,
+  PiRabbit,
+  PiShootingStar,
+} from "react-icons/pi";
 
 // Define the grid size
 const GRID_SIZE = 10;
@@ -79,8 +91,52 @@ const generateSpecialSpaces = () => {
   return specialSpaces;
 };
 
+const icons = [
+  { id: "cat", component: <IconCat size={32} /> },
+  { id: "dog", component: <PiDog size={32} /> },
+  { id: "fish", component: <PiFishSimple size={32} /> },
+  { id: "pig", component: <IconPig size={32} /> },
+  { id: "butterfly", component: <PiButterfly size={32} /> },
+  { id: "bat", component: <IconBat size={32} /> },
+  { id: "cow", component: <PiCow size={32} /> },
+  { id: "rabbit", component: <PiRabbit size={32} /> },
+  { id: "star", component: <PiShootingStar size={32} /> },
+  { id: "flower", component: <IconFlower size={32} /> },
+];
+
+const IconSelection = ({ selectedIcon, onChange }) => (
+  <RadioGroup
+    value={selectedIcon}
+    onChange={onChange}
+    label="Choose your avatar"
+  >
+    <Group mt="sm">
+      {icons.map((icon) => (
+        <Radio key={icon.id} value={icon.id} label={icon.component} />
+      ))}
+    </Group>
+  </RadioGroup>
+);
+
+const PlayerList = ({ players }) => (
+  <div>
+    <Text size="xl" ta="center" mb="md">
+      Players
+    </Text>
+    {players.map((player, index) => (
+      <Group key={index} mb="sm" noWrap>
+        {icons.find((icon) => icon.id === player.icon)?.component}
+        <Text>{player.name}</Text>
+      </Group>
+    ))}
+  </div>
+);
+
 const SnakesAndLadders = () => {
   const [playerPositions, setPlayerPositions] = useState<number[]>([]);
+  const [players, setPlayers] = useState<Array<{ name: string; icon: string }>>(
+    [],
+  );
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
@@ -101,54 +157,28 @@ const SnakesAndLadders = () => {
   }, []);
 
   const initializePlayers = () => {
-    if (playerNames.length === 0) {
-      const defaultPlayerNames = Array.from(
-        { length: numPlayers },
-        (_, i) => `Player ${i + 1}`,
-      );
-      setPlayerNames(defaultPlayerNames);
+    if (players.length === 0 || players.some((player) => player.name === "")) {
+      const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
+        name: `Player ${i + 1}`,
+        icon: "user",
+      }));
+      setPlayers(defaultPlayers);
     }
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
   };
 
-  const handleNameChange = (index: number, name: string) => {
-    const newNames = [...playerNames];
-    newNames[index] = name;
-    setPlayerNames(newNames);
+  const handlePlayerSetup = (index, name, icon) => {
+    const newPlayers = [...players];
+    newPlayers[index] = { name, icon };
+    setPlayers(newPlayers);
   };
-
-  const avatars = [
-    "/images/avatar1.png",
-    "/images/avatar2.png",
-    "/images/avatar3.png",
-    "/images/avatar4.png",
-    // Add more avatar paths as needed
-  ];
-
-  const PlayerList = ({ playerNames, avatars }) => (
-    <div>
-      <Text size="xl" ta="center" mb="md">
-        Players
-      </Text>
-      {playerNames.map((name, index) => (
-        <Group key={index} mb="sm" noWrap>
-          <Avatar
-            src={avatars[index % avatars.length]}
-            alt={name}
-            radius="xl"
-          />
-          <Text>{name}</Text>
-        </Group>
-      ))}
-    </div>
-  );
 
   const finalizeMove = (finalPosition: number) => {
     if (finalPosition === 100) {
       setWinner(currentPlayer);
       setPopupMessage(
-        `Congratulations! ${playerNames[currentPlayer]} won the game!`,
+        `Congratulations! ${players[currentPlayer]?.name} won the game!`,
       );
     }
 
@@ -239,7 +269,7 @@ const SnakesAndLadders = () => {
               const moveType = specialEnd < finalPosition ? "snake" : "ladder";
               const moveDifference = Math.abs(finalPosition - specialEnd);
               setPopupMessage(
-                `Oops! ${playerNames[currentPlayer]} landed on a ${moveType} and moved ${moveDifference} spaces!`,
+                `Oops! ${players[currentPlayer]?.name} landed on a ${moveType} and moved ${moveDifference} spaces!`,
               );
             } else {
               finalizeMove(finalPosition);
@@ -291,14 +321,29 @@ const SnakesAndLadders = () => {
             />
 
             {Array.from({ length: numPlayers }).map((_, index) => (
-              <TextInput
-                key={index}
-                value={playerNames[index] || ""}
-                onChange={(event) =>
-                  handleNameChange(index, event.currentTarget.value)
-                }
-                label={`Player ${index + 1} Name`}
-              />
+              <Box key={index} mb="sm">
+                <TextInput
+                  value={players[index]?.name || ""}
+                  onChange={(event) =>
+                    handlePlayerSetup(
+                      index,
+                      event.currentTarget.value,
+                      players[index]?.icon || "user",
+                    )
+                  }
+                  label={`Player ${index + 1} Name`}
+                />
+                <IconSelection
+                  selectedIcon={players[index]?.icon || "user"}
+                  onChange={(icon) =>
+                    handlePlayerSetup(
+                      index,
+                      players[index]?.name || `Player ${index + 1}`,
+                      icon,
+                    )
+                  }
+                />
+              </Box>
             ))}
 
             <Button onClick={initializePlayers} mt="sm">
@@ -309,12 +354,12 @@ const SnakesAndLadders = () => {
 
         {gameInitialized && (
           <Box>
-            <PlayerList playerNames={playerNames} avatars={avatars} />
+            <PlayerList players={players} />
 
             <Space h="md" />
 
             <Text size="xl" ta="center" mb="md">
-              {playerNames[currentPlayer]}&apos;s turn
+              {players[currentPlayer]?.name}&apos;s turn
             </Text>
 
             <Space h="md" />
@@ -333,7 +378,7 @@ const SnakesAndLadders = () => {
 
             {showDiceResult && diceResult && (
               <Text ta="center" mt="md">
-                {playerNames[currentPlayer]} moves {diceResult} places!
+                {players[currentPlayer]?.name} moves {diceResult} places!
               </Text>
             )}
 
@@ -349,8 +394,6 @@ const SnakesAndLadders = () => {
       <Box>
         {gameInitialized && (
           <>
-            <Space h="md" />
-
             <Space h="xl" />
 
             <Grid columns={10}>
@@ -373,7 +416,7 @@ const SnakesAndLadders = () => {
                     }}
                   >
                     {playerAtPos !== -1 && (
-                      <Text>{playerNames[playerAtPos]}</Text>
+                      <Text>{players[playerAtPos]?.name}</Text>
                     )}
                     {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
                     {pos === 100 && <IconTrophy size={24} color="gold" />}
