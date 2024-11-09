@@ -356,23 +356,24 @@ const SnakesAndLadders = () => {
               label="Number of Players"
               min={2}
               max={10}
+              w="49%"
             />
 
             {Array.from({ length: numPlayers }).map((_, index) => (
-              <Box key={index} mb="sm">
+              <SimpleGrid cols={2} key={index} mb="sm">
                 <TextInput
                   value={players[index]?.name || ""}
                   onChange={(event) =>
                     handlePlayerSetup(
                       index,
                       event.currentTarget.value,
-                      players[index]?.icon || "user",
+                      players[index]?.icon || "cat",
                     )
                   }
                   label={`Player ${index + 1} Name`}
                 />
                 <IconSelection
-                  selectedIcon={players[index]?.icon || "user"}
+                  selectedIcon={players[index]?.icon || "cat"}
                   onChange={(icon) =>
                     handlePlayerSetup(
                       index,
@@ -381,7 +382,7 @@ const SnakesAndLadders = () => {
                     )
                   }
                 />
-              </Box>
+              </SimpleGrid>
             ))}
 
             <Button onClick={initializePlayers} mt="sm">
