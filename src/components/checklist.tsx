@@ -1,10 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Checkbox, Button, TextInput, Space } from "@mantine/core";
+import {
+  Checkbox,
+  Modal,
+  Button,
+  Textarea,
+  Space,
+  Group,
+  ActionIcon,
+} from "@mantine/core";
+import { IconTrash } from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
 interface Item {
-  id: number;
+  id: string;
   text: string;
   checked: boolean;
 }
@@ -15,19 +25,25 @@ const Checklist: React.FC = () => {
 
   const addItem = () => {
     if (newItemText.trim()) {
+      const newItems = newItemText.split(/\r?\n/);
       setItems((prevItems) => [
         ...prevItems,
-        { id: Date.now(), text: newItemText, checked: false },
+        ...newItems.map((text) => ({
+          id: String(crypto.randomUUID()),
+          text: text.trim(),
+          checked: false,
+        })),
       ]);
       setNewItemText("");
+      close();
     }
   };
 
-  const removeItem = (itemId: number) => {
+  const removeItem = (itemId: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
   };
 
-  const toggleItem = (itemId: number) => {
+  const toggleItem = (itemId: string) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
         item.id === itemId ? { ...item, checked: !item.checked } : item,
@@ -35,31 +51,47 @@ const Checklist: React.FC = () => {
     );
   };
 
+  // Modal opening
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
     <>
-      <div style={{ display: "flex" }}>
-        <TextInput
-          placeholder="Add a new item..."
+      <Modal opened={opened} onClose={close} title="Add new items" centered>
+        <Textarea
+          data-autofocus
+          placeholder="Add new items, one per line..."
           value={newItemText}
           onChange={(e) => setNewItemText(e.target.value)}
+          autosize
+          minRows={7}
         />
-        <Button onClick={addItem}>Add</Button>
-      </div>
+        <Button mt="md" onClick={addItem}>
+          Add item(s)
+        </Button>
+      </Modal>
+
+      <Button onClick={open}>Add new item(s)</Button>
+      <Space h="xl" />
 
       {items.map((item) => (
-        <div key={item.id} style={{ display: "flex" }}>
+        <Group justify="space-between" wrap="nowrap" mb="sm" key={item.id}>
           <Checkbox
+            id={item.id}
             checked={item.checked}
             onChange={() => toggleItem(item.id)}
             label={item.text}
-            labelPosition="left"
-            size="xl"
+            size="lg"
           />
-          <Space w="lg" />
-          <Button onClick={() => removeItem(item.id)} variant="subtle">
-            Remove
-          </Button>
-        </div>
+          <ActionIcon
+            id={item.id}
+            aria-label="Delete item"
+            size="lg"
+            variant="default"
+            onClick={() => removeItem(item.id)}
+          >
+            <IconTrash />
+          </ActionIcon>
+        </Group>
       ))}
     </>
   );
