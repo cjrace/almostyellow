@@ -1,7 +1,10 @@
+"use client";
+
 import { Group, ActionIcon, Breadcrumbs, Anchor } from "@mantine/core";
 import { IconBrandGithub, IconConfetti } from "@tabler/icons-react";
 import ToggleColour from "@/components/togglecolour";
 import playConfetti from "@/components/playconfetti";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface BreadcrumbItem {
   title: string;
@@ -9,13 +12,15 @@ interface BreadcrumbItem {
 }
 
 interface HeaderProps {
-  crumbs: BreadcrumbItem[];
+  crumbs?: BreadcrumbItem[];
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
 }
 
 export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
+  const mainJustify = noCrumbs ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
+
   return (
-    <Group justify="space-between">
+    <Group justify={mainJustify}>
       {!noCrumbs && (
         <Group>
           <Breadcrumbs>
@@ -28,7 +33,7 @@ export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
         </Group>
       )}
 
-      <Group h="100%" px="md" justify="flex-end">
+      <Group h="100%" gap="xs" justify="flex-end">
         <ActionIcon
           onClick={playConfetti}
           variant="default"
@@ -49,7 +54,8 @@ export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
         >
           {<IconBrandGithub />}
         </ActionIcon>
-        <ToggleColour />
+
+        <ToggleColour size="xl" />
       </Group>
     </Group>
   );

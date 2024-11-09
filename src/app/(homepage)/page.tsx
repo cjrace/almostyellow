@@ -1,5 +1,4 @@
-import { Button, Group, ActionIcon, Space } from "@mantine/core";
-import playConfetti from "@/components/playconfetti";
+import { Button, Group, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -7,37 +6,14 @@ import {
   IconGlassCocktail,
   IconBeach,
   IconPaperclip,
-  IconBrandGithub,
-  IconConfetti,
 } from "@tabler/icons-react";
-import ToggleColour from "@/components/togglecolour";
+import Header from "@/components/header";
 
 export default function Home() {
   return (
     <>
-      <Group h="100%" px="md" justify="flex-end">
-        <ActionIcon
-          onClick={playConfetti}
-          variant="default"
-          size="xl"
-          aria-label="Fire confetti canons"
-        >
-          <IconConfetti />
-        </ActionIcon>
+      <Header noCrumbs={true} />
 
-        <ActionIcon
-          component="a"
-          href="https://github.com/cjrace/almostyellow"
-          size="xl"
-          aria-label="Open GitHub repository in a new tab"
-          target="_blank"
-          variant="default"
-          rel="noopener noreferrer"
-        >
-          {<IconBrandGithub />}
-        </ActionIcon>
-        <ToggleColour />
-      </Group>
       <h1 style={{ textAlign: "center" }}>Almost yellow</h1>
       <p style={{ textAlign: "center" }}>
         This is our homepage, we should make it prettier.
