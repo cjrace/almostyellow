@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Textarea, Button, SimpleGrid, Stack, Text } from "@mantine/core";
 import { useForm, Form } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
+import playConfetti from "@/components/playconfetti";
 
 type DecisionOptions = {
   options: string;
@@ -33,6 +34,7 @@ export default function DecisionMaker() {
     if (options.length > 0) {
       const randomIndex = Math.floor(Math.random() * options.length);
       setChosenItem(options[randomIndex]);
+      playConfetti();
     }
   };
 

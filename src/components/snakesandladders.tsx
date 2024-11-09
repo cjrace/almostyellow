@@ -21,6 +21,7 @@ import {
   IconDice5,
   IconDice6,
 } from "@tabler/icons-react";
+import playConfetti from "@/components/playconfetti";
 
 // Define the grid size
 const GRID_SIZE = 10;
@@ -113,6 +114,7 @@ const SnakesAndLadders = () => {
       setPopupMessage(
         `Congratulations! ${playerNames[currentPlayer]} won the game!`,
       );
+      playConfetti();
     }
 
     setPlayerPositions((prevPositions) => {

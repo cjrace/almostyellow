@@ -1,13 +1,4 @@
-import {
-  Button,
-  Group,
-  ActionIcon,
-  Title,
-  Text,
-  Stack,
-  Space,
-} from "@mantine/core";
-import Confetti from "@/components/confetti";
+import { Button, Group, Title, Text, Space, Stack } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -15,27 +6,13 @@ import {
   IconGlassCocktail,
   IconBeach,
   IconPaperclip,
-  IconBrandGithub,
 } from "@tabler/icons-react";
-import ToggleColour from "@/components/togglecolour";
+import Header from "@/components/header";
 
 export default function Home() {
   return (
     <>
-      <Group h="100%" px="md" justify="flex-end">
-        <ActionIcon
-          component="a"
-          href="https://github.com/cjrace/almostyellow"
-          size="xl"
-          aria-label="Open GitHub repository in a new tab"
-          target="_blank"
-          variant="default"
-          rel="noopener noreferrer"
-        >
-          {<IconBrandGithub />}
-        </ActionIcon>
-        <ToggleColour />
-      </Group>
+      <Header noCrumbs={true} />
 
       <Stack>
         <Title ta="center">Almost yellow</Title>
@@ -98,8 +75,9 @@ export default function Home() {
         </Button>
       </Group>
 
+      <Space h="lg" />
+
       <Group justify="center">
-        <Confetti />
         <Button
           leftSection={<IconPaperclip />}
           variant="default"

@@ -15,7 +15,8 @@ import {
   Title,
   List,
 } from "@mantine/core";
-import Confetti from "@/components/confetti";
+import playConfetti from "@/components/playconfetti";
+import { IconConfetti } from "@tabler/icons-react";
 
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   <Box
@@ -132,7 +133,16 @@ export default function IrishBingo() {
           </Alert>
         )}
         <Space h="md" />
-        <Confetti buttonText="Has someone won?" size="md" />
+
+        <Button
+          variant="default"
+          onClick={playConfetti}
+          fullWidth
+          rightSection={<IconConfetti />}
+        >
+          Has someone won?
+        </Button>
+
         <Space h="md" />
         <Accordion variant="separated">
           <Accordion.Item key="All cards called" value="All cards called">
