@@ -39,7 +39,7 @@ import {
   PiShootingStar,
 } from "react-icons/pi";
 import playConfetti from "@/components/playconfetti";
-        
+
 interface IconSelectionProps {
   selectedIcon: string;
   onChange: (value: string) => void;
