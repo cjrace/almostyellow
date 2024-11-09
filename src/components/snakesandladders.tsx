@@ -39,6 +39,21 @@ import {
   PiShootingStar,
 } from "react-icons/pi";
 
+interface IconSelectionProps {
+  selectedIcon: string;
+  onChange: (value: string) => void;
+}
+
+interface Player {
+  name: string;
+  icon: string;
+}
+
+interface PlayerListProps {
+  players: Player[];
+  currentPlayer: number;
+}
+
 // Define the grid size
 const GRID_SIZE = 10;
 
@@ -105,7 +120,10 @@ const icons = [
   { id: "flower", component: <IconFlower size={32} /> },
 ];
 
-const IconSelection = ({ selectedIcon, onChange }) => (
+const IconSelection: React.FC<IconSelectionProps> = ({
+  selectedIcon,
+  onChange,
+}) => (
   <RadioGroup
     value={selectedIcon}
     onChange={onChange}
@@ -119,7 +137,7 @@ const IconSelection = ({ selectedIcon, onChange }) => (
   </RadioGroup>
 );
 
-const PlayerList = ({ players, currentPlayer }) => (
+const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
   <div>
     <Text size="xl" ta="center" mb="md">
       Players
@@ -128,7 +146,7 @@ const PlayerList = ({ players, currentPlayer }) => (
       <Group
         key={index}
         mb="sm"
-        noWrap
+        w="60%"
         style={{
           border: currentPlayer === index ? "2px solid orange" : "none",
           borderRadius: "8px",
@@ -179,7 +197,7 @@ const SnakesAndLadders = () => {
     setGameInitialized(true); // Transition to the game view
   };
 
-  const handlePlayerSetup = (index, name, icon) => {
+  const handlePlayerSetup = (index: number, name: string, icon: string) => {
     const newPlayers = [...players];
     newPlayers[index] = { name, icon };
     setPlayers(newPlayers);
@@ -367,31 +385,24 @@ const SnakesAndLadders = () => {
           <Box>
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
-            <Space h="md" />
-
-            <Text size="xl" ta="center" mb="md">
-              {players[currentPlayer]?.name}&apos;s turn
-            </Text>
-
-            <Space h="md" />
-
-            <Button
-              onClick={rollDice}
-              fullWidth
-              mt="md"
-              w="50%"
-              disabled={!!winner || playerPositions.length === 0 || isRolling}
-            >
-              {isRolling ? rollingDiceIcon : "Roll Dice"}
-            </Button>
-
-            <Space h="md" />
-
             {showDiceResult && diceResult && (
               <Text ta="center" mt="md">
                 {players[currentPlayer]?.name} moves {diceResult} places!
               </Text>
             )}
+
+            <Space h="md" />
+
+            <Button
+              onClick={rollDice}
+              mt="md"
+              w="50%"
+              disabled={!!winner || playerPositions.length === 0 || isRolling}
+            >
+              {isRolling
+                ? rollingDiceIcon
+                : `Roll Dice (${players[currentPlayer]?.name})`}
+            </Button>
 
             <Space h="md" />
 
