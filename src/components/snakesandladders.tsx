@@ -10,6 +10,11 @@ import {
   Space,
   TextInput,
   NumberInput,
+  SimpleGrid,
+  Group,
+  ActionIcon,
+  SegmentedControl,
+  Stack,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -20,8 +25,35 @@ import {
   IconDice4,
   IconDice5,
   IconDice6,
+  IconCat,
+  IconPig,
+  IconBat,
+  IconFlower,
 } from "@tabler/icons-react";
+import {
+  PiDog,
+  PiFishSimple,
+  PiButterfly,
+  PiCow,
+  PiRabbit,
+  PiShootingStar,
+} from "react-icons/pi";
 import playConfetti from "@/components/playconfetti";
+
+interface IconSelectionProps {
+  selectedIcon: string;
+  onChange: (value: string) => void;
+}
+
+interface Player {
+  name: string;
+  icon: string;
+}
+
+interface PlayerListProps {
+  players: Player[];
+  currentPlayer: number;
+}
 
 // Define the grid size
 const GRID_SIZE = 10;
@@ -76,8 +108,70 @@ const generateSpecialSpaces = () => {
   return specialSpaces;
 };
 
+const icons = [
+  { id: "cat", component: <IconCat size={32} /> },
+  { id: "dog", component: <PiDog size={32} /> },
+  { id: "fish", component: <PiFishSimple size={32} /> },
+  { id: "pig", component: <IconPig size={32} /> },
+  { id: "butterfly", component: <PiButterfly size={32} /> },
+  { id: "bat", component: <IconBat size={32} /> },
+  { id: "cow", component: <PiCow size={32} /> },
+  { id: "rabbit", component: <PiRabbit size={32} /> },
+  { id: "star", component: <PiShootingStar size={32} /> },
+  { id: "flower", component: <IconFlower size={32} /> },
+];
+
+const IconSelection: React.FC<IconSelectionProps> = ({
+  selectedIcon,
+  onChange,
+}) => {
+  return (
+    <Group>
+      {icons.map((icon) => (
+        <ActionIcon
+          key={icon.id}
+          onClick={() => onChange(icon.id)}
+          style={{
+            backgroundColor:
+              selectedIcon === icon.id ? "orange" : "transparent",
+            border: selectedIcon === icon.id ? "2px solid orange" : "none",
+          }}
+        >
+          {icon.component}
+        </ActionIcon>
+      ))}
+    </Group>
+  );
+};
+
+const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
+  <div>
+    <Text size="xl" ta="left" mb="md" fw={700}>
+      Players
+    </Text>
+    {players.map((player, index) => (
+      <Group
+        key={index}
+        mb="sm"
+        w="60%"
+        style={{
+          border: currentPlayer === index ? "2px solid orange" : "none",
+          borderRadius: "8px",
+          padding: "4px",
+        }}
+      >
+        {icons.find((icon) => icon.id === player.icon)?.component}
+        <Text>{player.name}</Text>
+      </Group>
+    ))}
+  </div>
+);
+
 const SnakesAndLadders = () => {
   const [playerPositions, setPlayerPositions] = useState<number[]>([]);
+  const [players, setPlayers] = useState<Array<{ name: string; icon: string }>>(
+    [],
+  );
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
@@ -92,27 +186,35 @@ const SnakesAndLadders = () => {
   const [showDiceResult, setShowDiceResult] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
+  const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
 
   useEffect(() => {
     setSpecialSpaces(generateSpecialSpaces());
   }, []);
 
   const initializePlayers = () => {
+    if (players.length === 0 || players.some((player) => player.name === "")) {
+      const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
+        name: `Player ${i + 1}`,
+        icon: "user",
+      }));
+      setPlayers(defaultPlayers);
+    }
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
   };
 
-  const handleNameChange = (index: number, name: string) => {
-    const newNames = [...playerNames];
-    newNames[index] = name;
-    setPlayerNames(newNames);
+  const handlePlayerSetup = (index: number, name: string, icon: string) => {
+    const newPlayers = [...players];
+    newPlayers[index] = { name, icon };
+    setPlayers(newPlayers);
   };
 
   const finalizeMove = (finalPosition: number) => {
     if (finalPosition === 100) {
       setWinner(currentPlayer);
       setPopupMessage(
-        `Congratulations! ${playerNames[currentPlayer]} won the game!`,
+        `Congratulations! ${players[currentPlayer]?.name} won the game!`,
       );
       playConfetti();
     }
@@ -203,9 +305,13 @@ const SnakesAndLadders = () => {
               setSpecialMove(specialEnd);
               const moveType = specialEnd < finalPosition ? "snake" : "ladder";
               const moveDifference = Math.abs(finalPosition - specialEnd);
-              setPopupMessage(
-                `Oops! ${playerNames[currentPlayer]} landed on a ${moveType} and moved ${moveDifference} spaces!`,
-              );
+
+              const message =
+                moveType === "snake"
+                  ? `Oh no! ${players[currentPlayer]?.name} landed on a ${moveType} and slid down ${moveDifference} spaces!`
+                  : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${moveDifference} spaces!`;
+
+              setPopupMessage(message);
             } else {
               finalizeMove(finalPosition);
             }
@@ -235,118 +341,176 @@ const SnakesAndLadders = () => {
     setPopupMessage(null);
     setWinner(null);
     setSpecialMove(null);
-    setPlayerNames(
-      Array.from({ length: numPlayers }, (_, i) => `Player ${i + 1}`),
-    ); // Reset player names
-    setGameInitialized(false); // Reset to show initiation step
+
+    // Reset players to default names and icons
+    const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
+      name: `Player ${i + 1}`,
+      icon: "user", // Adjust if needed
+    }));
+    setPlayers(defaultPlayers);
+
+    setGameInitialized(false); // Reset to show initiation step };
   };
 
   return (
-    <Box>
-      {!gameInitialized && (
-        <>
-          {/* Form to set up the players */}
-          <NumberInput
-            value={numPlayers}
-            onChange={(value) => setNumPlayers(Number(value) || 2)}
-            label="Number of Players"
-            min={2}
-            max={10}
-          />
-
-          {Array.from({ length: numPlayers }).map((_, index) => (
-            <TextInput
-              key={index}
-              value={playerNames[index] || ""}
-              onChange={(event) =>
-                handleNameChange(index, event.currentTarget.value)
-              }
-              label={`Player ${index + 1} Name`}
+    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+      <Box>
+        {!gameInitialized && (
+          <>
+            {/* Form to set up the players */}
+            <NumberInput
+              value={numPlayers}
+              onChange={(value) => setNumPlayers(Number(value) || 2)}
+              label="Number of Players"
+              min={2}
+              max={10}
+              w="49%"
             />
-          ))}
 
-          <Button onClick={initializePlayers} mt="sm">
-            Start game!
-          </Button>
-          <Space h="md" />
-        </>
-      )}
+            <Space h="xl" />
 
-      {gameInitialized && (
-        <>
-          <Text size="xl" ta="center" mb="md">
-            {playerNames[currentPlayer]}&apos;s turn
-          </Text>
+            {Array.from({ length: numPlayers }).map((_, index) => (
+              <Box key={index} style={{ paddingLeft: "20px" }}>
+                <Stack key={index} mb="sm" gap="xs">
+                  <TextInput
+                    label={`Name of player ${index + 1}:`}
+                    labelProps={{
+                      style: {
+                        margin: "0 0 0.75em 0",
+                      },
+                    }}
+                    value={players[index]?.name || ""}
+                    onChange={(event) =>
+                      handlePlayerSetup(
+                        index,
+                        event.currentTarget.value,
+                        players[index]?.icon || "cat",
+                      )
+                    }
+                  />
+                  <Text size="xs" c="dimmed">
+                    Choose your avatar
+                  </Text>
+                  <Group>
+                    <IconSelection
+                      selectedIcon={players[index]?.icon || "cat"}
+                      onChange={(icon) =>
+                        handlePlayerSetup(
+                          index,
+                          players[index]?.name || `Player ${index + 1}`,
+                          icon,
+                        )
+                      }
+                    />
+                  </Group>
+                </Stack>
+              </Box>
+            ))}
 
-          <Button
-            onClick={rollDice}
-            fullWidth
-            mt="md"
-            disabled={!!winner || playerPositions.length === 0 || isRolling}
-          >
-            {isRolling ? rollingDiceIcon : "Roll Dice"}
-          </Button>
+            <Button onClick={initializePlayers} mt="sm">
+              Start game!
+            </Button>
+          </>
+        )}
 
-          {showDiceResult && diceResult && (
-            <Text ta="center" mt="md">
-              {playerNames[currentPlayer]} moves {diceResult} places!
-            </Text>
-          )}
+        {gameInitialized && (
+          <Box>
+            <PlayerList players={players} currentPlayer={currentPlayer} />
 
-          <Space h="md" />
-
-          <Button onClick={restartGame} fullWidth mt="md">
-            Restart Game
-          </Button>
-
-          <Space h="xl" />
-
-          <Grid columns={10}>
-            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-              const pos = index + 1;
-              const playerAtPos = playerPositions.findIndex(
-                (playerPos) => playerPos === pos,
-              );
-              return (
-                <Grid.Col
-                  span={1}
-                  key={pos}
-                  style={{
-                    border: "1px solid #ddd",
-                    height: "50px",
-                    position: "relative",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {playerAtPos !== -1 && (
-                    <Text>{playerNames[playerAtPos]}</Text>
-                  )}
-                  {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
-                  {pos === 100 && <IconTrophy size={24} color="gold" />}
-                </Grid.Col>
-              );
-            })}
-          </Grid>
-
-          <Space h="md" />
-
-          <Modal
-            opened={!!popupMessage}
-            onClose={closePopup}
-            title="Game Update"
-          >
-            {popupMessage}
-            {winner !== null && (
-              <Button onClick={restartGame} fullWidth mt="md">
-                Restart Game
-              </Button>
+            {showDiceResult && diceResult && (
+              <Text ta="left" mt="md">
+                {players[currentPlayer]?.name} moves {diceResult} places!
+              </Text>
             )}
-          </Modal>
-        </>
-      )}
-    </Box>
+
+            <Space h="md" />
+
+            <Button
+              onClick={rollDice}
+              mt="md"
+              w="50%"
+              disabled={!!winner || playerPositions.length === 0 || isRolling}
+            >
+              {isRolling
+                ? rollingDiceIcon
+                : `Roll Dice (${players[currentPlayer]?.name})`}
+            </Button>
+
+            <Space h="md" />
+
+            <Button onClick={restartGame} w="50%" mt="md">
+              Restart Game
+            </Button>
+          </Box>
+        )}
+      </Box>
+
+      <Box>
+        {gameInitialized && (
+          <>
+            <SegmentedControl
+              value={viewMode}
+              color="orange"
+              onChange={setViewMode}
+              data={[
+                { label: "Show Names", value: "names" },
+                { label: "Show Icons", value: "icons" },
+              ]}
+              mt="sm"
+            />
+
+            <Space h="xl" />
+
+            <Grid columns={10}>
+              {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
+                const pos = index + 1;
+                const playerAtPos = playerPositions.findIndex(
+                  (playerPos) => playerPos === pos,
+                );
+                return (
+                  <Grid.Col
+                    span={1}
+                    key={pos}
+                    style={{
+                      border: "1px solid #ddd",
+                      height: "50px",
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {playerAtPos !== -1 &&
+                      (viewMode === "names" ? (
+                        <Text>{players[playerAtPos]?.name}</Text>
+                      ) : (
+                        icons.find(
+                          (icon) => icon.id === players[playerAtPos]?.icon,
+                        )?.component
+                      ))}
+                    {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
+                    {pos === 100 && <IconTrophy size={24} color="gold" />}
+                  </Grid.Col>
+                );
+              })}
+            </Grid>
+
+            <Modal
+              opened={!!popupMessage}
+              onClose={closePopup}
+              title="Game Update"
+            >
+              {popupMessage}
+              {winner !== null && (
+                <Button onClick={restartGame} fullWidth mt="md">
+                  Restart Game
+                </Button>
+              )}
+            </Modal>
+          </>
+        )}
+      </Box>
+    </SimpleGrid>
   );
 };
 
