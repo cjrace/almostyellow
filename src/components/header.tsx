@@ -1,10 +1,7 @@
-"use client";
-
 import { Group, ActionIcon, Breadcrumbs, Anchor } from "@mantine/core";
 import { IconBrandGithub, IconConfetti } from "@tabler/icons-react";
 import ToggleColour from "@/components/togglecolour";
 import playConfetti from "@/components/playconfetti";
-import { useMediaQuery } from "@mantine/hooks";
 
 interface BreadcrumbItem {
   title: string;
