@@ -36,7 +36,7 @@ const Checklist: React.FC = () => {
   };
 
   return (
-    <div>
+    <>
       <div style={{ display: "flex" }}>
         <TextInput
           placeholder="Add a new item..."
@@ -61,7 +61,7 @@ const Checklist: React.FC = () => {
           </Button>
         </div>
       ))}
-    </div>
+    </>
   );
 };
 

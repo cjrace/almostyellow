@@ -1,4 +1,4 @@
-import { SimpleGrid } from "@mantine/core";
+import { SimpleGrid, Title, Space } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
 import GamesCard from "@/components/gamescard";
@@ -21,8 +21,8 @@ export default async function Games() {
   return (
     <>
       <Header crumbs={crumbitems} />
-
-      <h1>Our games</h1>
+      <Title>Our games</Title>
+      <Space h="xl" />
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
         <GamesCard

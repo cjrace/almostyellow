@@ -1,4 +1,4 @@
-import { Anchor, Button } from "@mantine/core";
+import { Anchor, Button, Title } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
 import { signOut } from "@/auth";
@@ -14,7 +14,7 @@ export default function Admin() {
     <>
       <Header crumbs={crumbitems} />
 
-      <h1>Welcome to our admin page</h1>
+      <Title>Welcome to our admin page</Title>
 
       <ul>
         <li>

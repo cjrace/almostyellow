@@ -11,6 +11,9 @@ import {
   Box,
   Progress,
   Accordion,
+  Text,
+  Title,
+  List,
 } from "@mantine/core";
 import Confetti from "@/components/confetti";
 
@@ -41,11 +44,17 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
       }}
     ></div>
 
-    <h3>Calling..</h3>
+    <Title mt="md" order={2}>
+      Calling..
+    </Title>
     {card ? (
-      <p id="latest_card">{getCardName(card.suit, card.rank)}</p>
+      <Text my="md" id="latest_card">
+        {getCardName(card.suit, card.rank)}
+      </Text>
     ) : (
-      <p id="latest_card">No cards drawn yet</p>
+      <Text my="md" id="latest_card">
+        No cards drawn yet
+      </Text>
     )}
   </Box>
 );
@@ -107,7 +116,7 @@ export default function IrishBingo() {
           size="lg"
           color={progressColor}
         />
-        <p id="card_count">{`${drawnCards.length} / 52 cards`}</p>
+        <Text mt="sm" id="card_count">{`${drawnCards.length} / 52 cards`}</Text>
         <Space h="md" />
         <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
           Draw a Card
@@ -125,15 +134,17 @@ export default function IrishBingo() {
         <Space h="md" />
         <Confetti buttonText="Has someone won?" size="md" />
         <Space h="md" />
-        <Accordion variant="filled">
+        <Accordion variant="separated">
           <Accordion.Item key="All cards called" value="All cards called">
             <Accordion.Control>All cards called</Accordion.Control>
             <Accordion.Panel>
-              <ol>
+              <List type="ordered" withPadding>
                 {drawnCards.map((card, index) => (
-                  <li key={index}>{getCardName(card.suit, card.rank)}</li>
+                  <List.Item key={index}>
+                    {getCardName(card.suit, card.rank)}
+                  </List.Item>
                 ))}
-              </ol>
+              </List>
             </Accordion.Panel>
           </Accordion.Item>
         </Accordion>

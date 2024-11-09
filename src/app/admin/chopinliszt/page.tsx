@@ -1,6 +1,7 @@
 import Checklist from "@/components/checklist";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import { Title } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Chopin Liszt",
@@ -15,7 +16,7 @@ export default async function ChopinLiszt() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <h1>Our Chopin Liszt</h1>
+      <Title mb="xl">Our Chopin Liszt</Title>
       <Checklist />
     </>
   );
