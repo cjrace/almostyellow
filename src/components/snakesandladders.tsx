@@ -119,13 +119,22 @@ const IconSelection = ({ selectedIcon, onChange }) => (
   </RadioGroup>
 );
 
-const PlayerList = ({ players }) => (
+const PlayerList = ({ players, currentPlayer }) => (
   <div>
     <Text size="xl" ta="center" mb="md">
       Players
     </Text>
     {players.map((player, index) => (
-      <Group key={index} mb="sm" noWrap>
+      <Group
+        key={index}
+        mb="sm"
+        noWrap
+        style={{
+          border: currentPlayer === index ? "2px solid orange" : "none",
+          borderRadius: "8px",
+          padding: "4px",
+        }}
+      >
         {icons.find((icon) => icon.id === player.icon)?.component}
         <Text>{player.name}</Text>
       </Group>
@@ -356,7 +365,7 @@ const SnakesAndLadders = () => {
 
         {gameInitialized && (
           <Box>
-            <PlayerList players={players} />
+            <PlayerList players={players} currentPlayer={currentPlayer} />
 
             <Space h="md" />
 
