@@ -14,6 +14,7 @@ import {
   Group,
   Radio,
   RadioGroup,
+  SegmentedControl,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -151,6 +152,7 @@ const SnakesAndLadders = () => {
   const [showDiceResult, setShowDiceResult] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
+  const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
 
   useEffect(() => {
     setSpecialSpaces(generateSpecialSpaces());
@@ -394,6 +396,17 @@ const SnakesAndLadders = () => {
       <Box>
         {gameInitialized && (
           <>
+            <SegmentedControl
+              value={viewMode}
+              color="orange"
+              onChange={setViewMode}
+              data={[
+                { label: "Show Names", value: "names" },
+                { label: "Show Icons", value: "icons" },
+              ]}
+              mt="sm"
+            />
+
             <Space h="xl" />
 
             <Grid columns={10}>
@@ -415,17 +428,20 @@ const SnakesAndLadders = () => {
                       justifyContent: "center",
                     }}
                   >
-                    {playerAtPos !== -1 && (
-                      <Text>{players[playerAtPos]?.name}</Text>
-                    )}
+                    {playerAtPos !== -1 &&
+                      (viewMode === "names" ? (
+                        <Text>{players[playerAtPos]?.name}</Text>
+                      ) : (
+                        icons.find(
+                          (icon) => icon.id === players[playerAtPos]?.icon,
+                        )?.component
+                      ))}
                     {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
                     {pos === 100 && <IconTrophy size={24} color="gold" />}
                   </Grid.Col>
                 );
               })}
             </Grid>
-
-            <Space h="md" />
 
             <Modal
               opened={!!popupMessage}
