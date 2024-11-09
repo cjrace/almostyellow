@@ -12,9 +12,9 @@ import {
   NumberInput,
   SimpleGrid,
   Group,
-  Radio,
-  RadioGroup,
+  ActionIcon,
   SegmentedControl,
+  Stack,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -124,19 +124,25 @@ const icons = [
 const IconSelection: React.FC<IconSelectionProps> = ({
   selectedIcon,
   onChange,
-}) => (
-  <RadioGroup
-    value={selectedIcon}
-    onChange={onChange}
-    label="Choose your avatar"
-  >
-    <Group mt="sm">
+}) => {
+  return (
+    <Group>
       {icons.map((icon) => (
-        <Radio key={icon.id} value={icon.id} label={icon.component} />
+        <ActionIcon
+          key={icon.id}
+          onClick={() => onChange(icon.id)}
+          style={{
+            backgroundColor:
+              selectedIcon === icon.id ? "orange" : "transparent",
+            border: selectedIcon === icon.id ? "2px solid orange" : "none",
+          }}
+        >
+          {icon.component}
+        </ActionIcon>
       ))}
     </Group>
-  </RadioGroup>
-);
+  );
+};
 
 const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
   <div>
@@ -361,30 +367,44 @@ const SnakesAndLadders = () => {
               w="49%"
             />
 
+            <Space h="xl" />
+
             {Array.from({ length: numPlayers }).map((_, index) => (
-              <SimpleGrid cols={2} key={index} mb="sm">
-                <TextInput
-                  value={players[index]?.name || ""}
-                  onChange={(event) =>
-                    handlePlayerSetup(
-                      index,
-                      event.currentTarget.value,
-                      players[index]?.icon || "cat",
-                    )
-                  }
-                  label={`Player ${index + 1} Name`}
-                />
-                <IconSelection
-                  selectedIcon={players[index]?.icon || "cat"}
-                  onChange={(icon) =>
-                    handlePlayerSetup(
-                      index,
-                      players[index]?.name || `Player ${index + 1}`,
-                      icon,
-                    )
-                  }
-                />
-              </SimpleGrid>
+              <Box style={{ paddingLeft: "20px" }}>
+                <Stack key={index} mb="sm" gap="xs">
+                  <TextInput
+                    label={`Name of player ${index + 1}:`}
+                    labelProps={{
+                      style: {
+                        margin: "0 0 0.75em 0",
+                      },
+                    }}
+                    value={players[index]?.name || ""}
+                    onChange={(event) =>
+                      handlePlayerSetup(
+                        index,
+                        event.currentTarget.value,
+                        players[index]?.icon || "cat",
+                      )
+                    }
+                  />
+                  <Text size="xs" c="dimmed">
+                    Choose your avatar
+                  </Text>
+                  <Group>
+                    <IconSelection
+                      selectedIcon={players[index]?.icon || "cat"}
+                      onChange={(icon) =>
+                        handlePlayerSetup(
+                          index,
+                          players[index]?.name || `Player ${index + 1}`,
+                          icon,
+                        )
+                      }
+                    />
+                  </Group>
+                </Stack>
+              </Box>
             ))}
 
             <Button onClick={initializePlayers} mt="sm">
