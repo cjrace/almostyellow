@@ -22,9 +22,12 @@ export default function CocktailsPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>Cocktails</Title>
-      <Cocktails />
-      <BackToTop />
+
+      <main>
+        <Title>Cocktails</Title>
+        <Cocktails />
+        <BackToTop />
+      </main>
     </>
   );
 }

@@ -21,9 +21,12 @@ export default function DecisionMakerPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>The Decision Maker</Title>
-      <Space h="xl" />
-      <DecisionMaker />
+
+      <main>
+        <Title>The Decision Maker</Title>
+        <Space h="xl" />
+        <DecisionMaker />
+      </main>
     </>
   );
 }

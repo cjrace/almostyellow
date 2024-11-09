@@ -22,9 +22,12 @@ export default function IrishBingoPage() {
   return (
     <>
       <Header crumbs={crumbitems} />
-      <Title>Irish Bingo</Title>
-      <Space h="xl" />
-      <IrishBingo />
+
+      <main>
+        <Title>Irish Bingo</Title>
+        <Space h="xl" />
+        <IrishBingo />
+      </main>
     </>
   );
 }

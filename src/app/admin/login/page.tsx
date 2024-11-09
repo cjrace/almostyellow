@@ -10,7 +10,10 @@ export default function Login() {
   return (
     <>
       <Header noCrumbs={true} />
-      <LoginForm />
+
+      <main>
+        <LoginForm />
+      </main>
     </>
   );
 }

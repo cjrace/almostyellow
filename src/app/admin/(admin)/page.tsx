@@ -17,28 +17,30 @@ export default function Admin() {
     <>
       <Header crumbs={crumbitems} />
 
-      <Title>Welcome to our admin page</Title>
+      <main>
+        <Title>Welcome to our admin page</Title>
 
-      <ul>
-        <li>
-          <Anchor href="/admin/chopinliszt">Chopin Liszt</Anchor>
-        </li>
-        <li>
-          <Anchor href="/admin">???</Anchor>
-        </li>
-        <li>
-          <Anchor href="/admin">???</Anchor>
-        </li>
-      </ul>
+        <ul>
+          <li>
+            <Anchor href="/admin/chopinliszt">Chopin Liszt</Anchor>
+          </li>
+          <li>
+            <Anchor href="/admin">???</Anchor>
+          </li>
+          <li>
+            <Anchor href="/admin">???</Anchor>
+          </li>
+        </ul>
 
-      <Button
-        onClick={async () => {
-          "use server";
-          await signOut();
-        }}
-      >
-        Sign out
-      </Button>
+        <Button
+          onClick={async () => {
+            "use server";
+            await signOut();
+          }}
+        >
+          Sign out
+        </Button>
+      </main>
     </>
   );
 }
