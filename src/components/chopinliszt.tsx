@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Checkbox,
   Modal,
@@ -12,8 +12,14 @@ import {
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
+import {
+  createChopin,
+  readChopin,
+  updateChopinChecked,
+  deleteChopin,
+} from "@/services/chopinliszt";
 
-interface Item {
+export interface Item {
   id: string;
   text: string;
   checked: boolean;
@@ -22,6 +28,67 @@ interface Item {
 const ChopinLiszt: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [newItemText, setNewItemText] = useState("");
+
+  const fetchItems = async () => {
+    try {
+      const data = await readChopin();
+      setItems(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const [modalOpened, { open, close }] = useDisclosure(false);
+
+  /*
+  const addItem = async () => {
+    if (newItemText.trim()) {
+      const newItems = newItemText.split(/\r?\n/);
+      
+      for (const text of newItems) {
+        try {
+          await createChopin({ chopin_id: String(crypto.randomUUID()), chopin_text: text.trim(), checked: false });
+        } catch (error) {
+          console.error("Error adding item:", error);
+        }
+      }
+      
+      setItems((prevItems) => [...prevItems]); // Trigger re-render
+      setNewItemText("");
+      close();
+    }
+  };
+
+  const toggleItem = async (itemId: string) => {
+    setItems((prevItems) =>
+      prevItems.map(async (item) => {
+        if (item.id === itemId) {
+          const updatedChecked = !item.checked;
+          try {
+            await updateChopinChecked(itemId, new FormData([["checked", updatedChecked.toString()]]));
+          } catch (error) {
+            console.error("Error updating checked state:", error);
+          }
+          return { ...item, checked: updatedChecked };
+        }
+        return item;
+      })
+    );
+  };
+
+  const removeItem = async (itemId: string) => {
+    try {
+      await deleteChopin(itemId);
+      setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  };
+  */
 
   const addItem = () => {
     if (newItemText.trim()) {
@@ -39,10 +106,6 @@ const ChopinLiszt: React.FC = () => {
     }
   };
 
-  const removeItem = (itemId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-  };
-
   const toggleItem = (itemId: string) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
@@ -51,13 +114,14 @@ const ChopinLiszt: React.FC = () => {
     );
   };
 
-  // Modal opening
-  const [opened, { open, close }] = useDisclosure(false);
+  const removeItem = (itemId: string) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  };
 
   return (
     <>
       <Modal
-        opened={opened}
+        opened={modalOpened}
         onClose={close}
         closeButtonProps={{ "aria-label": "Close modal" }}
         title="Add new items"
