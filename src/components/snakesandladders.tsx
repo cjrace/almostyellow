@@ -370,7 +370,7 @@ const SnakesAndLadders = () => {
             <Space h="xl" />
 
             {Array.from({ length: numPlayers }).map((_, index) => (
-              <Box style={{ paddingLeft: "20px" }}>
+              <Box key={index} style={{ paddingLeft: "20px" }}>
                 <Stack key={index} mb="sm" gap="xs">
                   <TextInput
                     label={`Name of player ${index + 1}:`}
