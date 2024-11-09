@@ -1,4 +1,4 @@
-import Checklist from "@/components/checklist";
+import Checklist from "@/components/chopinliszt";
 import { Metadata } from "next";
 import Header from "@/components/header";
 import { Title, Container } from "@mantine/core";

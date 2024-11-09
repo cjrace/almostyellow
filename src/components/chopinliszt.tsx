@@ -19,7 +19,7 @@ interface Item {
   checked: boolean;
 }
 
-const Checklist: React.FC = () => {
+const ChopinLiszt: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
   const [newItemText, setNewItemText] = useState("");
 
@@ -106,4 +106,4 @@ const Checklist: React.FC = () => {
   );
 };
 
-export default Checklist;
+export default ChopinLiszt;
