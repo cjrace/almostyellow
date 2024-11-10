@@ -27,15 +27,23 @@ export default function DecisionMaker() {
     },
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const makeDecision = (data: DecisionOptions) => {
-    const options = data.options
-      .split("\n")
-      .filter((option) => option.trim() !== "");
-    if (options.length > 0) {
-      const randomIndex = Math.floor(Math.random() * options.length);
-      setChosenItem(options[randomIndex]);
-      playConfetti();
-    }
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const options = data.options
+        .split("\n")
+        .filter((option) => option.trim() !== "");
+      if (options.length > 0) {
+        const randomIndex = Math.floor(Math.random() * options.length);
+        setChosenItem(options[randomIndex]);
+        playConfetti();
+      }
+
+      setIsLoading(false);
+    }, 3000);
   };
 
   return (
@@ -50,8 +58,8 @@ export default function DecisionMaker() {
           minRows={2}
           {...form.getInputProps("options")}
         />
-        <Button mt="xl" type="submit" fullWidth>
-          Make a decision
+        <Button mt="xl" type="submit" fullWidth disabled={isLoading}>
+          {isLoading ? "Pondering choices..." : "Make a decision"}
         </Button>
       </Form>
 
