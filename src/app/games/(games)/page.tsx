@@ -45,6 +45,14 @@ export default async function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
+            title="Boom Boom Pirate"
+            description="... ... BOOM!"
+            link="/games/boomboompirate"
+            linktext="Boom Boom Pirate"
+          />
+
+          <GamesCard
+            imagePath="/images/almo-border.png"
             title="Uno"
             description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
             link="/games/uno"

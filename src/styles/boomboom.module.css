@@ -1,0 +1,69 @@
+@keyframes explosion {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(2.5);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes flash {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.explosion {
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.explosion-1 {
+  top: 50%;
+  left: 50%;
+  background: radial-gradient(circle, red, yellow, transparent);
+  transform: translate(-50%, -50%);
+  animation: explosion 1s ease-out forwards;
+}
+
+.explosion-2 {
+  top: 45%;
+  left: 55%;
+  background: radial-gradient(circle, orange, red, transparent);
+  transform: translate(-50%, -50%);
+  animation: explosion 1.2s ease-out forwards;
+}
+
+.explosion-3 {
+  top: 55%;
+  left: 45%;
+  background: radial-gradient(circle, yellow, red, transparent);
+  transform: translate(-50%, -50%);
+  animation: explosion 1.5s ease-out forwards;
+}
+
+.flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.9);
+  animation: flash 0.2s infinite;
+  pointer-events: none;
+  z-index: 9998;
+}
