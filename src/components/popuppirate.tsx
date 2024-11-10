@@ -106,7 +106,11 @@ const PopUpPirate = () => {
         <Stack align="center">
           <NumberInput
             value={totalRopes}
-            onChange={(value) => setTotalRopes(value)}
+            onChange={(value) => {
+              if (typeof value === "number") {
+                setTotalRopes(value);
+              }
+            }}
             min={5}
             max={50}
             label="Number of Ropes"
