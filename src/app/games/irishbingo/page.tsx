@@ -12,16 +12,10 @@ export const metadata: Metadata = {
   },
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Games", href: "/games" },
-  { title: "Irish Bingo", href: "" },
-];
-
 export default function IrishBingoPage() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} game={true} />
 
       <main>
         <Title>Irish Bingo</Title>

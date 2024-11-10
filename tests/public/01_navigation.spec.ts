@@ -28,19 +28,25 @@ test("Can navigate to the games page and through its subpages", async ({
   await expect(page).toHaveURL("/games/irishbingo");
   await expect(page.locator("h1")).toContainText("Irish Bingo");
 
-  await page.getByRole("link", { name: "Games" }).click();
+  await page.getByLabel("Back to our games list").click();
   await page.getByRole("link", { name: "Uno" }).click();
   await expect(page).toHaveTitle("Uno | Almost Yellow");
   await expect(page).toHaveURL("/games/uno");
   await expect(page.locator("h1")).toContainText("Uno");
 
-  await page.getByRole("link", { name: "Games" }).click();
+  await page.getByLabel("Back to our games list").click();
   await page.getByRole("link", { name: "Snakes and Ladders" }).click();
   await expect(page).toHaveTitle("Snakes and Ladders | Almost Yellow");
   await expect(page).toHaveURL("/games/snakesandladders");
   await expect(page.locator("h1")).toContainText("Snakes");
 
-  await page.getByRole("link", { name: "Games" }).click();
+  await page.getByLabel("Back to our games list").click();
+  await page.getByRole("link", { name: "Boom Boom Pirate" }).click();
+  await expect(page).toHaveTitle("Boom Boom Pirate | Almost Yellow");
+  await expect(page).toHaveURL("/games/boomboompirate");
+  await expect(page.locator("h1")).toContainText("Boom");
+
+  await page.getByLabel("Back to our games list").click();
   await page.getByRole("link", { name: "Home" }).click();
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Almost Yellow");
@@ -66,14 +72,6 @@ test("Navigate to the holidays page", async ({ page }) => {
   await expect(page).toHaveURL("/holidays");
   await expect(page).toHaveTitle("Holidays | Almost Yellow");
   await expect(page.locator("h1")).toContainText("Our trips and holidays");
-
-  await page.getByRole("link", { name: "Home" }).click();
-  await expect(page).toHaveURL("/");
-  await expect(page).toHaveTitle("Almost Yellow");
-});
-
-test("Jumping to home from 3 layer breadcrumb", async ({ page }) => {
-  await page.goto("/games/irishbingo");
 
   await page.getByRole("link", { name: "Home" }).click();
   await expect(page).toHaveURL("/");

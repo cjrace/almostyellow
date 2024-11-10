@@ -9,7 +9,12 @@ import {
   useComputedColorScheme,
   Tooltip,
 } from "@mantine/core";
-import { IconBrandGithub, IconConfetti } from "@tabler/icons-react";
+import {
+  IconBrandGithub,
+  IconConfetti,
+  IconDeviceGamepad2,
+  IconChevronLeft,
+} from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import cx from "clsx";
@@ -23,10 +28,15 @@ interface BreadcrumbItem {
 interface HeaderProps {
   crumbs?: BreadcrumbItem[];
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
+  game?: boolean; // Here to give a specific header styling for our games pages
 }
 
-export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
-  const mainJustify = noCrumbs ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
+export default function Header({
+  crumbs,
+  noCrumbs = false,
+  game = false,
+}: HeaderProps) {
+  const mainJustify = noCrumbs && !game ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("dark", {
     getInitialValueInEffect: true,
@@ -45,6 +55,22 @@ export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
               ))}
             </Breadcrumbs>
           </Group>
+        )}
+
+        {game && (
+          <Tooltip label="Back to our games list" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component="a"
+              href="/games"
+              size="xl"
+              aria-label="Back to our games list"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconDeviceGamepad2 />
+            </ActionIcon>
+          </Tooltip>
         )}
 
         <Group h="100%" gap="xs" justify="flex-end">
