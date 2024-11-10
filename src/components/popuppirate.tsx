@@ -153,7 +153,7 @@ const PopUpPirate = () => {
                 BOOOM!
               </Text>
               <Text size="lg" ta="center" mt="sm">
-                Uh-oh! You found the pirate's trap!
+                Uh-oh! You found the pirate&apos;s trap!
               </Text>
               <Space h="md" />
               <Button onClick={restartGame}>Restart Game</Button>
