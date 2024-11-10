@@ -2,3 +2,8 @@
 .label {
   margin-bottom: 10px;
 }
+
+/* Stop the jumping around on load by forcing a minimum size */
+.input {
+  min-height: 150px;
+}

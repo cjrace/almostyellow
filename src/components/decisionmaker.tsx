@@ -42,12 +42,12 @@ export default function DecisionMaker() {
     <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
       <Form form={form} onSubmit={makeDecision}>
         <Textarea
+          classNames={{ label: classes.label, input: classes.input }}
           label="List out your options"
           placeholder="One option per line..."
           error={error}
           autosize
-          minRows={5}
-          classNames={{ label: classes.label }} // Add an extra space before the text area box
+          minRows={2}
           {...form.getInputProps("options")}
         />
         <Button mt="xl" type="submit" fullWidth>
