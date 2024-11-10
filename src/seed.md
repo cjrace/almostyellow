@@ -18,6 +18,7 @@ Note that for the users table, it only seeds one user at a time, so update the f
 // Core contents of src/app/seed/route.ts
 
 import { db } from '@vercel/postgres';
+import { v4 as generate_uuid } from "uuid";
 // For users table only: import bcrypt from 'bcrypt';
 // add other imports as needed
 
@@ -54,9 +55,11 @@ export type User = {
 
 // Note that this only seeds a single user at a time
 // Edit this to the details of the user you want to add
+const user_id = generate_uuid();
+
 const seeduser = [
   {
-    id: '', // Should be a unique GUID
+    id: user_id,
     name: '',
     email: '',
     password: '', // Put the raw password as the user would enter it, we encrypt it in a later step
@@ -102,10 +105,12 @@ export type chopin = {
   checked: boolean;
 };
 
+const random_chopin_id = generate_uuid();
+
 const choping = [
   {
-    chopin_id: '79741fda-d3fd-40ca-b012-024f283a94cb',
-    chopin_text: 'Tin of beans',
+    chopin_id: random_chopin_id,
+    chopin_text: 'Limes',
     checked: false,
   },
 ];

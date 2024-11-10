@@ -4,11 +4,10 @@ import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import { Item } from "@/components/chopinliszt";
+import { v4 as generate_uuid } from "uuid";
 
 const FormSchema = z.object({
-  chopin_id: z.string(),
   chopin_text: z.string(),
-  checked: z.boolean(),
 });
 
 const CreateChopin = FormSchema;
@@ -22,21 +21,21 @@ export type State = {
   message?: string | null;
 };
 
-export async function createChopin(prevState: State, formData: FormData) {
+export async function createChopin(formData: FormData) {
   const validatedFields = CreateChopin.safeParse({
-    chopin_id: formData.get("chopin_id"),
     chopin_text: formData.get("chopin_text"),
-    checked: formData.get("checked"),
   });
 
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to add item to Chopin Liszt.",
+      message: "Missing Fields. Failed to parse chopin_text.",
     };
   }
 
-  const { chopin_id, chopin_text, checked } = validatedFields.data;
+  const chopin_id = generate_uuid();
+  const chopin_text = validatedFields.data.chopin_text;
+  const checked = false;
 
   try {
     await sql`

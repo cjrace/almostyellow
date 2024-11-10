@@ -46,20 +46,33 @@ const ChopinLiszt: React.FC = () => {
     }
   };
 
-  //  const toggleItem = (itemId: string) => {
-  //    setItems((prevItems) =>
-  //      prevItems.map((item) =>
-  //        item.id === itemId ? { ...item, checked: !item.checked } : item,
-  //      ),
-  //    );
-  //  };
+  const addItem = async () => {
+    // Split the user input into separate lines for each item
+    const itemsToAdd = newItemText.trim().split("\n");
+
+    for (const itemText of itemsToAdd) {
+      if (itemText.trim()) {
+        // if not empty
+        const formData = new FormData();
+        formData.append("chopin_text", itemText);
+        try {
+          console.log("Attempting to insert: ", ...formData.entries());
+          await createChopin(formData);
+        } catch {
+          console.error("Error adding: ", ...formData.entries());
+        }
+      }
+    }
+    await fetchItems();
+    close(); // Close user modal
+    setNewItemText(""); // Clear the input field after successful add
+  };
 
   const toggleItem = async (itemId: string) => {
     try {
       const updatedItem = items.find((item) => item.id === itemId);
       if (updatedItem) {
         const newCheckedState = !updatedItem.checked;
-
         console.log("Sending update request:", itemId, newCheckedState);
         await updateChopinChecked(itemId, newCheckedState);
         console.log("Update successful");
@@ -70,70 +83,15 @@ const ChopinLiszt: React.FC = () => {
     }
   };
 
-  /*
-  const addItem = async () => {
-    if (newItemText.trim()) {
-      const newItems = newItemText.split(/\r?\n/);
-      
-      for (const text of newItems) {
-        try {
-          await createChopin({ chopin_id: String(crypto.randomUUID()), chopin_text: text.trim(), checked: false });
-        } catch (error) {
-          console.error("Error adding item:", error);
-        }
-      }
-      
-      setItems((prevItems) => [...prevItems]); // Trigger re-render
-      setNewItemText("");
-      close();
-    }
-  };
-
-  const toggleItem = async (itemId: string) => {
-    setItems((prevItems) =>
-      prevItems.map(async (item) => {
-        if (item.id === itemId) {
-          const updatedChecked = !item.checked;
-          try {
-            await updateChopinChecked(itemId, new FormData([["checked", updatedChecked.toString()]]));
-          } catch (error) {
-            console.error("Error updating checked state:", error);
-          }
-          return { ...item, checked: updatedChecked };
-        }
-        return item;
-      })
-    );
-  };
-
   const removeItem = async (itemId: string) => {
     try {
+      console.log("Deleting item:", itemId);
       await deleteChopin(itemId);
-      setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+      console.log("Delete successful");
+      await fetchItems();
     } catch (error) {
       console.error("Error deleting item:", error);
     }
-  };
-  */
-
-  const addItem = () => {
-    if (newItemText.trim()) {
-      const newItems = newItemText.split(/\r?\n/);
-      setItems((prevItems) => [
-        ...prevItems,
-        ...newItems.map((text) => ({
-          id: String(crypto.randomUUID()),
-          text: text.trim(),
-          checked: false,
-        })),
-      ]);
-      setNewItemText("");
-      close();
-    }
-  };
-
-  const removeItem = (itemId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
   };
 
   return (
