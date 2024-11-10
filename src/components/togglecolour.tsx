@@ -4,6 +4,7 @@ import {
   ActionIcon,
   useMantineColorScheme,
   useComputedColorScheme,
+  Tooltip,
 } from "@mantine/core";
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import { useEffect } from "react";
@@ -24,17 +25,19 @@ export default function ToggleColour({ size }: ToggleColourProps) {
   }, [colorScheme]);
 
   return (
-    <ActionIcon
-      onClick={toggleColorScheme}
-      variant="default"
-      size={size}
-      aria-label="Toggle color scheme"
-    >
-      {colorScheme === "light" ? (
-        <IconSun stroke={1.5} />
-      ) : (
-        <IconMoon stroke={1.5} />
-      )}
-    </ActionIcon>
+    <Tooltip label="Toggle color scheme" openDelay={250}>
+      <ActionIcon
+        onClick={toggleColorScheme}
+        variant="default"
+        size={size}
+        aria-label="Toggle color scheme"
+      >
+        {colorScheme === "light" ? (
+          <IconSun stroke={1.5} />
+        ) : (
+          <IconMoon stroke={1.5} />
+        )}
+      </ActionIcon>
+    </Tooltip>
   );
 }

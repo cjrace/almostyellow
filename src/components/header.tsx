@@ -1,7 +1,5 @@
-import { Group, ActionIcon, Breadcrumbs, Anchor } from "@mantine/core";
-import { IconBrandGithub, IconConfetti } from "@tabler/icons-react";
-import ToggleColour from "@/components/togglecolour";
-import playConfetti from "@/components/playconfetti";
+import { Group, Breadcrumbs, Anchor } from "@mantine/core";
+import HeaderIcons from "@/components/headericons";
 
 interface BreadcrumbItem {
   title: string;
@@ -32,28 +30,7 @@ export default function Header({ crumbs, noCrumbs = false }: HeaderProps) {
         )}
 
         <Group h="100%" gap="xs" justify="flex-end">
-          <ActionIcon
-            onClick={playConfetti}
-            variant="default"
-            size="xl"
-            aria-label="Fire confetti canons"
-          >
-            <IconConfetti />
-          </ActionIcon>
-
-          <ActionIcon
-            component="a"
-            href="https://github.com/cjrace/almostyellow"
-            size="xl"
-            aria-label="Open GitHub repository in a new tab"
-            target="_blank"
-            variant="default"
-            rel="noopener noreferrer"
-          >
-            {<IconBrandGithub />}
-          </ActionIcon>
-
-          <ToggleColour size="xl" />
+          <HeaderIcons />
         </Group>
       </Group>
     </header>
