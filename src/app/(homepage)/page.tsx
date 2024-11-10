@@ -8,6 +8,7 @@ import {
   IconPaperclip,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
+import styles from "@/styles/gradient.module.css";
 
 export default function Home() {
   return (
@@ -15,12 +16,9 @@ export default function Home() {
       <Header noCrumbs={true} />
 
       <main>
-        <Stack>
-          <Title ta="center">Almost yellow</Title>
-          <Text ta="center">
-            This is our homepage, we should make it prettier.
-          </Text>
-        </Stack>
+        <Title className={styles.gradient} ta="center">
+          Almost yellow
+        </Title>
 
         <Space h="xl" />
 
