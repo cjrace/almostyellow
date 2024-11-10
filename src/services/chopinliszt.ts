@@ -72,27 +72,19 @@ export async function readChopin(): Promise<Item[]> {
   }
 }
 
-const UpdateChopinChecked = FormSchema.omit({
-  chopin_id: true,
-  chopin_text: true,
-});
-
-export async function updateChopinChecked(
-  chopin_id: string,
-  formData: FormData,
-) {
-  const { checked } = UpdateChopinChecked.parse({
-    checked: formData.get("checked"),
-  });
-
+export async function updateChopinChecked(chopinId: string, checked: boolean) {
   try {
     await sql`
-        UPDATE invoices
+        UPDATE chopin_liszt
         SET checked = ${checked}
-        WHERE chopin_id = ${chopin_id}
+        WHERE chopin_id = ${chopinId}
       `;
-  } catch {
     revalidatePath("/admin/chopinliszt");
+  } catch {
+    return {
+      message:
+        "Database Error: Failed to update checked status of item on Chopin Liszt.",
+    };
   }
 }
 

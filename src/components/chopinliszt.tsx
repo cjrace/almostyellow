@@ -26,23 +26,49 @@ export interface Item {
 }
 
 const ChopinLiszt: React.FC = () => {
+  const [modalOpened, { open, close }] = useDisclosure(false);
+
   const [items, setItems] = useState<Item[]>([]);
   const [newItemText, setNewItemText] = useState("");
 
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
   const fetchItems = async () => {
     try {
+      console.log("Requesting new data");
       const data = await readChopin();
+      console.log("Data fetch successful");
       setItems(data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  //  const toggleItem = (itemId: string) => {
+  //    setItems((prevItems) =>
+  //      prevItems.map((item) =>
+  //        item.id === itemId ? { ...item, checked: !item.checked } : item,
+  //      ),
+  //    );
+  //  };
 
-  const [modalOpened, { open, close }] = useDisclosure(false);
+  const toggleItem = async (itemId: string) => {
+    try {
+      const updatedItem = items.find((item) => item.id === itemId);
+      if (updatedItem) {
+        const newCheckedState = !updatedItem.checked;
+
+        console.log("Sending update request:", itemId, newCheckedState);
+        await updateChopinChecked(itemId, newCheckedState);
+        console.log("Update successful");
+        await fetchItems();
+      }
+    } catch (error) {
+      console.error("Error updating checked state:", error);
+    }
+  };
 
   /*
   const addItem = async () => {
@@ -104,14 +130,6 @@ const ChopinLiszt: React.FC = () => {
       setNewItemText("");
       close();
     }
-  };
-
-  const toggleItem = (itemId: string) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId ? { ...item, checked: !item.checked } : item,
-      ),
-    );
   };
 
   const removeItem = (itemId: string) => {
