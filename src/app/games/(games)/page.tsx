@@ -45,18 +45,18 @@ export default async function Games() {
 
           <GamesCard
             imagePath="/images/cow.svg"
-            title="Uno"
-            description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
-            link="/games/uno"
-            linktext="Uno"
+            title="Boom Boom Pirate"
+            description="... ... BOOM!"
+            link="/games/boomboompirate"
+            linktext="Boom Boom Pirate"
           />
 
           <GamesCard
             imagePath="/images/cow.svg"
-            title="Pop up pirate"
-            description="... ... BOOM!"
-            link="/games/popuppirate"
-            linktext="Pop up pirate"
+            title="Uno"
+            description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
+            link="/games/uno"
+            linktext="Uno"
           />
         </SimpleGrid>
       </main>

@@ -7,7 +7,6 @@ import {
   Grid,
   Modal,
   Text,
-  Group,
   NumberInput,
   Stack,
   Space,
@@ -18,7 +17,7 @@ import {
   IconSquareCheck,
   IconSquareX,
 } from "@tabler/icons-react";
-import styles from "@/styles/pirate.explosion.module.css"; // Import the CSS module
+import styles from "@/styles/boomboom.module.css";
 
 const generateRandomRope = (totalRopes: number) => {
   return Math.floor(Math.random() * totalRopes);
@@ -30,7 +29,7 @@ const generateRandomPosition = () => {
   return { top, left };
 };
 
-const PopUpPirate = () => {
+const BoomBoomPirate = () => {
   const [totalRopes, setTotalRopes] = useState(20); // Default number of ropes
   const [explosionRope, setExplosionRope] = useState(
     generateRandomRope(totalRopes),
@@ -113,10 +112,11 @@ const PopUpPirate = () => {
             }}
             min={5}
             max={50}
-            label="Number of Ropes"
-            description="Choose the number of ropes to pick from"
+            size="xl"
+            label="Number of ropes"
+            description="Choose between 5 and 50"
           />
-          <Button onClick={startGame} mt="md">
+          <Button onClick={startGame} mt="md" size="lg">
             Start Game
           </Button>
         </Stack>
@@ -146,7 +146,11 @@ const PopUpPirate = () => {
             Restart Game
           </Button>
 
-          <Modal opened={isExplosion} onClose={closeModal}>
+          <Modal
+            opened={isExplosion}
+            onClose={closeModal}
+            withCloseButton={false}
+          >
             <Stack align="stretch" justify="center" gap="md">
               <IconBomb size={48} color="red" />
               <Text size="lg" fw={700} ta="center" mt="sm">
@@ -157,7 +161,7 @@ const PopUpPirate = () => {
               </Text>
               <Space h="md" />
               <Button onClick={restartGame}>Restart Game</Button>
-              <Button fullWidth mt="md" onClick={closeModal}>
+              <Button fullWidth mt="md" variant="default" onClick={closeModal}>
                 Close
               </Button>
             </Stack>
@@ -184,4 +188,4 @@ const PopUpPirate = () => {
   );
 };
 
-export default PopUpPirate;
+export default BoomBoomPirate;
