@@ -14,7 +14,9 @@ import {
   Text,
   Title,
   List,
+  Modal,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import playConfetti from "@/components/playconfetti";
 import { IconConfetti } from "@tabler/icons-react";
 
@@ -27,7 +29,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
       textAlign: "center",
       position: "relative",
       width: "100%",
-      background: "#4b4b4b",
+      background: "none",
     }}
   >
     <div
@@ -89,8 +91,10 @@ export default function IrishBingo() {
     setLatestCard(null); // Clear the latest card
   };
 
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
-    <Grid gutter={{ base: 5, xs: "md", md: "xl", xl: 50 }}>
+    <Grid>
       <Grid.Col
         span={{ base: 4, sm: 6, lg: 6 }}
         style={{ display: "flex", justifyContent: "center" }}
@@ -120,44 +124,60 @@ export default function IrishBingo() {
         <Text mt="sm" id="card_count">{`${drawnCards.length} / 52 cards`}</Text>
         <Space h="md" />
         <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
-          Draw a Card
+          Draw a card
         </Button>
         <Space h="md" />
-        <Button variant="default" onClick={newDeck} fullWidth>
-          Shuffle New Deck
+        <Button
+          variant="default"
+          onClick={open}
+          fullWidth
+          disabled={drawnCards.length > 1 ? false : true}
+        >
+          View all called cards
         </Button>
         <Space h="md" />
         {mainDeck.length === 0 && (
-          <Alert title="Deck Exhausted" color="red">
-            You have drawn a full deck, please reshuffle.
-          </Alert>
+          <>
+            <Alert title="Deck Exhausted" color="red">
+              You have drawn a full deck, please reshuffle.
+            </Alert>
+            <Space h="md" />
+          </>
         )}
-        <Space h="md" />
-
         <Button
           variant="default"
-          onClick={playConfetti}
+          onClick={newDeck}
           fullWidth
-          rightSection={<IconConfetti />}
+          disabled={drawnCards.length > 0 ? false : true}
         >
-          Has someone won?
+          Shuffle new deck
         </Button>
-
         <Space h="md" />
-        <Accordion variant="separated">
-          <Accordion.Item key="All cards called" value="All cards called">
-            <Accordion.Control>All cards called</Accordion.Control>
-            <Accordion.Panel>
-              <List type="ordered" withPadding>
-                {drawnCards.map((card, index) => (
-                  <List.Item key={index}>
-                    {getCardName(card.suit, card.rank)}
-                  </List.Item>
-                ))}
-              </List>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
+        {drawnCards.length >= 10 && (
+          <Button
+            variant="default"
+            onClick={playConfetti}
+            fullWidth
+            rightSection={<IconConfetti />}
+          >
+            Has someone won?
+          </Button>
+        )}
+
+        <Modal
+          opened={opened}
+          onClose={close}
+          size="xs"
+          title="All called cards"
+        >
+          <List type="ordered" withPadding>
+            {drawnCards.map((card, index) => (
+              <List.Item key={index}>
+                {getCardName(card.suit, card.rank)}
+              </List.Item>
+            ))}
+          </List>
+        </Modal>
       </Grid.Col>
     </Grid>
   );

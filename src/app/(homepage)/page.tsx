@@ -17,7 +17,7 @@ export default function Home() {
 
       <main>
         <Title className={styles.gradient} ta="center">
-          Almost yellow
+          Almost Yellow
         </Title>
 
         <Space h="xl" />
