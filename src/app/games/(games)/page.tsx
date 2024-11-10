@@ -28,7 +28,7 @@ export default async function Games() {
 
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
           <GamesCard
-            imagePath="/images/cow.svg"
+            imagePath="/images/almo-border.png"
             title="Irish Bingo"
             description="Be the first to flip all your cards and shout 'Bingo!' before anyone else. Are you feeling lucky?"
             link="/games/irishbingo"
@@ -36,7 +36,7 @@ export default async function Games() {
           />
 
           <GamesCard
-            imagePath="/images/cow.svg"
+            imagePath="/images/almo-border.png"
             title="Snakes and Ladders"
             description="Climb ladders, avoid snakes, and race your way to the trophy. Who will get there first?"
             link="/games/snakesandladders"
@@ -44,7 +44,7 @@ export default async function Games() {
           />
 
           <GamesCard
-            imagePath="/images/cow.svg"
+            imagePath="/images/almo-border.png"
             title="Boom Boom Pirate"
             description="... ... BOOM!"
             link="/games/boomboompirate"
@@ -52,7 +52,7 @@ export default async function Games() {
           />
 
           <GamesCard
-            imagePath="/images/cow.svg"
+            imagePath="/images/almo-border.png"
             title="Uno"
             description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
             link="/games/uno"
