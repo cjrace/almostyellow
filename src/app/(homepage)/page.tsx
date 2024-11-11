@@ -1,4 +1,4 @@
-import { Button, Group, Title, Text, Space, Stack } from "@mantine/core";
+import { Button, Group, Title, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -17,7 +17,7 @@ export default function Home() {
 
       <main>
         <Title className={styles.gradient} ta="center">
-          Almost yellow
+          Almost Yellow
         </Title>
 
         <Space h="xl" />
@@ -61,16 +61,6 @@ export default function Home() {
             href="/cocktails"
           >
             Cocktail time!
-          </Button>
-
-          <Button
-            leftSection={<IconBeach />}
-            variant="default"
-            component="a"
-            size="xl"
-            href="/holidays"
-          >
-            Our holidays!
           </Button>
         </Group>
 

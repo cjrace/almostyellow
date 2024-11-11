@@ -10,13 +10,19 @@ import {
   Image,
   Box,
   Progress,
-  Accordion,
+  Group,
+  ActionIcon,
   Text,
   Title,
   List,
+  Modal,
+  Anchor,
+  Tooltip,
+  Center,
+  Container,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
-import { IconConfetti } from "@tabler/icons-react";
+import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
 
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   <Box
@@ -27,7 +33,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
       textAlign: "center",
       position: "relative",
       width: "100%",
-      background: "#4b4b4b",
+      background: "none",
     }}
   >
     <div
@@ -89,8 +95,123 @@ export default function IrishBingo() {
     setLatestCard(null); // Clear the latest card
   };
 
+  const [modalCardOpened, setModalCardOpened] = useState(false);
+  const [modalInstructionsOpened, setModalIntstructionsOpened] =
+    useState(false);
+
   return (
-    <Grid gutter={{ base: 5, xs: "md", md: "xl", xl: 50 }}>
+    <Grid>
+      <Grid.Col span={12}>
+        <Group gap="xs">
+          <Title>Irish Bingo</Title>
+          <Tooltip
+            label="Game instructions"
+            openDelay={250}
+            position="right"
+            offset={5}
+          >
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open game instructions modal"
+              onClick={() => setModalIntstructionsOpened(true)}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+
+        <Modal
+          size="auto"
+          opened={modalInstructionsOpened}
+          onClose={() => setModalIntstructionsOpened(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ib_instructions"
+          withCloseButton={false}
+          transitionProps={{
+            transition: "fade",
+            duration: 300,
+            timingFunction: "linear",
+          }}
+          overlayProps={{
+            backgroundOpacity: 0.75,
+            blur: 3,
+          }}
+        >
+          <Container>
+            <Title order={2} mb="sm" id="ib_instructions">
+              Irish Bingo instructions
+            </Title>
+            <Text>This game can be played with any number of players.</Text>
+            <Title order={3} my="md">
+              Standard rules
+            </Title>
+            <List variant="ordered" mb="md">
+              <List.Item>
+                deal 13 cards at random to all players from a standard 52 card
+                deck (use multiple decks if necessary based on the number of
+                players)
+              </List.Item>
+              <List.Item>players then lay out all cards face up</List.Item>
+              <List.Item>
+                the caller then starts calling cards, players turn their cards
+                face down if they are called
+              </List.Item>
+              <List.Item>
+                first player to turn over all of their cards shouts
+                &apos;Tayto&apos; and wins
+              </List.Item>
+            </List>
+            <Text mb="sm">
+              Note that it is usually worth double checking the winners cards,
+              especially if alcohol has been involved.
+            </Text>
+            <Text mb="sm">
+              Different players can have have duplicates of cards, though no
+              individual player should have duplicate cards themselves.
+            </Text>
+            <Text>
+              For example players A and B both having the 7 of Hearts is fine,
+              but player A should not have two 7 of Hearts cards.
+            </Text>
+            <Title order={3} my="md">
+              Tie breaks
+            </Title>
+            <Text>
+              Tie breaks are decided in any way you like. We suggest a quick
+              game of{" "}
+              <Anchor
+                target="_blank"
+                href="/games/boomboompirate"
+                rel="noreferrer"
+              >
+                Boom Boom Pirate (opens in new tab)
+              </Anchor>
+              , or a simple high card draw.
+            </Text>
+            <Title order={3} my="md">
+              Variations
+            </Title>
+            <Text>
+              You can change the number of cards per player if you want a longer
+              or shorter game, or are limited in the number of cards you have.
+            </Text>
+            <Center>
+              <Button
+                variant="subtle"
+                mt="md"
+                onClick={() => setModalIntstructionsOpened(false)}
+              >
+                Close instructions modal
+              </Button>
+            </Center>
+          </Container>
+        </Modal>
+      </Grid.Col>
+
+      <Space h="xl" />
+
       <Grid.Col
         span={{ base: 4, sm: 6, lg: 6 }}
         style={{ display: "flex", justifyContent: "center" }}
@@ -116,48 +237,77 @@ export default function IrishBingo() {
           value={drawnCards.length * 1.923}
           size="lg"
           color={progressColor}
+          aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
         />
-        <Text mt="sm" id="card_count">{`${drawnCards.length} / 52 cards`}</Text>
+        <Text
+          mt="sm"
+          id="card_count"
+          ta="center"
+        >{`${drawnCards.length} / 52 cards`}</Text>
         <Space h="md" />
         <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
-          Draw a Card
-        </Button>
-        <Space h="md" />
-        <Button variant="default" onClick={newDeck} fullWidth>
-          Shuffle New Deck
+          Draw a card
         </Button>
         <Space h="md" />
         {mainDeck.length === 0 && (
-          <Alert title="Deck Exhausted" color="red">
-            You have drawn a full deck, please reshuffle.
-          </Alert>
+          <>
+            <Alert title="Deck Exhausted" color="red">
+              You have drawn a full deck, please reshuffle.
+            </Alert>
+            <Space h="md" />
+          </>
         )}
+        <Button
+          variant="default"
+          onClick={() => setModalCardOpened(true)}
+          fullWidth
+          disabled={drawnCards.length > 1 ? false : true}
+        >
+          View all called cards
+        </Button>
+
+        <Modal
+          opened={modalCardOpened}
+          onClose={() => setModalCardOpened(false)}
+          size="xs"
+          title="All called cards"
+          transitionProps={{
+            transition: "fade",
+            duration: 300,
+            timingFunction: "linear",
+          }}
+          closeButtonProps={{ "aria-label": "Close modal" }}
+        >
+          <List type="ordered" withPadding>
+            {drawnCards.map((card, index) => (
+              <List.Item key={index}>
+                {getCardName(card.suit, card.rank)}
+              </List.Item>
+            ))}
+          </List>
+        </Modal>
+
         <Space h="md" />
 
         <Button
           variant="default"
-          onClick={playConfetti}
+          onClick={newDeck}
           fullWidth
-          rightSection={<IconConfetti />}
+          disabled={drawnCards.length > 0 ? false : true}
         >
-          Has someone won?
+          Shuffle new deck
         </Button>
-
         <Space h="md" />
-        <Accordion variant="separated">
-          <Accordion.Item key="All cards called" value="All cards called">
-            <Accordion.Control>All cards called</Accordion.Control>
-            <Accordion.Panel>
-              <List type="ordered" withPadding>
-                {drawnCards.map((card, index) => (
-                  <List.Item key={index}>
-                    {getCardName(card.suit, card.rank)}
-                  </List.Item>
-                ))}
-              </List>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
+        {drawnCards.length >= 10 && (
+          <Button
+            variant="default"
+            onClick={playConfetti}
+            fullWidth
+            rightSection={<IconConfetti />}
+          >
+            Has someone won?
+          </Button>
+        )}
       </Grid.Col>
     </Grid>
   );

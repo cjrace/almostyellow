@@ -13,16 +13,10 @@ export const metadata: Metadata = {
   },
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Games", href: "/games" },
-  { title: "Snakes and Ladders", href: "" },
-];
-
 export default function SnakesAndLaddersPage() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} game={true} />
 
       <main>
         <Title>Snakes and Ladders</Title>

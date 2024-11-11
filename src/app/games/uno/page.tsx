@@ -6,16 +6,10 @@ export const metadata: Metadata = {
   title: "Uno",
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Games", href: "/games" },
-  { title: "Uno", href: "/games/uno" },
-];
-
 export default async function UnoPage() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} game={true} />
 
       <main>
         <Title>Uno</Title>

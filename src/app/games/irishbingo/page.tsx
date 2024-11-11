@@ -1,4 +1,3 @@
-import { Space, Title } from "@mantine/core";
 import IrishBingo from "@/components/irishbingo";
 import { Metadata } from "next";
 import Header from "@/components/header";
@@ -12,20 +11,12 @@ export const metadata: Metadata = {
   },
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Games", href: "/games" },
-  { title: "Irish Bingo", href: "" },
-];
-
 export default function IrishBingoPage() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} game={true} />
 
       <main>
-        <Title>Irish Bingo</Title>
-        <Space h="xl" />
         <IrishBingo />
       </main>
     </>

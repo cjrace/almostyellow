@@ -12,16 +12,10 @@ export const metadata: Metadata = {
   },
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Games", href: "/games" },
-  { title: "Boom Boom Pirate", href: "" },
-];
-
 export default function BoomBoomPiratePage() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} game={true} />
 
       <main>
         <Title>Boom Boom Pirate</Title>
