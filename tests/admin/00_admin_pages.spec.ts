@@ -19,13 +19,22 @@ test("Can sign in and navigate admin", async ({ page }) => {
   await page.getByRole("link", { name: "Admin stuff" }).click();
 
   await expect(page).toHaveTitle("Admin | Almost Yellow");
-  await expect(page.locator("h1")).toContainText("Welcome to our admin page");
+  await expect(page.locator("h1")).toContainText("Admin");
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
   await page.getByRole("link", { name: "Chopin Liszt" }).click();
   await expect(page).toHaveURL("/admin/chopinliszt");
   await expect(page).toHaveTitle("Chopin Liszt | Almost Yellow");
   await expect(page.locator("h1")).toContainText("Chopin Liszt");
+
+  await page.getByRole("link", { name: "Admin" }).click();
+  await expect(page).toHaveURL("/admin");
+  await expect(page).toHaveTitle("Admin | Almost Yellow");
+
+  await page.getByRole("link", { name: "Our Holidays!" }).click();
+  await expect(page).toHaveURL("/admin/holidays");
+  await expect(page).toHaveTitle("Holidays | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("Our trips and holidays");
 
   await page.getByRole("link", { name: "Admin" }).click();
   await expect(page).toHaveURL("/admin");
@@ -51,6 +60,15 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   await page.goto("/admin/chopinliszt");
   await expect(page).toHaveURL(
     "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fchopinliszt",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
+
+  await page.goto("/admin/holidays");
+  await expect(page).toHaveURL(
+    "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fholidays",
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(

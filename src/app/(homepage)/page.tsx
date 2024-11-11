@@ -62,16 +62,6 @@ export default function Home() {
           >
             Cocktail time!
           </Button>
-
-          <Button
-            leftSection={<IconBeach />}
-            variant="default"
-            component="a"
-            size="xl"
-            href="/holidays"
-          >
-            Our holidays!
-          </Button>
         </Group>
 
         <Space h="lg" />

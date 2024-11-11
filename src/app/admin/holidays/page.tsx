@@ -6,15 +6,11 @@ import { Title } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Holidays",
-  description: "A timeline of our adventures.",
-  openGraph: {
-    title: "Holidays | Almost Yellow",
-    description: "A timeline of our adventures.",
-  },
 };
 
 const crumbitems = [
   { title: "Home", href: "/" },
+  { title: "Admin", href: "/admin/" },
   { title: "Holidays", href: "" },
 ];
 

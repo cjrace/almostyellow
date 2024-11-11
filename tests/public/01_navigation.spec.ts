@@ -64,16 +64,3 @@ test("Navigate to the decision maker page", async ({ page }) => {
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Almost Yellow");
 });
-
-test("Navigate to the holidays page", async ({ page }) => {
-  await page.goto("/");
-
-  await page.getByRole("link", { name: "Our holidays!" }).click();
-  await expect(page).toHaveURL("/holidays");
-  await expect(page).toHaveTitle("Holidays | Almost Yellow");
-  await expect(page.locator("h1")).toContainText("Our trips and holidays");
-
-  await page.getByRole("link", { name: "Home" }).click();
-  await expect(page).toHaveURL("/");
-  await expect(page).toHaveTitle("Almost Yellow");
-});
