@@ -1,4 +1,3 @@
-import { Space, Title } from "@mantine/core";
 import IrishBingo from "@/components/irishbingo";
 import { Metadata } from "next";
 import Header from "@/components/header";
@@ -18,8 +17,6 @@ export default function IrishBingoPage() {
       <Header noCrumbs={true} game={true} />
 
       <main>
-        <Title>Irish Bingo</Title>
-        <Space h="xl" />
         <IrishBingo />
       </main>
     </>
