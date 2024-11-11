@@ -2,7 +2,7 @@ import BackToTop from "@/components/backtotop";
 import HolidayTimeline from "@/components/timeline";
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { Title } from "@mantine/core";
+import { Container, Title } from "@mantine/core";
 
 export const metadata: Metadata = {
   title: "Holidays",
@@ -20,9 +20,11 @@ export default function HolidaysPage() {
       <Header crumbs={crumbitems} />
 
       <main>
-        <Title>Our trips and holidays</Title>
-        <HolidayTimeline />
-        <BackToTop />
+        <Container size="xs">
+          <Title>Our trips and holidays</Title>
+          <HolidayTimeline />
+          <BackToTop />
+        </Container>
       </main>
     </>
   );
