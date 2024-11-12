@@ -11,7 +11,7 @@ export default function Login() {
     <>
       <Header noCrumbs={true} />
 
-      <main>
+      <main id="main-content">
         <LoginForm />
       </main>
     </>

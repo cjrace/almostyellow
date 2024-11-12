@@ -22,7 +22,7 @@ export default function DecisionMakerPage() {
     <>
       <Header crumbs={crumbitems} />
 
-      <main>
+      <main id="main-content">
         <Title>The Decision Maker</Title>
         <Space h="xl" />
         <DecisionMaker />

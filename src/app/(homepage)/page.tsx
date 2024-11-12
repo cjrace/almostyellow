@@ -4,7 +4,6 @@ import {
   IconMoodPuzzled,
   IconCheese,
   IconGlassCocktail,
-  IconBeach,
   IconPaperclip,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
@@ -15,7 +14,7 @@ export default function Home() {
     <>
       <Header noCrumbs={true} />
 
-      <main>
+      <main id="main-content">
         <Title className={styles.gradient} ta="center">
           Almost Yellow
         </Title>

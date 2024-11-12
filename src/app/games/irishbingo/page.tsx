@@ -16,7 +16,7 @@ export default function IrishBingoPage() {
     <>
       <Header noCrumbs={true} game={true} />
 
-      <main>
+      <main id="main-content">
         <IrishBingo />
       </main>
     </>

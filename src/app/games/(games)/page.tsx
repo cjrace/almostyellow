@@ -22,7 +22,7 @@ export default async function Games() {
     <>
       <Header crumbs={crumbitems} />
 
-      <main>
+      <main id="main-content">
         <Title>Our games</Title>
         <Space h="xl" />
 

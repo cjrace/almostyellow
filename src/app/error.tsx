@@ -19,7 +19,7 @@ export default function Error({
     <>
       <Header noCrumbs={true} />
 
-      <main>
+      <main id="main-content">
         <Container size="xs">
           <Stack gap="xl">
             <Title ta="center">Something went very wrong!</Title>

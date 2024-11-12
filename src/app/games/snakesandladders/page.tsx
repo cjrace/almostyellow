@@ -18,7 +18,7 @@ export default function SnakesAndLaddersPage() {
     <>
       <Header noCrumbs={true} game={true} />
 
-      <main>
+      <main id="main-content">
         <Title>Snakes and Ladders</Title>
         <Space h="xl" />
         <SnakesAndLadders />

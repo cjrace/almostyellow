@@ -1,11 +1,17 @@
 import "@mantine/core/styles.css";
-import { MantineProvider, ColorSchemeScript, AppShell } from "@mantine/core";
+import {
+  MantineProvider,
+  ColorSchemeScript,
+  AppShell,
+  Anchor,
+} from "@mantine/core";
 import { acalat } from "@/styles/acalat";
 import "@/styles/global.css";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
+import skip from "@/styles/skip.module.css";
 
 export const metadata: Metadata = {
   title: {
@@ -59,6 +65,9 @@ export default function RootLayout({
             header={{ height: { base: 60, md: 70, lg: 80 } }}
             padding="md"
           >
+            <Anchor href="#main-content" className={skip.skiplink}>
+              Skip to main content
+            </Anchor>
             {children}
           </AppShell>
           <Analytics />

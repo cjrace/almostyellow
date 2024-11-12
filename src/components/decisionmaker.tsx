@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Textarea, Button, SimpleGrid, Stack, Text } from "@mantine/core";
+import {
+  Textarea,
+  Button,
+  SimpleGrid,
+  Stack,
+  Text,
+  Group,
+} from "@mantine/core";
 import { useForm, Form } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
 import playConfetti from "@/components/playconfetti";
@@ -46,9 +53,45 @@ export default function DecisionMaker() {
     }, 3000);
   };
 
+  const prePopulateTakeaways = () => {
+    const prepopulatedTakeaways = `KFC
+McDonalds
+Nandos
+Subway
+Dominos
+Bella Italia
+Picco
+Shake n Cake
+Toby Carvery
+North Road Fish Bar
+New Leung Kee
+Star of Bengal
+Bombay Gate
+Manjaros
+Santorini`;
+
+    form.setFieldValue("options", prepopulatedTakeaways);
+  };
+
+  const prePopulateNames = () => {
+    const prepopulatedNames = `Cam
+Laura`;
+
+    form.setFieldValue("options", prepopulatedNames);
+  };
+
   return (
     <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
       <Form form={form} onSubmit={makeDecision}>
+        <Group>
+          <Button mb="md" variant="default" onClick={prePopulateTakeaways}>
+            Darlington Takeaways
+          </Button>
+          <Button mb="md" variant="default" onClick={prePopulateNames}>
+            Our names
+          </Button>
+        </Group>
+
         <Textarea
           classNames={{ label: classes.label, input: classes.input }}
           label="List out your options"
