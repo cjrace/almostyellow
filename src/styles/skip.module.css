@@ -1,0 +1,37 @@
+.skiplink {
+  background-color: #e8590c;
+  color: #000000;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 100px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+  text-decoration: underline;
+  text-decoration-thickness: max(1px, 0.0625rem);
+  text-underline-offset: 0.1578em;
+  font-size: 0.875rem;
+  line-height: 1.1428571429;
+  display: block;
+  padding: 10px 15px;
+}
+
+.skiplink:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  -webkit-clip-path: none;
+  clip-path: none;
+  white-space: inherit;
+  -webkit-user-select: text;
+  user-select: text;
+  margin-bottom: 20px;
+}

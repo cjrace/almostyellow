@@ -17,7 +17,7 @@ export default function BoomBoomPiratePage() {
     <>
       <Header noCrumbs={true} game={true} />
 
-      <main>
+      <main id="main-content">
         <Title>Boom Boom Pirate</Title>
         <Space h="xl" />
         <BoomBoomPirate />

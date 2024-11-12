@@ -18,7 +18,7 @@ export default async function ChopinLiszt() {
     <>
       <Header crumbs={crumbitems} />
 
-      <main>
+      <main id="main-content">
         <Container size="lg">
           <Title mb="xl">Our Chopin Liszt</Title>
           <Checklist />

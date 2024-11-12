@@ -11,7 +11,7 @@ export default async function UnoPage() {
     <>
       <Header noCrumbs={true} game={true} />
 
-      <main>
+      <main id="main-content">
         <Title>Uno</Title>
         <Text>Under construction...</Text>
       </main>

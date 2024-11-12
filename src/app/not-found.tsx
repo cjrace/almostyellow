@@ -6,7 +6,7 @@ export default function NotFound() {
     <>
       <Header noCrumbs={true} />
 
-      <main>
+      <main id="main-content">
         <Container size="xs">
           <Stack gap="xl">
             <Title ta="center">Page not found (404)</Title>

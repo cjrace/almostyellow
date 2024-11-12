@@ -18,7 +18,7 @@ export default function Admin() {
     <>
       <Header crumbs={crumbitems} />
 
-      <main>
+      <main id="main-content">
         <Title ta="center">Admin</Title>
 
         <Space h="xl" />

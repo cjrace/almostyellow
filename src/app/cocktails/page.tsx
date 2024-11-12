@@ -23,7 +23,7 @@ export default function CocktailsPage() {
     <>
       <Header crumbs={crumbitems} />
 
-      <main>
+      <main id="main-content">
         <Container size="lg">
           <Title>Cocktails</Title>
           <Cocktails />
