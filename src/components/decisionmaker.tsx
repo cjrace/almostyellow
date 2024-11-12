@@ -85,7 +85,7 @@ Laura`;
       <Form form={form} onSubmit={makeDecision}>
         <Group>
           <Button mb="md" variant="default" onClick={prePopulateTakeaways}>
-            Darlington Takeaways
+            Darlington takeaways
           </Button>
           <Button mb="md" variant="default" onClick={prePopulateNames}>
             Our names
