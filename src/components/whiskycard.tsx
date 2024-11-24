@@ -8,14 +8,15 @@ import {
   Divider,
   Rating,
   Group,
+  ActionIcon,
 } from "@mantine/core";
 import { PiGrains } from "react-icons/pi";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import {
   IconBarrel,
   IconBuildingFactory,
-  IconCurrencyPound,
   IconTaxPound,
+  IconPencil,
 } from "@tabler/icons-react";
 
 export const whiskyData = [
@@ -81,6 +82,14 @@ export const WhiskyCard: React.FC<Whisky> = ({
 
         <Group>
           <Rating value={rating} readOnly size="lg" />
+          <ActionIcon
+            size="lg"
+            variant="default"
+            component="a"
+            href={`/admin/whiskyjournal/${whisky_id}/edit`}
+          >
+            {<IconPencil />}
+          </ActionIcon>
         </Group>
       </Group>
 

@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { Container, Title } from "@mantine/core";
+import { Container, Title, Group, Button } from "@mantine/core";
 import WhiskyJournal from "@/components/whiskyjournal";
+import { IconPlus } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "Whisky Journal",
@@ -24,7 +25,17 @@ export default function WhiskyJournalPage() {
 
       <main id="main-content">
         <Container size="lg">
-          <Title>Cam&apos;s Whisky Journal</Title>
+          <Group mb="xl" justify="space-between">
+            <Title>Cam&apos;s Whisky Journal</Title>
+            <Button
+              variant="default"
+              component="a"
+              href="/admin/whiskyjournal/add"
+              leftSection={<IconPlus />}
+            >
+              Add new whisky
+            </Button>
+          </Group>
           <WhiskyJournal />
         </Container>
       </main>
