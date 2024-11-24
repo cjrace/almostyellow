@@ -20,6 +20,10 @@ import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
 import { v4 as generate_uuid } from "uuid";
 import { IconTaxPound } from "@tabler/icons-react";
+import {
+  WhiskyPricingScale,
+  WhiskyRatingScale,
+} from "@/components/whiskyscoringscales";
 
 // Mock function to fetch whisky data by ID
 const fetchWhiskyById = async (id: string) => {
@@ -39,8 +43,8 @@ const fetchWhiskyById = async (id: string) => {
   };
 };
 
-export const WhiskyJournalEdit = () => {
-  const whisky_id = generate_uuid();
+export const WhiskyJournalEdit = ({ whisky_id }: { whisky_id: string }) => {
+  const [modalOpened, setModalOpened] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -90,7 +94,7 @@ export const WhiskyJournalEdit = () => {
   }, [whisky_id, form]);
 
   const handleDelete = async () => {
-    console.log("Deleting whisky with ID:", whisky_id);
+    console.log("Deleting whisky:", whisky_id);
     // Add your delete logic here (e.g., API call to delete the whisky)
     setModalOpened(false);
   };
@@ -101,13 +105,18 @@ export const WhiskyJournalEdit = () => {
     // Add your update logic here (e.g., API call to update the whisky)
   };
 
-  const [modalOpened, setModalOpened] = useState(false);
-
   return (
     <Container size="md" my={40}>
       <Group justify="space-between">
         <Title>Edit Whisky</Title>
-        <Button color="red" onClick={() => setModalOpened(true)} size="xl">
+        <Button
+          color="red"
+          onClick={() => {
+            console.log("Button clicked");
+            setModalOpened(true);
+          }}
+          size="md"
+        >
           Delete Whisky
         </Button>
       </Group>
@@ -180,13 +189,7 @@ export const WhiskyJournalEdit = () => {
               <span style={{ color: "red" }}> *</span>
             </Text>
 
-            <List type="ordered">
-              <List.Item>Would only drink again if paid</List.Item>
-              <List.Item>Unhappy about drinking again</List.Item>
-              <List.Item>Shrugs, can drink it</List.Item>
-              <List.Item>Tasty, would order at a bar</List.Item>
-              <List.Item>Would happily buy bottles of it</List.Item>
-            </List>
+            <WhiskyRatingScale />
 
             <Rating mb="lg" size="xl" {...form.getInputProps("rating")} />
           </Stack>
@@ -195,11 +198,7 @@ export const WhiskyJournalEdit = () => {
               How pricey is the whisky?
               <span style={{ color: "red" }}> *</span>
             </Text>
-            <List type="ordered">
-              <List.Item>Under £40 a bottle</List.Item>
-              <List.Item>£40 - £85 a bottle</List.Item>
-              <List.Item>Over £85 a bottle</List.Item>
-            </List>
+            <WhiskyPricingScale />
             <Rating
               mb="lg"
               size="xl"

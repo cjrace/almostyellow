@@ -1,18 +1,24 @@
-import { Metadata } from "next";
+"use client";
+
 import { WhiskyJournalEdit } from "@/components/whiskyjournaledit";
 import Header from "@/components/header";
-
-export const metadata: Metadata = {
-  title: "Edit or delete whisky",
-};
+import { useParams } from "next/navigation";
 
 // Work out how to grab the ID and pass into the edit function
-export default async function WhiskyJournalEditPage() {
+export default function WhiskyJournalEditPage() {
+  const params = useParams();
+  const { id } = params;
+
+  // Ensure the component only renders when the id is available and is a string
+  if (!id || Array.isArray(id)) {
+    return null;
+  }
+
   return (
     <>
       <Header noCrumbs={true} />
       {/* TODO: Need to add back to whisky journal button */}
-      <WhiskyJournalEdit />
+      <WhiskyJournalEdit whisky_id={id} />
     </>
   );
 }

@@ -11,12 +11,15 @@ import {
   Rating,
   Stack,
   Text,
-  List,
   Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { v4 as generate_uuid } from "uuid";
 import { IconTaxPound } from "@tabler/icons-react";
+import {
+  WhiskyPricingScale,
+  WhiskyRatingScale,
+} from "@/components/whiskyscoringscales";
 
 export const WhiskyJournalAdd = () => {
   const form = useForm({
@@ -119,13 +122,7 @@ export const WhiskyJournalAdd = () => {
               <span style={{ color: "red" }}> *</span>
             </Text>
 
-            <List type="ordered">
-              <List.Item>Would only drink again if paid</List.Item>
-              <List.Item>Unhappy about drinking again</List.Item>
-              <List.Item>Shrugs, can drink it</List.Item>
-              <List.Item>Tasty, would order at a bar</List.Item>
-              <List.Item>Would happily buy bottles of it</List.Item>
-            </List>
+            <WhiskyRatingScale />
 
             <Rating mb="lg" size="xl" {...form.getInputProps("rating")} />
           </Stack>
@@ -136,11 +133,7 @@ export const WhiskyJournalAdd = () => {
               <span style={{ color: "red" }}> *</span>
             </Text>
 
-            <List type="ordered">
-              <List.Item>Under £40 a bottle</List.Item>
-              <List.Item>£40 - £85 a bottle</List.Item>
-              <List.Item>Over £85 a bottle</List.Item>
-            </List>
+            <WhiskyPricingScale />
 
             <Rating
               mb="lg"
