@@ -15,6 +15,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
   );
 
   // Check only Talisker is there after playing with filters
+  await page.getByRole("button", { name: "Sort and filter" }).click();
   await page.getByPlaceholder("Select distillery").click();
   await page.getByRole("option", { name: "Talisker" }).click();
 

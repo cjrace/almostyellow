@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Select, Button, Group, Text } from "@mantine/core";
+import { Select, Button, Group, Text, Accordion } from "@mantine/core";
 import { whiskyData, WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
@@ -113,51 +113,58 @@ export default function WhiskyJournal() {
 
   return (
     <>
-      <Group mb="md">
-        <Select
-          label="Grain"
-          placeholder="Select grain"
-          data={grainOptions}
-          value={grainFilter}
-          onChange={setGrainFilter}
-          clearable
-        />
-        <Select
-          label="Distillery"
-          placeholder="Select distillery"
-          data={distilleryOptions}
-          value={distilleryFilter}
-          onChange={setDistilleryFilter}
-          clearable
-        />
-        <Select
-          label="Rating"
-          placeholder="Select rating"
-          data={ratingOptions}
-          value={ratingFilter}
-          onChange={setRatingFilter}
-          clearable
-        />
-        <Select
-          label="Region"
-          placeholder="Select region"
-          data={countryRegionOptions}
-          value={countryRegionFilter}
-          onChange={setCountryRegionFilter}
-          clearable
-        />
-        <Select
-          label="Sort by"
-          placeholder="Select sorting option"
-          data={sortOptions}
-          value={sortOption}
-          onChange={setSortOption}
-          clearable
-        />
-        <Button onClick={clearAllFilters} size="lg" variant="outline">
-          Clear All Filters
-        </Button>
-      </Group>
+      <Accordion variant="contained" mb="md">
+        <Accordion.Item value="Sort and filter">
+          <Accordion.Control>Sort and filter</Accordion.Control>
+          <Accordion.Panel>
+            <Group mb="md">
+              <Select
+                label="Grain"
+                placeholder="Select grain"
+                data={grainOptions}
+                value={grainFilter}
+                onChange={setGrainFilter}
+                clearable
+              />
+              <Select
+                label="Distillery"
+                placeholder="Select distillery"
+                data={distilleryOptions}
+                value={distilleryFilter}
+                onChange={setDistilleryFilter}
+                clearable
+              />
+              <Select
+                label="Rating"
+                placeholder="Select rating"
+                data={ratingOptions}
+                value={ratingFilter}
+                onChange={setRatingFilter}
+                clearable
+              />
+              <Select
+                label="Region"
+                placeholder="Select region"
+                data={countryRegionOptions}
+                value={countryRegionFilter}
+                onChange={setCountryRegionFilter}
+                clearable
+              />
+              <Select
+                label="Sort by"
+                placeholder="Select sorting option"
+                data={sortOptions}
+                value={sortOption}
+                onChange={setSortOption}
+                clearable
+              />
+              <Button onClick={clearAllFilters} size="lg" variant="outline">
+                Clear All Filters
+              </Button>
+            </Group>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
 
       {sortedWhiskyData.map((whisky) => (
         <div key={whisky.whisky_id}>
