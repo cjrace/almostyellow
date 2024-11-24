@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 const crumbitems = [
   { title: "Home", href: "/" },
-  { title: "Whisky Journal", href: "" },
+  { title: "Whisky journal", href: "" },
 ];
 
 export default function WhiskyJournalPage() {
@@ -27,7 +27,7 @@ export default function WhiskyJournalPage() {
       <main id="main-content">
         <Container size="lg">
           <Group mb="xl" justify="space-between">
-            <Title>Cam&apos;s Whisky Journal</Title>
+            <Title>Cam&apos;s whisky journal</Title>
             <Button
               variant="default"
               component="a"

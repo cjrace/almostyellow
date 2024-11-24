@@ -1,11 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import { Select, Button, Group } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { Select, Button, Group, Text } from "@mantine/core";
 import { whiskyData, WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
+import { readWhiskyJournal } from "@/services/whiskyjournal";
+
+export interface Whisky {
+  last_edited: Date;
+  whisky_id: string;
+  name: string;
+  distillery: string;
+  country_region: string;
+  age: number;
+  grain: string;
+  abv: number;
+  rating: number;
+  price: number;
+  notes: string;
+}
 
 export default function WhiskyJournal() {
+  const [whiskies, setWhiskies] = useState<Whisky[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWhiskies = async () => {
+      try {
+        console.log("Requesting new data");
+        const data = await readWhiskyJournal();
+        console.log("Data fetch successful");
+        setWhiskies(data);
+      } catch (error) {
+        console.error("Error fetching whiskies:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWhiskies();
+  }, []);
+
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
   const [distilleryFilter, setDistilleryFilter] = useState<string | null>(null);
   const [ratingFilter, setRatingFilter] = useState<string | null>(null);
@@ -14,7 +49,7 @@ export default function WhiskyJournal() {
   );
   const [sortOption, setSortOption] = useState<string | null>(null);
 
-  const filteredWhiskyData = whiskyData.filter((whisky) => {
+  const filteredWhiskyData = whiskies.filter((whisky) => {
     return (
       (!grainFilter || whisky.grain === grainFilter) &&
       (!distilleryFilter || whisky.distillery === distilleryFilter) &&
@@ -71,6 +106,10 @@ export default function WhiskyJournal() {
     { value: "ageAsc", label: "Age Ascending" },
     { value: "ageDesc", label: "Age Descending" },
   ];
+
+  if (loading) {
+    return <Text>Fetching journal...</Text>;
+  }
 
   return (
     <>

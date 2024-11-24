@@ -70,7 +70,7 @@ export default function Home() {
             size="xl"
             href="/whiskyjournal"
           >
-            Cam&apos;s Whisky Journal
+            Cam&apos;s whisky journal
           </Button>
         </Group>
 
