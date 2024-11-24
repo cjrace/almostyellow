@@ -6,10 +6,11 @@ import { IconPlus } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "Whisky Journal",
-  description: "Details, ratings and ponderings on the whiskies I've tasted.",
+  description: "Details, ratings, and ponderings on the whiskies I've tasted.",
   openGraph: {
     title: "Whisky Journal | Almost Yellow",
-    description: "Details, ratings and ponderings on the whiskies I've tasted.",
+    description:
+      "Details, ratings, and ponderings on the whiskies I've tasted.",
   },
 };
 
