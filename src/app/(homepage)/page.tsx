@@ -6,6 +6,7 @@ import {
   IconGlassCocktail,
   IconPaperclip,
   IconGlass,
+  IconMovie,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
 import styles from "@/styles/gradient.module.css";
@@ -71,6 +72,16 @@ export default function Home() {
             href="/whiskyjournal"
           >
             Cam&apos;s whisky journal
+            </Button>
+          
+            <Button
+            leftSection={<IconMovie />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/films"
+          >
+            Cam&apos;s film list
           </Button>
         </Group>
 
