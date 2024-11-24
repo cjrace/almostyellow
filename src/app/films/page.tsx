@@ -1,7 +1,16 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { Container, Title } from "@mantine/core";
+import {
+  Container,
+  Group,
+  Title,
+  Button,
+  Progress,
+  Stack,
+  Text,
+} from "@mantine/core";
 import FilmList from "@/components/filmlist";
+import { IconPlus } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "Films Journal",
@@ -26,7 +35,30 @@ export default function FilmsPage() {
 
       <main id="main-content">
         <Container size="lg">
-          <Title mb="lg">Cam&apos;s film list</Title>
+          <Group justify="space-between">
+            {" "}
+            <Title mb="lg">Cam&apos;s film list</Title>
+            <Button
+              leftSection={<IconPlus />}
+              variant="default"
+              component="a"
+              href="/admin/film/add"
+            >
+              Add new film
+            </Button>
+          </Group>
+
+          <Stack mb="lg">
+            <Text>60 of 100 films watched</Text>
+            <Progress
+              aria-label="Films watched from list"
+              color="orange"
+              radius="xl"
+              size="xl"
+              value={60}
+            />
+          </Stack>
+
           <FilmList />
         </Container>
       </main>
