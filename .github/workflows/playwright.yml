@@ -44,6 +44,10 @@ jobs:
         run: pnpm build
       - name: Run public site playwright tests
         run: npx playwright test tests/public/
+      - name: Run webkit playwright tests
+        run: npx playwright text --project=webkit tests/public/
+      - name: Run Mobile Safari playwright tests
+        run: npx playwright test --project="Mobile Safari" tests/public/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
