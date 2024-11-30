@@ -9,13 +9,14 @@ import { v4 as generate_uuid } from "uuid";
 // Create new whisky
 export async function createWhisky(whisky: Whisky): Promise<void> {
   const whisky_id = generate_uuid();
+  const last_edited = new Date().toISOString();
 
   try {
     await sql`
                 INSERT INTO whisky_journal
                 (last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes)
                 VALUES
-                (TIMESTAMP, ${whisky_id}, ${whisky.name}, ${whisky.distillery}, ${whisky.country_region}, ${whisky.age}, ${whisky.grain}, ${whisky.abv}, ${whisky.rating}, ${whisky.price}, ${whisky.notes});
+                (${last_edited}, ${whisky_id}, ${whisky.name}, ${whisky.distillery}, ${whisky.country_region}, ${whisky.age}, ${whisky.grain}, ${whisky.abv}, ${whisky.rating}, ${whisky.price}, ${whisky.notes});
             `;
   } catch (error) {
     console.error("Database Error:", error);

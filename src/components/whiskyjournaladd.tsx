@@ -21,8 +21,11 @@ import {
   WhiskyRatingScale,
 } from "@/components/whiskyscoringscales";
 import { createWhisky } from "@/services/whiskyjournal";
+import { useRouter } from "next/navigation";
 
 export const WhiskyJournalAdd = () => {
+  const router = useRouter();
+
   const form = useForm({
     initialValues: {
       whisky_id: generate_uuid(),
@@ -32,7 +35,7 @@ export const WhiskyJournalAdd = () => {
       age: 0,
       grain: "",
       abv: 0,
-      last_edited: new Date(), // remember to update again when submitting
+      last_edited: new Date(), // Placeholder, is updated in the service function
       rating: 0,
       price: 0,
       notes: "",
@@ -61,9 +64,9 @@ export const WhiskyJournalAdd = () => {
     },
   });
 
-  const handleSubmit = (values: typeof form.values) => {
-    values.last_edited = new Date(); // Force update to today's date
-    console.log("Form data:", values);
+  const handleSubmit = async (values: typeof form.values) => {
+    await createWhisky(values);
+    router.push("/whiskyjournal");
   };
 
   return (
