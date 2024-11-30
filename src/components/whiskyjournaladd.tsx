@@ -20,6 +20,7 @@ import {
   WhiskyPricingScale,
   WhiskyRatingScale,
 } from "@/components/whiskyscoringscales";
+import { createWhisky } from "@/services/whiskyjournal";
 
 export const WhiskyJournalAdd = () => {
   const form = useForm({
