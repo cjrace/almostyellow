@@ -6,6 +6,19 @@ import { Whisky } from "@/components/whiskyjournal";
 // TODO: Think about backup plans?
 
 // Create new whisky
+export async function createWhisky(whisky: Whisky): Promise<void> {
+  try {
+    await sql`
+                INSERT INTO whisky_journal
+                (last_edited, name, distillery, country_region, age, grain, abv, rating, price, notes)
+                VALUES
+                (TIMESTAMP, ${whisky.name}, ${whisky.distillery}, ${whisky.country_region}, ${whisky.age}, ${whisky.grain}, ${whisky.abv}, ${whisky.rating}, ${whisky.price}, ${whisky.notes});
+            `;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to create a new whisky entry.");
+  }
+}
 
 // Read all whiskies
 export async function readWhiskyJournal(): Promise<Whisky[]> {
