@@ -1,11 +1,6 @@
-import { Paper, Title, Badge, Group, Button, ActionIcon } from "@mantine/core";
-import {
-  IconChecklist,
-  IconEyeglass,
-  IconPencil,
-  IconPlus,
-  IconX,
-} from "@tabler/icons-react";
+import { Paper, Title, Badge, Group, ActionIcon } from "@mantine/core";
+import { IconChecklist, IconEyeglass, IconPencil } from "@tabler/icons-react";
+import { PiJarBold } from "react-icons/pi";
 
 export const filmData = [
   {
@@ -13,12 +8,21 @@ export const filmData = [
     release_year: 1998,
     watched: true,
     top_30: true,
+    not_in_jar: false,
   },
   {
     name: "2001: A Space Odyssey",
     release_year: 1968,
     watched: true,
     top_30: false,
+    not_in_jar: false,
+  },
+  {
+    name: "Chaplin",
+    release_year: 1992,
+    watched: false,
+    top_30: false,
+    not_in_jar: true,
   },
 ];
 
@@ -60,7 +64,7 @@ export const FilmCard: React.FC<Film> = ({
           )}
 
           {not_in_jar && (
-            <Badge color="red" size="xl" leftSection={"Jar icon"}>
+            <Badge color="red" size="xl" leftSection={<PiJarBold />}>
               Add to jar
             </Badge>
           )}
@@ -72,14 +76,6 @@ export const FilmCard: React.FC<Film> = ({
             href="/admin/film/edit"
           >
             {<IconPencil />}
-          </ActionIcon>
-          <ActionIcon
-            size="lg"
-            color="red"
-            component="a"
-            href="/admin/film/delete"
-          >
-            {<IconX />}
           </ActionIcon>
         </Group>
       </Group>

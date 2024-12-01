@@ -7,16 +7,10 @@ export const metadata: Metadata = {
   title: "Add film",
 };
 
-const crumbitems = [
-  { title: "Home", href: "/" },
-  { title: "Admin", href: "/admin" },
-  { title: "Add film", href: "" },
-];
-
 export default async function AddFilm() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} filmList={true} />
 
       <main id="main-content">
         <Container size="lg">
