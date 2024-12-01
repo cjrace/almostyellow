@@ -1,12 +1,11 @@
-"use client";
-
-import { WhiskyJournalEdit } from "@/components/whiskyjournaledit";
+import WhiskyJournalEditServer from "@/components/whiskyjournaledit_server";
 import Header from "@/components/header";
-import { useParams } from "next/navigation";
 
-// Work out how to grab the ID and pass into the edit function
-export default function WhiskyJournalEditPage() {
-  const params = useParams();
+export default async function WhiskyJournalEditPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const { id } = params;
 
   // Ensure the component only renders when the id is available and is a string
@@ -19,7 +18,7 @@ export default function WhiskyJournalEditPage() {
       <Header
         noCrumbs={true} /* TODO: Need to add back to whisky journal button */
       />
-      <WhiskyJournalEdit whiskyId={id} />
+      <WhiskyJournalEditServer params={{ id }} />
     </>
   );
 }

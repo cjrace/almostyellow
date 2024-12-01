@@ -17,43 +17,29 @@ import {
   NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useEffect, useState } from "react";
-import { readWhisky } from "@/services/whiskyjournal";
+import { useState } from "react";
+import { deleteWhisky, updateWhisky } from "@/services/whiskyjournal";
+import { Whisky } from "@/components/whiskycard";
 import { useRouter } from "next/navigation";
 import { IconTaxPound } from "@tabler/icons-react";
 
-export const WhiskyJournalEdit = ({ whiskyId }: { whiskyId: string }) => {
+export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
   const [modalOpened, setModalOpened] = useState(false);
-  const [loading, setLoading] = useState(true);
-  interface Whisky {
-    last_edited: string;
-    whisky_id: string;
-    name: string;
-    distillery: string;
-    country_region: string;
-    age: number;
-    grain: string;
-    abv: number;
-    rating: number;
-    price: number;
-    notes: string;
-  }
-
   const router = useRouter();
 
   const form = useForm({
     initialValues: {
-      last_edited: "",
-      whisky_id: "",
-      name: "",
-      distillery: "",
-      country_region: "",
-      age: 0,
-      grain: "",
-      abv: 0,
-      rating: 0,
-      price: 0,
-      notes: "",
+      last_edited: whiskyData.last_edited.toISOString(),
+      whisky_id: whiskyData.whisky_id,
+      name: whiskyData.name,
+      distillery: whiskyData.distillery,
+      country_region: whiskyData.country_region,
+      age: whiskyData.age,
+      grain: whiskyData.grain,
+      abv: whiskyData.abv,
+      rating: whiskyData.rating,
+      price: whiskyData.price,
+      notes: whiskyData.notes,
     },
 
     validate: {
@@ -79,40 +65,20 @@ export const WhiskyJournalEdit = ({ whiskyId }: { whiskyId: string }) => {
     },
   });
 
-  useEffect(() => {
-    const loadWhiskyData = async () => {
-      try {
-        const data = await readWhisky(whiskyId);
-        form.setValues({
-          ...data[0],
-          last_edited: data[0].last_edited.toISOString(),
-        });
-      } catch (error) {
-        console.error("Error fetching whisky data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadWhiskyData();
-  }, [whiskyId]);
-
   const handleDelete = async () => {
-    console.log("Deleting whisky with ID:", whiskyId);
-    // Add your delete logic here (e.g., API call to delete the whisky)
-    setModalOpened(false);
+    console.log("Deleting whisky with ID:", whiskyData.whisky_id);
+    await deleteWhisky(whiskyData.whisky_id);
+    router.push("/whiskyjournal");
   };
 
   const handleSubmit = async (values: typeof form.values) => {
     console.log("Updated whisky data:", values);
-    // Add your update logic here (e.g., API call to update the whisky)
-    // After successful update, redirect to /whiskyjournal
+    await updateWhisky({
+      ...values,
+      last_edited: new Date(values.last_edited),
+    });
     router.push("/whiskyjournal");
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Container size="md" my={40}>
@@ -128,7 +94,8 @@ export const WhiskyJournalEdit = ({ whiskyId }: { whiskyId: string }) => {
         onClose={() => setModalOpened(false)}
         title="Confirm Deletion"
       >
-        <Text>Whisky ID: {whiskyId}</Text>
+        <Text>Whisky ID: {whiskyData.whisky_id}</Text>
+        <Text>Name: {whiskyData.name}</Text>
         <Text>Are you sure you want to delete this whisky?</Text>
         <Group mt="md">
           <Button variant="default" onClick={() => setModalOpened(false)}>

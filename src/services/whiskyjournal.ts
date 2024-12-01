@@ -92,5 +92,37 @@ export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
 }
 
 // Update whisky entry
+export async function updateWhisky(whisky: Whisky): Promise<void> {
+  const last_edited = new Date().toISOString();
 
-// Delete whisky entry (should only be after confirmation modal!)
+  try {
+    await sql`
+                UPDATE whisky_journal
+                SET last_edited = ${last_edited},
+                    name = ${whisky.name},
+                    distillery = ${whisky.distillery},
+                    country_region = ${whisky.country_region},
+                    age = ${whisky.age},
+                    grain = ${whisky.grain},
+                    abv = ${whisky.abv},
+                    rating = ${whisky.rating},
+                    price = ${whisky.price},
+                    notes = ${whisky.notes}
+                WHERE whisky_id = ${whisky.whisky_id};
+            `;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to update whisky entry.");
+  }
+}
+
+// Delete whisky entry
+export async function deleteWhisky(whisky_id: string) {
+  try {
+    await sql`DELETE FROM whisky_journal WHERE whisky_id = ${whisky_id}`;
+  } catch {
+    return {
+      message: "Database Error: Failed to delete item from whisky journal.",
+    };
+  }
+}
