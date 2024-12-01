@@ -2,30 +2,6 @@ import { Paper, Text, Badge, Group, ActionIcon, Flex } from "@mantine/core";
 import { IconChecklist, IconEyeglass, IconPencil } from "@tabler/icons-react";
 import { PiJarBold } from "react-icons/pi";
 
-export const filmData = [
-  {
-    name: "Saving Private Ryan",
-    release_year: 1998,
-    watched: true,
-    top_30: true,
-    not_in_jar: false,
-  },
-  {
-    name: "2001: A Space Odyssey",
-    release_year: 1968,
-    watched: true,
-    top_30: false,
-    not_in_jar: false,
-  },
-  {
-    name: "Chaplin",
-    release_year: 1992,
-    watched: false,
-    top_30: false,
-    not_in_jar: true,
-  },
-];
-
 export interface Film {
   id: string;
   name: string;
@@ -46,10 +22,13 @@ export const FilmCard: React.FC<Film> = ({
   return (
     <Paper shadow="md" radius="lg" withBorder p="lg" mb="sm">
       <Flex justify="space-between" direction={{ base: "column", sm: "row" }}>
-        <Group>
+        <Group mb="sm">
           <Text>
             {name} ({release_year})
           </Text>
+        </Group>
+
+        <Group>
           <ActionIcon
             size="lg"
             variant="default"
@@ -58,18 +37,17 @@ export const FilmCard: React.FC<Film> = ({
           >
             {<IconPencil />}
           </ActionIcon>
-        </Group>
 
-        <Group>
           {top_30 && (
             <Badge color="yellow" size="lg" leftSection={<IconChecklist />}>
-              IMDB top 30
+              <Text display={{ base: "none", sm: "inline" }}>IMDB top 30</Text>
+              <Text display={{ base: "inline", sm: "none" }}>Top 30</Text>
             </Badge>
           )}
 
           {watched && (
             <Badge color="green" size="lg" leftSection={<IconEyeglass />}>
-              Watched
+              <Text display={{ base: "none", sm: "inline" }}>Watched</Text>
             </Badge>
           )}
 
