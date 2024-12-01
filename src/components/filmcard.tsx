@@ -1,4 +1,4 @@
-import { Paper, Title, Badge, Group, ActionIcon } from "@mantine/core";
+import { Paper, Text, Badge, Group, ActionIcon, Flex } from "@mantine/core";
 import { IconChecklist, IconEyeglass, IconPencil } from "@tabler/icons-react";
 import { PiJarBold } from "react-icons/pi";
 
@@ -27,6 +27,7 @@ export const filmData = [
 ];
 
 export interface Film {
+  id: string;
   name: string;
   release_year: number;
   watched: boolean;
@@ -35,6 +36,7 @@ export interface Film {
 }
 
 export const FilmCard: React.FC<Film> = ({
+  id,
   name,
   release_year,
   watched,
@@ -43,42 +45,41 @@ export const FilmCard: React.FC<Film> = ({
 }) => {
   return (
     <Paper shadow="md" radius="lg" withBorder p="lg" mb="sm">
-      <Group justify="space-between">
+      <Flex justify="space-between" direction={{ base: "column", sm: "row" }}>
         <Group>
-          <Title order={2}>
+          <Text>
             {name} ({release_year})
-          </Title>
+          </Text>
+          <ActionIcon
+            size="lg"
+            variant="default"
+            component="a"
+            href={`/admin/films/${id}/edit`}
+          >
+            {<IconPencil />}
+          </ActionIcon>
         </Group>
 
         <Group>
           {top_30 && (
-            <Badge color="yellow" size="xl" leftSection={<IconChecklist />}>
+            <Badge color="yellow" size="lg" leftSection={<IconChecklist />}>
               IMDB top 30
             </Badge>
           )}
 
           {watched && (
-            <Badge color="green" size="xl" leftSection={<IconEyeglass />}>
+            <Badge color="green" size="lg" leftSection={<IconEyeglass />}>
               Watched
             </Badge>
           )}
 
           {not_in_jar && (
-            <Badge color="red" size="xl" leftSection={<PiJarBold />}>
+            <Badge color="red" size="lg" leftSection={<PiJarBold />}>
               Add to jar
             </Badge>
           )}
-
-          <ActionIcon
-            size="lg"
-            variant="default"
-            component="a"
-            href="/admin/film/edit"
-          >
-            {<IconPencil />}
-          </ActionIcon>
         </Group>
-      </Group>
+      </Flex>
     </Paper>
   );
 };

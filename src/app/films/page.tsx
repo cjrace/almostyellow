@@ -1,19 +1,11 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import {
-  Container,
-  Group,
-  Title,
-  Button,
-  Progress,
-  Stack,
-  Text,
-} from "@mantine/core";
+import { Container, Group, Title, Button } from "@mantine/core";
 import FilmList from "@/components/filmlist";
 import { IconPlus } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
-  title: "Films Journal",
+  title: "Films",
   description:
     "Films to see before I'm 30. Top 30 from IMDB and other recommendations.",
   openGraph: {
@@ -41,7 +33,7 @@ export default function FilmsPage() {
               leftSection={<IconPlus />}
               variant="default"
               component="a"
-              href="/admin/film/add"
+              href="/admin/films/add"
             >
               Add new film
             </Button>

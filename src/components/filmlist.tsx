@@ -8,11 +8,12 @@ import {
   Accordion,
   Stack,
   Progress,
+  alpha,
 } from "@mantine/core";
-import { filmData, FilmCard, Film } from "@/components/filmcard";
+import { FilmCard, Film } from "@/components/filmcard";
 import { useState, useEffect } from "react";
 import BackToTop from "@/components/backtotop";
-// import { readFilmList } from "@/services/filmlist";
+import { readFilmList } from "@/services/filmlist";
 
 export default function FilmList() {
   const [films, setFilms] = useState<Film[]>([]);
@@ -22,10 +23,9 @@ export default function FilmList() {
     const fetchFilms = async () => {
       try {
         console.log("Requesting new data");
-        // const data = await readFilmList();
+        const data = await readFilmList();
         console.log("Data fetch successful");
-        // setFilms(data);
-        setFilms(filmData);
+        setFilms(data);
       } catch (error) {
         console.error("Error fetching films:", error);
       } finally {
@@ -59,7 +59,7 @@ export default function FilmList() {
       case "releaseDesc":
         return b.release_year - a.release_year;
       default:
-        return 0;
+        return a.name.localeCompare(b.name);
     }
   });
 
@@ -80,7 +80,7 @@ export default function FilmList() {
     setImdbFilter(null);
     setWatchedFilter(null);
     setJarFilter(null);
-    setSortOption(null);
+    setSortOption("alphabetical");
   };
 
   const sortOptions = [
@@ -101,7 +101,7 @@ export default function FilmList() {
 
   return (
     <>
-      <Accordion variant="contained" mb="md">
+      <Accordion variant="contained" my="md">
         <Accordion.Item value="Sort and filter">
           <Accordion.Control>Sort and filter</Accordion.Control>
           <Accordion.Panel>
@@ -144,7 +144,7 @@ export default function FilmList() {
                 label="Sort by"
                 placeholder="Select sorting option"
                 data={sortOptions}
-                value={sortOption}
+                value={sortOption !== null ? sortOption : "alphabetical"} // Default value set to "alphabetical"
                 onChange={setSortOption}
                 clearable
               />
@@ -176,7 +176,7 @@ export default function FilmList() {
       </Stack>
 
       {sortedFilmData.map((film) => (
-        <div key={film.name}>
+        <div key={film.id}>
           <FilmCard {...film} />
         </div>
       ))}

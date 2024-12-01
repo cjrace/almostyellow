@@ -15,6 +15,7 @@ import {
   IconDeviceGamepad2,
   IconChevronLeft,
   IconGlass,
+  IconMovie,
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
@@ -32,6 +33,7 @@ interface HeaderProps {
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
+  filmList?: boolean; // Back button for our film list pages
 }
 
 export default function Header({
@@ -39,9 +41,12 @@ export default function Header({
   noCrumbs = false,
   game = false,
   whiskyJournal = false,
+  filmList = false,
 }: HeaderProps) {
   const mainJustify =
-    noCrumbs && !game && !whiskyJournal ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
+    noCrumbs && !game && !whiskyJournal && !filmList
+      ? "flex-end"
+      : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("dark", {
     getInitialValueInEffect: true,
@@ -90,6 +95,22 @@ export default function Header({
             >
               <IconChevronLeft />
               <IconGlass />
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {filmList && (
+          <Tooltip label="Back to Cam's film list" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component="a"
+              href="/films"
+              size="xl"
+              aria-label="Back to Cam's film list"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconMovie />
             </ActionIcon>
           </Tooltip>
         )}

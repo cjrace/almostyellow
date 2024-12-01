@@ -228,3 +228,67 @@ async function seedWhiskyJournal() {
   return insertedItems;
 }
 ```
+
+## Film list
+
+Types and example seed data. Can use copilot to generate a much longer list of films from a straight past out of a spreadsheet - did it with 81 films for the initial seed, pretty nifty (though worth proof reading as it produces the odd typo)!
+
+```
+export type Film = {
+  name: string;
+  release_year: number;
+  top_30: boolean;
+  watched: boolean;
+  not_in_jar: boolean;
+};
+
+
+export const filmData: Film[] = [
+    {
+        name: "Saving Private Ryan",
+        release_year: 1998,
+        watched: true,
+        top_30: true,
+        not_in_jar: false,
+    },
+    {
+        name: "2001: A Space Odyssey",
+        release_year: 1968,
+        watched: true,
+        top_30: false,
+        not_in_jar: false,
+    },
+]
+
+```
+
+Function to seed database, this happily maps over all films present.
+
+```
+async function seedFilmList() {
+    await client.sql`
+        CREATE TABLE IF NOT EXISTS film_list (
+          id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+          name VARCHAR(255) NOT NULL UNIQUE,
+          release_year VARCHAR(4) NOT NULL,
+          top_30 BOOLEAN NOT NULL,
+          watched BOOLEAN NOT NULL,
+          not_in_jar BOOLEAN NOT NULL
+        );
+      `;
+
+    const insertedItems = await Promise.all(
+      filmData.map(
+        (film) => client.sql`
+            INSERT INTO film_list (
+              id, name, release_year, top_30, watched, not_in_jar,
+              ) VALUES (
+              uuid_generate_v4(), ${film.name}, ${film.release_year}, ${film.top_30}, ${film.watched}, ${film.not_in_jar}
+            ) ON CONFLICT (name) DO NOTHING;
+          `,
+      ),
+    );
+
+    return insertedItems;
+  }
+```

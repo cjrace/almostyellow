@@ -1,4 +1,4 @@
-import { Button, Group, Title, Space } from "@mantine/core";
+import { Button, Group, Title, Space, Text } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -72,9 +72,9 @@ export default function Home() {
             href="/whiskyjournal"
           >
             Cam&apos;s whisky journal
-            </Button>
-          
-            <Button
+          </Button>
+
+          <Button
             leftSection={<IconMovie />}
             variant="default"
             component="a"

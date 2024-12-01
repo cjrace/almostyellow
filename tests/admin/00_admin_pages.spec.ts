@@ -48,6 +48,7 @@ test("Can sign in and navigate admin", async ({ page }) => {
 test("Redirected to login if tried to get to admin pages while not signed in", async ({
   page,
 }) => {
+  // Admin
   await page.goto("/admin");
   await expect(page).toHaveURL(
     "/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
@@ -57,6 +58,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
     "Want to access the good stuff?",
   );
 
+  // Chopin Liszt
   await page.goto("/admin/chopinliszt");
   await expect(page).toHaveURL(
     "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fchopinliszt",
@@ -66,6 +68,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
     "Want to access the good stuff?",
   );
 
+  // Holidays
   await page.goto("/admin/holidays");
   await expect(page).toHaveURL(
     "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fholidays",
@@ -75,6 +78,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
     "Want to access the good stuff?",
   );
 
+  // Whisky Journal
   await page.goto("/admin/whiskyjournal/add");
   await expect(page).toHaveURL(
     "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fwhiskyjournal%2Fadd",
@@ -83,7 +87,6 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   await expect(page.locator("h1")).toContainText(
     "Want to access the good stuff?",
   );
-
   await page.goto(
     "/admin/whiskyjournal/33675c13-6835-4cc8-b7de-2823b37ae78a/edit/",
   );
@@ -95,9 +98,28 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
     "Want to access the good stuff?",
   );
 
+  // Dummy link
   await page.goto("/admin/dummylink");
   await expect(page).toHaveURL(
     "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fdummylink",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
+
+  // Films
+  await page.goto("/admin/films/add");
+  await expect(page).toHaveURL(
+    "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Ffilms%2Fadd",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
+  await page.goto("/admin/films/33675c13-6835-4cc8-b7de-2823b37ae78a/edit/");
+  await expect(page).toHaveURL(
+    "http://localhost:3000/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Ffilms%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit",
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
