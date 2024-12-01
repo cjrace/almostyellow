@@ -14,9 +14,7 @@ export default async function WhiskyJournalEditPage(props: {
 
   return (
     <>
-      <Header
-        noCrumbs={true} /* TODO: Need to add back to whisky journal button */
-      />
+      <Header noCrumbs={true} whiskyJournal={true} />
       <WhiskyJournalEditServer params={{ id }} />
     </>
   );

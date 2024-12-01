@@ -7,15 +7,10 @@ export const metadata: Metadata = {
   title: "Add Whisky",
 };
 
-const crumbitems = [
-  { title: "Whisky Journal", href: "/whiskyjournal" },
-  { title: "Add Whisky", href: "" },
-];
-
 export default async function AddWhisky() {
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header noCrumbs={true} whiskyJournal={true} />
 
       <main id="main-content">
         <Container size="lg">

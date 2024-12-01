@@ -158,7 +158,9 @@ export default function WhiskyJournal() {
                 onChange={setSortOption}
                 clearable
               />
-              <Button onClick={clearAllFilters} size="lg" variant="outline">
+            </Group>
+            <Group justify="flex-end">
+              <Button onClick={clearAllFilters} size="md" variant="outline">
                 Clear All Filters
               </Button>
             </Group>
