@@ -8,14 +8,15 @@ import {
   Accordion,
   Stack,
   Progress,
-  alpha,
 } from "@mantine/core";
 import { FilmCard, Film } from "@/components/filmcard";
 import { useState, useEffect } from "react";
 import BackToTop from "@/components/backtotop";
 import { readFilmList } from "@/services/filmlist";
+import { useClipboard } from "@mantine/hooks";
 
 export default function FilmList() {
+  const clipboard = useClipboard({ timeout: 500 });
   const [films, setFilms] = useState<Film[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -99,6 +100,38 @@ export default function FilmList() {
   ).length;
   const watched_film_percentage = (watched_film_count / film_count) * 100;
 
+  const copyToClipboard = () => {
+    const filmNameList = sortedFilmData
+      .map((film) => `${film.name} (${film.release_year})`)
+      .join("\n");
+    clipboard.copy(filmNameList);
+  };
+
+  const downloadCSV = () => {
+    const csvContent = [
+      ["Name", "Release Year", "Watched", "Top 30", "In Jar"],
+      ...sortedFilmData.map((film) => [
+        `"${film.name.replace(/"/g, '""')}"`,
+        film.release_year,
+        film.watched ? "Yes" : "No",
+        film.top_30 ? "Yes" : "No",
+        film.not_in_jar ? "No" : "Yes",
+      ]),
+    ]
+      .map((e) => e.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "films.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       <Accordion variant="contained" my="md">
@@ -174,6 +207,22 @@ export default function FilmList() {
           value={watched_film_percentage}
         />
       </Stack>
+
+      <Group justify="flex-end" mb="lg">
+        <Button
+          onClick={() => {
+            copyToClipboard();
+            setTimeout(() => clipboard.reset(), 500);
+          }}
+          size="md"
+          variant="subtle"
+        >
+          {clipboard.copied ? "Copied" : "Copy film names to clipboard"}
+        </Button>
+        <Button onClick={downloadCSV} size="md" variant="subtle">
+          Download CSV
+        </Button>
+      </Group>
 
       {sortedFilmData.map((film) => (
         <div key={film.id}>
