@@ -36,7 +36,6 @@ export default function FilmsPage() {
       <main id="main-content">
         <Container size="lg">
           <Group justify="space-between">
-            {" "}
             <Title mb="lg">Cam&apos;s film list</Title>
             <Button
               leftSection={<IconPlus />}
@@ -47,17 +46,6 @@ export default function FilmsPage() {
               Add new film
             </Button>
           </Group>
-
-          <Stack mb="lg">
-            <Text>60 of 100 films watched</Text>
-            <Progress
-              aria-label="Films watched from list"
-              color="orange"
-              radius="xl"
-              size="xl"
-              value={60}
-            />
-          </Stack>
 
           <FilmList />
         </Container>
