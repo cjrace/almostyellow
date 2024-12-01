@@ -28,7 +28,7 @@ export async function createWhisky(whisky: Whisky): Promise<void> {
 export async function readWhiskyJournal(): Promise<Whisky[]> {
   try {
     const data = await sql`
-                SELECT *
+                SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
                 FROM whisky_journal;
             `;
 
@@ -54,6 +54,42 @@ export async function readWhiskyJournal(): Promise<Whisky[]> {
 }
 
 // Read single whisky by id
+export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
+  try {
+    const data = await sql`
+                SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
+                FROM whisky_journal
+                WHERE whisky_id = ${whisky_id};
+            `;
+
+    if (data.rows.length > 1) {
+      throw new Error("More than one whisky found with the given ID.");
+    }
+
+    if (data.rows.length === 0) {
+      throw new Error("No whisky found with the given ID.");
+    }
+
+    const whisky = {
+      last_edited: data.rows[0].last_edited,
+      whisky_id: data.rows[0].whisky_id,
+      name: data.rows[0].name,
+      distillery: data.rows[0].distillery,
+      country_region: data.rows[0].country_region,
+      age: data.rows[0].age,
+      grain: data.rows[0].grain,
+      abv: data.rows[0].abv,
+      rating: data.rows[0].rating,
+      price: data.rows[0].price,
+      notes: data.rows[0].notes,
+    };
+
+    return [whisky];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch the whisky journal.");
+  }
+}
 
 // Update whisky entry
 

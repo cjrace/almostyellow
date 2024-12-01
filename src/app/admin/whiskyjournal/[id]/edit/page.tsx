@@ -16,9 +16,10 @@ export default function WhiskyJournalEditPage() {
 
   return (
     <>
-      <Header noCrumbs={true} />
-      {/* TODO: Need to add back to whisky journal button */}
-      <WhiskyJournalEdit whisky_id={id} />
+      <Header
+        noCrumbs={true} /* TODO: Need to add back to whisky journal button */
+      />
+      <WhiskyJournalEdit whiskyId={id} />
     </>
   );
 }

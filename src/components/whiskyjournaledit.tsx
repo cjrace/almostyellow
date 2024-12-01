@@ -6,56 +6,51 @@ import {
   Paper,
   Container,
   Title,
-  NumberInput,
-  Select,
-  Rating,
+  Group,
+  Modal,
   Stack,
   Text,
   Textarea,
   List,
-  Group,
-  Modal,
+  Rating,
+  Select,
+  NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
-import { v4 as generate_uuid } from "uuid";
+import { readWhisky } from "@/services/whiskyjournal";
+import { useRouter } from "next/navigation";
 import { IconTaxPound } from "@tabler/icons-react";
-import {
-  WhiskyPricingScale,
-  WhiskyRatingScale,
-} from "@/components/whiskyscoringscales";
 
-// Mock function to fetch whisky data by ID
-const fetchWhiskyById = async (id: string) => {
-  // Replace with actual API call
-  return {
-    whisky_id: id,
-    name: "Sample Whisky",
-    distillery: "Sample Distillery",
-    country_region: "Scotland",
-    age: 12,
-    grain: "Single malt",
-    abv: 40,
-    last_edited: new Date(),
-    rating: 4,
-    price: 2,
-    notes: "Sample notes",
-  };
-};
-
-export const WhiskyJournalEdit = ({ whisky_id }: { whisky_id: string }) => {
+export const WhiskyJournalEdit = ({ whiskyId }: { whiskyId: string }) => {
   const [modalOpened, setModalOpened] = useState(false);
+  const [loading, setLoading] = useState(true);
+  interface Whisky {
+    last_edited: string;
+    whisky_id: string;
+    name: string;
+    distillery: string;
+    country_region: string;
+    age: number;
+    grain: string;
+    abv: number;
+    rating: number;
+    price: number;
+    notes: string;
+  }
+
+  const router = useRouter();
 
   const form = useForm({
     initialValues: {
-      whisky_id: generate_uuid(),
+      last_edited: "",
+      whisky_id: "",
       name: "",
       distillery: "",
       country_region: "",
       age: 0,
       grain: "",
       abv: 0,
-      last_edited: new Date(), // remember to update again when submitting
       rating: 0,
       price: 0,
       notes: "",
@@ -86,37 +81,44 @@ export const WhiskyJournalEdit = ({ whisky_id }: { whisky_id: string }) => {
 
   useEffect(() => {
     const loadWhiskyData = async () => {
-      const whiskyData = await fetchWhiskyById(whisky_id);
-      form.setValues(whiskyData);
+      try {
+        const data = await readWhisky(whiskyId);
+        form.setValues({
+          ...data[0],
+          last_edited: data[0].last_edited.toISOString(),
+        });
+      } catch (error) {
+        console.error("Error fetching whisky data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadWhiskyData();
-  }, [whisky_id, form]);
+  }, [whiskyId]);
 
   const handleDelete = async () => {
-    console.log("Deleting whisky:", whisky_id);
+    console.log("Deleting whisky with ID:", whiskyId);
     // Add your delete logic here (e.g., API call to delete the whisky)
     setModalOpened(false);
   };
 
-  const handleSubmit = (values: typeof form.values) => {
-    values.last_edited = new Date(); // Force update to today's date at time of submission
+  const handleSubmit = async (values: typeof form.values) => {
     console.log("Updated whisky data:", values);
     // Add your update logic here (e.g., API call to update the whisky)
+    // After successful update, redirect to /whiskyjournal
+    router.push("/whiskyjournal");
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container size="md" my={40}>
       <Group justify="space-between">
         <Title>Edit Whisky</Title>
-        <Button
-          color="red"
-          onClick={() => {
-            console.log("Button clicked");
-            setModalOpened(true);
-          }}
-          size="md"
-        >
+        <Button color="red" onClick={() => setModalOpened(true)} size="md">
           Delete Whisky
         </Button>
       </Group>
@@ -126,7 +128,7 @@ export const WhiskyJournalEdit = ({ whisky_id }: { whisky_id: string }) => {
         onClose={() => setModalOpened(false)}
         title="Confirm Deletion"
       >
-        <Text>Whisky ID: {whisky_id}</Text>
+        <Text>Whisky ID: {whiskyId}</Text>
         <Text>Are you sure you want to delete this whisky?</Text>
         <Group mt="md">
           <Button variant="default" onClick={() => setModalOpened(false)}>
@@ -185,20 +187,20 @@ export const WhiskyJournalEdit = ({ whisky_id }: { whisky_id: string }) => {
           />
           <Stack>
             <Text fw={500}>
-              Rate the whisky
-              <span style={{ color: "red" }}> *</span>
+              Rate the whisky out of 5<span style={{ color: "red" }}> *</span>
             </Text>
-
-            <WhiskyRatingScale />
-
-            <Rating mb="lg" size="xl" {...form.getInputProps("rating")} />
+            <Rating mb="lg" {...form.getInputProps("rating")} />
           </Stack>
           <Stack>
             <Text fw={500}>
               How pricey is the whisky?
               <span style={{ color: "red" }}> *</span>
             </Text>
-            <WhiskyPricingScale />
+            <List type="ordered">
+              <List.Item>Under £40 a bottle</List.Item>
+              <List.Item>£40 - £85 a bottle</List.Item>
+              <List.Item>Over £85 a bottle</List.Item>
+            </List>
             <Rating
               mb="lg"
               size="xl"
