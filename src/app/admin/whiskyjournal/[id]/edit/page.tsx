@@ -1,11 +1,10 @@
 import WhiskyJournalEditServer from "@/components/whiskyjournaledit_server";
 import Header from "@/components/header";
 
-export default async function WhiskyJournalEditPage({
-  params,
-}: {
-  params: { id: string };
+export default async function WhiskyJournalEditPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const { id } = params;
 
   // Ensure the component only renders when the id is available and is a string
