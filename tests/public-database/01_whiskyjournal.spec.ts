@@ -11,7 +11,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
     /Talisker 10 Year Old/,
   );
   await expect(page.locator("#main-content")).toContainText(
-    /Johnnie Walker Double Black/,
+    /Johnnie Walker Black Label/,
   );
 
   // Check only Talisker is there after playing with filters
@@ -23,7 +23,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
     /Talisker 10 Year Old/,
   );
   await expect(page.locator("#main-content")).not.toContainText(
-    /Johnnie Walker Double Black/,
+    /Johnnie Walker Black Label/,
   );
 
   // Check both are there after clearing filters
@@ -32,6 +32,6 @@ test("Whisky Journal Page Test", async ({ page }) => {
     /Talisker 10 Year Old/,
   );
   await expect(page.locator("#main-content")).toContainText(
-    /Johnnie Walker Double Black/,
+    /Johnnie Walker Black Label/,
   );
 });

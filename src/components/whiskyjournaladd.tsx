@@ -49,9 +49,9 @@ export const WhiskyJournalAdd = () => {
       age: (value) =>
         value >= 0 ? null : "Age must be greater than or equal to zero",
       grain: (value) =>
-        ["Single malt", "Rye", "Bourbon", "blend"].includes(value)
+        ["Single malt", "Rye", "Bourbon", "Blend"].includes(value)
           ? null
-          : "Grain must be one of 'Single malt', 'Rye', 'Bourbon', or 'blend'",
+          : "Grain must be one of 'Single malt', 'Rye', 'Bourbon', or 'Blend'",
       abv: (value) =>
         value >= 0 && value <= 100
           ? null
