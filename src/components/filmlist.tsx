@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import BackToTop from "@/components/backtotop";
 import { readFilmList } from "@/services/filmlist";
 import { useClipboard } from "@mantine/hooks";
+import { IconCopy, IconDownload } from "@tabler/icons-react";
 
 export default function FilmList() {
   const clipboard = useClipboard({ timeout: 500 });
@@ -215,11 +216,17 @@ export default function FilmList() {
             setTimeout(() => clipboard.reset(), 500);
           }}
           size="md"
-          variant="subtle"
+          variant="default"
+          leftSection={<IconCopy />}
         >
           {clipboard.copied ? "Copied" : "Copy film names to clipboard"}
         </Button>
-        <Button onClick={downloadCSV} size="md" variant="subtle">
+        <Button
+          onClick={downloadCSV}
+          size="md"
+          variant="default"
+          leftSection={<IconDownload />}
+        >
           Download CSV
         </Button>
       </Group>

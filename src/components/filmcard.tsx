@@ -34,6 +34,7 @@ export const FilmCard: React.FC<Film> = ({
             variant="default"
             component="a"
             href={`/admin/films/${id}/edit`}
+            aria-label="Edit film"
           >
             {<IconPencil />}
           </ActionIcon>

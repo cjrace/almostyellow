@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Select, Button, Group, Text, Accordion } from "@mantine/core";
-import { whiskyData, WhiskyCard } from "@/components/whiskycard";
+import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
 
@@ -40,6 +40,7 @@ export default function WhiskyJournal() {
 
     fetchWhiskies();
   }, []);
+  const whiskyData = whiskies;
 
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
   const [distilleryFilter, setDistilleryFilter] = useState<string | null>(null);
