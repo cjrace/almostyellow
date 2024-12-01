@@ -79,13 +79,13 @@ export default function Header({
         )}
 
         {whiskyJournal && (
-          <Tooltip label="Back to our whisky journal" openDelay={250}>
+          <Tooltip label="Back to Cam's whisky journal" openDelay={250}>
             <ActionIcon
               variant="default"
               component="a"
               href="/whiskyjournal"
               size="xl"
-              aria-label="Back to our whisky journal"
+              aria-label="Back to Cam's whisky journal"
               style={{ width: 70 }}
             >
               <IconChevronLeft />
