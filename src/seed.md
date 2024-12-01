@@ -142,3 +142,89 @@ async function seedChopinLiszt() {
   return insertedItems;
 };
 ```
+
+## Whisky journal
+
+Types and example seed data.
+
+```
+export type Whisky = {
+  last_edited: Date;
+  whisky_id: string;
+  name: string;
+  distillery: string;
+  country_region: string;
+  age: number;
+  grain: string;
+  abv: number;
+  rating: number;
+  price: number;
+  notes: string;
+};
+
+export const whiskyData: Whisky[] = [
+  {
+    last_edited: new Date("2024/11/24"),
+    whisky_id: generate_uuid(),
+    name: "Talisker 10 Year Old",
+    distillery: "Talisker",
+    country_region: "Highland - Scotland",
+    age: 10,
+    grain: "Single malt",
+    abv: 45.8,
+    rating: 5,
+    price: 2,
+    notes: "Something about the look, nose, palette and finish",
+  },
+  {
+    last_edited: new Date("2024/11/24"),
+    whisky_id: generate_uuid(),
+    name: "Johnnie Walker Double Black",
+    distillery: "Johnnie Walker",
+    country_region: "Mixed - Scotland",
+    age: 0,
+    grain: "Blend",
+    abv: 40.0,
+    rating: 3,
+    price: 2,
+    notes: "Best smoky mixer!",
+  },
+];
+```
+
+Function to seed database, this happily maps over all whiskies present.
+
+```
+async function seedWhiskyJournal() {
+  await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  await client.sql`
+      CREATE TABLE IF NOT EXISTS whisky_journal (
+        last_edited TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        whisky_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        distillery VARCHAR(255) NOT NULL,
+        country_region VARCHAR(255) NOT NULL,
+        age INT NOT NULL,
+        grain VARCHAR(255) NOT NULL,
+        abv DECIMAL(5,1) NOT NULL,
+        rating INT NOT NULL,
+        price INT NOT NULL,
+        notes TEXT NOT NULL
+      );
+    `;
+
+  const insertedItems = await Promise.all(
+    whiskyData.map(
+      (whisky) => client.sql`
+          INSERT INTO whisky_journal (
+            last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
+          ) VALUES (
+            ${whisky.last_edited.toISOString()}, ${whisky.whisky_id}, ${whisky.name}, ${whisky.distillery}, ${whisky.country_region}, ${whisky.age}, ${whisky.grain}, ${whisky.abv}, ${whisky.rating}, ${whisky.price}, ${whisky.notes}
+          ) ON CONFLICT (whisky_id) DO NOTHING;
+        `,
+    ),
+  );
+
+  return insertedItems;
+}
+```

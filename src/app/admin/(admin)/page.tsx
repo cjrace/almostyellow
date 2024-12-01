@@ -2,7 +2,7 @@ import { Button, Title, Group, Space } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
 import { signOut } from "@/auth";
-import { IconShoppingCart, IconBeach } from "@tabler/icons-react";
+import { IconShoppingCart, IconBeach, IconGlass } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -42,6 +42,16 @@ export default function Admin() {
             href="/admin/holidays"
           >
             Our holidays!
+          </Button>
+
+          <Button
+            leftSection={<IconGlass />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/admin/whiskyjournal/add"
+          >
+            Add new whisky
           </Button>
         </Group>
 

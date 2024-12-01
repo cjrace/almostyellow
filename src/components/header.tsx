@@ -14,11 +14,13 @@ import {
   IconConfetti,
   IconDeviceGamepad2,
   IconChevronLeft,
+  IconGlass,
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "@/styles/togglecolour.module.css";
+import WhiskyJournal from "./whiskyjournal";
 
 interface BreadcrumbItem {
   title: string;
@@ -28,15 +30,18 @@ interface BreadcrumbItem {
 interface HeaderProps {
   crumbs?: BreadcrumbItem[];
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
-  game?: boolean; // Here to give a specific header styling for our games pages
+  game?: boolean; // Back button for our games pages
+  whiskyJournal?: boolean; // Back button for our whisky journal pages
 }
 
 export default function Header({
   crumbs,
   noCrumbs = false,
   game = false,
+  whiskyJournal = false,
 }: HeaderProps) {
-  const mainJustify = noCrumbs && !game ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
+  const mainJustify =
+    noCrumbs && !game && !whiskyJournal ? "flex-end" : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("dark", {
     getInitialValueInEffect: true,
@@ -69,6 +74,22 @@ export default function Header({
             >
               <IconChevronLeft />
               <IconDeviceGamepad2 />
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {whiskyJournal && (
+          <Tooltip label="Back to Cam's whisky journal" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component="a"
+              href="/whiskyjournal"
+              size="xl"
+              aria-label="Back to Cam's whisky journal"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconGlass />
             </ActionIcon>
           </Tooltip>
         )}

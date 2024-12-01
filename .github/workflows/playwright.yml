@@ -16,21 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-      - name: Cache Playwright binaries
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: |
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: pnpm install
       - name: Install Playwright with deps
         run: npx playwright install --with-deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - name: Install Playwright without deps
-        run: npx playwright install-deps
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
       - name: Cache Next.js build artifacts
         uses: actions/cache@v4
         with:
