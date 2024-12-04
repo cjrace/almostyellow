@@ -87,7 +87,6 @@ export const FilmAdd = () => {
             label="This film is a part of the top 30 list from IMDB"
             color="orange"
             radius="xl"
-            size="xl"
             {...form.getInputProps("top_30")}
           />
 
@@ -96,7 +95,6 @@ export const FilmAdd = () => {
             label="I have watched this film"
             color="orange"
             radius="xl"
-            size="xl"
             {...form.getInputProps("watched")}
           />
 
@@ -105,7 +103,6 @@ export const FilmAdd = () => {
             label="This film has not yet been added into the jar"
             color="orange"
             radius="xl"
-            size="xl"
             {...form.getInputProps("not_in_jar")}
           />
 
