@@ -141,6 +141,7 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
             label="This film is a part of the top 30 list from IMDB"
             color="orange"
             radius="xl"
+            checked={form.values.top_30}
             {...form.getInputProps("top_30")}
           />
 
@@ -149,6 +150,7 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
             label="I have watched this film"
             color="orange"
             radius="xl"
+            checked={form.values.watched}
             {...form.getInputProps("watched")}
           />
 
@@ -157,6 +159,7 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
             label="This film has not yet been added into the jar"
             color="orange"
             radius="xl"
+            checked={form.values.not_in_jar}
             {...form.getInputProps("not_in_jar")}
           />
 
