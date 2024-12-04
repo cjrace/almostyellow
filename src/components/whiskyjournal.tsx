@@ -80,16 +80,19 @@ export default function WhiskyJournal() {
 
   const grainOptions = Array.from(
     new Set(whiskyData.map((whisky) => whisky.grain)),
-  );
+  ).sort();
+
   const distilleryOptions = Array.from(
     new Set(whiskyData.map((whisky) => whisky.distillery)),
-  );
+  ).sort();
+
   const ratingOptions = Array.from(
     new Set(whiskyData.map((whisky) => whisky.rating.toString())),
-  );
+  ).sort((a, b) => parseFloat(a) - parseFloat(b));
+
   const countryRegionOptions = Array.from(
     new Set(whiskyData.map((whisky) => whisky.country_region)),
-  );
+  ).sort();
 
   const clearAllFilters = () => {
     setGrainFilter(null);

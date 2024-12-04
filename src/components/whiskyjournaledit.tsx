@@ -125,7 +125,7 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
           />
           <TextInput
             mb="lg"
-            label="Country/Region"
+            label="Country (plus region if Scotland)"
             placeholder="Enter country or region"
             {...form.getInputProps("country_region")}
             withAsterisk
