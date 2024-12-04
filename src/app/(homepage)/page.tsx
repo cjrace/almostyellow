@@ -1,4 +1,4 @@
-import { Button, Group, Title, Space, Text } from "@mantine/core";
+import { Button, Group, Title, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
