@@ -45,6 +45,7 @@ export default function WhiskyJournal() {
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
   const [distilleryFilter, setDistilleryFilter] = useState<string | null>(null);
   const [ratingFilter, setRatingFilter] = useState<string | null>(null);
+  const [priceFilter, setPriceFilter] = useState<string | null>(null);
   const [countryRegionFilter, setCountryRegionFilter] = useState<string | null>(
     null,
   );
@@ -55,6 +56,7 @@ export default function WhiskyJournal() {
       (!grainFilter || whisky.grain === grainFilter) &&
       (!distilleryFilter || whisky.distillery === distilleryFilter) &&
       (!ratingFilter || whisky.rating.toString() === ratingFilter) &&
+      (!priceFilter || whisky.price.toString() === priceFilter) &&
       (!countryRegionFilter || whisky.country_region === countryRegionFilter)
     );
   });
@@ -69,6 +71,10 @@ export default function WhiskyJournal() {
         return a.rating - b.rating;
       case "ratingDesc":
         return b.rating - a.rating;
+      case "priceAsc":
+        return a.price - b.price;
+      case "priceDesc":
+        return b.price - a.price;
       case "ageAsc":
         return a.age - b.age;
       case "ageDesc":
@@ -98,6 +104,7 @@ export default function WhiskyJournal() {
     setGrainFilter(null);
     setDistilleryFilter(null);
     setRatingFilter(null);
+    setPriceFilter(null);
     setCountryRegionFilter(null);
     setSortOption(null);
   };
@@ -144,6 +151,18 @@ export default function WhiskyJournal() {
                 data={ratingOptions}
                 value={ratingFilter}
                 onChange={setRatingFilter}
+                clearable
+              />
+              <Select
+                label="Price"
+                placeholder="Select price range"
+                data={[
+                  { value: "1", label: "Under £40 a bottle" },
+                  { value: "2", label: "£40 - £85 a bottle" },
+                  { value: "3", label: "Over £85 a bottle" },
+                ]}
+                value={priceFilter}
+                onChange={setPriceFilter}
                 clearable
               />
               <Select
