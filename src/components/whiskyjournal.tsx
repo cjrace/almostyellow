@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Select, Button, Group, Text, Accordion } from "@mantine/core";
+import {
+  Select,
+  Button,
+  Group,
+  Text,
+  Accordion,
+  TextInput,
+  ActionIcon,
+} from "@mantine/core";
+import { IconX } from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
+import { set } from "zod";
 
 export interface Whisky {
   last_edited: Date;
@@ -50,6 +60,11 @@ export default function WhiskyJournal() {
     null,
   );
   const [sortOption, setSortOption] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
 
   const filteredWhiskyData = whiskies.filter((whisky) => {
     return (
@@ -84,20 +99,24 @@ export default function WhiskyJournal() {
     }
   });
 
+  const searchedWhiskyData = sortedWhiskyData.filter((whisky) =>
+    whisky.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   const grainOptions = Array.from(
-    new Set(whiskyData.map((whisky) => whisky.grain)),
+    new Set(searchedWhiskyData.map((whisky) => whisky.grain)),
   ).sort();
 
   const distilleryOptions = Array.from(
-    new Set(whiskyData.map((whisky) => whisky.distillery)),
+    new Set(searchedWhiskyData.map((whisky) => whisky.distillery)),
   ).sort();
 
   const ratingOptions = Array.from(
-    new Set(whiskyData.map((whisky) => whisky.rating.toString())),
+    new Set(searchedWhiskyData.map((whisky) => whisky.rating.toString())),
   ).sort((a, b) => parseFloat(a) - parseFloat(b));
 
   const countryRegionOptions = Array.from(
-    new Set(whiskyData.map((whisky) => whisky.country_region)),
+    new Set(searchedWhiskyData.map((whisky) => whisky.country_region)),
   ).sort();
 
   const clearAllFilters = () => {
@@ -107,6 +126,7 @@ export default function WhiskyJournal() {
     setPriceFilter(null);
     setCountryRegionFilter(null);
     setSortOption(null);
+    setSearchQuery("");
   };
 
   const sortOptions = [
@@ -191,7 +211,31 @@ export default function WhiskyJournal() {
         </Accordion.Item>
       </Accordion>
 
-      {sortedWhiskyData.map((whisky) => (
+      <TextInput
+        mb="md"
+        aria-label="Search whisky names"
+        placeholder="Search whisky names..."
+        value={searchQuery}
+        onChange={handleSearch}
+        style={{ flex: 1 }}
+        rightSection={
+          searchQuery && (
+            <ActionIcon
+              onClick={() => setSearchQuery("")}
+              variant="default"
+              aria-label="Clear search query"
+            >
+              <IconX />
+            </ActionIcon>
+          )
+        }
+      />
+
+      <Text m="sm">
+        Showing {searchedWhiskyData.length} of {whiskyData.length} whiskies
+      </Text>
+
+      {searchedWhiskyData.map((whisky) => (
         <div key={whisky.whisky_id}>
           <WhiskyCard {...whisky} />
         </div>

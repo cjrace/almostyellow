@@ -35,3 +35,25 @@ test("Whisky Journal Page Test", async ({ page }) => {
     /Johnnie Walker Black Label/,
   );
 });
+
+test("Can search whiskies by name", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Cam's whisky journal" }).click();
+  await page.fill('input[placeholder="Search whisky names..."]', "Talisker");
+
+  await expect(page.locator("#main-content")).toContainText(
+    /Talisker 10 Year Old/,
+  );
+  await expect(page.locator("#main-content")).not.toContainText(
+    /Johnnie Walker Black Label/,
+  );
+
+  // Clear search and check both whiskies are there
+  await page.click('button[aria-label="Clear search query"]');
+  await expect(page.locator("#main-content")).toContainText(
+    /Talisker 10 Year Old/,
+  );
+  await expect(page.locator("#main-content")).toContainText(
+    /Johnnie Walker Black Label/,
+  );
+});
