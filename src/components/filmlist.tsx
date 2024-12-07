@@ -9,13 +9,14 @@ import {
   Stack,
   Progress,
   TextInput,
+  ActionIcon,
 } from "@mantine/core";
 import { FilmCard, Film } from "@/components/filmcard";
 import { useState, useEffect } from "react";
 import BackToTop from "@/components/backtotop";
 import { readFilmList } from "@/services/filmlist";
 import { useClipboard } from "@mantine/hooks";
-import { IconCopy, IconDownload } from "@tabler/icons-react";
+import { IconCopy, IconDownload, IconX } from "@tabler/icons-react";
 
 export default function FilmList() {
   const clipboard = useClipboard({ timeout: 500 });
@@ -228,7 +229,19 @@ export default function FilmList() {
           value={searchQuery}
           onChange={handleSearch}
           style={{ flex: 1 }}
+          rightSection={
+            searchQuery && (
+              <ActionIcon
+                onClick={() => setSearchQuery("")}
+                variant="default"
+                aria-label="Clear search query"
+              >
+                <IconX />
+              </ActionIcon>
+            )
+          }
         />
+
         <Group>
           <Button
             onClick={() => {
