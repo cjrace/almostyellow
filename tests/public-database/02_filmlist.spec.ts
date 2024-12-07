@@ -64,3 +64,20 @@ test("Download CSV and check contents", async ({ page }) => {
 
   expect(rows.length).toBeGreaterThan(50);
 });
+
+test("Can search films by name", async ({ page }) => {
+  await page.goto("/films");
+  await page.fill('input[placeholder="Search film titles..."]', "Seven");
+
+  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+  await expect(page.locator("#main-content")).not.toContainText(
+    /Final Destination/,
+  );
+
+  // Clear search and check both films are there
+  await page.click('button[aria-label="Clear search query"]');
+  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+  await expect(page.locator("#main-content")).toContainText(
+    /Final Destination/,
+  );
+});
