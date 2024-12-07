@@ -9,6 +9,7 @@ import {
   Space,
   Group,
   ActionIcon,
+  Text,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -27,7 +28,7 @@ export interface Item {
 
 const ChopinLiszt: React.FC = () => {
   const [modalOpened, { open, close }] = useDisclosure(false);
-
+  const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<Item[]>([]);
   const [newItemText, setNewItemText] = useState("");
 
@@ -41,6 +42,7 @@ const ChopinLiszt: React.FC = () => {
       const data = await readChopin();
       console.log("Data fetch successful");
       setItems(data);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -93,6 +95,10 @@ const ChopinLiszt: React.FC = () => {
       console.error("Error deleting item:", error);
     }
   };
+
+  if (loading) {
+    return <Text>Fetching list...</Text>;
+  }
 
   return (
     <>

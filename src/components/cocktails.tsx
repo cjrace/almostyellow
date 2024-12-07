@@ -1,10 +1,17 @@
 "use client";
 
-import { NativeSelect, Space } from "@mantine/core";
+import {
+  NativeSelect,
+  Text,
+  TextInput,
+  ActionIcon,
+  Group,
+} from "@mantine/core";
 import { useState } from "react";
 import { cocktaildata } from "@/components/cocktaildata";
 import styles from "@/styles/cocktails.module.css";
 import CocktailBox from "@/components/cocktailbox";
+import { IconX } from "@tabler/icons-react";
 
 interface Cocktail {
   name: string;
@@ -25,6 +32,11 @@ const uniqueSpirits = [
 
 export default function Cocktails() {
   const [selectedSpirits, setSelectedSpirits] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
 
   const handleChange = (value: string) => {
     setSelectedSpirits(value === "All spirits" ? [] : [value]);
@@ -37,20 +49,49 @@ export default function Cocktails() {
     );
   });
 
+  const searchedCocktails = filteredCocktails.filter((cocktail) =>
+    cocktail.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <>
-      <Space h="md" />
-      <NativeSelect
-        aria-label="Filter by base spirit"
-        value={
-          selectedSpirits.length === 0 ? "All spirits" : selectedSpirits[0]
-        }
-        onChange={(event) => handleChange(event.target.value)}
-        data={uniqueSpirits}
-      />
-      <Space h="md" />
+      <Group my="md">
+        <NativeSelect
+          aria-label="Filter by base spirit"
+          value={
+            selectedSpirits.length === 0 ? "All spirits" : selectedSpirits[0]
+          }
+          onChange={(event) => handleChange(event.target.value)}
+          data={uniqueSpirits}
+          style={{ minWidth: 200 }}
+        />
+
+        <TextInput
+          aria-label="Search cocktail names"
+          placeholder="Search cocktail names..."
+          value={searchQuery}
+          onChange={handleSearch}
+          style={{ flex: 1, minWidth: 200 }}
+          rightSection={
+            searchQuery && (
+              <ActionIcon
+                onClick={() => setSearchQuery("")}
+                variant="default"
+                aria-label="Clear search query"
+              >
+                <IconX />
+              </ActionIcon>
+            )
+          }
+        />
+      </Group>
+
+      <Text m="xs">
+        Showing {searchedCocktails.length} of {cocktaildata.length} cocktails
+      </Text>
+
       <div className={styles.cocktailList}>
-        {filteredCocktails
+        {searchedCocktails
           .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
           .map((cocktail) => (
             <div key={cocktail.name} className={styles.cocktailCard}>

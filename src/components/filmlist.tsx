@@ -8,13 +8,15 @@ import {
   Accordion,
   Stack,
   Progress,
+  TextInput,
+  ActionIcon,
 } from "@mantine/core";
 import { FilmCard, Film } from "@/components/filmcard";
 import { useState, useEffect } from "react";
 import BackToTop from "@/components/backtotop";
 import { readFilmList } from "@/services/filmlist";
 import { useClipboard } from "@mantine/hooks";
-import { IconCopy, IconDownload } from "@tabler/icons-react";
+import { IconCopy, IconDownload, IconX } from "@tabler/icons-react";
 
 export default function FilmList() {
   const clipboard = useClipboard({ timeout: 500 });
@@ -65,6 +67,16 @@ export default function FilmList() {
     }
   });
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const searchedFilmData = sortedFilmData.filter((film) =>
+    film.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   const imdbOptions = [
     { value: "true", label: "Top 30" },
     { value: "false", label: "Not top 30" },
@@ -83,6 +95,7 @@ export default function FilmList() {
     setWatchedFilter(null);
     setJarFilter(null);
     setSortOption("alphabetical");
+    setSearchQuery("");
   };
 
   const sortOptions = [
@@ -95,14 +108,14 @@ export default function FilmList() {
     return <Text>Fetching list...</Text>;
   }
 
-  const film_count = filteredFilmData.length;
-  const watched_film_count = filteredFilmData.filter(
+  const film_count = searchedFilmData.length;
+  const watched_film_count = searchedFilmData.filter(
     (film) => film.watched,
   ).length;
   const watched_film_percentage = (watched_film_count / film_count) * 100;
 
   const copyToClipboard = () => {
-    const filmNameList = sortedFilmData
+    const filmNameList = searchedFilmData
       .map((film) => `${film.name} (${film.release_year})`)
       .join("\n");
     clipboard.copy(filmNameList);
@@ -111,7 +124,7 @@ export default function FilmList() {
   const downloadCSV = () => {
     const csvContent = [
       ["Name", "Release Year", "Watched", "Top 30", "In Jar"],
-      ...sortedFilmData.map((film) => [
+      ...searchedFilmData.map((film) => [
         `"${film.name.replace(/"/g, '""')}"`,
         film.release_year,
         film.watched ? "Yes" : "No",
@@ -209,29 +222,48 @@ export default function FilmList() {
         />
       </Stack>
 
-      <Group justify="flex-end" mb="lg">
-        <Button
-          onClick={() => {
-            copyToClipboard();
-            setTimeout(() => clipboard.reset(), 500);
-          }}
-          size="md"
-          variant="default"
-          leftSection={<IconCopy />}
-        >
-          {clipboard.copied ? "Copied" : "Copy film names to clipboard"}
-        </Button>
-        <Button
-          onClick={downloadCSV}
-          size="md"
-          variant="default"
-          leftSection={<IconDownload />}
-        >
-          Download CSV
-        </Button>
+      <Group mb="md" justify="space-between">
+        <TextInput
+          aria-label="Search film titles"
+          placeholder="Search film titles..."
+          value={searchQuery}
+          onChange={handleSearch}
+          style={{ flex: 1 }}
+          rightSection={
+            searchQuery && (
+              <ActionIcon
+                onClick={() => setSearchQuery("")}
+                variant="default"
+                aria-label="Clear search query"
+              >
+                <IconX />
+              </ActionIcon>
+            )
+          }
+        />
+
+        <Group>
+          <Button
+            onClick={() => {
+              copyToClipboard();
+              setTimeout(() => clipboard.reset(), 500);
+            }}
+            variant="default"
+            leftSection={<IconCopy />}
+          >
+            {clipboard.copied ? "Copied" : "Copy film names to clipboard"}
+          </Button>
+          <Button
+            onClick={downloadCSV}
+            variant="default"
+            leftSection={<IconDownload />}
+          >
+            Download CSV
+          </Button>
+        </Group>
       </Group>
 
-      {sortedFilmData.map((film) => (
+      {searchedFilmData.map((film) => (
         <div key={film.id}>
           <FilmCard {...film} />
         </div>
