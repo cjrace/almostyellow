@@ -2,7 +2,7 @@
 
 import {
   NativeSelect,
-  Space,
+  Text,
   TextInput,
   ActionIcon,
   Group,
@@ -85,6 +85,10 @@ export default function Cocktails() {
           }
         />
       </Group>
+
+      <Text m="xs">
+        Showing {searchedCocktails.length} of {cocktaildata.length} cocktails
+      </Text>
 
       <div className={styles.cocktailList}>
         {searchedCocktails

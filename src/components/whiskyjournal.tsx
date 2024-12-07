@@ -14,7 +14,6 @@ import { IconX } from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
-import { set } from "zod";
 
 export interface Whisky {
   last_edited: Date;
