@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useState } from "react";
 import { authenticate } from "@/services/authenticate";
 import {
   TextInput,
@@ -13,7 +13,9 @@ import {
 import { useForm } from "@mantine/form";
 
 export default function LoginForm() {
-  const [errorMessage, formAction] = useActionState(authenticate, undefined);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined,
+  );
 
   const form = useForm({
     initialValues: {
@@ -27,7 +29,17 @@ export default function LoginForm() {
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
-    formAction(formData);
+    startTransition(() => {
+      authenticate(undefined, formData)
+        .then((result) => {
+          if (result) {
+            setErrorMessage(result);
+          }
+        })
+        .catch(() => {
+          setErrorMessage("Something went wrong.");
+        });
+    });
   };
 
   return (

@@ -18,6 +18,7 @@ import {
   IconSquareX,
 } from "@tabler/icons-react";
 import styles from "@/styles/boomboom.module.css";
+import { JSX } from "react";
 
 const generateRandomRope = (totalRopes: number) => {
   return Math.floor(Math.random() * totalRopes);
