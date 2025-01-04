@@ -10,7 +10,7 @@ import {
   TextInput,
   ActionIcon,
 } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import { IconX, IconDownload } from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
@@ -141,6 +141,48 @@ export default function WhiskyJournal() {
     return <Text>Fetching journal...</Text>;
   }
 
+  const exportToCSV = () => {
+    const headers = [
+      "Last Edited",
+      "Whisky ID",
+      "Name",
+      "Distillery",
+      "Country/Region",
+      "Age",
+      "Grain",
+      "ABV",
+      "Rating",
+      "Price",
+      "Notes",
+    ];
+    const rows = searchedWhiskyData.map((whisky) => [
+      `"${whisky.last_edited.toISOString()}"`,
+      `"${whisky.whisky_id}"`,
+      `"${whisky.name}"`,
+      `"${whisky.distillery}"`,
+      `"${whisky.country_region}"`,
+      `"${whisky.age}"`,
+      `"${whisky.grain}"`,
+      `"${whisky.abv}"`,
+      `"${whisky.rating}"`,
+      `"${whisky.price}"`,
+      `"${whisky.notes}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const today = new Date().toISOString().split("T")[0];
+    link.setAttribute("download", `whisky_journal_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       <Accordion variant="contained" mb="md">
@@ -210,25 +252,36 @@ export default function WhiskyJournal() {
         </Accordion.Item>
       </Accordion>
 
-      <TextInput
-        mb="md"
-        aria-label="Search whisky names"
-        placeholder="Search whisky names..."
-        value={searchQuery}
-        onChange={handleSearch}
-        style={{ flex: 1 }}
-        rightSection={
-          searchQuery && (
-            <ActionIcon
-              onClick={() => setSearchQuery("")}
-              variant="default"
-              aria-label="Clear search query"
-            >
-              <IconX />
-            </ActionIcon>
-          )
-        }
-      />
+      <Group justify="space-between">
+        <TextInput
+          mb="md"
+          aria-label="Search whisky names"
+          placeholder="Search whisky names..."
+          value={searchQuery}
+          onChange={handleSearch}
+          style={{ flex: 1 }}
+          rightSection={
+            searchQuery && (
+              <ActionIcon
+                onClick={() => setSearchQuery("")}
+                variant="default"
+                aria-label="Clear search query"
+              >
+                <IconX />
+              </ActionIcon>
+            )
+          }
+        />
+
+        <Button
+          onClick={exportToCSV}
+          mb="md"
+          variant="default"
+          leftSection={<IconDownload />}
+        >
+          Download CSV
+        </Button>
+      </Group>
 
       <Text m="sm">
         Showing {searchedWhiskyData.length} of {whiskyData.length} whiskies
