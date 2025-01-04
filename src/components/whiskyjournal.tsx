@@ -9,11 +9,22 @@ import {
   Accordion,
   TextInput,
   ActionIcon,
+  Title,
+  Tooltip,
+  Modal,
+  Container,
+  Center,
 } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import {
+  IconX,
+  IconDownload,
+  IconInfoCircle,
+  IconPlus,
+} from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
+import { WhiskyPricingScale, WhiskyRatingScale } from "./whiskyscoringscales";
 
 export interface Whisky {
   last_edited: Date;
@@ -49,6 +60,7 @@ export default function WhiskyJournal() {
 
     fetchWhiskies();
   }, []);
+
   const whiskyData = whiskies;
 
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
@@ -137,12 +149,132 @@ export default function WhiskyJournal() {
     { value: "ageDesc", label: "Age Descending" },
   ];
 
+  const [modalScalesOpened, setModalScalesOpened] = useState(false);
+
   if (loading) {
     return <Text>Fetching journal...</Text>;
   }
 
+  const exportToCSV = () => {
+    const headers = [
+      "Last Edited",
+      "Whisky ID",
+      "Name",
+      "Distillery",
+      "Country/Region",
+      "Age",
+      "Grain",
+      "ABV",
+      "Rating",
+      "Price",
+      "Notes",
+    ];
+    const rows = searchedWhiskyData.map((whisky) => [
+      `"${whisky.last_edited.toISOString()}"`,
+      `"${whisky.whisky_id}"`,
+      `"${whisky.name}"`,
+      `"${whisky.distillery}"`,
+      `"${whisky.country_region}"`,
+      `"${whisky.age}"`,
+      `"${whisky.grain}"`,
+      `"${whisky.abv}"`,
+      `"${whisky.rating}"`,
+      `"${whisky.price}"`,
+      `"${whisky.notes}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    const today = new Date().toISOString().split("T")[0];
+    link.setAttribute("download", `whisky_journal_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
+      <Group mb="xl" justify="space-between">
+        <Group gap="xs">
+          <Title>Cam&apos;s whisky journal</Title>
+          <Tooltip
+            label="Whisky rating scales"
+            openDelay={250}
+            position="right"
+            offset={5}
+          >
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open modal detailing whisky rating scales"
+              onClick={() => setModalScalesOpened(true)}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        <Button
+          variant="default"
+          component="a"
+          href="/admin/whiskyjournal/add"
+          leftSection={<IconPlus />}
+        >
+          Add new whisky
+        </Button>
+      </Group>
+
+      <Modal
+        size="auto"
+        opened={modalScalesOpened}
+        onClose={() => setModalScalesOpened(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="whisky_scales"
+        withCloseButton={false}
+        transitionProps={{
+          transition: "fade",
+          duration: 300,
+          timingFunction: "linear",
+        }}
+        overlayProps={{
+          backgroundOpacity: 0.75,
+          blur: 3,
+        }}
+      >
+        <Container>
+          <Title order={2} mb="sm" id="whisky_scales">
+            Whisky rating scales
+          </Title>
+
+          <Title order={3} mt="lg" mb="sm">
+            Pricing scale
+          </Title>
+
+          <WhiskyPricingScale />
+
+          <Title order={3} mt="lg" mb="sm">
+            Rating scale
+          </Title>
+
+          <WhiskyRatingScale />
+
+          <Center>
+            <Button
+              variant="subtle"
+              mt="md"
+              onClick={() => setModalScalesOpened(false)}
+            >
+              Close modal
+            </Button>
+          </Center>
+        </Container>
+      </Modal>
+
       <Accordion variant="contained" mb="md">
         <Accordion.Item value="Sort and filter">
           <Accordion.Control>Sort and filter</Accordion.Control>
@@ -210,25 +342,36 @@ export default function WhiskyJournal() {
         </Accordion.Item>
       </Accordion>
 
-      <TextInput
-        mb="md"
-        aria-label="Search whisky names"
-        placeholder="Search whisky names..."
-        value={searchQuery}
-        onChange={handleSearch}
-        style={{ flex: 1 }}
-        rightSection={
-          searchQuery && (
-            <ActionIcon
-              onClick={() => setSearchQuery("")}
-              variant="default"
-              aria-label="Clear search query"
-            >
-              <IconX />
-            </ActionIcon>
-          )
-        }
-      />
+      <Group justify="space-between">
+        <TextInput
+          mb="md"
+          aria-label="Search whisky names"
+          placeholder="Search whisky names..."
+          value={searchQuery}
+          onChange={handleSearch}
+          style={{ flex: 1, minWidth: 100 }}
+          rightSection={
+            searchQuery && (
+              <ActionIcon
+                onClick={() => setSearchQuery("")}
+                variant="default"
+                aria-label="Clear search query"
+              >
+                <IconX />
+              </ActionIcon>
+            )
+          }
+        />
+
+        <Button
+          onClick={exportToCSV}
+          mb="md"
+          variant="default"
+          leftSection={<IconDownload />}
+        >
+          Download CSV
+        </Button>
+      </Group>
 
       <Text m="sm">
         Showing {searchedWhiskyData.length} of {whiskyData.length} whiskies

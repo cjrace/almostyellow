@@ -26,17 +26,6 @@ export default function WhiskyJournalPage() {
 
       <main id="main-content">
         <Container size="lg">
-          <Group mb="xl" justify="space-between">
-            <Title>Cam&apos;s whisky journal</Title>
-            <Button
-              variant="default"
-              component="a"
-              href="/admin/whiskyjournal/add"
-              leftSection={<IconPlus />}
-            >
-              Add new whisky
-            </Button>
-          </Group>
           <WhiskyJournal />
         </Container>
       </main>

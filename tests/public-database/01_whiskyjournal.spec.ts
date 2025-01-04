@@ -57,3 +57,18 @@ test("Can search whiskies by name", async ({ page }) => {
     /Johnnie Walker Black Label/,
   );
 });
+
+const fs = require("fs");
+test("Download CSV and check contents", async ({ page }) => {
+  await page.goto("/whiskyjournal");
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Download CSV" }).click(),
+  ]);
+
+  const path = await download.path();
+  const csv = fs.readFileSync(path, "utf-8");
+  const rows = csv.split("\n");
+
+  expect(rows.length).toBeGreaterThan(30);
+});
