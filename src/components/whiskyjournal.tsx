@@ -9,11 +9,22 @@ import {
   Accordion,
   TextInput,
   ActionIcon,
+  Title,
+  Tooltip,
+  Modal,
+  Container,
+  Center,
 } from "@mantine/core";
-import { IconX, IconDownload } from "@tabler/icons-react";
+import {
+  IconX,
+  IconDownload,
+  IconInfoCircle,
+  IconPlus,
+} from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
 import { readWhiskyJournal } from "@/services/whiskyjournal";
+import { WhiskyPricingScale, WhiskyRatingScale } from "./whiskyscoringscales";
 
 export interface Whisky {
   last_edited: Date;
@@ -49,6 +60,7 @@ export default function WhiskyJournal() {
 
     fetchWhiskies();
   }, []);
+
   const whiskyData = whiskies;
 
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
@@ -137,6 +149,8 @@ export default function WhiskyJournal() {
     { value: "ageDesc", label: "Age Descending" },
   ];
 
+  const [modalScalesOpened, setModalScalesOpened] = useState(false);
+
   if (loading) {
     return <Text>Fetching journal...</Text>;
   }
@@ -185,6 +199,82 @@ export default function WhiskyJournal() {
 
   return (
     <>
+      <Group mb="xl" justify="space-between">
+        <Group gap="xs">
+          <Title>Cam&apos;s whisky journal</Title>
+          <Tooltip
+            label="Whisky rating scales"
+            openDelay={250}
+            position="right"
+            offset={5}
+          >
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open modal detailing whisky rating scales"
+              onClick={() => setModalScalesOpened(true)}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        <Button
+          variant="default"
+          component="a"
+          href="/admin/whiskyjournal/add"
+          leftSection={<IconPlus />}
+        >
+          Add new whisky
+        </Button>
+      </Group>
+
+      <Modal
+        size="auto"
+        opened={modalScalesOpened}
+        onClose={() => setModalScalesOpened(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="whisky_scales"
+        withCloseButton={false}
+        transitionProps={{
+          transition: "fade",
+          duration: 300,
+          timingFunction: "linear",
+        }}
+        overlayProps={{
+          backgroundOpacity: 0.75,
+          blur: 3,
+        }}
+      >
+        <Container>
+          <Title order={2} mb="sm" id="whisky_scales">
+            Whisky rating scales
+          </Title>
+
+          <Title order={3} mt="lg" mb="sm">
+            Pricing scale
+          </Title>
+
+          <WhiskyPricingScale />
+
+          <Title order={3} mt="lg" mb="sm">
+            Rating scale
+          </Title>
+
+          <WhiskyRatingScale />
+
+          <Center>
+            <Button
+              variant="subtle"
+              mt="md"
+              onClick={() => setModalScalesOpened(false)}
+            >
+              Close modal
+            </Button>
+          </Center>
+        </Container>
+      </Modal>
+
       <Accordion variant="contained" mb="md">
         <Accordion.Item value="Sort and filter">
           <Accordion.Control>Sort and filter</Accordion.Control>
@@ -259,7 +349,7 @@ export default function WhiskyJournal() {
           placeholder="Search whisky names..."
           value={searchQuery}
           onChange={handleSearch}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minWidth: 100 }}
           rightSection={
             searchQuery && (
               <ActionIcon

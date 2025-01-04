@@ -96,8 +96,7 @@ export default function IrishBingo() {
   };
 
   const [modalCardOpened, setModalCardOpened] = useState(false);
-  const [modalInstructionsOpened, setModalIntstructionsOpened] =
-    useState(false);
+  const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
 
   return (
     <Grid>
@@ -114,7 +113,7 @@ export default function IrishBingo() {
               variant="subtle"
               size="lg"
               aria-label="Open game instructions modal"
-              onClick={() => setModalIntstructionsOpened(true)}
+              onClick={() => setModalInstructionsOpened(true)}
             >
               <IconInfoCircle />
             </ActionIcon>
@@ -124,7 +123,7 @@ export default function IrishBingo() {
         <Modal
           size="auto"
           opened={modalInstructionsOpened}
-          onClose={() => setModalIntstructionsOpened(false)}
+          onClose={() => setModalInstructionsOpened(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="ib_instructions"
@@ -201,7 +200,7 @@ export default function IrishBingo() {
               <Button
                 variant="subtle"
                 mt="md"
-                onClick={() => setModalIntstructionsOpened(false)}
+                onClick={() => setModalInstructionsOpened(false)}
               >
                 Close instructions modal
               </Button>
