@@ -5,8 +5,9 @@ export const authConfig = {
     signIn: "/admin/login",
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
+    authorized({ auth, request }) {
+      const isLoggedIn = !!auth;
+      const nextUrl = request.nextUrl;
 
       // Stop non-logged in users from accessing any pages starting /admin
       const isInAdmin = nextUrl.pathname.startsWith("/admin");
