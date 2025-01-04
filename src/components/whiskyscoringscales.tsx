@@ -13,11 +13,11 @@ export const WhiskyPricingScale = () => {
 export const WhiskyRatingScale = () => {
   return (
     <List type="ordered">
-      <List.Item>Would only drink again if paid</List.Item>
       <List.Item>Unhappy about drinking again</List.Item>
       <List.Item>Shrugs, can drink it</List.Item>
-      <List.Item>Tasty, would order at a bar</List.Item>
-      <List.Item>Would happily buy bottles of it</List.Item>
+      <List.Item>Solid, though perhaps unspectacular</List.Item>
+      <List.Item>Tasty, would choose to order at a bar</List.Item>
+      <List.Item>Exceptional, top tier</List.Item>
     </List>
   );
 };

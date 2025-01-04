@@ -11,7 +11,6 @@ import {
   Stack,
   Text,
   Textarea,
-  List,
   Rating,
   Select,
   NumberInput,
@@ -22,6 +21,10 @@ import { deleteWhisky, updateWhisky } from "@/services/whiskyjournal";
 import { Whisky } from "@/components/whiskycard";
 import { useRouter } from "next/navigation";
 import { IconTaxPound } from "@tabler/icons-react";
+import {
+  WhiskyPricingScale,
+  WhiskyRatingScale,
+} from "@/components/whiskyscoringscales";
 
 export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
   const [modalOpened, setModalOpened] = useState(false);
@@ -156,6 +159,9 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
             <Text fw={500}>
               Rate the whisky out of 5<span style={{ color: "red" }}> *</span>
             </Text>
+
+            <WhiskyRatingScale />
+
             <Rating mb="lg" {...form.getInputProps("rating")} />
           </Stack>
           <Stack>
@@ -163,11 +169,9 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
               How pricey is the whisky?
               <span style={{ color: "red" }}> *</span>
             </Text>
-            <List type="ordered">
-              <List.Item>Under £40 a bottle</List.Item>
-              <List.Item>£40 - £85 a bottle</List.Item>
-              <List.Item>Over £85 a bottle</List.Item>
-            </List>
+
+            <WhiskyPricingScale />
+
             <Rating
               mb="lg"
               size="xl"
