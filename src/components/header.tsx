@@ -16,12 +16,12 @@ import {
   IconChevronLeft,
   IconGlass,
   IconMovie,
+  IconHome,
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "@/styles/togglecolour.module.css";
-import WhiskyJournal from "./whiskyjournal";
 
 interface BreadcrumbItem {
   title: string;
@@ -34,17 +34,19 @@ interface HeaderProps {
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
   filmList?: boolean; // Back button for our film list pages
+  homeOnly?: boolean; // Just show the home button
 }
 
 export default function Header({
   crumbs,
-  noCrumbs = false,
+  noCrumbs = false, // This needs to be set to true if you want to use any of the other buttons
   game = false,
   whiskyJournal = false,
   filmList = false,
+  homeOnly = false,
 }: HeaderProps) {
   const mainJustify =
-    noCrumbs && !game && !whiskyJournal && !filmList
+    noCrumbs && !game && !whiskyJournal && !filmList && !homeOnly
       ? "flex-end"
       : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
@@ -65,6 +67,22 @@ export default function Header({
               ))}
             </Breadcrumbs>
           </Group>
+        )}
+
+        {homeOnly && (
+          <Tooltip label="Back to our homepage" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component="a"
+              href="/"
+              size="xl"
+              aria-label="Back to our homepage"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconHome />
+            </ActionIcon>
+          </Tooltip>
         )}
 
         {game && (

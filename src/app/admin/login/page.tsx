@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function Login() {
   return (
     <>
-      <Header noCrumbs={true} />
+      <Header noCrumbs={true} homeOnly={true} />
 
       <main id="main-content">
         <LoginForm />

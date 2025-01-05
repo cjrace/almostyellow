@@ -64,3 +64,20 @@ test("Navigate to the decision maker page", async ({ page }) => {
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Almost Yellow");
 });
+
+test("Navigate to the login page and back", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("link", { name: "Admin stuff" }).click();
+  await expect(page).toHaveURL(
+    "/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
+
+  await page.getByRole("link", { name: "Back to our homepage" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(page).toHaveTitle("Almost Yellow");
+});
