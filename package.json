@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@mantine/core": "^7.15.2",
-    "@mantine/form": "^7.15.2",
+    "@mantine/form": "^7.15.3",
     "@mantine/hooks": "^7.15.2",
     "@tabler/icons-react": "^3.27.1",
     "@vercel/analytics": "^1.4.1",
