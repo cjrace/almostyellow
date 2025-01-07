@@ -18,7 +18,7 @@
     "@mantine/core": "^7.15.2",
     "@mantine/form": "^7.15.2",
     "@mantine/hooks": "^7.15.2",
-    "@tabler/icons-react": "^3.26.0",
+    "@tabler/icons-react": "^3.27.1",
     "@vercel/analytics": "^1.4.1",
     "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.1.0",
