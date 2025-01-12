@@ -1,4 +1,4 @@
-# Set default behaviour incase anyone doesn't have core.autocrlf set
+# Set default behaviour incase anyone doesn't have the same defaults
 * text eol=lf
 
 # Declare special files that shouldn't be forced to LF line endings
