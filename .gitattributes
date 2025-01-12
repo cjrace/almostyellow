@@ -1,0 +1,6 @@
+# Set default behaviour incase anyone doesn't have core.autocrlf set
+* text eol=lf
+
+# Declare special files that shouldn't be forced to LF line endings
+public/* -text
+public/images/* -text
