@@ -53,8 +53,8 @@ importers:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
       react-icons:
-        specifier: ^5.4.0
-        version: 5.4.0(react@19.0.0)
+        specifier: ^5.5.0
+        version: 5.5.0(react@19.0.0)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
@@ -78,8 +78,8 @@ importers:
         specifier: ^19.0.8
         version: 19.0.8
       "@types/react-dom":
-        specifier: ^19.0.3
-        version: 19.0.3(@types/react@19.0.8)
+        specifier: ^19.0.4
+        version: 19.0.4(@types/react@19.0.8)
       eslint-config-next:
         specifier: 15.1.4
         version: 15.1.4(eslint@9.19.0)(typescript@5.7.3)
@@ -675,10 +675,10 @@ packages:
         integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==,
       }
 
-  "@types/react-dom@19.0.3":
+  "@types/react-dom@19.0.4":
     resolution:
       {
-        integrity: sha512-0Knk+HJiMP/qOZgMyNFamlIjw9OFCsyC2ZbigmEEyXXixgre6IQpm/4V+r3qH4GC1JPvRJKInw+on2rV6YZLeA==,
+        integrity: sha512-4fSQ8vWFkg+TGhePfUzVmat3eC14TXYSsiiDSLI0dVLsrm9gZFABjPy/Qu6TKgl1tq1Bu1yDsuQgY3A3DOjCcg==,
       }
     peerDependencies:
       "@types/react": ^19.0.0
@@ -2924,10 +2924,10 @@ packages:
     peerDependencies:
       react: ^19.0.0
 
-  react-icons@5.4.0:
+  react-icons@5.5.0:
     resolution:
       {
-        integrity: sha512-7eltJxgVt7X64oHh6wSWNwwbKTCtMfK35hcjvJS0yxEAhPM8oUKdS3+kqaW1vicIltw+kR2unHaa12S9pPALoQ==,
+        integrity: sha512-MEFcXdkP3dLo8uumGI5xN3lDFNsRtrjbOEKDLD7yv76v4wpnEq2Lt2qeHaQOr34I/wPN3s3+N08WkQ+CW37Xiw==,
       }
     peerDependencies:
       react: "*"
@@ -4031,7 +4031,7 @@ snapshots:
       pg-protocol: 1.7.0
       pg-types: 4.0.2
 
-  "@types/react-dom@19.0.3(@types/react@19.0.8)":
+  "@types/react-dom@19.0.4(@types/react@19.0.8)":
     dependencies:
       "@types/react": 19.0.8
 
@@ -5495,7 +5495,7 @@ snapshots:
       react: 19.0.0
       scheduler: 0.25.0
 
-  react-icons@5.4.0(react@19.0.0):
+  react-icons@5.5.0(react@19.0.0):
     dependencies:
       react: 19.0.0
 
