@@ -47,6 +47,12 @@ test("Can navigate to the games page and through its subpages", async ({
   await expect(page.locator("h1")).toContainText("Boom");
 
   await page.getByLabel("Back to our games list").click();
+  await page.getByRole("link", { name: "Cow racing!" }).click();
+  await expect(page).toHaveTitle("Cow racing | Almost Yellow");
+  await expect(page).toHaveURL("/games/cowrace");
+  await expect(page.locator("h1")).toContainText("Cow");
+
+  await page.getByLabel("Back to our games list").click();
   await page.getByRole("link", { name: "Home" }).click();
   await expect(page).toHaveURL("/");
   await expect(page).toHaveTitle("Almost Yellow");
