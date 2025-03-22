@@ -15,10 +15,28 @@ export default function HolidayTimeline() {
   return (
     <>
       <Title order={2} my="md">
+        2025
+      </Title>
+
+      <Timeline color="yellow" bulletSize={24} lineWidth={2}>
+        <Timeline.Item title="Somewhere?" bullet={<IconGift size="1rem" />}>
+          <Text c="dimmed" size="sm">
+            To be decided
+          </Text>
+          <List>
+            <List.Item>Maybe soon</List.Item>
+          </List>
+          <Text size="xs" mt={4}>
+            Some day and month in 2025
+          </Text>
+        </Timeline.Item>
+      </Timeline>
+
+      <Title order={2} my="md">
         2024
       </Title>
 
-      <Timeline color="yellow" active={5} bulletSize={24} lineWidth={2}>
+      <Timeline color="yellow" active={6} bulletSize={24} lineWidth={2}>
         <Timeline.Item
           title="Christmas Schtarshh"
           bullet={<IconGift size="1rem" />}
