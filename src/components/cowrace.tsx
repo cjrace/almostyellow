@@ -11,12 +11,9 @@ const CowRace = () => {
   const [raceStarted, setRaceStarted] = useState(false);
   const [cowPositions, setCowPositions] = useState<number[]>([]);
   const [winners, setWinners] = useState<number[]>([]);
-  const [raceIntervalId, setRaceIntervalId] = useState<NodeJS.Timeout | null>(
-    null,
-  );
   const cowRefs = useRef<(HTMLImageElement | null)[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const raceTrackRef = useRef<HTMLDivElement | null>(null);
+  const raceIntervalRef = useRef<NodeJS.Timeout | null>(null); // Use useRef instead of state
 
   const startRace = () => {
     setRaceStarted(true);
@@ -49,17 +46,17 @@ const CowRace = () => {
             setWinners(sortedWinners.map(({ index }) => index));
             playConfetti();
             clearInterval(intervalId);
-            setRaceIntervalId(null);
+            raceIntervalRef.current = null;
           }
 
           return newPositions.map((pos) => Math.min(pos, finishLine));
         });
       }, 100);
 
-      setRaceIntervalId(intervalId);
+      raceIntervalRef.current = intervalId;
     } else {
-      if (raceIntervalId) clearInterval(raceIntervalId);
-      setRaceIntervalId(null);
+      if (raceIntervalRef.current) clearInterval(raceIntervalRef.current);
+      raceIntervalRef.current = null;
     }
   }, [raceStarted, numCows]);
 
@@ -67,7 +64,8 @@ const CowRace = () => {
     setRaceStarted(false);
     setCowPositions([]);
     setWinners([]);
-    if (raceIntervalId) clearInterval(raceIntervalId);
+    if (raceIntervalRef.current) clearInterval(raceIntervalRef.current);
+    raceIntervalRef.current = null;
   };
 
   const cowImageUrl = "/images/cow.svg";
@@ -150,7 +148,7 @@ const CowRace = () => {
             <div
               style={{
                 position: "absolute",
-                right: "0",
+                right: "5%",
                 top: "0",
                 height: "100%",
                 borderLeft: "4px dashed orange",
