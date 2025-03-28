@@ -27,7 +27,6 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.23.0",
     "framer-motion": "^12.6.2",
-    "lucide-react": "^0.484.0",
     "next": "^15.2.3",
     "next-auth": "5.0.0-beta.25",
     "react": "^19.0.0",
