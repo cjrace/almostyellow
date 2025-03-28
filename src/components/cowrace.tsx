@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button, Slider, Text, Stack, Group, Alert } from "@mantine/core";
+import { Button, Slider, Text, Stack, Group } from "@mantine/core";
 import { motion } from "framer-motion";
-import { Trophy, Flag, AlertTriangle } from "lucide-react";
+import { IconTrophy, IconFlag } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 
 const CowRace = () => {
@@ -16,74 +16,43 @@ const CowRace = () => {
   );
   const cowRefs = useRef<(HTMLImageElement | null)[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const raceTrackRef = useRef<HTMLDivElement | null>(null); // Add a ref for the race track
-
-  // Ensure numCows is within the valid range
-  useEffect(() => {
-    if (numCows < 2 || numCows > 10) {
-      setError("Number of cows must be between 2 and 10.");
-      setNumCows(Math.max(2, Math.min(10, numCows))); // Correct the value
-    } else {
-      setError(null); // Clear any previous error
-    }
-  }, [numCows]);
+  const raceTrackRef = useRef<HTMLDivElement | null>(null);
 
   const startRace = () => {
-    if (numCows < 2 || numCows > 10) {
-      setError(
-        "Please select a valid number of cows (2-10) to start the race.",
-      );
-      return; // Stop the race from starting
-    }
     setRaceStarted(true);
   };
 
   useEffect(() => {
     if (raceStarted && raceTrackRef.current) {
-      const raceTrackRect = raceTrackRef.current.getBoundingClientRect(); // Get the race track's position
-      const finishLine = raceTrackRect.right - 60; // Subtract cow width to ensure proper detection
-
-      console.log("Finish Line:", finishLine); // Debugging
+      const raceTrackRect = raceTrackRef.current.getBoundingClientRect();
+      const finishLine = raceTrackRect.right / 2.38; // Adjust finish line position
 
       setCowPositions(Array(numCows).fill(0));
       setWinners([]);
       cowRefs.current = Array(numCows).fill(null);
 
-      let winnerDetected = false; // Local variable to track if a winner has been detected
+      let winnerDetected = false;
 
       const intervalId = setInterval(() => {
         setCowPositions((prevPositions) => {
           const newPositions = prevPositions.map(
-            (pos) => pos + Math.random() * 4,
+            (pos) => pos + Math.random() * 7,
           ); // Adjust cow speed
 
-          console.log("Cow Positions:", newPositions); // Debugging
-
-          // Check if any cow has crossed the finish line
           const finishedCows = newPositions
             .map((pos, index) => ({ pos, index }))
-            .filter(({ pos }) => pos + raceTrackRect.left >= finishLine);
+            .filter(({ pos }) => pos >= finishLine);
 
-          console.log("Finished Cows:", finishedCows); // Debugging
-
-          // If no winner has been detected yet and at least one cow has finished
           if (!winnerDetected && finishedCows.length > 0) {
-            winnerDetected = true; // Mark that a winner has been detected
-            const sortedWinners = finishedCows.sort((a, b) => a.pos - b.pos); // Sort by position
-            setWinners(sortedWinners.map(({ index }) => index)); // Set winners
-            console.log(
-              "Winners:",
-              sortedWinners.map(({ index }) => index),
-            ); // Debugging
-            playConfetti(); // Trigger confetti
-            clearInterval(intervalId); // Stop the race
+            winnerDetected = true;
+            const sortedWinners = finishedCows.sort((a, b) => a.pos - b.pos);
+            setWinners(sortedWinners.map(({ index }) => index));
+            playConfetti();
+            clearInterval(intervalId);
             setRaceIntervalId(null);
           }
 
-          // Update positions, ensuring cows don't go past the finish line
-          return newPositions.map((pos) =>
-            Math.min(pos, finishLine - raceTrackRect.left),
-          );
+          return newPositions.map((pos) => Math.min(pos, finishLine));
         });
       }, 100);
 
@@ -101,17 +70,10 @@ const CowRace = () => {
     if (raceIntervalId) clearInterval(raceIntervalId);
   };
 
-  // Cow image URL (replace with your actual image)
   const cowImageUrl = "/images/cow.svg";
 
   return (
     <Stack align="center" style={{ width: "100%" }}>
-      {error && (
-        <Alert variant="destructive" title="Error" style={{ width: "80%" }}>
-          <AlertTriangle size={16} />
-          {error}
-        </Alert>
-      )}
       {!raceStarted ? (
         <div
           style={{
@@ -122,7 +84,7 @@ const CowRace = () => {
           }}
         >
           <Text size="lg" fw={500} style={{ marginBottom: "1rem" }}>
-            Select Number of Cows (2-10):
+            Number of racing cows: {numCows}
           </Text>
           <Slider
             value={numCows}
@@ -154,15 +116,13 @@ const CowRace = () => {
             ref={raceTrackRef}
             style={{
               width: "90%",
-              maxWidth: "800px", // Responsive width
               height: "400px",
-              borderBottom: "4px solid #4a5568", // Darker border
+              border: "4px solid orange",
               position: "relative",
               margin: "1rem 0",
-              backgroundColor: "#f7fafc", // Light background for track
-              borderRadius: "0.5rem", // Rounded corners for track
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", // Subtle shadow
-              overflow: "hidden", // Ensure cows don't overflow visually
+              borderRadius: "0.5rem",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              overflow: "hidden",
             }}
           >
             {Array.from({ length: numCows }).map((_, index) => (
@@ -170,14 +130,14 @@ const CowRace = () => {
                 key={index}
                 src={cowImageUrl}
                 alt={`Cow ${index + 1}`}
-                width={60} // Slightly larger cows
+                width={60}
                 height={60}
                 style={{
                   position: "absolute",
-                  top: `${index * (400 / numCows) + 20}px`, // Spread cows out, adjust as needed
+                  top: `${index * (400 / numCows) + 20}px`, // Spread cows out
                   left: `${cowPositions[index] || 0}px`,
-                  transition: "left 0.1s ease", // Smooth transition
-                  zIndex: numCows - index, // Ensure cows appear in correct order
+                  transition: "left 0.1s ease",
+                  zIndex: numCows - index,
                 }}
                 ref={(el: HTMLImageElement | null) => {
                   cowRefs.current[index] = el;
@@ -193,14 +153,14 @@ const CowRace = () => {
                 right: "0",
                 top: "0",
                 height: "100%",
-                borderLeft: "4px dashed #e53e3e", // Brighter finish line
+                borderLeft: "4px dashed orange",
                 display: "flex",
                 alignItems: "center",
-                paddingLeft: "0.5rem",
-                color: "#e53e3e",
+                paddingLeft: "0.6rem",
+                color: "orange",
               }}
             >
-              <Flag size={24} />
+              <IconFlag size={24} />
               <Text size="sm" fw={600} ml={2}>
                 Finish
               </Text>
@@ -218,9 +178,9 @@ const CowRace = () => {
               onClick={resetRace}
               variant="outline"
               size="lg"
-              style={{ width: "80%", maxWidth: "300px" }} // Keep button width consistent
+              style={{ width: "80%", maxWidth: "300px" }}
             >
-              Cancel Race
+              {winners.length == 0 ? "Cancel Race" : "Start new race"}
             </Button>
           </Group>
 
@@ -232,12 +192,11 @@ const CowRace = () => {
                 flexDirection: "column",
                 alignItems: "center",
                 width: "90%",
-                maxWidth: "400px", // Responsive width
+                maxWidth: "400px",
                 padding: "1rem",
-                backgroundColor: "#fff",
                 borderRadius: "0.5rem",
                 boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                border: "1px solid #e2e8f0",
+                border: "1px solid orange",
               }}
             >
               <Text size="lg" fw={600} mb="1rem">
@@ -269,7 +228,7 @@ const CowRace = () => {
                       key={winnerIndex}
                       style={{ display: "flex", alignItems: "center" }}
                     >
-                      <Trophy
+                      <IconTrophy
                         size={20}
                         color={trophyColor}
                         style={{ marginRight: "0.5rem" }}
