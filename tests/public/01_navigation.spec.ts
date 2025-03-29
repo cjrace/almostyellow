@@ -65,6 +65,18 @@ test("Navigate to the decision maker page", async ({ page }) => {
   await expect(page).toHaveTitle("Almost Yellow");
 });
 
+test("Navigate to the world map page", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "World Map" }).click();
+  await expect(page).toHaveURL("/worldmap");
+  await expect(page).toHaveTitle("World Map | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("World Map");
+
+  await page.getByRole("link", { name: "Home" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(page).toHaveTitle("Almost Yellow");
+});
+
 test("Navigate to the login page and back", async ({ page }) => {
   await page.goto("/");
 
