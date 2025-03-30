@@ -139,7 +139,8 @@ export default function FilmList() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "films.csv");
+    const today = new Date().toISOString().split("T")[0];
+    link.setAttribute("download", `films_${today}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
