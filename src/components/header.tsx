@@ -20,8 +20,6 @@ import {
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
-import cx from "clsx";
-import classes from "@/styles/togglecolour.module.css";
 
 interface BreadcrumbItem {
   title: string;
