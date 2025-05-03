@@ -161,6 +161,8 @@ export default function Header({
             >
               <IconSun
                 suppressHydrationWarning={true}
+                // Ignoring hydration warning as would rather it rerender server side if the toggle has been changed
+                // Alternative I had was a client side load of the icon but that was noticeably slower / icon would appear on delay
                 style={{
                   display: computedColorScheme === "dark" ? "none" : "inline",
                 }}
