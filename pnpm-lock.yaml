@@ -31,9 +31,6 @@ importers:
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
