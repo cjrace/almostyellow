@@ -20,8 +20,6 @@ import {
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
-import cx from "clsx";
-import classes from "@/styles/togglecolour.module.css";
 
 interface BreadcrumbItem {
   title: string;
@@ -163,11 +161,15 @@ export default function Header({
                 suppressHydrationWarning={true}
                 // Ignoring hydration warning as would rather it rerender server side if the toggle has been changed
                 // Alternative I had was a client side load of the icon but that was noticeably slower / icon would appear on delay
-                className={cx(computedColorScheme == "dark" && classes.hide)}
+                style={{
+                  display: computedColorScheme === "dark" ? "none" : "inline",
+                }}
               />
               <IconMoon
                 suppressHydrationWarning={true}
-                className={cx(computedColorScheme == "light" && classes.hide)}
+                style={{
+                  display: computedColorScheme === "light" ? "none" : "inline",
+                }}
               />
             </ActionIcon>
           </Tooltip>

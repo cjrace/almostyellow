@@ -66,7 +66,7 @@ pnpm run
 
 ## Deployment
 
-This site is deployed to the following places using [Vercel](https://vercel.com/), deploys are triggered from pushes to the `main` branch:
+This site is deployed to the following places using [Vercel](https://vercel.com/), deploys are triggered from pushes to the `main` branch.
 
 - https://www.almostyellow.co.uk/
 - https://almostyellow.co.uk/ (redirects to www)
