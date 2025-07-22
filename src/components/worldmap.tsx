@@ -17,7 +17,7 @@ const camCountries = [
   "Spain",
   "Italy",
   "Switzerland",
-  "Czech Republic",
+  "Czechia",
   "Austria",
   "Slovenia",
   "San Marino",
@@ -28,6 +28,12 @@ const camCountries = [
   "Greece",
   "Bulgaria",
   "Netherlands",
+  "Andorra",
+  "Monaco",
+  "Liechtenstein",
+  "Luxembourg",
+  "Poland",
+  "Ireland",
   "Australia",
   "New Zealand",
 ];
@@ -67,10 +73,6 @@ export default function WorldMap() {
     async function createMap() {
       const L = await import("leaflet");
       const map = L.map("map").setView([0, 0], 2);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
 
       try {
         const response = await fetch("/world-topo.json");
