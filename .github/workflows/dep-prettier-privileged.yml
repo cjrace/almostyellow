@@ -1,0 +1,43 @@
+# .github/workflows/prettier-privileged.yml
+name: Prettier Commit (Privileged)
+
+on:
+  workflow_run:
+    workflows: ["Prettier Check (Unprivileged)"]
+    types:
+      - completed
+
+jobs:
+  commit-format:
+    if: >
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pnpm-lock
+          path: .
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          token: ${{ secrets.WORKFLOW_PAT }}
+      - name: Commit and push formatted lockfile
+        run: |
+          git config --global user.name "custom-cleanup[bot]"
+          git config --global user.email ""
+          git add pnpm-lock.yaml
+          git commit -m "chore: format pnpm-lock.yaml with Prettier" || echo "No changes to commit"
+          git push
+      - name: Add PR comment about testing
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Remember not all tests are ran in GitHub Actions. Test this branch locally using `pnpm test` before merging.'
+            })
