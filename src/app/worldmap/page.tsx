@@ -1,4 +1,4 @@
-import WorldMap from "@/components/worldmap";
+import WorldMap from "@/components/worldmap2";
 import BackToTop from "@/components/backtotop";
 import { Metadata } from "next";
 import Header from "@/components/header";
