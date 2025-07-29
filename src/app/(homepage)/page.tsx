@@ -7,6 +7,7 @@ import {
   IconPaperclip,
   IconGlass,
   IconMovie,
+  IconGlobe,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
 import styles from "@/styles/gradient.module.css";
@@ -62,6 +63,16 @@ export default function Home() {
             href="/cocktails"
           >
             Cocktail time!
+          </Button>
+
+          <Button
+            leftSection={<IconGlobe />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/worldmap"
+          >
+            Our world map
           </Button>
 
           <Button
