@@ -1,0 +1,31 @@
+name: Prettier Lockfile
+
+on:
+  pull_request:
+    paths:
+      - "pnpm-lock.yaml"
+
+jobs:
+  format-lockfile:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Prettier
+        run: npm install --global prettier
+      - name: Run Prettier on pnpm-lock.yaml
+        run: prettier --write pnpm-lock.yaml
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "custom-cleanup[bot]"
+          git config --global user.email ""
+          git add pnpm-lock.yaml
+          git commit -m "chore: format pnpm-lock.yaml with Prettier" || echo "No changes to commit"
+          git push
