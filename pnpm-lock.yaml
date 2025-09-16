@@ -69,8 +69,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       "@types/node":
-        specifier: ^24.0.13
-        version: 24.0.13
+        specifier: ^24.5.1
+        version: 24.5.1
       "@types/react":
         specifier: ^19.1.8
         version: 19.1.8
@@ -704,10 +704,10 @@ packages:
         integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==,
       }
 
-  "@types/node@24.0.13":
+  "@types/node@24.5.1":
     resolution:
       {
-        integrity: sha512-Qm9OYVOFHFYg3wJoTSrz80hoec5Lia/dPp84do3X7dZvLikQvM1YpmvTBEdIr/e+U8HTkFjLHLnl78K/qjf+jQ==,
+        integrity: sha512-/SQdmUP2xa+1rdx7VwB9yPq8PaKej8TD5cQ+XfKDPWWC+VDJU4rvVVagXqKUzhKjtFoNA8rXDJAkCxQPAe00+Q==,
       }
 
   "@types/pg@8.11.6":
@@ -3466,10 +3466,10 @@ packages:
       }
     engines: { node: ">= 0.4" }
 
-  undici-types@7.8.0:
+  undici-types@7.12.0:
     resolution:
       {
-        integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==,
+        integrity: sha512-goOacqME2GYyOZZfb5Lgtu+1IDmAlAEu5xnD3+xTzS10hT0vzpf0SPjkXwAw9Jm+4n/mQGDP3LO8CPbYROeBfQ==,
       }
 
   unrs-resolver@1.11.1:
@@ -3952,7 +3952,7 @@ snapshots:
 
   "@types/bcrypt@6.0.0":
     dependencies:
-      "@types/node": 24.0.13
+      "@types/node": 24.5.1
 
   "@types/estree@1.0.8": {}
 
@@ -3960,13 +3960,13 @@ snapshots:
 
   "@types/json5@0.0.29": {}
 
-  "@types/node@24.0.13":
+  "@types/node@24.5.1":
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.12.0
 
   "@types/pg@8.11.6":
     dependencies:
-      "@types/node": 24.0.13
+      "@types/node": 24.5.1
       pg-protocol: 1.10.3
       pg-types: 4.0.2
 
@@ -5785,7 +5785,7 @@ snapshots:
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
 
-  undici-types@7.8.0: {}
+  undici-types@7.12.0: {}
 
   unrs-resolver@1.11.1:
     dependencies:
