@@ -67,7 +67,7 @@ const generateSpecialSpaces = () => {
   const specialSpaces = new Map<number, number>();
 
   const isValidSpace = (space: number, currentSpecialSpaces: any) => {
-    for (let [key, value] of currentSpecialSpaces) {
+    for (const [key, value] of currentSpecialSpaces) {
       if (Math.abs(space - key) < 3 || Math.abs(space - value) < 3) {
         return false;
       }
@@ -130,7 +130,9 @@ const IconSelection: React.FC<IconSelectionProps> = ({
       {icons.map((icon) => (
         <ActionIcon
           key={icon.id}
-          onClick={() => onChange(icon.id)}
+          onClick={() => {
+            onChange(icon.id);
+          }}
           style={{
             backgroundColor:
               selectedIcon === icon.id ? "orange" : "transparent",
@@ -169,9 +171,7 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
 
 const SnakesAndLadders = () => {
   const [playerPositions, setPlayerPositions] = useState<number[]>([]);
-  const [players, setPlayers] = useState<Array<{ name: string; icon: string }>>(
-    [],
-  );
+  const [players, setPlayers] = useState<{ name: string; icon: string }[]>([]);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
@@ -299,7 +299,7 @@ const SnakesAndLadders = () => {
             setTimeout(movePlayer, 300); // Continue moving with delay
           } else {
             // Handle snakes and ladders after the final position is reached
-            let finalPosition = tempPosition;
+            const finalPosition = tempPosition;
             if (specialSpaces.has(finalPosition)) {
               const specialEnd = specialSpaces.get(finalPosition)!;
               setSpecialMove(specialEnd);
@@ -360,7 +360,9 @@ const SnakesAndLadders = () => {
             {/* Form to set up the players */}
             <NumberInput
               value={numPlayers}
-              onChange={(value) => setNumPlayers(Number(value) || 2)}
+              onChange={(value) => {
+                setNumPlayers(Number(value) || 2);
+              }}
               label="Number of Players"
               min={2}
               max={10}
@@ -380,13 +382,13 @@ const SnakesAndLadders = () => {
                       },
                     }}
                     value={players[index]?.name || ""}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       handlePlayerSetup(
                         index,
                         event.currentTarget.value,
                         players[index]?.icon || "cat",
-                      )
-                    }
+                      );
+                    }}
                   />
                   <Text size="xs" c="dimmed">
                     Choose your avatar
@@ -394,13 +396,13 @@ const SnakesAndLadders = () => {
                   <Group>
                     <IconSelection
                       selectedIcon={players[index]?.icon || "cat"}
-                      onChange={(icon) =>
+                      onChange={(icon) => {
                         handlePlayerSetup(
                           index,
                           players[index]?.name || `Player ${index + 1}`,
                           icon,
-                        )
-                      }
+                        );
+                      }}
                     />
                   </Group>
                 </Stack>

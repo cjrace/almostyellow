@@ -87,21 +87,34 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
     <Container size="md" my={40}>
       <Group justify="space-between">
         <Title>Edit Whisky</Title>
-        <Button color="red" onClick={() => setModalOpened(true)} size="md">
+        <Button
+          color="red"
+          onClick={() => {
+            setModalOpened(true);
+          }}
+          size="md"
+        >
           Delete Whisky
         </Button>
       </Group>
 
       <Modal
         opened={modalOpened}
-        onClose={() => setModalOpened(false)}
+        onClose={() => {
+          setModalOpened(false);
+        }}
         title="Confirm Deletion"
       >
         <Text>Whisky ID: {whiskyData.whisky_id}</Text>
         <Text>Name: {whiskyData.name}</Text>
         <Text>Are you sure you want to delete this whisky?</Text>
         <Group mt="md">
-          <Button variant="default" onClick={() => setModalOpened(false)}>
+          <Button
+            variant="default"
+            onClick={() => {
+              setModalOpened(false);
+            }}
+          >
             Cancel deletion
           </Button>
           <Button color="red" onClick={handleDelete}>

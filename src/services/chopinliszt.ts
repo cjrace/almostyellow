@@ -12,14 +12,14 @@ const FormSchema = z.object({
 
 const CreateChopin = FormSchema;
 
-export type State = {
+export interface State {
   errors?: {
     chopin_id?: string[];
     chopin_text?: string[];
     checked?: boolean[];
   };
   message?: string | null;
-};
+}
 
 export async function createChopin(formData: FormData) {
   const validatedFields = CreateChopin.safeParse({

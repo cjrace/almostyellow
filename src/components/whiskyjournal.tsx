@@ -212,7 +212,9 @@ export default function WhiskyJournal() {
               variant="subtle"
               size="lg"
               aria-label="Open modal detailing whisky rating scales"
-              onClick={() => setModalScalesOpened(true)}
+              onClick={() => {
+                setModalScalesOpened(true);
+              }}
             >
               <IconInfoCircle />
             </ActionIcon>
@@ -231,7 +233,9 @@ export default function WhiskyJournal() {
       <Modal
         size="auto"
         opened={modalScalesOpened}
-        onClose={() => setModalScalesOpened(false)}
+        onClose={() => {
+          setModalScalesOpened(false);
+        }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="whisky_scales"
@@ -267,7 +271,9 @@ export default function WhiskyJournal() {
             <Button
               variant="subtle"
               mt="md"
-              onClick={() => setModalScalesOpened(false)}
+              onClick={() => {
+                setModalScalesOpened(false);
+              }}
             >
               Close modal
             </Button>
@@ -353,7 +359,9 @@ export default function WhiskyJournal() {
           rightSection={
             searchQuery && (
               <ActionIcon
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                }}
                 variant="default"
                 aria-label="Clear search query"
               >

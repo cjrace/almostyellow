@@ -15,10 +15,10 @@ export const RankNames = [
   "Two",
 ];
 
-export type Card = {
+export interface Card {
   suit: string;
   rank: string;
-};
+}
 
 export function getCardName(suit: string, rank: string): string {
   return `${rank} of ${suit}`;

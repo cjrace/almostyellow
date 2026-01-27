@@ -117,7 +117,9 @@ const ChopinLiszt: React.FC = () => {
           data-autofocus
           placeholder="Add new items, one per line..."
           value={newItemText}
-          onChange={(e) => setNewItemText(e.target.value)}
+          onChange={(e) => {
+            setNewItemText(e.target.value);
+          }}
           autosize
           minRows={7}
         />

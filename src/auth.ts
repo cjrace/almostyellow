@@ -5,12 +5,12 @@ import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 
-export type User = {
+export interface User {
   id: string;
   name: string;
   email: string;
   password: string;
-};
+}
 
 async function getUser(email: string): Promise<User | undefined> {
   try {

@@ -158,33 +158,33 @@ export default function FilmList() {
                 label="IMDB top 30"
                 data={imdbOptions}
                 value={imdbFilter !== null ? imdbFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setImdbFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
               <Select
                 label="Watched"
                 data={watchedOptions}
                 value={watchedFilter !== null ? watchedFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setWatchedFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
               <Select
                 label="In jar"
                 data={jarOptions}
                 value={jarFilter !== null ? jarFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setJarFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
 
@@ -233,7 +233,9 @@ export default function FilmList() {
           rightSection={
             searchQuery && (
               <ActionIcon
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                }}
                 variant="default"
                 aria-label="Clear search query"
               >
@@ -247,7 +249,9 @@ export default function FilmList() {
           <Button
             onClick={() => {
               copyToClipboard();
-              setTimeout(() => clipboard.reset(), 500);
+              setTimeout(() => {
+                clipboard.reset();
+              }, 500);
             }}
             variant="default"
             leftSection={<IconCopy />}
