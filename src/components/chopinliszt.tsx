@@ -10,6 +10,7 @@ import {
   Group,
   ActionIcon,
   Text,
+  Divider,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -100,6 +101,10 @@ const ChopinLiszt: React.FC = () => {
     return <Text>Fetching list...</Text>;
   }
 
+  // Separate items into checked and unchecked
+  const uncheckedItems = items.filter((item) => !item.checked);
+  const checkedItems = items.filter((item) => item.checked);
+
   return (
     <>
       <Modal
@@ -128,7 +133,8 @@ const ChopinLiszt: React.FC = () => {
       <Button onClick={open}>Add new item(s)</Button>
       <Space h="xl" />
 
-      {items.map((item) => (
+      {/* Unchecked items */}
+      {uncheckedItems.map((item) => (
         <Group justify="space-between" wrap="nowrap" mb="sm" key={item.id}>
           <Checkbox
             id={item.id}
@@ -148,6 +154,37 @@ const ChopinLiszt: React.FC = () => {
           </ActionIcon>
         </Group>
       ))}
+
+      {/* Checked items, if any */}
+      {checkedItems.length > 0 && (
+        <>
+          <Space h="xl" />
+          <Divider mb="sm" />
+          <Text size="md" mb="xs">
+            Completed
+          </Text>
+          {checkedItems.map((item) => (
+            <Group justify="space-between" wrap="nowrap" mb="sm" key={item.id}>
+              <Checkbox
+                id={item.id}
+                checked={item.checked}
+                onChange={() => toggleItem(item.id)}
+                label={item.text}
+                size="lg"
+              />
+              <ActionIcon
+                id={item.id}
+                aria-label="Delete item"
+                size="lg"
+                variant="default"
+                onClick={() => removeItem(item.id)}
+              >
+                <IconTrash />
+              </ActionIcon>
+            </Group>
+          ))}
+        </>
+      )}
     </>
   );
 };
