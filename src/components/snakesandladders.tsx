@@ -66,7 +66,10 @@ const generateSpecialSpaces = () => {
   ).filter((pos) => pos !== 1 && pos !== 100);
   const specialSpaces = new Map<number, number>();
 
-  const isValidSpace = (space: number, currentSpecialSpaces: any) => {
+  const isValidSpace = (
+    space: number,
+    currentSpecialSpaces: Map<number, number>,
+  ) => {
     for (const [key, value] of currentSpecialSpaces) {
       if (Math.abs(space - key) < 3 || Math.abs(space - value) < 3) {
         return false;
@@ -172,7 +175,6 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
 const SnakesAndLadders = () => {
   const [playerPositions, setPlayerPositions] = useState<number[]>([]);
   const [players, setPlayers] = useState<{ name: string; icon: string }[]>([]);
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [currentPlayer, setCurrentPlayer] = useState<number>(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
@@ -195,7 +197,7 @@ const SnakesAndLadders = () => {
   const initializePlayers = () => {
     if (players.length === 0 || players.some((player) => player.name === "")) {
       const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
-        name: `Player ${i + 1}`,
+        name: `Player ${(i + 1).toString()}`,
         icon: "user",
       }));
       setPlayers(defaultPlayers);
@@ -301,17 +303,22 @@ const SnakesAndLadders = () => {
             // Handle snakes and ladders after the final position is reached
             const finalPosition = tempPosition;
             if (specialSpaces.has(finalPosition)) {
-              const specialEnd = specialSpaces.get(finalPosition)!;
-              setSpecialMove(specialEnd);
-              const moveType = specialEnd < finalPosition ? "snake" : "ladder";
-              const moveDifference = Math.abs(finalPosition - specialEnd);
+              const specialEnd = specialSpaces.get(finalPosition);
+              if (typeof specialEnd === "number") {
+                setSpecialMove(specialEnd);
+                const moveType =
+                  specialEnd < finalPosition ? "snake" : "ladder";
+                const moveDifference = Math.abs(finalPosition - specialEnd);
 
-              const message =
-                moveType === "snake"
-                  ? `Oh no! ${players[currentPlayer]?.name} landed on a ${moveType} and slid down ${moveDifference} spaces!`
-                  : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${moveDifference} spaces!`;
+                const message =
+                  moveType === "snake"
+                    ? `Oh no! ${players[currentPlayer]?.name} landed on a ${moveType} and slid down ${String(moveDifference)} spaces!`
+                    : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${String(moveDifference)} spaces!`;
 
-              setPopupMessage(message);
+                setPopupMessage(message);
+              } else {
+                finalizeMove(finalPosition);
+              }
             } else {
               finalizeMove(finalPosition);
             }
@@ -344,7 +351,7 @@ const SnakesAndLadders = () => {
 
     // Reset players to default names and icons
     const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
-      name: `Player ${i + 1}`,
+      name: `Player ${(i + 1).toString()}`,
       icon: "user", // Adjust if needed
     }));
     setPlayers(defaultPlayers);
@@ -375,7 +382,7 @@ const SnakesAndLadders = () => {
               <Box key={index} style={{ paddingLeft: "20px" }}>
                 <Stack key={index} mb="sm" gap="xs">
                   <TextInput
-                    label={`Name of player ${index + 1}:`}
+                    label={`Name of player ${(index + 1).toString()}:`}
                     labelProps={{
                       style: {
                         margin: "0 0 0.75em 0",
@@ -399,7 +406,8 @@ const SnakesAndLadders = () => {
                       onChange={(icon) => {
                         handlePlayerSetup(
                           index,
-                          players[index]?.name || `Player ${index + 1}`,
+                          players[index]?.name ||
+                            `Player ${(index + 1).toString()}`,
                           icon,
                         );
                       }}

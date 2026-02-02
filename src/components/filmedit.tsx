@@ -30,14 +30,6 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
     not_in_jar: boolean;
   }
 
-  interface FilmFormValidation {
-    name: (value: string) => string | null;
-    release_year: (value: string) => string | null;
-    watched: (value: boolean) => string | null;
-    imdb_top30: (value: boolean) => string | null;
-    not_in_jar: (value: boolean) => string | null;
-  }
-
   const form = useForm<FilmFormValues>({
     initialValues: {
       name: filmData.name,
@@ -123,7 +115,12 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
           >
             Cancel deletion
           </Button>
-          <Button color="red" onClick={handleDelete}>
+          <Button
+            color="red"
+            onClick={() => {
+              void handleDelete();
+            }}
+          >
             Confirm deletion
           </Button>
         </Group>

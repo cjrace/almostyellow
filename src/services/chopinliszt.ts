@@ -28,7 +28,7 @@ export async function createChopin(formData: FormData) {
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: z.treeifyError(validatedFields.error),
       message: "Missing Fields. Failed to parse chopin_text.",
     };
   }
@@ -53,12 +53,16 @@ export async function createChopin(formData: FormData) {
 
 export async function readChopin(): Promise<Item[]> {
   try {
-    const data = await sql`
-        SELECT chopin_id, chopin_text, checked
-        FROM chopin_liszt;
-      `;
+    const data = await sql<{
+      chopin_id: string;
+      chopin_text: string;
+      checked: boolean;
+    }>`
+      SELECT chopin_id, chopin_text, checked
+      FROM chopin_liszt;
+    `;
 
-    const latestChopin = data.rows.map((chopin) => ({
+    const latestChopin: Item[] = data.rows.map((chopin) => ({
       id: chopin.chopin_id,
       text: chopin.chopin_text,
       checked: chopin.checked,

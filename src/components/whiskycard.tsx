@@ -81,7 +81,7 @@ export const WhiskyCard: React.FC<Whisky> = ({
           {country_region}
         </Badge>
         <Badge variant="default" size="lg" leftSection={<IconBarrel />}>
-          {age === 0 ? "No age statement" : `${age} years`}
+          {age === 0 ? "No age statement" : `${String(age)} years`}
         </Badge>
 
         <Rating

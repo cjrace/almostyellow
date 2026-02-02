@@ -117,7 +117,12 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
           >
             Cancel deletion
           </Button>
-          <Button color="red" onClick={handleDelete}>
+          <Button
+            color="red"
+            onClick={() => {
+              void handleDelete();
+            }}
+          >
             Confirm deletion
           </Button>
         </Group>

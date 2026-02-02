@@ -136,8 +136,8 @@ const BoomBoomPirate = () => {
                   disabled={loadingRope !== null}
                 >
                   {loadingRope === index
-                    ? currentIcon || "Loading..."
-                    : `Rope ${index + 1}`}
+                    ? (currentIcon ?? "Loading...")
+                    : `Rope ${(index + 1).toString()}`}
                 </Button>
               </Grid.Col>
             ))}
@@ -172,13 +172,16 @@ const BoomBoomPirate = () => {
 
           {showExplosions && (
             <>
-              {[...Array(3)].map((_, i) => {
+              {Array.from({ length: 3 }).map((_, i) => {
                 const { top, left } = generateRandomPosition();
                 return (
                   <div
                     key={i}
-                    className={`${styles.explosion} ${styles[`explosion-${i + 1}`]}`}
-                    style={{ top: `${top}%`, left: `${left}%` }}
+                    className={`${styles.explosion} ${styles[`explosion-${(i + 1).toString()}`]}`}
+                    style={{
+                      top: `${top.toString()}%`,
+                      left: `${left.toString()}%`,
+                    }}
                   ></div>
                 );
               })}

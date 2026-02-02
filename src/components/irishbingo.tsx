@@ -248,7 +248,7 @@ export default function IrishBingo() {
           mt="sm"
           id="card_count"
           ta="center"
-        >{`${drawnCards.length} / 52 cards`}</Text>
+        >{`${drawnCards.length.toString()} / 52 cards`}</Text>
         <Space h="md" />
         <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
           Draw a card

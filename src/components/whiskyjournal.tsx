@@ -58,7 +58,7 @@ export default function WhiskyJournal() {
       }
     };
 
-    fetchWhiskies();
+    void fetchWhiskies();
   }, []);
 
   const whiskyData = whiskies;
@@ -175,11 +175,11 @@ export default function WhiskyJournal() {
       `"${whisky.name}"`,
       `"${whisky.distillery}"`,
       `"${whisky.country_region}"`,
-      `"${whisky.age}"`,
+      `"${String(whisky.age)}"`,
       `"${whisky.grain}"`,
-      `"${whisky.abv}"`,
-      `"${whisky.rating}"`,
-      `"${whisky.price}"`,
+      `"${String(whisky.abv)}"`,
+      `"${String(whisky.rating)}"`,
+      `"${String(whisky.price)}"`,
       `"${whisky.notes}"`,
     ]);
 
