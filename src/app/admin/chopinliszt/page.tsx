@@ -13,7 +13,7 @@ const crumbitems = [
   { title: "Chopin Liszt", href: "" },
 ];
 
-export default async function ChopinLiszt() {
+export default function ChopinLiszt() {
   return (
     <>
       <Header crumbs={crumbitems} />

@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       "sharp",
     ],
   },
-  async headers() {
+  headers() {
     return [
       {
         source: "/(.*)",
