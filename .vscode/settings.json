@@ -2,6 +2,6 @@
   "npm.packageManager": "pnpm",
   "files.exclude": {
     "**/node_modules/**": true,
-    "**/.next/**": true
+    "**/.next/**": false
   }
 }

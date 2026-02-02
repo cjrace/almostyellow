@@ -1,5 +1,5 @@
 "use client";
 
 export default function playConfetti() {
-  window.ConfettiPage.play();
+  (window.ConfettiPage as { play: () => void }).play();
 }

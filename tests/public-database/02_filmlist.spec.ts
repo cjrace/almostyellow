@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import fs from "fs";
 
 test("Films Page Test", async ({ page }) => {
   await page.goto("/");
@@ -50,7 +51,6 @@ test("Can copy film names to clipboard", async ({ page, context }) => {
   expect(clipboardText).toContain("Seven Samurai (1954)");
 });
 
-const fs = require("fs");
 test("Download CSV and check contents", async ({ page }) => {
   await page.goto("/films");
   const [download] = await Promise.all([
@@ -58,9 +58,10 @@ test("Download CSV and check contents", async ({ page }) => {
     page.getByRole("button", { name: "Download CSV" }).click(),
   ]);
 
-  const path = await download.path();
-  const csv = fs.readFileSync(path, "utf-8");
-  const rows = csv.split("\n");
+  const path: string | null = await download.path();
+  if (!path) throw new Error("Download path not found");
+  const csv: string = fs.readFileSync(path, "utf-8");
+  const rows: string[] = csv.split("\n");
 
   expect(rows.length).toBeGreaterThan(50);
 });

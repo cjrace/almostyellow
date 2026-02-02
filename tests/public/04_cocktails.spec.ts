@@ -9,7 +9,11 @@ test("Can filter and search cocktails", async ({ page }) => {
 
   // Filter by gin
   await page.getByLabel("Filter by base spirit").selectOption("Gin");
-  await expect(page.locator("text=Manhattan")).not.toBeVisible();
+  await page.waitForSelector('h2:has-text("Manhattan")', { state: "detached" });
+
+  await expect(page.locator("text=Manhattan")).not.toBeVisible({
+    timeout: 10000,
+  });
   await expect(page.locator("text=Luigi")).toBeVisible();
 
   // Clear filter

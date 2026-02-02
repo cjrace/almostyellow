@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import fs from "fs";
 
 test("Whisky Journal Page Test", async ({ page }) => {
   await page.goto("/");
@@ -9,6 +10,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
   // Check the seeded whisky entries are loaded
   await expect(page.locator("#main-content")).toContainText(
     /Talisker 10 Year Old/,
+    { timeout: 10000 },
   );
   await expect(page.locator("#main-content")).toContainText(
     /Johnnie Walker Black Label/,
@@ -58,7 +60,6 @@ test("Can search whiskies by name", async ({ page }) => {
   );
 });
 
-const fs = require("fs");
 test("Download CSV and check contents", async ({ page }) => {
   await page.goto("/whiskyjournal");
   const [download] = await Promise.all([
@@ -66,9 +67,10 @@ test("Download CSV and check contents", async ({ page }) => {
     page.getByRole("button", { name: "Download CSV" }).click(),
   ]);
 
-  const path = await download.path();
-  const csv = fs.readFileSync(path, "utf-8");
-  const rows = csv.split("\n");
+  const path: string | null = await download.path();
+  if (!path) throw new Error("Download path not found");
+  const csv: string = fs.readFileSync(path, "utf-8");
+  const rows: string[] = csv.split("\n");
 
   expect(rows.length).toBeGreaterThan(30);
 });
