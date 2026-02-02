@@ -6,6 +6,7 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
 import nextPlugin from "@next/eslint-plugin-next";
+import promisePlugin from "eslint-plugin-promise";
 
 // Global ignores configuration
 // Must be in its own config object to act as global ignores
@@ -18,6 +19,9 @@ const ignoresConfig = defineConfig([
       "public/",
       ".vscode/",
       "next-env.d.ts",
+      "playwright-report/",
+      ".vercel/",
+      "**/pnpm-*/dist/",
     ],
   },
 ]);
@@ -96,6 +100,7 @@ const reactConfig = defineConfig([
       "react-hooks": reactHooksPlugin,
       "jsx-a11y": jsxA11yPlugin,
       "@next/next": nextPlugin,
+      promise: promisePlugin,
     },
     rules: {
       // React recommended rules
