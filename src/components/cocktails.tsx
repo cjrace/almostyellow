@@ -61,7 +61,9 @@ export default function Cocktails() {
           value={
             selectedSpirits.length === 0 ? "All spirits" : selectedSpirits[0]
           }
-          onChange={(event) => handleChange(event.target.value)}
+          onChange={(event) => {
+            handleChange(event.target.value);
+          }}
           data={uniqueSpirits}
           style={{ minWidth: 200 }}
         />
@@ -75,7 +77,9 @@ export default function Cocktails() {
           rightSection={
             searchQuery && (
               <ActionIcon
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                }}
                 variant="default"
                 aria-label="Clear search query"
               >

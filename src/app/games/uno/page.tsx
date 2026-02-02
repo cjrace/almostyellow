@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Uno",
 };
 
-export default async function UnoPage() {
+export default function UnoPage() {
   return (
     <>
       <Header noCrumbs={true} game={true} />

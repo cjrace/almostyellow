@@ -113,7 +113,9 @@ export default function IrishBingo() {
               variant="subtle"
               size="lg"
               aria-label="Open game instructions modal"
-              onClick={() => setModalInstructionsOpened(true)}
+              onClick={() => {
+                setModalInstructionsOpened(true);
+              }}
             >
               <IconInfoCircle />
             </ActionIcon>
@@ -123,7 +125,9 @@ export default function IrishBingo() {
         <Modal
           size="auto"
           opened={modalInstructionsOpened}
-          onClose={() => setModalInstructionsOpened(false)}
+          onClose={() => {
+            setModalInstructionsOpened(false);
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="ib_instructions"
@@ -200,7 +204,9 @@ export default function IrishBingo() {
               <Button
                 variant="subtle"
                 mt="md"
-                onClick={() => setModalInstructionsOpened(false)}
+                onClick={() => {
+                  setModalInstructionsOpened(false);
+                }}
               >
                 Close instructions modal
               </Button>
@@ -242,7 +248,7 @@ export default function IrishBingo() {
           mt="sm"
           id="card_count"
           ta="center"
-        >{`${drawnCards.length} / 52 cards`}</Text>
+        >{`${drawnCards.length.toString()} / 52 cards`}</Text>
         <Space h="md" />
         <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
           Draw a card
@@ -258,7 +264,9 @@ export default function IrishBingo() {
         )}
         <Button
           variant="default"
-          onClick={() => setModalCardOpened(true)}
+          onClick={() => {
+            setModalCardOpened(true);
+          }}
           fullWidth
           disabled={drawnCards.length > 1 ? false : true}
         >
@@ -267,7 +275,9 @@ export default function IrishBingo() {
 
         <Modal
           opened={modalCardOpened}
-          onClose={() => setModalCardOpened(false)}
+          onClose={() => {
+            setModalCardOpened(false);
+          }}
           size="xs"
           title="All called cards"
           transitionProps={{

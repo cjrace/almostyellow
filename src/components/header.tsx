@@ -148,11 +148,11 @@ export default function Header({
             openDelay={250}
           >
             <ActionIcon
-              onClick={() =>
+              onClick={() => {
                 setColorScheme(
                   computedColorScheme === "light" ? "dark" : "light",
-                )
-              }
+                );
+              }}
               variant="default"
               size="xl"
               aria-label="Toggle color scheme"

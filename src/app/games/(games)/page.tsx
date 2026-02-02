@@ -17,7 +17,7 @@ const crumbitems = [
   { title: "Games", href: "" },
 ];
 
-export default async function Games() {
+export default function Games() {
   return (
     <>
       <Header crumbs={crumbitems} />

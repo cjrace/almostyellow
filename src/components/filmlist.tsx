@@ -37,7 +37,7 @@ export default function FilmList() {
       }
     };
 
-    fetchFilms();
+    void fetchFilms();
   }, []);
 
   const [imdbFilter, setImdbFilter] = useState<boolean | null>(null);
@@ -116,7 +116,7 @@ export default function FilmList() {
 
   const copyToClipboard = () => {
     const filmNameList = searchedFilmData
-      .map((film) => `${film.name} (${film.release_year})`)
+      .map((film) => `${film.name} (${film.release_year.toString()})`)
       .join("\n");
     clipboard.copy(filmNameList);
   };
@@ -158,33 +158,33 @@ export default function FilmList() {
                 label="IMDB top 30"
                 data={imdbOptions}
                 value={imdbFilter !== null ? imdbFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setImdbFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
               <Select
                 label="Watched"
                 data={watchedOptions}
                 value={watchedFilter !== null ? watchedFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setWatchedFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
               <Select
                 label="In jar"
                 data={jarOptions}
                 value={jarFilter !== null ? jarFilter.toString() : null}
-                onChange={(value) =>
+                onChange={(value) => {
                   setJarFilter(
                     value === "true" ? true : value === "false" ? false : null,
-                  )
-                }
+                  );
+                }}
                 clearable
               />
 
@@ -192,7 +192,7 @@ export default function FilmList() {
                 label="Sort by"
                 placeholder="Select sorting option"
                 data={sortOptions}
-                value={sortOption !== null ? sortOption : "alphabetical"} // Default value set to "alphabetical"
+                value={sortOption ?? "alphabetical"} // Default value set to "alphabetical"
                 onChange={setSortOption}
                 clearable
               />
@@ -233,7 +233,9 @@ export default function FilmList() {
           rightSection={
             searchQuery && (
               <ActionIcon
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                }}
                 variant="default"
                 aria-label="Clear search query"
               >
@@ -247,7 +249,9 @@ export default function FilmList() {
           <Button
             onClick={() => {
               copyToClipboard();
-              setTimeout(() => clipboard.reset(), 500);
+              setTimeout(() => {
+                clipboard.reset();
+              }, 500);
             }}
             variant="default"
             leftSection={<IconCopy />}

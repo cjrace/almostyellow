@@ -21,12 +21,12 @@ export async function createFilm(film: Film): Promise<void> {
 
 export async function readFilmList(): Promise<Film[]> {
   try {
-    const data = await sql`
-                SELECT id, name, release_year, top_30, watched, not_in_jar
-                FROM film_list;
-            `;
+    const data = await sql<Film>`
+      SELECT id, name, release_year, top_30, watched, not_in_jar
+      FROM film_list;
+    `;
 
-    const films = data.rows.map((film) => ({
+    const films: Film[] = data.rows.map((film) => ({
       id: film.id,
       name: film.name,
       release_year: film.release_year,
@@ -44,11 +44,11 @@ export async function readFilmList(): Promise<Film[]> {
 
 export async function readFilm(film_id: string): Promise<Film[]> {
   try {
-    const data = await sql`
-                SELECT id, name, release_year, top_30, watched, not_in_jar
-                FROM film_list
-                WHERE id = ${film_id};
-            `;
+    const data = await sql<Film>`
+      SELECT id, name, release_year, top_30, watched, not_in_jar
+      FROM film_list
+      WHERE id = ${film_id};
+    `;
 
     if (data.rows.length > 1) {
       throw new Error("More than one film found with the given name.");
@@ -58,7 +58,7 @@ export async function readFilm(film_id: string): Promise<Film[]> {
       throw new Error("No film found with the given name.");
     }
 
-    const film = {
+    const film: Film = {
       id: data.rows[0].id,
       name: data.rows[0].name,
       release_year: data.rows[0].release_year,

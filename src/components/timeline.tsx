@@ -1,6 +1,6 @@
 "use client"; // TODO: Not sure this should be needed.
 
-import { Title, Text, Timeline, List, Grid, Container } from "@mantine/core";
+import { Title, Text, Timeline, List } from "@mantine/core";
 import {
   IconSun,
   IconShip,

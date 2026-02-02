@@ -36,7 +36,7 @@ const BoomBoomPirate = () => {
     generateRandomRope(totalRopes),
   );
   const [loadingRope, setLoadingRope] = useState<number | null>(null);
-  const [ropeStates, setRopeStates] = useState<{ [key: number]: string }>({});
+  const [ropeStates, setRopeStates] = useState<Record<number, string>>({});
   const [isExplosion, setIsExplosion] = useState(false);
   const [currentIcon, setCurrentIcon] = useState<JSX.Element | null>(null);
   const [showExplosions, setShowExplosions] = useState(false);
@@ -129,13 +129,15 @@ const BoomBoomPirate = () => {
                 <Button
                   variant="outline"
                   fullWidth
-                  onClick={() => handleRopePull(index)}
+                  onClick={() => {
+                    handleRopePull(index);
+                  }}
                   color={ropeStates[index] || "blue"}
                   disabled={loadingRope !== null}
                 >
                   {loadingRope === index
-                    ? currentIcon || "Loading..."
-                    : `Rope ${index + 1}`}
+                    ? (currentIcon ?? "Loading...")
+                    : `Rope ${(index + 1).toString()}`}
                 </Button>
               </Grid.Col>
             ))}
@@ -170,13 +172,16 @@ const BoomBoomPirate = () => {
 
           {showExplosions && (
             <>
-              {[...Array(3)].map((_, i) => {
+              {Array.from({ length: 3 }).map((_, i) => {
                 const { top, left } = generateRandomPosition();
                 return (
                   <div
                     key={i}
-                    className={`${styles.explosion} ${styles[`explosion-${i + 1}`]}`}
-                    style={{ top: `${top}%`, left: `${left}%` }}
+                    className={`${styles.explosion} ${styles[`explosion-${(i + 1).toString()}`]}`}
+                    style={{
+                      top: `${top.toString()}%`,
+                      left: `${left.toString()}%`,
+                    }}
                   ></div>
                 );
               })}
