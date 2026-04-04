@@ -175,15 +175,13 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
 const SnakesAndLadders = () => {
   const [playerPositions, setPlayerPositions] = useState<number[]>([]);
   const [players, setPlayers] = useState<{ name: string; icon: string }[]>([]);
-  const [currentPlayer, setCurrentPlayer] = useState<number>(0);
+  const [currentPlayer, setCurrentPlayer] = useState(0);
   const [diceResult, setDiceResult] = useState<number | null>(null);
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
   const [winner, setWinner] = useState<number | null>(null);
   const [specialMove, setSpecialMove] = useState<number | null>(null);
-  const [numPlayers, setNumPlayers] = useState<number>(2);
-  const [specialSpaces, setSpecialSpaces] = useState<Map<number, number>>(
-    new Map(),
-  );
+  const [numPlayers, setNumPlayers] = useState(2);
+  const [specialSpaces, setSpecialSpaces] = useState(new Map<number, number>());
   const [isRolling, setIsRolling] = useState(false);
   const [showDiceResult, setShowDiceResult] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);

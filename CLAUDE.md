@@ -10,10 +10,10 @@ pnpm build         # Lint + production build
 pnpm test          # Format + lint + build + Playwright E2E tests (full CI suite)
 ```
 
-Playwright tests require a running server (`next start` or existing dev server). To run a single test file:
+Playwright tests run against the production build via `next start`. **Always run `pnpm build` before running tests**, otherwise Playwright will use a stale build and tests may fail against outdated code. To run a single test file:
 
 ```bash
-npx playwright test tests/public/00_initial_load.spec.ts
+pnpm build && npx playwright test tests/public/00_initial_load.spec.ts
 ```
 
 Husky pre-commit hooks run Prettier automatically on staged files.
