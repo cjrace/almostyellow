@@ -11,44 +11,67 @@ const CowRace = () => {
   const [raceDuration, setRaceDuration] = useState(3); // 1=Short, 3=Medium, 5=Long
   const [raceStarted, setRaceStarted] = useState(false);
   const [cowPositions, setCowPositions] = useState<number[]>([]);
-  const [winners, setWinners] = useState<number[]>([]);
+  const [finishedOrder, setFinishedOrder] = useState<number[]>([]);
+  const finishedOrderRef = useRef<number[]>([]);
+  const cowPositionsRef = useRef<number[]>([]);
   const raceTrackRef = useRef<HTMLDivElement | null>(null);
-  const raceIntervalRef = useRef<NodeJS.Timeout | null>(null); // Use useRef instead of state
+  const raceIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const startRace = () => {
-    setCowPositions(Array(numCows).fill(0));
-    setWinners([]);
+    const initial = Array(numCows).fill(0) as number[];
+    cowPositionsRef.current = initial;
+    setCowPositions(initial);
+    setFinishedOrder([]);
+    finishedOrderRef.current = [];
     setRaceStarted(true);
   };
 
   useEffect(() => {
     if (raceStarted && raceTrackRef.current) {
-      const raceTrackRect = raceTrackRef.current.getBoundingClientRect();
-      const finishLine = raceTrackRect.width * 0.95; // 95% of track width
-
-      let winnerDetected = false;
+      const finishLine =
+        raceTrackRef.current.getBoundingClientRect().width * 0.95;
 
       const intervalId = setInterval(() => {
-        setCowPositions((prevPositions) => {
-          const newPositions = prevPositions.map(
-            (pos) => pos + Math.random() * (21 / raceDuration),
-          ); // Adjust cow speed
+        // Compute new positions — read from ref to avoid stale closures
+        const prev = cowPositionsRef.current;
+        const next = prev.map((pos, index) => {
+          if (finishedOrderRef.current.includes(index)) return finishLine;
+          return pos + Math.random() * (21 / raceDuration);
+        });
 
-          const finishedCows = newPositions
-            .map((pos, index) => ({ pos, index }))
-            .filter(({ pos }) => pos >= finishLine);
+        // Detect cows that just crossed the line this tick
+        const newlyFinished = next
+          .map((pos, index) => ({ pos, index }))
+          .filter(
+            ({ pos, index }) =>
+              pos >= finishLine && !finishedOrderRef.current.includes(index),
+          )
+          .sort((a, b) => b.pos - a.pos);
 
-          if (!winnerDetected && finishedCows.length > 0) {
-            winnerDetected = true;
-            const sortedWinners = finishedCows.sort((a, b) => b.pos - a.pos);
-            setWinners(sortedWinners.map(({ index }) => index));
-            playConfetti();
+        // Clamp positions to the finish line and push to state for rendering
+        const clamped = next.map((pos) => Math.min(pos, finishLine));
+        cowPositionsRef.current = clamped;
+        setCowPositions(clamped);
+
+        // Handle newly finished cows (side effects outside any setState updater)
+        if (newlyFinished.length > 0) {
+          const updatedOrder = [
+            ...finishedOrderRef.current,
+            ...newlyFinished.map(({ index }) => index),
+          ];
+          finishedOrderRef.current = updatedOrder;
+          setFinishedOrder([...updatedOrder]);
+
+          if (updatedOrder.length === numCows) {
             clearInterval(intervalId);
             raceIntervalRef.current = null;
+            try {
+              playConfetti();
+            } catch {
+              // External confetti script may not be loaded (e.g. in tests)
+            }
           }
-
-          return newPositions.map((pos) => Math.min(pos, finishLine));
-        });
+        }
       }, 100);
 
       raceIntervalRef.current = intervalId;
@@ -61,10 +84,14 @@ const CowRace = () => {
   const resetRace = () => {
     setRaceStarted(false);
     setCowPositions([]);
-    setWinners([]);
+    setFinishedOrder([]);
+    finishedOrderRef.current = [];
+    cowPositionsRef.current = [];
     if (raceIntervalRef.current) clearInterval(raceIntervalRef.current);
     raceIntervalRef.current = null;
   };
+
+  const raceComplete = finishedOrder.length === numCows;
 
   const cowImageUrl = "/images/cow.svg";
 
@@ -210,11 +237,11 @@ const CowRace = () => {
               size="lg"
               style={{ width: "80%", maxWidth: "300px" }}
             >
-              {winners.length === 0 ? "Cancel Race" : "Start new race"}
+              {raceComplete ? "Start new race" : "Cancel Race"}
             </Button>
           </Group>
 
-          {winners.length > 0 && (
+          {raceComplete && (
             <div
               style={{
                 marginTop: "2rem",
@@ -230,32 +257,29 @@ const CowRace = () => {
               }}
             >
               <Text size="lg" fw={600} mb="1rem">
-                Results:
+                Final Leaderboard:
               </Text>
-              <Stack>
-                {winners.slice(0, 3).map((winnerIndex, rank) => {
-                  let placeText = "";
-                  let trophyColor = "";
-                  switch (rank) {
-                    case 0:
-                      placeText = "1st Place: ";
-                      trophyColor = "#FFD700"; // Gold
-                      break;
-                    case 1:
-                      placeText = "2nd Place: ";
-                      trophyColor = "#C0C0C0"; // Silver
-                      break;
-                    case 2:
-                      placeText = "3rd Place: ";
-                      trophyColor = "#CD7F32"; // Bronze
-                      break;
-                    default:
-                      placeText = `${String(rank + 1)}th Place: `;
-                      trophyColor = "#808080";
-                  }
+              <Stack gap="xs">
+                {finishedOrder.map((cowIndex, rank) => {
+                  const placeText =
+                    rank === 0
+                      ? "1st"
+                      : rank === 1
+                        ? "2nd"
+                        : rank === 2
+                          ? "3rd"
+                          : `${String(rank + 1)}th`;
+                  const trophyColor =
+                    rank === 0
+                      ? "#FFD700"
+                      : rank === 1
+                        ? "#C0C0C0"
+                        : rank === 2
+                          ? "#CD7F32"
+                          : "#808080";
                   return (
                     <div
-                      key={winnerIndex}
+                      key={cowIndex}
                       style={{ display: "flex", alignItems: "center" }}
                     >
                       <IconTrophy
@@ -263,21 +287,12 @@ const CowRace = () => {
                         color={trophyColor}
                         style={{ marginRight: "0.5rem" }}
                       />
-                      <Text fw={500}>
-                        {placeText} Cow {winnerIndex + 1}
+                      <Text fw={rank < 3 ? 600 : 400}>
+                        {placeText}: Cow {cowIndex + 1}
                       </Text>
                     </div>
                   );
                 })}
-                {winners.length > 3 && (
-                  <Text size="sm">
-                    Other finishers:{" "}
-                    {winners
-                      .slice(3)
-                      .map((w) => `Cow ${String(w + 1)}`)
-                      .join(", ")}
-                  </Text>
-                )}
               </Stack>
             </div>
           )}
