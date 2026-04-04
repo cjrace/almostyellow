@@ -178,7 +178,7 @@ const CowRace = () => {
               size="lg"
               style={{ width: "80%", maxWidth: "300px" }}
             >
-              {winners.length == 0 ? "Cancel Race" : "Start new race"}
+              {winners.length === 0 ? "Cancel Race" : "Start new race"}
             </Button>
           </Group>
 
