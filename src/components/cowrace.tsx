@@ -40,7 +40,7 @@ const CowRace = () => {
 
           if (!winnerDetected && finishedCows.length > 0) {
             winnerDetected = true;
-            const sortedWinners = finishedCows.sort((a, b) => a.pos - b.pos);
+            const sortedWinners = finishedCows.sort((a, b) => b.pos - a.pos);
             setWinners(sortedWinners.map(({ index }) => index));
             playConfetti();
             clearInterval(intervalId);
