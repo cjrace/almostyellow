@@ -21,7 +21,7 @@ const CowRace = () => {
   useEffect(() => {
     if (raceStarted && raceTrackRef.current) {
       const raceTrackRect = raceTrackRef.current.getBoundingClientRect();
-      const finishLine = raceTrackRect.right / 2.38; // Adjust finish line position
+      const finishLine = raceTrackRect.width * 0.95 - 60; // 95% of track width minus cow image width
 
       setCowPositions(Array(numCows).fill(0));
       setWinners([]);
