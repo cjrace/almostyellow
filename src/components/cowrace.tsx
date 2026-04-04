@@ -8,6 +8,7 @@ import playConfetti from "@/components/playconfetti";
 
 const CowRace = () => {
   const [numCows, setNumCows] = useState(4); // Start with 4 cows
+  const [raceDuration, setRaceDuration] = useState(3); // 1=Short, 3=Medium, 5=Long
   const [raceStarted, setRaceStarted] = useState(false);
   const [cowPositions, setCowPositions] = useState<number[]>([]);
   const [winners, setWinners] = useState<number[]>([]);
@@ -23,14 +24,14 @@ const CowRace = () => {
   useEffect(() => {
     if (raceStarted && raceTrackRef.current) {
       const raceTrackRect = raceTrackRef.current.getBoundingClientRect();
-      const finishLine = raceTrackRect.width * 0.95 - 60; // 95% of track width minus cow image width
+      const finishLine = raceTrackRect.width * 0.95; // 95% of track width
 
       let winnerDetected = false;
 
       const intervalId = setInterval(() => {
         setCowPositions((prevPositions) => {
           const newPositions = prevPositions.map(
-            (pos) => pos + Math.random() * 7,
+            (pos) => pos + Math.random() * (21 / raceDuration),
           ); // Adjust cow speed
 
           const finishedCows = newPositions
@@ -55,7 +56,7 @@ const CowRace = () => {
       if (raceIntervalRef.current) clearInterval(raceIntervalRef.current);
       raceIntervalRef.current = null;
     }
-  }, [raceStarted, numCows]);
+  }, [raceStarted, numCows, raceDuration]);
 
   const resetRace = () => {
     setRaceStarted(false);
@@ -89,6 +90,43 @@ const CowRace = () => {
             step={1}
             style={{ width: "80%", maxWidth: "400px" }}
             label={(value) => `${String(value)} Cows`}
+            thumbLabel="Number of cows"
+          />
+          <Text
+            size="lg"
+            fw={500}
+            style={{ marginTop: "1.5rem", marginBottom: "1rem" }}
+          >
+            Race duration:{" "}
+            {raceDuration === 1
+              ? "Short"
+              : raceDuration === 2
+                ? "Short-Medium"
+                : raceDuration === 3
+                  ? "Medium"
+                  : raceDuration === 4
+                    ? "Medium-Long"
+                    : "Long"}
+          </Text>
+          <Slider
+            value={raceDuration}
+            onChange={setRaceDuration}
+            min={1}
+            max={5}
+            step={1}
+            style={{ width: "80%", maxWidth: "400px" }}
+            thumbLabel="Race duration"
+            label={(value) =>
+              value === 1
+                ? "Short"
+                : value === 2
+                  ? "Short-Medium"
+                  : value === 3
+                    ? "Medium"
+                    : value === 4
+                      ? "Medium-Long"
+                      : "Long"
+            }
           />
           <Button
             onClick={startRace}
