@@ -11,7 +11,6 @@ const CowRace = () => {
   const [raceStarted, setRaceStarted] = useState(false);
   const [cowPositions, setCowPositions] = useState<number[]>([]);
   const [winners, setWinners] = useState<number[]>([]);
-  const cowRefs = useRef<(HTMLImageElement | null)[]>([]);
   const raceTrackRef = useRef<HTMLDivElement | null>(null);
   const raceIntervalRef = useRef<NodeJS.Timeout | null>(null); // Use useRef instead of state
 
@@ -26,7 +25,6 @@ const CowRace = () => {
 
       setCowPositions(Array(numCows).fill(0));
       setWinners([]);
-      cowRefs.current = Array(numCows).fill(null);
 
       let winnerDetected = false;
 
@@ -136,9 +134,6 @@ const CowRace = () => {
                   left: `${cowPositions[index] || 0}px`,
                   transition: "left 0.1s ease",
                   zIndex: numCows - index,
-                }}
-                ref={(el: HTMLImageElement | null) => {
-                  cowRefs.current[index] = el;
                 }}
                 animate={{
                   x: cowPositions[index] || 0,
