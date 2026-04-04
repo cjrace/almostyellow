@@ -131,13 +131,13 @@ const CowRace = () => {
                 style={{
                   position: "absolute",
                   top: `${index * (400 / numCows) + 20}px`, // Spread cows out
-                  left: `${cowPositions[index] || 0}px`,
-                  transition: "left 0.1s ease",
+                  left: 0,
                   zIndex: numCows - index,
                 }}
                 animate={{
                   x: cowPositions[index] || 0,
                 }}
+                transition={{ duration: 0.1, ease: "linear" }}
               />
             ))}
             <div
