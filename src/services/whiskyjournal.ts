@@ -27,12 +27,12 @@ export async function createWhisky(whisky: Whisky): Promise<void> {
 // Read all whiskies
 export async function readWhiskyJournal(): Promise<Whisky[]> {
   try {
-    const data = await sql`
-                SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
-                FROM whisky_journal;
-            `;
+    const data = await sql<Whisky>`
+      SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
+      FROM whisky_journal;
+    `;
 
-    const whiskies = data.rows.map((whisky) => ({
+    const whiskies: Whisky[] = data.rows.map((whisky) => ({
       last_edited: whisky.last_edited,
       whisky_id: whisky.whisky_id,
       name: whisky.name,
@@ -56,11 +56,11 @@ export async function readWhiskyJournal(): Promise<Whisky[]> {
 // Read single whisky by id
 export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
   try {
-    const data = await sql`
-                SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
-                FROM whisky_journal
-                WHERE whisky_id = ${whisky_id};
-            `;
+    const data = await sql<Whisky>`
+      SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
+      FROM whisky_journal
+      WHERE whisky_id = ${whisky_id};
+    `;
 
     if (data.rows.length > 1) {
       throw new Error("More than one whisky found with the given ID.");
@@ -70,7 +70,7 @@ export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
       throw new Error("No whisky found with the given ID.");
     }
 
-    const whisky = {
+    const whisky: Whisky = {
       last_edited: data.rows[0].last_edited,
       whisky_id: data.rows[0].whisky_id,
       name: data.rows[0].name,

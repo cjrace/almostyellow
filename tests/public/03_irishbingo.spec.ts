@@ -33,7 +33,7 @@ test("Gameplay works", async ({ page }) => {
     drawnCards.push(drawnCard);
 
     await expect(page.locator("#card_count")).toContainText(
-      `${buttonpress_reindexed} / 52 cards`,
+      `${String(buttonpress_reindexed)} / 52 cards`,
     );
   }
 

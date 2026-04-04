@@ -11,11 +11,11 @@ export async function authenticate(
     await signIn("credentials", formData);
   } catch (error) {
     if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return "Invalid credentials.";
-        default:
-          return "Something went wrong.";
+      const authError = error as AuthError & { code?: string };
+      if (authError.code == "credentials") {
+        return "Invalid credentials.";
+      } else {
+        return "An unknown error occurred.";
       }
     }
     throw error;

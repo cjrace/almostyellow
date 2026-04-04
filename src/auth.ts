@@ -5,12 +5,12 @@ import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
 
-export type User = {
+export interface User {
   id: string;
   name: string;
   email: string;
   password: string;
-};
+}
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
@@ -28,7 +28,7 @@ export const { auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({ email: z.email(), password: z.string().min(6) })
           .safeParse(credentials);
 
         if (parsedCredentials.success) {

@@ -53,9 +53,9 @@ export default function LoginForm() {
             label="Email"
             placeholder="e.g. simply@thebest.co.uk"
             value={form.values.email}
-            onChange={(event) =>
-              form.setFieldValue("email", event.currentTarget.value)
-            }
+            onChange={(event) => {
+              form.setFieldValue("email", event.currentTarget.value);
+            }}
             error={form.errors.email && "Invalid email"}
             radius="md"
           />
@@ -64,9 +64,9 @@ export default function LoginForm() {
             label="Password"
             placeholder="Enter password"
             value={form.values.password}
-            onChange={(event) =>
-              form.setFieldValue("password", event.currentTarget.value)
-            }
+            onChange={(event) => {
+              form.setFieldValue("password", event.currentTarget.value);
+            }}
             radius="md"
           />
           <Button type="submit" fullWidth mt="lg">

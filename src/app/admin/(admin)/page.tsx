@@ -1,7 +1,7 @@
 import { Button, Title, Group, Space } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { signOut } from "@/auth";
+import { SignOutButton } from "@/components/SignOutButton";
 import {
   IconShoppingCart,
   IconBeach,
@@ -72,16 +72,7 @@ export default function Admin() {
 
         <Space h="lg" />
 
-        <Group justify="center">
-          <Button
-            onClick={async () => {
-              "use server";
-              await signOut();
-            }}
-          >
-            Sign out
-          </Button>
-        </Group>
+        <SignOutButton />
       </main>
     </>
   );

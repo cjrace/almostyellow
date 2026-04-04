@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Add film",
 };
 
-export default async function AddFilm() {
+export default function AddFilm() {
   return (
     <>
       <Header noCrumbs={true} filmList={true} />

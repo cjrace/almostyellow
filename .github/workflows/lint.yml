@@ -1,4 +1,6 @@
 name: Linting
+permissions:
+  contents: read
 on:
   push:
     branches: [main]
@@ -9,8 +11,8 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v5
       - name: Install dependencies
         run: pnpm install
       - name: Check code styling

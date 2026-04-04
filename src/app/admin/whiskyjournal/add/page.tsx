@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Add Whisky",
 };
 
-export default async function AddWhisky() {
+export default function AddWhisky() {
   return (
     <>
       <Header noCrumbs={true} whiskyJournal={true} />

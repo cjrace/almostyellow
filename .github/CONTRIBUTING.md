@@ -17,17 +17,14 @@ Before you start contributing to the code, please take a moment to review the fo
 ## How to Contribute
 
 1. **Create a branch**
-
    - Create a new branch based off the latest version of the `main` branch
 
 2. **Make changes**
-
    - Make your desired changes (bug fixes, new features, documentation updates, etc.)
    - Write clear commit messages that describe your changes
    - Keep scripts short and break out separate components where possible
 
 3. **Test your changes**
-
    - Ensure that your changes work as expected in your local environment using `npm run dev`
    - Make sure the changes build and run tests using `npm run test`
    - Resolve any errors that you find and repeat until tests and linting all pass

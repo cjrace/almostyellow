@@ -13,9 +13,9 @@ import { useForm, Form } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
 import playConfetti from "@/components/playconfetti";
 
-type DecisionOptions = {
+interface DecisionOptions {
   options: string;
-};
+}
 
 export default function DecisionMaker() {
   const [chosenOption, setChosenItem] = useState<string | null>(null);

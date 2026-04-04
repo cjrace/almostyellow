@@ -1,8 +1,7 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { Container, Title, Group, Button } from "@mantine/core";
+import { Container } from "@mantine/core";
 import WhiskyJournal from "@/components/whiskyjournal";
-import { IconPlus } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
   title: "Whisky Journal",

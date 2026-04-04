@@ -30,14 +30,6 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
     not_in_jar: boolean;
   }
 
-  interface FilmFormValidation {
-    name: (value: string) => string | null;
-    release_year: (value: string) => string | null;
-    watched: (value: boolean) => string | null;
-    imdb_top30: (value: boolean) => string | null;
-    not_in_jar: (value: boolean) => string | null;
-  }
-
   const form = useForm<FilmFormValues>({
     initialValues: {
       name: filmData.name,
@@ -93,24 +85,42 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
     <Container size="md" my={40}>
       <Group justify="space-between">
         <Title>Edit Film</Title>
-        <Button color="red" onClick={() => setModalOpened(true)} size="md">
+        <Button
+          color="red"
+          onClick={() => {
+            setModalOpened(true);
+          }}
+          size="md"
+        >
           Delete Film
         </Button>
       </Group>
 
       <Modal
         opened={modalOpened}
-        onClose={() => setModalOpened(false)}
+        onClose={() => {
+          setModalOpened(false);
+        }}
         title="Confirm Deletion"
       >
         <Text>ID: {filmData.id}</Text>
         <Text>Name: {filmData.name}</Text>
         <Text>Are you sure you want to delete this Film?</Text>
         <Group mt="md">
-          <Button variant="default" onClick={() => setModalOpened(false)}>
+          <Button
+            variant="default"
+            onClick={() => {
+              setModalOpened(false);
+            }}
+          >
             Cancel deletion
           </Button>
-          <Button color="red" onClick={handleDelete}>
+          <Button
+            color="red"
+            onClick={() => {
+              void handleDelete();
+            }}
+          >
             Confirm deletion
           </Button>
         </Group>

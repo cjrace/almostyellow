@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Text, Image, Button, Center, Stack } from "@mantine/core";
+import { Card, Text, Image, Button, Center } from "@mantine/core";
 
 interface GamesCardProps {
   imagePath: string;
