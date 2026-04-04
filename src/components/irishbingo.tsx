@@ -68,7 +68,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
 
 export default function IrishBingo() {
   // Initialize state for the decks
-  const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
+  const [mainDeck, setMainDeck] = useState(createCardDeck());
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
   const progressColor = drawnCards.length > 35 ? "red" : "";

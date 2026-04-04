@@ -15,6 +15,8 @@ const CowRace = () => {
   const raceIntervalRef = useRef<NodeJS.Timeout | null>(null); // Use useRef instead of state
 
   const startRace = () => {
+    setCowPositions(Array(numCows).fill(0));
+    setWinners([]);
     setRaceStarted(true);
   };
 
@@ -22,9 +24,6 @@ const CowRace = () => {
     if (raceStarted && raceTrackRef.current) {
       const raceTrackRect = raceTrackRef.current.getBoundingClientRect();
       const finishLine = raceTrackRect.width * 0.95 - 60; // 95% of track width minus cow image width
-
-      setCowPositions(Array(numCows).fill(0));
-      setWinners([]);
 
       let winnerDetected = false;
 
@@ -89,7 +88,7 @@ const CowRace = () => {
             max={10}
             step={1}
             style={{ width: "80%", maxWidth: "400px" }}
-            label={(value) => `${value} Cows`}
+            label={(value) => `${String(value)} Cows`}
           />
           <Button
             onClick={startRace}
@@ -125,12 +124,12 @@ const CowRace = () => {
               <motion.img
                 key={index}
                 src={cowImageUrl}
-                alt={`Cow ${index + 1}`}
+                alt={`Cow ${String(index + 1)}`}
                 width={60}
                 height={60}
                 style={{
                   position: "absolute",
-                  top: `${index * (400 / numCows) + 20}px`, // Spread cows out
+                  top: `${String(index * (400 / numCows) + 20)}px`, // Spread cows out
                   left: 0,
                   zIndex: numCows - index,
                 }}
@@ -213,7 +212,7 @@ const CowRace = () => {
                       trophyColor = "#CD7F32"; // Bronze
                       break;
                     default:
-                      placeText = `${rank + 1}th Place: `;
+                      placeText = `${String(rank + 1)}th Place: `;
                       trophyColor = "#808080";
                   }
                   return (
@@ -237,7 +236,7 @@ const CowRace = () => {
                     Other finishers:{" "}
                     {winners
                       .slice(3)
-                      .map((w) => `Cow ${w + 1}`)
+                      .map((w) => `Cow ${String(w + 1)}`)
                       .join(", ")}
                   </Text>
                 )}
