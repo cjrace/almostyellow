@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv"; /* https://github.com/motdotla/dotenv */
 import path from "path";
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(__dirname, ".env"), quiet: true });
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -19,6 +19,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
+  /* Give Firefox extra slack on assertions; default 5s races with App Router renders. */
+  expect: {
+    timeout: 10_000,
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
