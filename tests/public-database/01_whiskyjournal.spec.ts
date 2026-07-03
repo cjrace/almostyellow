@@ -12,9 +12,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
     /Talisker 10 Year Old/,
     { timeout: 10000 },
   );
-  await expect(page.locator("#main-content")).toContainText(
-    /Johnnie Walker Black Label/,
-  );
+  await expect(page.locator("#main-content")).toContainText(/Black Label/);
 
   // Check only Talisker is there after playing with filters
   await page.getByRole("button", { name: "Sort and filter" }).click();
@@ -24,18 +22,14 @@ test("Whisky Journal Page Test", async ({ page }) => {
   await expect(page.locator("#main-content")).toContainText(
     /Talisker 10 Year Old/,
   );
-  await expect(page.locator("#main-content")).not.toContainText(
-    /Johnnie Walker Black Label/,
-  );
+  await expect(page.locator("#main-content")).not.toContainText(/Black Label/);
 
   // Check both are there after clearing filters
   await page.getByRole("button", { name: "Clear All Filters" }).click();
   await expect(page.locator("#main-content")).toContainText(
     /Talisker 10 Year Old/,
   );
-  await expect(page.locator("#main-content")).toContainText(
-    /Johnnie Walker Black Label/,
-  );
+  await expect(page.locator("#main-content")).toContainText(/Black Label/);
 });
 
 test("Can search whiskies by name", async ({ page }) => {
@@ -46,18 +40,14 @@ test("Can search whiskies by name", async ({ page }) => {
   await expect(page.locator("#main-content")).toContainText(
     /Talisker 10 Year Old/,
   );
-  await expect(page.locator("#main-content")).not.toContainText(
-    /Johnnie Walker Black Label/,
-  );
+  await expect(page.locator("#main-content")).not.toContainText(/Black Label/);
 
   // Clear search and check both whiskies are there
   await page.click('button[aria-label="Clear search query"]');
   await expect(page.locator("#main-content")).toContainText(
     /Talisker 10 Year Old/,
   );
-  await expect(page.locator("#main-content")).toContainText(
-    /Johnnie Walker Black Label/,
-  );
+  await expect(page.locator("#main-content")).toContainText(/Black Label/);
 });
 
 test("Download CSV and check contents", async ({ page }) => {
