@@ -7,6 +7,7 @@ import {
   IconBeach,
   IconGlass,
   IconMovie,
+  IconCheese,
 } from "@tabler/icons-react";
 
 export const metadata: Metadata = {
@@ -67,6 +68,16 @@ export default function Admin() {
             href="/admin/film/add"
           >
             Add new film
+          </Button>
+
+          <Button
+            leftSection={<IconCheese />}
+            variant="default"
+            component="a"
+            size="xl"
+            href="/admin/recipes/add"
+          >
+            Add new recipe
           </Button>
         </Group>
 

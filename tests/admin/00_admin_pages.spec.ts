@@ -129,4 +129,22 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   await expect(page.locator("h1")).toContainText(
     "Want to access the good stuff?",
   );
+
+  // Recipes
+  await page.goto("/admin/recipes/add");
+  await page.waitForURL(
+    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Frecipes%2Fadd",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
+  await page.goto("/admin/recipes/33675c13-6835-4cc8-b7de-2823b37ae78a/edit/");
+  await page.waitForURL(
+    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Frecipes%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit",
+  );
+  await expect(page).toHaveTitle("Login | Almost Yellow");
+  await expect(page.locator("h1")).toContainText(
+    "Want to access the good stuff?",
+  );
 });

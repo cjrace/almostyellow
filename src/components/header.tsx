@@ -17,6 +17,7 @@ import {
   IconGlass,
   IconMovie,
   IconHome,
+  IconCheese,
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
@@ -32,6 +33,7 @@ interface HeaderProps {
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
   filmList?: boolean; // Back button for our film list pages
+  recipeList?: boolean; // Back button for our recipes pages
   homeOnly?: boolean; // Just show the home button
 }
 
@@ -41,10 +43,11 @@ export default function Header({
   game = false,
   whiskyJournal = false,
   filmList = false,
+  recipeList = false,
   homeOnly = false,
 }: HeaderProps) {
   const mainJustify =
-    noCrumbs && !game && !whiskyJournal && !filmList && !homeOnly
+    noCrumbs && !game && !whiskyJournal && !filmList && !recipeList && !homeOnly
       ? "flex-end"
       : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
@@ -127,6 +130,22 @@ export default function Header({
             >
               <IconChevronLeft />
               <IconMovie />
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {recipeList && (
+          <Tooltip label="Back to our recipes" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component="a"
+              href="/recipes"
+              size="xl"
+              aria-label="Back to our recipes"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconCheese />
             </ActionIcon>
           </Tooltip>
         )}
