@@ -65,7 +65,7 @@ export default function Admin() {
             variant="default"
             component="a"
             size="xl"
-            href="/admin/film/add"
+            href="/admin/films/add"
           >
             Add new film
           </Button>
