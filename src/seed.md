@@ -292,3 +292,110 @@ async function seedFilmList() {
     return insertedItems;
   }
 ```
+
+## Recipes
+
+Types and example seed data. `ingredients` and `instructions` are stored as Postgres `TEXT[]` columns - one entry per line, same style as the cocktails list.
+
+```
+export type Recipe = {
+  recipe_id: string;
+  name: string;
+  photo_url: string;
+  ingredients: string[];
+  instructions: string[];
+};
+
+const recipeData: Recipe[] = [
+  {
+    recipe_id: generate_uuid(),
+    name: "Spaghetti bolognese",
+    photo_url: "/images/recipe-placeholder.svg",
+    ingredients: [
+      "500g Beef mince",
+      "1 x Onion, diced",
+      "2 x Garlic cloves, crushed",
+      "400g Tinned chopped tomatoes",
+      "2 tbsp Tomato puree",
+      "300g Spaghetti",
+    ],
+    instructions: [
+      "Fry the onion and garlic until softened",
+      "Add the mince and brown all over",
+      "Stir in the chopped tomatoes and tomato puree, simmer for 20 minutes",
+      "Cook the spaghetti according to packet instructions",
+      "Combine and serve with grated cheese",
+    ],
+  },
+  {
+    recipe_id: generate_uuid(),
+    name: "Pancakes",
+    photo_url: "/images/recipe-placeholder.svg",
+    ingredients: [
+      "200g Plain flour",
+      "2 x Eggs",
+      "300ml Milk",
+      "Pinch of salt",
+      "Butter, for frying",
+    ],
+    instructions: [
+      "Whisk the flour, eggs, milk and salt together into a smooth batter",
+      "Heat a little butter in a frying pan over medium heat",
+      "Pour in a ladle of batter and cook until bubbles form, then flip",
+      "Cook the other side until golden and serve with your favourite toppings",
+    ],
+  },
+  {
+    recipe_id: generate_uuid(),
+    name: "Classic omelette",
+    photo_url: "/images/recipe-placeholder.svg",
+    ingredients: [
+      "3 x Eggs",
+      "Splash of milk",
+      "Salt and pepper",
+      "Knob of butter",
+      "Grated cheese (optional)",
+    ],
+    instructions: [
+      "Whisk the eggs with the milk, salt and pepper",
+      "Melt the butter in a non-stick pan over medium heat",
+      "Pour in the eggs and let them set, drawing the edges into the middle",
+      "Add cheese if using, fold in half once mostly set and serve",
+    ],
+  },
+];
+```
+
+Function to seed database, this happily maps over all recipes present.
+
+```
+async function seedRecipeList() {
+  await client.sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
+  await client.sql`
+    CREATE TABLE IF NOT EXISTS recipe_list (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      photo_url VARCHAR(255) NOT NULL,
+      ingredients TEXT[] NOT NULL,
+      instructions TEXT[] NOT NULL
+    );
+  `;
+
+  // client.sql (the tagged-template helper) only types parameters as
+  // Primitive, so array columns (ingredients/instructions) need client.sql.query instead.
+  const insertedItems = await Promise.all(
+    recipeData.map((recipe) =>
+      client.sql.query(
+        `INSERT INTO recipe_list (
+          id, name, photo_url, ingredients, instructions
+        ) VALUES (
+          uuid_generate_v4(), $1, $2, $3, $4
+        ) ON CONFLICT (name) DO NOTHING;`,
+        [recipe.name, recipe.photo_url, recipe.ingredients, recipe.instructions],
+      ),
+    ),
+  );
+
+  return insertedItems;
+}
+```

@@ -11,6 +11,13 @@ upgrade-insecure-requests;
 `;
 
 const nextConfig: NextConfig = {
+  images: {
+    // Only our own static assets under public/images are ever passed to next/image,
+    // so it's safe to allow SVG here, locked down per Next.js's recommended CSP.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
   experimental: {
     optimizePackageImports: [
       "@mantine/core",
