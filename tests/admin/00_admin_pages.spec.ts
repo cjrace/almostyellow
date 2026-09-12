@@ -1,14 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { getCredentials } from "./helpers";
 
 test("Can sign in and navigate admin", async ({ page }) => {
-  const email = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASSWORD;
-
-  if (!email || !password) {
-    throw new Error(
-      "Missing environment variables: TEST_EMAIL or TEST_PASSWORD",
-    );
-  }
+  const { email, password } = getCredentials();
 
   await page.goto("/admin/login");
   const emailInput = page.getByPlaceholder("e.g. simply@thebest.co.uk");
