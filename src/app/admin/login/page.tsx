@@ -8,14 +8,18 @@ export const metadata: Metadata = {
 
 // Only send the user back to a callback URL that stays within the admin
 // area, otherwise fall back to /admin. callbackUrl is attacker-controllable
-// via the query string, so an absolute or off-admin URL must be rejected.
+// via the query string. Only the path (and query) is ever returned - the
+// host is always discarded, so this can never produce an off-origin
+// redirect even if callbackUrl points at a foreign host. We still reject
+// anything outside /admin (or the login page itself) so a stripped host
+// doesn't leak an unrelated path.
 function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   if (!callbackUrl) return undefined;
 
   try {
     const url = new URL(callbackUrl);
-    const path = `${url.pathname}${url.search}`;
     const pathname = url.pathname.replace(/\/$/, "") || "/";
+    const path = `${pathname}${url.search}`;
     const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
     const isLoginPath = pathname === "/admin/login";
 

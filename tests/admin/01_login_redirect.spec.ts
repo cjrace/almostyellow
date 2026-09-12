@@ -1,17 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-function getCredentials() {
-  const email = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASSWORD;
-
-  if (!email || !password) {
-    throw new Error(
-      "Missing environment variables: TEST_EMAIL or TEST_PASSWORD",
-    );
-  }
-
-  return { email, password };
-}
+import { getCredentials } from "./helpers";
 
 test("Redirected back to the originally requested admin page after login", async ({
   page,
@@ -80,7 +68,9 @@ test("Does not honour a callback URL outside the admin area", async ({
 }) => {
   const { email, password } = getCredentials();
 
-  await page.goto("/admin/login?callbackUrl=/some-other-page");
+  await page.goto(
+    "/admin/login?callbackUrl=http://localhost:3000/some-other-page",
+  );
 
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
