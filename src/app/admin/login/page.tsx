@@ -15,7 +15,11 @@ function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   try {
     const url = new URL(callbackUrl);
     const path = `${url.pathname}${url.search}`;
-    if (path.startsWith("/admin") && url.pathname !== "/admin/login") {
+    const pathname = url.pathname.replace(/\/$/, "") || "/";
+    const isAdminPath = pathname === "/admin" || pathname.startsWith("/admin/");
+    const isLoginPath = pathname === "/admin/login";
+
+    if (isAdminPath && !isLoginPath) {
       return path;
     }
   } catch {
