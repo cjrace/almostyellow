@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-export default function LoginForm() {
+export default function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
@@ -29,6 +29,9 @@ export default function LoginForm() {
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
+    if (callbackUrl) {
+      formData.append("redirectTo", callbackUrl);
+    }
     startTransition(() => {
       authenticate(undefined, formData)
         .then((result) => {
