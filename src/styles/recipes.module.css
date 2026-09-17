@@ -1,0 +1,74 @@
+/* Grid of recipe cards */
+.recipeList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.recipeCard {
+  display: flex;
+}
+
+/* Recipe card container */
+.recipeBox {
+  padding: 5px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: orange;
+  width: 100%;
+}
+
+/* Styles for the recipe name */
+.recipeName {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: flex-start; /* Align items to the start (left) */
+  padding: 10px;
+  font-weight: bold;
+  font-size: 16px;
+  color: black;
+}
+
+/* Recipe image */
+.recipeImageContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  background-color: #ffff65;
+}
+
+.recipeImage {
+  border-radius: 4px;
+}
+
+/* Recipe details */
+.recipeDetails {
+  display: flex; /* Flexbox layout */
+  gap: 20px; /* Spacing between columns (adjust as needed) */
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: #333;
+  background-color: white;
+  padding: 20px;
+}
+
+/* Each column (ingredients and instructions) */
+.column {
+  flex: 1; /* Distribute available space equally between columns */
+}
+
+/* Ingredients list */
+.ingredientsList {
+  list-style-type: disc;
+  padding-inline-start: 20px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+/* Instructions list */
+.instructionsList {
+  padding-inline-start: 20px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
