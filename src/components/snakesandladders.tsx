@@ -424,7 +424,7 @@ const SnakesAndLadders = () => {
           <Box>
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
-            {showDiceResult && diceResult && (
+            {showDiceResult && diceResult !== null && (
               <Text ta="left" mt="md">
                 {players[currentPlayer]?.name} moves {diceResult} places!
               </Text>

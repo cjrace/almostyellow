@@ -71,7 +71,7 @@ export async function readChopin(): Promise<Item[]> {
     return latestChopin;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the Chopin Liszt.");
+    throw new Error("Failed to fetch the Chopin Liszt.", { cause: error });
   }
 }
 

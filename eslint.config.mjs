@@ -2,9 +2,9 @@ import { defineConfig } from "eslint/config";
 import eslintPlugin from "@eslint/js";
 import tseslintPlugin from "@typescript-eslint/eslint-plugin";
 import tseslintParser from "@typescript-eslint/parser";
-import reactPlugin from "eslint-plugin-react";
+import eslintReactPlugin from "@eslint-react/eslint-plugin";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
-import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
+import jsxA11yPlugin from "eslint-plugin-jsx-a11y-x";
 import nextPlugin from "@next/eslint-plugin-next";
 import promisePlugin from "eslint-plugin-promise";
 
@@ -62,10 +62,6 @@ const typescriptConfig = defineConfig([
       // Disable rules that conflict with TypeScript's own error checking
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/triple-slash-reference": "off",
-      // disabled next rule due to bug:
-      // https://github.com/typescript-eslint/typescript-eslint/issues/11732
-      // https://github.com/eslint/eslint/issues/20272
-      "@typescript-eslint/unified-signatures": "off",
       // Allow ts-expect-error and ts-ignore with descriptions
       "@typescript-eslint/ban-ts-comment": [
         "error",
@@ -90,22 +86,36 @@ const typescriptConfig = defineConfig([
   },
 ]);
 
+// @eslint-react ports the react-hooks rules too; keep the official
+// eslint-plugin-react-hooks versions and switch off the duplicates
+const eslintReactRecommended =
+  eslintReactPlugin.configs["recommended-type-checked"];
+const eslintReactHooksDuplicates = Object.fromEntries(
+  Object.keys(
+    eslintReactPlugin.configs["disable-conflict-eslint-plugin-react-hooks"]
+      .rules,
+  )
+    .map((rule) => rule.replace("react-hooks/", "@eslint-react/"))
+    .filter((rule) => rule in eslintReactRecommended.rules)
+    .map((rule) => [rule, "off"]),
+);
+
 // React and Next.js configuration
 const reactConfig = defineConfig([
   {
     name: "project/react-next",
     files: ["**/*.{jsx,tsx}"],
     plugins: {
-      react: reactPlugin,
+      ...eslintReactRecommended.plugins,
       "react-hooks": reactHooksPlugin,
-      "jsx-a11y": jsxA11yPlugin,
+      "jsx-a11y-x": jsxA11yPlugin,
       "@next/next": nextPlugin,
       promise: promisePlugin,
     },
     rules: {
       // React recommended rules
-      ...reactPlugin.configs.recommended.rules,
-      ...reactPlugin.configs["jsx-runtime"].rules,
+      ...eslintReactRecommended.rules,
+      ...eslintReactHooksDuplicates,
       // React Hooks rules (use recommended-latest for latest features)
       ...reactHooksPlugin.configs["recommended-latest"].rules,
       // Accessibility rules (strict mode for better a11y)
@@ -115,32 +125,22 @@ const reactConfig = defineConfig([
       // Next.js Core Web Vitals rules
       ...nextPlugin.configs["core-web-vitals"].rules,
 
-      // Customizations for modern React/Next.js
-      "react/react-in-jsx-scope": "off", // Not needed in Next.js
-      "react/prop-types": "off", // Use TypeScript instead
-      "react/no-unknown-property": "off", // Conflicts with custom attributes
-      "react/jsx-no-target-blank": "off", // Next.js handles this
-
       // Fine-tuned accessibility rules
-      "jsx-a11y/alt-text": [
+      "jsx-a11y-x/alt-text": [
         "warn",
         {
           elements: ["img"],
           img: ["Image"], // Next.js Image component
         },
       ],
-      "jsx-a11y/media-has-caption": "warn",
-      "jsx-a11y/aria-props": "warn",
-      "jsx-a11y/aria-proptypes": "warn",
-      "jsx-a11y/aria-unsupported-elements": "warn",
-      "jsx-a11y/role-has-required-aria-props": "warn",
-      "jsx-a11y/role-supports-aria-props": "warn",
+      "jsx-a11y-x/media-has-caption": "warn",
+      "jsx-a11y-x/aria-props": "warn",
+      "jsx-a11y-x/aria-proptypes": "warn",
+      "jsx-a11y-x/aria-unsupported-elements": "warn",
+      "jsx-a11y-x/role-has-required-aria-props": "warn",
+      "jsx-a11y-x/role-supports-aria-props": "warn",
     },
-    settings: {
-      react: {
-        version: "detect", // Automatically detect React version
-      },
-    },
+    settings: eslintReactRecommended.settings,
   },
 ]);
 
