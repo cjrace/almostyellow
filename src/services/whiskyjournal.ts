@@ -20,7 +20,7 @@ export async function createWhisky(whisky: Whisky): Promise<void> {
             `;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to create a new whisky entry.");
+    throw new Error("Failed to create a new whisky entry.", { cause: error });
   }
 }
 
@@ -49,7 +49,7 @@ export async function readWhiskyJournal(): Promise<Whisky[]> {
     return whiskies;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the whisky journal.");
+    throw new Error("Failed to fetch the whisky journal.", { cause: error });
   }
 }
 
@@ -87,7 +87,7 @@ export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
     return [whisky];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the whisky journal.");
+    throw new Error("Failed to fetch the whisky journal.", { cause: error });
   }
 }
 
@@ -112,7 +112,7 @@ export async function updateWhisky(whisky: Whisky): Promise<void> {
             `;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to update whisky entry.");
+    throw new Error("Failed to update whisky entry.", { cause: error });
   }
 }
 

@@ -58,8 +58,8 @@ export default function Header({
         {!noCrumbs && (
           <Group>
             <Breadcrumbs>
-              {crumbs?.map((item, index) => (
-                <Anchor href={item.href} key={index}>
+              {crumbs?.map((item) => (
+                <Anchor href={item.href} key={item.href}>
                   {item.title}
                 </Anchor>
               ))}

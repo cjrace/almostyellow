@@ -9,7 +9,7 @@ import {
   Text,
   Group,
 } from "@mantine/core";
-import { useForm, Form } from "@mantine/form";
+import { useForm } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
 import playConfetti from "@/components/playconfetti";
 
@@ -18,8 +18,7 @@ interface DecisionOptions {
 }
 
 export default function DecisionMaker() {
-  const [chosenOption, setChosenItem] = useState<string | null>(null);
-  const error = useState("");
+  const [chosenOption, setChosenOption] = useState<string | null>(null);
 
   const form = useForm<DecisionOptions>({
     initialValues: { options: "" },
@@ -45,7 +44,7 @@ export default function DecisionMaker() {
         .filter((option) => option.trim() !== "");
       if (options.length > 0) {
         const randomIndex = Math.floor(Math.random() * options.length);
-        setChosenItem(options[randomIndex]);
+        setChosenOption(options[randomIndex]);
         playConfetti();
       }
 
@@ -82,7 +81,7 @@ Laura`;
 
   return (
     <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
-      <Form form={form} onSubmit={makeDecision}>
+      <form onSubmit={form.onSubmit(makeDecision)} onReset={form.onReset}>
         <Group>
           <Button mb="md" variant="default" onClick={prePopulateTakeaways}>
             Darlington takeaways
@@ -96,7 +95,6 @@ Laura`;
           classNames={{ label: classes.label, input: classes.input }}
           label="List out your options"
           placeholder="One option per line..."
-          error={error}
           autosize
           minRows={2}
           {...form.getInputProps("options")}
@@ -104,7 +102,7 @@ Laura`;
         <Button mt="xl" type="submit" fullWidth disabled={isLoading}>
           {isLoading ? "Pondering choices..." : "Make a decision"}
         </Button>
-      </Form>
+      </form>
 
       {chosenOption && (
         <Stack>

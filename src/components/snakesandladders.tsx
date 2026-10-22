@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Grid,
   Button,
@@ -156,6 +156,8 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
     </Text>
     {players.map((player, index) => (
       <Group
+        // Players are identified by their turn order, which never changes mid-game
+        // eslint-disable-next-line @eslint-react/no-array-index-key
         key={index}
         mb="sm"
         w="60%"
@@ -182,17 +184,13 @@ const SnakesAndLadders = () => {
   const [specialMove, setSpecialMove] = useState<number | null>(null);
   const [numPlayers, setNumPlayers] = useState<number>(2);
   const [specialSpaces, setSpecialSpaces] = useState<Map<number, number>>(
-    new Map(),
+    () => new Map(),
   );
   const [isRolling, setIsRolling] = useState(false);
   const [showDiceResult, setShowDiceResult] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
-
-  useEffect(() => {
-    setSpecialSpaces(generateSpecialSpaces());
-  }, []);
 
   const initializePlayers = () => {
     if (players.length === 0 || players.some((player) => player.name === "")) {
@@ -202,6 +200,7 @@ const SnakesAndLadders = () => {
       }));
       setPlayers(defaultPlayers);
     }
+    setSpecialSpaces(generateSpecialSpaces());
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
   };
@@ -342,7 +341,6 @@ const SnakesAndLadders = () => {
 
   const restartGame = () => {
     setPlayerPositions(Array(numPlayers).fill(0));
-    setSpecialSpaces(generateSpecialSpaces());
     setCurrentPlayer(0);
     setDiceResult(null);
     setPopupMessage(null);
@@ -378,44 +376,46 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            {Array.from({ length: numPlayers }).map((_, index) => (
-              <Box key={index} style={{ paddingLeft: "20px" }}>
-                <Stack key={index} mb="sm" gap="xs">
-                  <TextInput
-                    label={`Name of player ${(index + 1).toString()}:`}
-                    labelProps={{
-                      style: {
-                        margin: "0 0 0.75em 0",
-                      },
-                    }}
-                    value={players[index]?.name || ""}
-                    onChange={(event) => {
-                      handlePlayerSetup(
-                        index,
-                        event.currentTarget.value,
-                        players[index]?.icon || "cat",
-                      );
-                    }}
-                  />
-                  <Text size="xs" c="dimmed">
-                    Choose your avatar
-                  </Text>
-                  <Group>
-                    <IconSelection
-                      selectedIcon={players[index]?.icon || "cat"}
-                      onChange={(icon) => {
+            {Array.from({ length: numPlayers }, (_, seat) => seat).map(
+              (seat) => (
+                <Box key={seat} style={{ paddingLeft: "20px" }}>
+                  <Stack mb="sm" gap="xs">
+                    <TextInput
+                      label={`Name of player ${(seat + 1).toString()}:`}
+                      labelProps={{
+                        style: {
+                          margin: "0 0 0.75em 0",
+                        },
+                      }}
+                      value={players[seat]?.name || ""}
+                      onChange={(event) => {
                         handlePlayerSetup(
-                          index,
-                          players[index]?.name ||
-                            `Player ${(index + 1).toString()}`,
-                          icon,
+                          seat,
+                          event.currentTarget.value,
+                          players[seat]?.icon || "cat",
                         );
                       }}
                     />
-                  </Group>
-                </Stack>
-              </Box>
-            ))}
+                    <Text size="xs" c="dimmed">
+                      Choose your avatar
+                    </Text>
+                    <Group>
+                      <IconSelection
+                        selectedIcon={players[seat]?.icon || "cat"}
+                        onChange={(icon) => {
+                          handlePlayerSetup(
+                            seat,
+                            players[seat]?.name ||
+                              `Player ${(seat + 1).toString()}`,
+                            icon,
+                          );
+                        }}
+                      />
+                    </Group>
+                  </Stack>
+                </Box>
+              ),
+            )}
 
             <Button onClick={initializePlayers} mt="sm">
               Start game!
@@ -427,7 +427,7 @@ const SnakesAndLadders = () => {
           <Box>
             <PlayerList players={players} currentPlayer={currentPlayer} />
 
-            {showDiceResult && diceResult && (
+            {showDiceResult && diceResult !== null && (
               <Text ta="left" mt="md">
                 {players[currentPlayer]?.name} moves {diceResult} places!
               </Text>
@@ -471,7 +471,7 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            <Grid columns={10}>
+            <Grid columns={10} gap={0}>
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
                 const pos = index + 1;
                 const playerAtPos = playerPositions.findIndex(

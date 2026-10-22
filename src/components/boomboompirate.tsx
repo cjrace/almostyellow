@@ -32,7 +32,7 @@ const generateRandomPosition = () => {
 
 const BoomBoomPirate = () => {
   const [totalRopes, setTotalRopes] = useState(20); // Default number of ropes
-  const [explosionRope, setExplosionRope] = useState(
+  const [explosionRope, setExplosionRope] = useState(() =>
     generateRandomRope(totalRopes),
   );
   const [loadingRope, setLoadingRope] = useState<number | null>(null);
@@ -124,23 +124,25 @@ const BoomBoomPirate = () => {
       ) : (
         <>
           <Grid>
-            {Array.from({ length: totalRopes }).map((_, index) => (
-              <Grid.Col span={2} key={index}>
-                <Button
-                  variant="outline"
-                  fullWidth
-                  onClick={() => {
-                    handleRopePull(index);
-                  }}
-                  color={ropeStates[index] || "blue"}
-                  disabled={loadingRope !== null}
-                >
-                  {loadingRope === index
-                    ? (currentIcon ?? "Loading...")
-                    : `Rope ${(index + 1).toString()}`}
-                </Button>
-              </Grid.Col>
-            ))}
+            {Array.from({ length: totalRopes }, (_, rope) => rope).map(
+              (rope) => (
+                <Grid.Col span={2} key={rope}>
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => {
+                      handleRopePull(rope);
+                    }}
+                    color={ropeStates[rope] || "blue"}
+                    disabled={loadingRope !== null}
+                  >
+                    {loadingRope === rope
+                      ? (currentIcon ?? "Loading...")
+                      : `Rope ${(rope + 1).toString()}`}
+                  </Button>
+                </Grid.Col>
+              ),
+            )}
           </Grid>
 
           <Space h="xl" />
@@ -172,12 +174,12 @@ const BoomBoomPirate = () => {
 
           {showExplosions && (
             <>
-              {Array.from({ length: 3 }).map((_, i) => {
+              {Array.from({ length: 3 }, (_, i) => i + 1).map((explosion) => {
                 const { top, left } = generateRandomPosition();
                 return (
                   <div
-                    key={i}
-                    className={`${styles.explosion} ${styles[`explosion-${(i + 1).toString()}`]}`}
+                    key={explosion}
+                    className={`${styles.explosion} ${styles[`explosion-${explosion.toString()}`]}`}
                     style={{
                       top: `${top.toString()}%`,
                       left: `${left.toString()}%`,

@@ -59,7 +59,7 @@ export default function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
             onChange={(event) => {
               form.setFieldValue("email", event.currentTarget.value);
             }}
-            error={form.errors.email && "Invalid email"}
+            error={form.errors.email ? "Invalid email" : undefined}
             radius="md"
           />
           <PasswordInput

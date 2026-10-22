@@ -15,7 +15,7 @@ export async function createFilm(film: Film): Promise<void> {
             `;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to create a new film entry.");
+    throw new Error("Failed to create a new film entry.", { cause: error });
   }
 }
 
@@ -38,7 +38,7 @@ export async function readFilmList(): Promise<Film[]> {
     return films;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the film list.");
+    throw new Error("Failed to fetch the film list.", { cause: error });
   }
 }
 
@@ -70,7 +70,7 @@ export async function readFilm(film_id: string): Promise<Film[]> {
     return [film];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the film.");
+    throw new Error("Failed to fetch the film.", { cause: error });
   }
 }
 
@@ -87,7 +87,7 @@ export async function updateFilm(film: Film): Promise<void> {
             `;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to update film entry.");
+    throw new Error("Failed to update film entry.", { cause: error });
   }
 }
 
