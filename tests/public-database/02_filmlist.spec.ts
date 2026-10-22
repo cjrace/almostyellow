@@ -15,7 +15,9 @@ test("Films Page Test", async ({ page }) => {
 
   // Check only Seven Samurai is there after playing with filters
   await page.getByRole("button", { name: "Sort and filter" }).click();
-  await page.getByRole("textbox", { name: "IMDB top" }).click();
+  await page
+    .getByRole("combobox", { name: "IMDB top 30", exact: true })
+    .click();
   await page.getByRole("option", { name: "Top 30", exact: true }).click();
 
   await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);

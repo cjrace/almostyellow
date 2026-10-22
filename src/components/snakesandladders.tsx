@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Grid,
   Button,
@@ -190,10 +190,6 @@ const SnakesAndLadders = () => {
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
 
-  useEffect(() => {
-    setSpecialSpaces(generateSpecialSpaces());
-  }, []);
-
   const initializePlayers = () => {
     if (players.length === 0 || players.some((player) => player.name === "")) {
       const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
@@ -202,6 +198,7 @@ const SnakesAndLadders = () => {
       }));
       setPlayers(defaultPlayers);
     }
+    setSpecialSpaces(generateSpecialSpaces());
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
   };
@@ -471,7 +468,7 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            <Grid columns={10}>
+            <Grid columns={10} gap={0}>
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
                 const pos = index + 1;
                 const playerAtPos = playerPositions.findIndex(

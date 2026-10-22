@@ -9,7 +9,7 @@ import {
   Text,
   Group,
 } from "@mantine/core";
-import { useForm, Form } from "@mantine/form";
+import { useForm } from "@mantine/form";
 import classes from "@/styles/textarea.module.css";
 import playConfetti from "@/components/playconfetti";
 
@@ -82,7 +82,7 @@ Laura`;
 
   return (
     <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
-      <Form form={form} onSubmit={makeDecision}>
+      <form onSubmit={form.onSubmit(makeDecision)} onReset={form.onReset}>
         <Group>
           <Button mb="md" variant="default" onClick={prePopulateTakeaways}>
             Darlington takeaways
@@ -104,7 +104,7 @@ Laura`;
         <Button mt="xl" type="submit" fullWidth disabled={isLoading}>
           {isLoading ? "Pondering choices..." : "Make a decision"}
         </Button>
-      </Form>
+      </form>
 
       {chosenOption && (
         <Stack>
