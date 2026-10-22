@@ -18,6 +18,10 @@ npx playwright test tests/public/00_initial_load.spec.ts
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
+## Branch naming
+
+Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/2026-10`.
+
 ## Architecture
 
 **Next.js App Router** with the `src/` directory. Package manager is **pnpm**.
