@@ -62,8 +62,8 @@ const CocktailBox: React.FC<Cocktail> = ({
         <div className={styles.column}>
           <h3>Instructions:</h3>
           <ol className={styles.instructionsList}>
-            {recipe.instructions.map((instruction, index) => (
-              <li key={index}>{instruction}</li>
+            {recipe.instructions.map((instruction) => (
+              <li key={instruction}>{instruction}</li>
             ))}
           </ol>
         </div>

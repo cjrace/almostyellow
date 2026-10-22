@@ -156,6 +156,8 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
     </Text>
     {players.map((player, index) => (
       <Group
+        // Players are identified by their turn order, which never changes mid-game
+        // eslint-disable-next-line @eslint-react/no-array-index-key
         key={index}
         mb="sm"
         w="60%"
@@ -182,7 +184,7 @@ const SnakesAndLadders = () => {
   const [specialMove, setSpecialMove] = useState<number | null>(null);
   const [numPlayers, setNumPlayers] = useState<number>(2);
   const [specialSpaces, setSpecialSpaces] = useState<Map<number, number>>(
-    new Map(),
+    () => new Map(),
   );
   const [isRolling, setIsRolling] = useState(false);
   const [showDiceResult, setShowDiceResult] = useState(false);
@@ -375,44 +377,46 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            {Array.from({ length: numPlayers }).map((_, index) => (
-              <Box key={index} style={{ paddingLeft: "20px" }}>
-                <Stack key={index} mb="sm" gap="xs">
-                  <TextInput
-                    label={`Name of player ${(index + 1).toString()}:`}
-                    labelProps={{
-                      style: {
-                        margin: "0 0 0.75em 0",
-                      },
-                    }}
-                    value={players[index]?.name || ""}
-                    onChange={(event) => {
-                      handlePlayerSetup(
-                        index,
-                        event.currentTarget.value,
-                        players[index]?.icon || "cat",
-                      );
-                    }}
-                  />
-                  <Text size="xs" c="dimmed">
-                    Choose your avatar
-                  </Text>
-                  <Group>
-                    <IconSelection
-                      selectedIcon={players[index]?.icon || "cat"}
-                      onChange={(icon) => {
+            {Array.from({ length: numPlayers }, (_, seat) => seat).map(
+              (seat) => (
+                <Box key={seat} style={{ paddingLeft: "20px" }}>
+                  <Stack mb="sm" gap="xs">
+                    <TextInput
+                      label={`Name of player ${(seat + 1).toString()}:`}
+                      labelProps={{
+                        style: {
+                          margin: "0 0 0.75em 0",
+                        },
+                      }}
+                      value={players[seat]?.name || ""}
+                      onChange={(event) => {
                         handlePlayerSetup(
-                          index,
-                          players[index]?.name ||
-                            `Player ${(index + 1).toString()}`,
-                          icon,
+                          seat,
+                          event.currentTarget.value,
+                          players[seat]?.icon || "cat",
                         );
                       }}
                     />
-                  </Group>
-                </Stack>
-              </Box>
-            ))}
+                    <Text size="xs" c="dimmed">
+                      Choose your avatar
+                    </Text>
+                    <Group>
+                      <IconSelection
+                        selectedIcon={players[seat]?.icon || "cat"}
+                        onChange={(icon) => {
+                          handlePlayerSetup(
+                            seat,
+                            players[seat]?.name ||
+                              `Player ${(seat + 1).toString()}`,
+                            icon,
+                          );
+                        }}
+                      />
+                    </Group>
+                  </Stack>
+                </Box>
+              ),
+            )}
 
             <Button onClick={initializePlayers} mt="sm">
               Start game!

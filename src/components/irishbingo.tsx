@@ -68,7 +68,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
 
 export default function IrishBingo() {
   // Initialize state for the decks
-  const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck());
+  const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
   const progressColor = drawnCards.length > 35 ? "red" : "";
@@ -288,8 +288,8 @@ export default function IrishBingo() {
           closeButtonProps={{ "aria-label": "Close modal" }}
         >
           <List type="ordered" withPadding>
-            {drawnCards.map((card, index) => (
-              <List.Item key={index}>
+            {drawnCards.map((card) => (
+              <List.Item key={`${card.rank}-${card.suit}`}>
                 {getCardName(card.suit, card.rank)}
               </List.Item>
             ))}
