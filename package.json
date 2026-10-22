@@ -48,7 +48,6 @@
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y-x": "^0.2.0",
-    "eslint-plugin-next": "^0.0.0",
     "eslint-plugin-promise": "^7.3.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "husky": "^9.1.7",

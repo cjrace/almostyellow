@@ -1,5 +1,6 @@
 "use client";
 
 export default function playConfetti() {
-  (window.ConfettiPage as { play: () => void }).play();
+  // The script loads after the page, so it may not be ready on an early click
+  (window.ConfettiPage as { play: () => void } | undefined)?.play();
 }

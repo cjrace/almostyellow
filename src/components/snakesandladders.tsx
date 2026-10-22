@@ -341,7 +341,6 @@ const SnakesAndLadders = () => {
 
   const restartGame = () => {
     setPlayerPositions(Array(numPlayers).fill(0));
-    setSpecialSpaces(generateSpecialSpaces());
     setCurrentPlayer(0);
     setDiceResult(null);
     setPopupMessage(null);
