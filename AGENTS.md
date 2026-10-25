@@ -74,3 +74,18 @@ Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disa
 Vitest unit tests live in `tests/unit/` and mock the database and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
+
+### Firebase emulators (migration branch)
+
+The Firebase work is tested against the local Auth and Firestore emulators, never a real project. Java 21 or later must be installed for the Firestore emulator.
+
+```bash
+pnpm test:rules    # Security Rules tests, project demo-almostyellow
+pnpm test:ci       # Everything under tests/firebase, project demo-almostyellow-ci
+pnpm emulators     # Start the emulators by hand, for example while writing tests
+```
+
+- `firebase.json`, `firestore.rules` and `firestore.indexes.json` configure the emulators and rules.
+- `tests/firebase/fixtures.ts` holds the synthetic users and records, and `tests/firebase/seed.ts` resets the emulators to them. Seeding happens before every test, so each starts from the same data.
+- `tests/firebase/guard.ts` refuses to run unless the project is one of the two `demo-` projects, both emulator hosts are local, Security Rules are loaded and no Google or Firebase credentials are set. Its own tests are in `tests/unit/firebase_guard.test.ts`.
+- The emulator tests share one emulator, so they run one file at a time and are not part of `pnpm test` yet.
