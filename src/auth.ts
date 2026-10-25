@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcrypt";
+import { unauthorized } from "next/navigation";
 
 export interface User {
   id: string;
@@ -46,3 +47,12 @@ export const { auth, signIn, signOut } = NextAuth({
     }),
   ],
 });
+
+// Server actions are callable directly over HTTP, so protecting the /admin
+// pages is not enough. Call this at the top of any server action that reads
+// private data or changes data, outside of any try/catch.
+export async function requireAuth() {
+  const session = await auth();
+  if (!session?.user) unauthorized();
+  return session;
+}
