@@ -1,6 +1,6 @@
 "use server";
 
-import { sql } from "@vercel/postgres";
+import { sql } from "@/db";
 import { requireAuth } from "@/auth";
 import { Whisky } from "@/components/whiskyjournal";
 import { v4 as generate_uuid } from "uuid";

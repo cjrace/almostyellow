@@ -65,7 +65,8 @@ test("Download CSV and check contents", async ({ page }) => {
   const csv: string = fs.readFileSync(path, "utf-8");
   const rows: string[] = csv.split("\n");
 
-  expect(rows.length).toBeGreaterThan(50);
+  // Header plus the four films in tests/database/02_fixtures.sql
+  expect(rows.length).toBe(5);
 });
 
 test("Can search films by name", async ({ page }) => {

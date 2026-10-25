@@ -1,8 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
-import dotenv from "dotenv"; /* https://github.com/motdotla/dotenv */
-import path from "path";
-
-dotenv.config({ path: path.resolve(__dirname, ".env"), quiet: true });
+/* Point at the Docker test database, never the production one in .env */
+import "./tests/test-env";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -72,10 +70,11 @@ export default defineConfig({
   */
   ],
 
-  // Run local server before starting the tests
+  // Run local server before starting the tests. Never reuse one already
+  // running, as a dev server would be pointing at the production database.
   webServer: {
     command: "next start",
     url: "http://localhost:3000/",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
 });
