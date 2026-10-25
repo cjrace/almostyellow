@@ -12,7 +12,7 @@ pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database 
 pnpm test:e2e      # Build, then Playwright against a disposable Docker database
 ```
 
-Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2e.mts`) starts Postgres from `docker-compose.test.yml`, seeded from `tests/database/`, then runs `next start` with the settings in `tests/test-env.ts`. Docker must be running. Extra arguments go to Playwright, and `--no-build` reuses the last build:
+Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2e.mts`) starts Postgres from `docker-compose.test.yml`, seeded from `tests/database/`, then runs `next start` with the settings in `tests/test-env.ts`. It starts Docker Desktop first if it is not already running. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
 ```bash
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
