@@ -20,6 +20,12 @@ function run(command: string) {
 
 const compose = "docker compose -f docker-compose.test.yml";
 
+// Start Docker Desktop if the engine is not up yet. Waits until it is ready.
+if (run("docker info --format {{.ServerVersion}}") !== 0) {
+  console.log("Docker is not running, starting Docker Desktop...");
+  if (run("docker desktop start --timeout 300") !== 0) process.exit(1);
+}
+
 // Start from an empty database every time
 run(`${compose} down`);
 if (run(`${compose} up -d --wait`) !== 0) process.exit(1);
