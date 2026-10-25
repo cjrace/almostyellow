@@ -37,7 +37,8 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
 - `src/components/` — All React components in a flat structure (no subdirectories)
-- `src/services/` — Server-side data functions for the whisky journal and film list, using Firestore through the Admin SDK
+- `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
+- `data/cocktails.ts` — The cocktail catalogue as it was kept in the code. The tests load it into the emulator and it is what gets imported into production; change recipes in Firestore, not here
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
 - `src/styles/` — Global CSS, CSS modules, and the Mantine theme (`acalat.tsx`)
 
@@ -54,6 +55,10 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 ### Whisky journal and film list (Firestore)
 
 Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.ts` read the `whiskies` and `films` collections on the server with the Admin SDK. The pages keep their existing snake_case shapes; the whisky journal's `last_edited` comes from `updatedAt`, and film years are stored as numbers. Changes go through the same files as server actions. The Admin SDK skips the Security Rules, so these check the input against the same limits as `firestore.rules`, and check IDs with `src/firebase/ids.ts` before using them in a document path. Keep the two in step; `tests/firebase/whiskyjournal.test.ts` and `filmlist.test.ts` test the actions against the emulator.
+
+### Cocktails (Firestore)
+
+`src/app/cocktails/page.tsx` reads the `cocktails` collection on each request with `src/services/cocktails.ts`, and passes it to the client component for filtering. There is no page for changing cocktails yet. Ratings are out of 5 in halves, and photos must be under `/images/`; `tests/firebase/rules.test.ts` checks every catalogue recipe meets the rules.
 
 ### Chopin Liszt (Firestore)
 

@@ -161,7 +161,7 @@ test("An item deleted on another device stays deleted", async ({
   // Alice's change is refused rather than bringing the item back
   await page.context().setOffline(false);
   await expect(item(page, soap)).toBeHidden(SYNC);
-  await expect(page.getByText("A change could not be saved")).toBeVisible();
+  await expect(page.getByText("A change could not be saved")).toBeVisible(SYNC);
   await expect(item(bobPage, soap)).toBeHidden();
 });
 
