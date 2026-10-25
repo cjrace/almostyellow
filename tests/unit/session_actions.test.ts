@@ -114,6 +114,30 @@ describe("proxy", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("leaves server actions for requireAuth to check", async () => {
+    const action = new NextRequest("http://localhost:3000/admin/chopinliszt", {
+      method: "POST",
+      headers: { "next-action": "abc123" },
+    });
+
+    const response = await proxy(action);
+
+    expect(verifySessionCookie).not.toHaveBeenCalled();
+    expect(response.headers.get("location")).toBe(null);
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("still guards a plain POST to an admin page", async () => {
+    verifySessionCookie.mockResolvedValue(null);
+    const post = new NextRequest("http://localhost:3000/admin/chopinliszt", {
+      method: "POST",
+    });
+
+    const response = await proxy(post);
+
+    expect(response.headers.get("location")).toMatch(/\/admin\/login\?/);
+  });
+
   it("shows the login page to signed-out visitors", async () => {
     verifySessionCookie.mockResolvedValue(null);
 

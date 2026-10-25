@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { unauthorized } from "next/navigation";
+import { redirect } from "next/navigation";
 import { adminAuth, adminDb, firebaseProjectId } from "@/firebase/admin";
 import type { FirebaseClientConfig } from "@/firebase/client";
 
@@ -83,9 +83,14 @@ export const getSession = cache(async () => {
 // Server actions are callable directly over HTTP, so protecting the /admin
 // pages is not enough. Call this at the top of any server action that reads
 // private data or changes data, outside of any try/catch.
+//
+// Without a session the action stops and the browser is sent to the login
+// page, which covers a session that expires or is revoked while a page is
+// open. The site's Referrer-Policy hides which page that was, so there is no
+// callback to bring people back to it.
 export async function requireAuth() {
   const session = await getSession();
-  if (!session) unauthorized();
+  if (!session) redirect("/admin/login");
   return session;
 }
 

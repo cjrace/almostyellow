@@ -45,8 +45,9 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 - `src/components/login.tsx` — Signs in with the Firebase web SDK in the browser, then passes the ID token to `src/actions/signInAction.ts`.
 - `src/actions/signInAction.ts` — Swaps a fresh ID token from an authorised user for an HTTP-only `__session` cookie. Server actions only accept same-origin requests, which is the CSRF protection.
+- `firestore.rules` — Denies everything by default, and checks every write has exactly the expected fields and types. `createdAt` and `updatedAt` must be server timestamps (`serverTimestamp()`), and `createdAt` can never change. The Admin SDK bypasses the rules.
 - `src/auth.ts` — Creates and verifies session cookies with the Firebase Admin SDK (`src/firebase/admin.ts`), and checks the user is in the `authorizedUsers` allowlist. `getSession()` and `requireAuth()` live here.
-- `src/proxy.ts` — Acts as `middleware.ts`. Redirects anyone without a valid session from `/admin` pages to the login page. Server actions must still call `requireAuth()`.
+- `src/proxy.ts` — Acts as `middleware.ts`. Redirects anyone without a valid session from `/admin` pages to the login page. It lets server action requests through, because an action can be sent to any page, so `requireAuth()` inside each action is the real check. Without a session it redirects to the login page, which the browser follows.
 - `src/firebase/` — Admin SDK set-up for the server, and web SDK set-up for the browser. The browser's settings are read from the environment at request time and passed to the login form, so nothing is baked in at build time.
 
 ### Database

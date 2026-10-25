@@ -5,6 +5,14 @@ import { SESSION_COOKIE, verifySessionCookie } from "@/auth";
 // session again themselves, see requireAuth in src/auth.ts.
 export async function proxy(request: NextRequest) {
   const { nextUrl } = request;
+
+  // A server action can be sent to any page, so the proxy is no protection
+  // for them, and the browser cannot follow its redirect from one. Let them
+  // through for requireAuth to refuse, which sends people to sign in.
+  if (request.method === "POST" && request.headers.has("next-action")) {
+    return NextResponse.next();
+  }
+
   const session = await verifySessionCookie(
     request.cookies.get(SESSION_COOKIE)?.value,
   );
