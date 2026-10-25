@@ -3,6 +3,7 @@ allowBuilds:
   bcrypt: true
   bufferutil: true
   protobufjs: false
+  re2: false
   sharp: true
   unrs-resolver: true
 
