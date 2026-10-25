@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
-pnpm test          # Format + lint + build + Playwright E2E tests (full CI suite)
+pnpm test          # Format + lint + unit tests + build + Playwright E2E tests (full CI suite)
+pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database needed)
 ```
 
 Playwright tests require a running server (`next start` or existing dev server). To run a single test file:
@@ -64,3 +65,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 - `tests/admin/` — Admin area (requires auth)
 
 Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
+
+Vitest unit tests live in `tests/unit/` and mock the database and auth.
+
+Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to both `tests/unit/services_auth.test.ts` and `tests/public/05_server_action_auth.spec.ts`.
