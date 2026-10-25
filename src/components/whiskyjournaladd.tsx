@@ -47,15 +47,17 @@ export const WhiskyJournalAdd = () => {
       country_region: (value) =>
         value ? null : "Country or region is required",
       age: (value) =>
-        value >= 0 ? null : "Age must be greater than or equal to zero",
+        Number.isInteger(value) && value >= 0 && value <= 100
+          ? null
+          : "Age must be a whole number from 0 to 100",
       grain: (value) =>
         ["Single malt", "Rye", "Bourbon", "Blend"].includes(value)
           ? null
           : "Grain must be one of 'Single malt', 'Rye', 'Bourbon', or 'Blend'",
       abv: (value) =>
-        value >= 0 && value <= 100
+        value > 0 && value <= 100
           ? null
-          : "ABV must be greater than or equal to zero and less than or equal to 100",
+          : "ABV must be greater than zero and no more than 100",
       price: (value) =>
         value >= 1 && value <= 3 ? null : "Price must be between 1 and 3",
       rating: (value) =>

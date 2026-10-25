@@ -37,7 +37,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
 - `src/components/` — All React components in a flat structure (no subdirectories)
-- `src/services/` — Server-side Postgres query functions (`filmlist.ts`, `whiskyjournal.ts`)
+- `src/services/` — Server-side data functions: `whiskyjournal.ts` uses Firestore through the Admin SDK, `filmlist.ts` still uses Postgres
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
 - `src/styles/` — Global CSS, CSS modules, and the Mantine theme (`acalat.tsx`)
 
@@ -51,13 +51,17 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 - `src/firebase/` — Admin SDK set-up for the server, and web SDK set-up for the browser. The browser's settings are read from the environment at request time and passed to the page, so nothing is baked in at build time.
 - `src/actions/firestoreTokenAction.ts` — Gives a page with a valid session a custom token, so the browser can sign in to Firebase and use Firestore directly. The browser's sign-in only lasts while the page is open.
 
+### Whisky journal (Firestore)
+
+The journal is public, so `src/services/whiskyjournal.ts` reads the `whiskies` collection on the server with the Admin SDK, and the pages keep their existing `Whisky` shape (snake_case, `last_edited` from `updatedAt`). Changes go through the same file as server actions. The Admin SDK skips the Security Rules, so these check the input against the same limits as `firestore.rules` and check IDs before using them in a document path. Keep the two in step; `tests/firebase/whiskyjournal.test.ts` tests the actions against the emulator.
+
 ### Chopin Liszt (Firestore)
 
 The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
 
 ### Database
 
-Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users` (no longer used for sign-in), `whisky_journal`, `film_list`, `chopin_liszt` (no longer used by the app, kept until its data is moved to Firestore).
+Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users` (no longer used for sign-in), `whisky_journal` and `chopin_liszt` (no longer used by the app, kept until their data is moved to Firestore), `film_list`.
 
 Database seeding is done by creating a temporary `src/app/seed/route.ts` (git-ignored) and hitting `http://localhost:3000/seed` locally. See `src/seed.md` for the full pattern. The schema the tests use is in `tests/database/01_schema.sql`, so keep it in step with any table changes.
 
