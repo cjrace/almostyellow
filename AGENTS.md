@@ -68,4 +68,4 @@ Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disa
 
 Vitest unit tests live in `tests/unit/` and mock the database and auth.
 
-Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to both `tests/unit/services_auth.test.ts` and `tests/public/05_server_action_auth.spec.ts`.
+Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
