@@ -229,7 +229,21 @@ const invalidRecords: [string, string, DocumentData][] = [
   ["cocktails", "ingredients that are not a list", { ingredients: "Gin" }],
   ["cocktails", "no ingredients", { ingredients: [] }],
   ["cocktails", "a rating of zero", { rating: 0 }],
-  ["cocktails", "an empty method", { method: "" }],
+  ["cocktails", "a rating that is not a half", { rating: 4.25 }],
+  ["cocktails", "a rating out of range", { rating: 5.5 }],
+  ["cocktails", "no spirits", { spirits: [] }],
+  ["cocktails", "no instructions", { instructions: [] }],
+  [
+    "cocktails",
+    "a photo from another site",
+    { photoUrl: "https://example.com/a.jpg" },
+  ],
+  [
+    "cocktails",
+    "a photo outside the images folder",
+    { photoUrl: "/admin/a.jpg" },
+  ],
+  ["cocktails", "an extra field", { method: "Shake" }],
   ["shoppingItems", "empty text", { text: "" }],
   ["shoppingItems", "checked as text", { checked: "no" }],
   ["shoppingItems", "an order as text", { order: "1" }],
@@ -248,6 +262,16 @@ function brokenRecord(collectionName: string, change: DocumentData) {
 
 describe("records with the wrong shape", () => {
   const db = () => signedInAs(users.alice.uid);
+
+  // So the real catalogue can be imported without any being refused
+  test.each(cocktails.map((cocktail) => [cocktail.name, cocktail]))(
+    "the catalogue's %s is accepted",
+    async (_name, cocktail) => {
+      await assertSucceeds(
+        setDoc(doc(db(), "cocktails", cocktail.id), withoutId(cocktail)),
+      );
+    },
+  );
 
   test.each(Object.keys(valid))(
     "a valid %s record is accepted",

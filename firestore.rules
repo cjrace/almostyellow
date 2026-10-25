@@ -68,16 +68,26 @@ service cloud.firestore {
         && incoming().notInJar is bool;
     }
 
+    // Rules cannot loop over a list, so the items in the lists are only
+    // checked by the app
+    function isList(value, maxSize) {
+      return value is list && value.size() > 0 && value.size() <= maxSize;
+    }
+
     function isCocktail() {
-      return hasExactly(["name", "ingredients", "method", "rating"])
+      return hasExactly(["name", "spirits", "rating", "photoUrl",
+          "ingredients", "instructions"])
         && isText(incoming().name, 255)
-        // Rules cannot loop over a list, so the ingredients themselves are
-        // only checked by the app
-        && incoming().ingredients is list
-        && incoming().ingredients.size() > 0
-        && incoming().ingredients.size() <= 50
-        && isText(incoming().method, 5000)
-        && isWholeNumberBetween(incoming().rating, 1, 5);
+        && isList(incoming().spirits, 10)
+        // Out of 5, in halves
+        && incoming().rating is number
+        && incoming().rating >= 0.5 && incoming().rating <= 5
+        && math.floor(incoming().rating * 2) == incoming().rating * 2
+        // Only images served by the site itself
+        && incoming().photoUrl is string
+        && incoming().photoUrl.matches('/images/[A-Za-z0-9._-]+')
+        && isList(incoming().ingredients, 50)
+        && isList(incoming().instructions, 50);
     }
 
     // updatedBy must be whoever makes the change, so nobody can make one in

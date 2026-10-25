@@ -8,12 +8,11 @@ import {
   Group,
 } from "@mantine/core";
 import { useState } from "react";
-import { cocktaildata } from "@/components/cocktaildata";
 import styles from "@/styles/cocktails.module.css";
 import CocktailBox from "@/components/cocktailbox";
 import { IconX } from "@tabler/icons-react";
 
-interface Cocktail {
+export interface Cocktail {
   name: string;
   spirits: string[];
   rating: number;
@@ -24,13 +23,13 @@ interface Cocktail {
   };
 }
 
-// Generate the dropdown options
-const uniqueSpirits = [
-  "All spirits",
-  ...new Set(cocktaildata.flatMap((cocktail) => cocktail.spirits).sort()),
-];
+export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
+  // Generate the dropdown options
+  const uniqueSpirits = [
+    "All spirits",
+    ...new Set(cocktails.flatMap((cocktail) => cocktail.spirits).sort()),
+  ];
 
-export default function Cocktails() {
   const [selectedSpirits, setSelectedSpirits] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -42,7 +41,7 @@ export default function Cocktails() {
     setSelectedSpirits(value === "All spirits" ? [] : [value]);
   };
 
-  const filteredCocktails = cocktaildata.filter((cocktail: Cocktail) => {
+  const filteredCocktails = cocktails.filter((cocktail) => {
     return (
       selectedSpirits.length === 0 || // Show all if no spirits selected
       cocktail.spirits.some((spirit) => selectedSpirits.includes(spirit)) // Show if any selected spirit matches
@@ -91,7 +90,7 @@ export default function Cocktails() {
       </Group>
 
       <Text m="xs">
-        Showing {searchedCocktails.length} of {cocktaildata.length} cocktails
+        Showing {searchedCocktails.length} of {cocktails.length} cocktails
       </Text>
 
       <div className={styles.cocktailList}>

@@ -2,6 +2,8 @@
 // production database, and the passwords only exist inside the emulator. IDs
 // and timestamps are fixed so tests can assert on exact values.
 
+import { cocktailDocuments } from "../../data/cocktails";
+
 const CREATED = new Date("2024-11-24T12:00:00Z");
 
 export const users = {
@@ -106,22 +108,9 @@ export const films = [
   },
 ];
 
-export const cocktails = [
-  {
-    id: "negroni",
-    name: "Negroni",
-    ingredients: ["Gin", "Campari", "Sweet vermouth"],
-    method: "Stir over ice, strain and garnish with orange peel",
-    rating: 5,
-  },
-  {
-    id: "old-fashioned",
-    name: "Old Fashioned",
-    ingredients: ["Bourbon", "Sugar", "Angostura bitters"],
-    method: "Muddle sugar and bitters, add bourbon and ice",
-    rating: 4,
-  },
-];
+// The real catalogue, which is public and holds nothing personal, so the
+// cocktails page looks the same in the tests as in production
+export const cocktails = cocktailDocuments;
 
 export const shoppingItems = [
   {
