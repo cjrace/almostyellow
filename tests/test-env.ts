@@ -11,6 +11,7 @@ const testEnv = {
   TEST_PASSWORD: "almost-yellow-test",
 };
 
+// Only the host matters: src/db.ts sends queries to the Neon proxy on port 4444
 process.env.POSTGRES_URL = "postgres://postgres:postgres@localhost:5432/main";
 
 for (const [key, value] of Object.entries(testEnv)) {
