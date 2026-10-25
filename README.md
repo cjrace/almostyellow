@@ -44,13 +44,41 @@ pnpm dev
 
 ## Tests
 
-[Prettier](https://prettier.io/) is used for code formatting, [ESLint](https://eslint.org/) is used for linting and basic end to end tests have been set up using [Playwright](https://playwright.dev/).
+[Prettier](https://prettier.io/) is used for code formatting, [ESLint](https://eslint.org/) for linting, [Vitest](https://vitest.dev/) for unit tests and [Playwright](https://playwright.dev/) for end to end tests. The Firebase migration is also tested against the Firebase emulators.
 
-To format all scripts, run linting checks, compile a production build, and then run the end to end tests run:
+To format all scripts, run linting checks, run the unit and emulator tests, compile a production build, and then run the end to end tests run:
 
 ```bash
 pnpm test
 ```
+
+None of the tests use production data. The end to end tests run against a throwaway Postgres database in Docker, and the Firebase tests run against local emulators.
+
+### What you need installed
+
+Running `pnpm test` needs two things on top of Node and pnpm:
+
+- **Docker** for the end to end tests. On Windows and Mac install [Docker Desktop](https://www.docker.com/products/docker-desktop/), `pnpm test:e2e` starts it for you if it is not already running.
+- **Java 21 or later** for the Firestore emulator. Check with `java -version`. If it is missing, install it and then open a new terminal so it is picked up:
+
+  ```bash
+  winget install EclipseAdoptium.Temurin.21.JDK
+  ```
+
+  On Mac use `brew install --cask temurin@21`, and on Linux install `openjdk-21-jdk` with your package manager.
+
+The tests use fixed ports, so stop `pnpm dev` (port 3000) and `pnpm emulators` (ports 8080 and 9099) before running them. If a port is in use the end to end script says which one.
+
+### Running one set of tests
+
+```bash
+pnpm test:unit    # Unit tests, no Docker or Java needed
+pnpm test:rules   # Firestore Security Rules only
+pnpm test:ci      # All the Firebase emulator tests
+pnpm test:e2e     # Build, then the Playwright tests against the Docker database
+```
+
+See [AGENTS.md](AGENTS.md) for how the test database, fixtures and Firebase safeguards work.
 
 ### Pre-commit hooks
 

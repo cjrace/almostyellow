@@ -44,3 +44,7 @@ test-results.json
 
 # seed data
 /src/app/seed/route.ts
+
+# firebase emulators
+firestore-debug.log
+firebase-debug.log
