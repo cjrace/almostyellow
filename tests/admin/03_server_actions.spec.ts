@@ -2,13 +2,16 @@ import { test, expect, request, type Page } from "@playwright/test";
 import { getCredentials } from "./helpers";
 
 // Server actions are plain POSTs, so anyone can send one without going through
-// the site. This captures the real request the Chopin Liszt page makes to read
-// the private list, then replays it outside the browser with and without a
-// valid session cookie.
+// the site. This captures the real request the Chopin Liszt page makes for the
+// token that signs the browser in to Firestore, then replays it outside the
+// browser with and without a valid session cookie.
 
 const BASE_URL = "http://localhost:3000";
 
-async function captureReadAction(page: Page) {
+// A Firebase custom token is a JWT, so starts with an encoded JSON header
+const TOKEN = /eyJ[\w-]+\.eyJ/;
+
+async function captureTokenAction(page: Page) {
   const { email, password } = getCredentials();
   await page.goto(`/admin/login?callbackUrl=${BASE_URL}/admin/chopinliszt`);
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
@@ -19,7 +22,7 @@ async function captureReadAction(page: Page) {
   ]);
 
   // Signing in is a server action too, so load the page afresh to catch only
-  // the one that reads the list
+  // the one that asks for a token
   const [action] = await Promise.all([
     page.waitForRequest(
       (req) => req.method() === "POST" && "next-action" in req.headers(),
@@ -45,7 +48,7 @@ async function captureReadAction(page: Page) {
 }
 
 async function replay(
-  captured: Awaited<ReturnType<typeof captureReadAction>>,
+  captured: Awaited<ReturnType<typeof captureTokenAction>>,
   path: string,
   cookie?: string,
 ) {
@@ -74,20 +77,19 @@ for (const path of ["/admin/chopinliszt", "/"]) {
   test(`Protected server actions sent to ${path} need a valid session`, async ({
     page,
   }) => {
-    const captured = await captureReadAction(page);
+    const captured = await captureTokenAction(page);
 
-    // The same request with the real cookie gets the private list, so it is
-    // the session alone that the other calls are refused for
+    // The same request with the real cookie gets a token, so it is the
+    // session alone that the other calls are refused for
     const allowed = await replay(captured, path, captured.session);
     expect(allowed.status).toBe(200);
-    expect(allowed.body).toContain("Limes");
+    expect(allowed.body).toMatch(TOKEN);
 
     for (const cookie of [undefined, "not-a-session", `${captured.session}x`]) {
       const refused = await replay(captured, path, cookie);
       // requireAuth redirects to sign in, which Next sends as a header
       expect(refused.headers["x-action-redirect"]).toMatch(/^\/admin\/login/);
-      expect(refused.body).not.toContain("Limes");
-      expect(refused.body).not.toContain("Tonic water");
+      expect(refused.body).not.toMatch(TOKEN);
     }
   });
 }

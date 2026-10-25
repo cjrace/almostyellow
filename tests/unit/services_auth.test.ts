@@ -5,16 +5,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // public reads do not. The database and auth are mocked, so nothing here
 // needs credentials.
 
-const { requireAuth, sql } = vi.hoisted(() => ({
+const { requireAuth, sql, createCustomToken } = vi.hoisted(() => ({
   requireAuth: vi.fn(),
   sql: vi.fn(),
+  createCustomToken: vi.fn(),
 }));
 
 vi.mock("@/auth", () => ({ requireAuth }));
 vi.mock("@/db", () => ({ sql }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/firebase/admin", () => ({
+  adminAuth: () => ({ createCustomToken }),
+}));
 
-import * as chopinliszt from "@/services/chopinliszt";
+import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import * as filmlist from "@/services/filmlist";
 import * as whiskyjournal from "@/services/whiskyjournal";
 
@@ -43,17 +47,7 @@ const whisky = {
   notes: "",
 };
 
-function chopinForm() {
-  const formData = new FormData();
-  formData.set("chopin_text", "Test item");
-  return formData;
-}
-
 const protectedActions: [string, () => Promise<unknown>][] = [
-  ["createChopin", () => chopinliszt.createChopin(chopinForm())],
-  ["readChopin", () => chopinliszt.readChopin()],
-  ["updateChopinChecked", () => chopinliszt.updateChopinChecked(fakeId, true)],
-  ["deleteChopin", () => chopinliszt.deleteChopin(fakeId)],
   ["createFilm", () => filmlist.createFilm(film)],
   ["updateFilm", () => filmlist.updateFilm(film)],
   ["deleteFilm", () => filmlist.deleteFilm(fakeId)],
@@ -106,5 +100,23 @@ describe("public server actions", () => {
     await action();
     expect(requireAuth).not.toHaveBeenCalled();
     expect(sql).toHaveBeenCalled();
+  });
+});
+
+describe("firestoreTokenAction", () => {
+  it("is refused without a session and hands out no token", async () => {
+    const refused = new Error("unauthorised");
+    requireAuth.mockRejectedValue(refused);
+
+    await expect(firestoreTokenAction()).rejects.toBe(refused);
+    expect(createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it("signs the browser in as the user the session belongs to", async () => {
+    requireAuth.mockResolvedValue({ uid: "test-user-alice" });
+    createCustomToken.mockResolvedValue("custom-token");
+
+    await expect(firestoreTokenAction()).resolves.toBe("custom-token");
+    expect(createCustomToken).toHaveBeenCalledWith("test-user-alice");
   });
 });

@@ -76,7 +76,11 @@ const validChange: Record<string, () => DocumentData> = {
   whiskies: () => ({ rating: 4, updatedAt: serverTimestamp() }),
   films: () => ({ watched: true }),
   cocktails: () => ({ rating: 3 }),
-  shoppingItems: () => ({ checked: true, updatedAt: serverTimestamp() }),
+  shoppingItems: () => ({
+    checked: true,
+    updatedAt: serverTimestamp(),
+    updatedBy: users.alice.uid,
+  }),
 };
 
 describe("anonymous visitors", () => {
@@ -138,10 +142,16 @@ describe.each([
     const db = signedInAs(uid);
     await assertSucceeds(getDocs(collection(db, "shoppingItems")));
     await assertSucceeds(
-      setDoc(doc(db, "shoppingItems", "added"), valid.shoppingItems()),
+      setDoc(doc(db, "shoppingItems", "added"), {
+        ...valid.shoppingItems(),
+        updatedBy: uid,
+      }),
     );
     await assertSucceeds(
-      updateDoc(doc(db, "shoppingItems", itemId), validChange.shoppingItems()),
+      updateDoc(doc(db, "shoppingItems", itemId), {
+        ...validChange.shoppingItems(),
+        updatedBy: uid,
+      }),
     );
     await assertSucceeds(deleteDoc(doc(db, "shoppingItems", itemId)));
   });
@@ -156,6 +166,19 @@ describe.each([
     );
     await assertFails(deleteDoc(doc(db, "authorizedUsers", users.bob.uid)));
   });
+});
+
+test("a shopping list change cannot be made in someone else's name", async () => {
+  const db = signedInAs(users.bob.uid);
+  await assertFails(
+    updateDoc(doc(db, "shoppingItems", itemId), validChange.shoppingItems()),
+  );
+  await assertSucceeds(
+    updateDoc(doc(db, "shoppingItems", itemId), {
+      ...validChange.shoppingItems(),
+      updatedBy: users.bob.uid,
+    }),
+  );
 });
 
 describe("a signed-in user who is not on the allowlist", () => {
@@ -210,6 +233,8 @@ const invalidRecords: [string, string, DocumentData][] = [
   ["shoppingItems", "an order as text", { order: "1" }],
   ["shoppingItems", "an extra field", { addedBy: users.alice.uid }],
   ["shoppingItems", "a timestamp from the browser", { updatedAt: new Date() }],
+  ["shoppingItems", "no updatedBy", { updatedBy: undefined }],
+  ["shoppingItems", "someone else as updatedBy", { updatedBy: users.bob.uid }],
 ];
 
 function brokenRecord(collectionName: string, change: DocumentData) {

@@ -80,11 +80,15 @@ service cloud.firestore {
         && isWholeNumberBetween(incoming().rating, 1, 5);
     }
 
+    // updatedBy must be whoever makes the change, so nobody can make one in
+    // someone else's name
     function isShoppingItem() {
-      return hasExactly(["text", "checked", "order", "createdAt", "updatedAt"])
+      return hasExactly(["text", "checked", "order", "createdAt", "updatedAt",
+          "updatedBy"])
         && isText(incoming().text, 255)
         && incoming().checked is bool
-        && incoming().order is number;
+        && incoming().order is number
+        && incoming().updatedBy == request.auth.uid;
     }
 
     // Public to read, authorised users to change
