@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
+import { whiskies } from "../firebase/fixtures";
 
 test("Whisky Journal Page Test", async ({ page }) => {
   await page.goto("/");
@@ -62,6 +63,11 @@ test("Download CSV and check contents", async ({ page }) => {
   const csv: string = fs.readFileSync(path, "utf-8");
   const rows: string[] = csv.split("\n");
 
-  // Header plus the three whiskies in tests/database/02_fixtures.sql
-  expect(rows.length).toBe(4);
+  // The header, then the whiskies in tests/firebase/fixtures.ts. Admin tests
+  // running at the same time can add their own, so check for these rather
+  // than an exact count.
+  expect(rows[0]).toContain("Last Edited");
+  for (const whisky of whiskies) {
+    expect(rows.some((row) => row.includes(whisky.id))).toBe(true);
+  }
 });

@@ -1,26 +1,98 @@
 "use server";
 
-import { sql } from "@/db";
-import { requireAuth } from "@/auth";
-import { Whisky } from "@/components/whiskyjournal";
+import {
+  FieldValue,
+  type DocumentSnapshot,
+  type Timestamp,
+} from "firebase-admin/firestore";
 import { v4 as generate_uuid } from "uuid";
+import { z } from "zod";
+import { requireAuth } from "@/auth";
+import { adminDb } from "@/firebase/admin";
+import { Whisky } from "@/components/whiskyjournal";
 
-// TODO: Think about backup plans?
+// The whisky journal is public, so it is read on the server and needs no
+// sign-in. Changes go through the Admin SDK too, which bypasses the Security
+// Rules, so they are checked here against the same limits as firestore.rules.
+
+const COLLECTION = "whiskies";
+
+// IDs are UUIDs, carried over from Postgres for existing whiskies. Checking
+// them also stops a "/" in an ID reaching a different document path.
+const WhiskyId = z.string().regex(/^[\w-]{1,128}$/);
+
+const text = z.string().trim().min(1).max(255);
+
+const WhiskyFields = z.object({
+  name: text,
+  distillery: text,
+  country_region: text,
+  age: z.number().int().min(0).max(100),
+  grain: text,
+  abv: z.number().gt(0).max(100),
+  rating: z.number().int().min(1).max(5),
+  price: z.number().int().min(1).max(3),
+  notes: z.string().max(5000),
+});
+
+interface StoredWhisky {
+  name: string;
+  distillery: string;
+  countryRegion: string;
+  age: number;
+  grain: string;
+  abv: number;
+  rating: number;
+  price: number;
+  notes: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+function toWhisky(snapshot: DocumentSnapshot): Whisky {
+  const data = snapshot.data() as StoredWhisky;
+  return {
+    last_edited: data.updatedAt.toDate(),
+    whisky_id: snapshot.id,
+    name: data.name,
+    distillery: data.distillery,
+    country_region: data.countryRegion,
+    age: data.age,
+    grain: data.grain,
+    abv: data.abv,
+    rating: data.rating,
+    price: data.price,
+    notes: data.notes,
+  };
+}
+
+// Throws if the whisky breaks any of the limits, before anything is written
+function toStored(whisky: Whisky) {
+  const fields = WhiskyFields.parse(whisky);
+  return {
+    name: fields.name,
+    distillery: fields.distillery,
+    countryRegion: fields.country_region,
+    age: fields.age,
+    grain: fields.grain,
+    abv: fields.abv,
+    rating: fields.rating,
+    price: fields.price,
+    notes: fields.notes,
+    updatedAt: FieldValue.serverTimestamp(),
+  };
+}
 
 // Create new whisky
 export async function createWhisky(whisky: Whisky): Promise<void> {
   await requireAuth();
 
-  const whisky_id = generate_uuid();
-  const last_edited = new Date().toISOString();
-
+  const fields = toStored(whisky);
   try {
-    await sql`
-                INSERT INTO whisky_journal
-                (last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes)
-                VALUES
-                (${last_edited}, ${whisky_id}, ${whisky.name}, ${whisky.distillery}, ${whisky.country_region}, ${whisky.age}, ${whisky.grain}, ${whisky.abv}, ${whisky.rating}, ${whisky.price}, ${whisky.notes});
-            `;
+    await adminDb()
+      .collection(COLLECTION)
+      .doc(generate_uuid())
+      .create({ ...fields, createdAt: FieldValue.serverTimestamp() });
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to create a new whisky entry.", { cause: error });
@@ -30,91 +102,39 @@ export async function createWhisky(whisky: Whisky): Promise<void> {
 // Read all whiskies
 export async function readWhiskyJournal(): Promise<Whisky[]> {
   try {
-    const data = await sql<Whisky>`
-      SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
-      FROM whisky_journal;
-    `;
-
-    const whiskies: Whisky[] = data.rows.map((whisky) => ({
-      last_edited: whisky.last_edited,
-      whisky_id: whisky.whisky_id,
-      name: whisky.name,
-      distillery: whisky.distillery,
-      country_region: whisky.country_region,
-      age: whisky.age,
-      grain: whisky.grain,
-      abv: whisky.abv,
-      rating: whisky.rating,
-      price: whisky.price,
-      notes: whisky.notes,
-    }));
-
-    return whiskies;
+    const snapshot = await adminDb().collection(COLLECTION).get();
+    return snapshot.docs.map(toWhisky);
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch the whisky journal.", { cause: error });
   }
 }
 
-// Read single whisky by id
-export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
+// Read single whisky by id, or null if there is no such whisky
+export async function readWhisky(whisky_id: string): Promise<Whisky | null> {
+  if (!WhiskyId.safeParse(whisky_id).success) return null;
+
   try {
-    const data = await sql<Whisky>`
-      SELECT last_edited, whisky_id, name, distillery, country_region, age, grain, abv, rating, price, notes
-      FROM whisky_journal
-      WHERE whisky_id = ${whisky_id};
-    `;
-
-    if (data.rows.length > 1) {
-      throw new Error("More than one whisky found with the given ID.");
-    }
-
-    if (data.rows.length === 0) {
-      throw new Error("No whisky found with the given ID.");
-    }
-
-    const whisky: Whisky = {
-      last_edited: data.rows[0].last_edited,
-      whisky_id: data.rows[0].whisky_id,
-      name: data.rows[0].name,
-      distillery: data.rows[0].distillery,
-      country_region: data.rows[0].country_region,
-      age: data.rows[0].age,
-      grain: data.rows[0].grain,
-      abv: data.rows[0].abv,
-      rating: data.rows[0].rating,
-      price: data.rows[0].price,
-      notes: data.rows[0].notes,
-    };
-
-    return [whisky];
+    const snapshot = await adminDb()
+      .collection(COLLECTION)
+      .doc(whisky_id)
+      .get();
+    return snapshot.exists ? toWhisky(snapshot) : null;
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch the whisky journal.", { cause: error });
   }
 }
 
-// Update whisky entry
+// Update whisky entry. Fails if the whisky has been deleted, rather than
+// bringing it back.
 export async function updateWhisky(whisky: Whisky): Promise<void> {
   await requireAuth();
 
-  const last_edited = new Date().toISOString();
-
+  const whisky_id = WhiskyId.parse(whisky.whisky_id);
+  const fields = toStored(whisky);
   try {
-    await sql`
-                UPDATE whisky_journal
-                SET last_edited = ${last_edited},
-                    name = ${whisky.name},
-                    distillery = ${whisky.distillery},
-                    country_region = ${whisky.country_region},
-                    age = ${whisky.age},
-                    grain = ${whisky.grain},
-                    abv = ${whisky.abv},
-                    rating = ${whisky.rating},
-                    price = ${whisky.price},
-                    notes = ${whisky.notes}
-                WHERE whisky_id = ${whisky.whisky_id};
-            `;
+    await adminDb().collection(COLLECTION).doc(whisky_id).update(fields);
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to update whisky entry.", { cause: error });
@@ -125,8 +145,13 @@ export async function updateWhisky(whisky: Whisky): Promise<void> {
 export async function deleteWhisky(whisky_id: string) {
   await requireAuth();
 
+  const parsed = WhiskyId.safeParse(whisky_id);
+  if (!parsed.success) {
+    return { message: "No whisky found with the given ID." };
+  }
+
   try {
-    await sql`DELETE FROM whisky_journal WHERE whisky_id = ${whisky_id}`;
+    await adminDb().collection(COLLECTION).doc(parsed.data).delete();
   } catch {
     return {
       message: "Database Error: Failed to delete item from whisky journal.",

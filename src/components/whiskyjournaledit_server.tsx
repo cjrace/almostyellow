@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { readWhisky } from "@/services/whiskyjournal";
 import { WhiskyJournalEdit } from "@/components/whiskyjournaledit";
 
@@ -11,7 +12,8 @@ export default async function WhiskyJournalEditServer({
   params: Params;
 }) {
   const { id } = params;
-  const data = await readWhisky(id);
+  const whisky = await readWhisky(id);
+  if (!whisky) notFound();
 
-  return <WhiskyJournalEdit whiskyData={data[0]} />;
+  return <WhiskyJournalEdit whiskyData={whisky} />;
 }
