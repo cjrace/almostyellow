@@ -1,7 +1,10 @@
 "use client";
 
 import { startTransition, useState } from "react";
-import { authenticate } from "@/services/authenticate";
+import { FirebaseError } from "firebase/app";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInAction } from "@/actions/signInAction";
+import { clientAuth, type FirebaseClientConfig } from "@/firebase/client";
 import {
   TextInput,
   PasswordInput,
@@ -12,7 +15,53 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-export default function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
+// Firebase sign-in failures that mean the email or password is wrong. They
+// all get the same message so it does not reveal which accounts exist.
+const CREDENTIAL_ERRORS = [
+  "auth/invalid-credential",
+  "auth/invalid-email",
+  "auth/user-disabled",
+  "auth/user-not-found",
+  "auth/wrong-password",
+];
+
+function errorMessageFor(error: unknown) {
+  if (error instanceof FirebaseError) {
+    if (CREDENTIAL_ERRORS.includes(error.code)) return "Invalid credentials.";
+    if (error.code === "auth/too-many-requests") {
+      return "Too many attempts. Try again later.";
+    }
+  }
+  return "Something went wrong.";
+}
+
+// Signs in with Firebase in the browser, then swaps the ID token for a server
+// session cookie. The browser's own Firebase sign-in is dropped straight
+// away, so the cookie is the only session to clear on sign-out.
+async function signIn(
+  firebaseConfig: FirebaseClientConfig,
+  email: string,
+  password: string,
+  callbackUrl: string | undefined,
+) {
+  const auth = clientAuth(firebaseConfig);
+  let idToken: string;
+  try {
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+    idToken = await user.getIdToken();
+  } finally {
+    await signOut(auth);
+  }
+  return signInAction(idToken, callbackUrl);
+}
+
+export default function LoginForm({
+  callbackUrl,
+  firebaseConfig,
+}: {
+  callbackUrl?: string;
+  firebaseConfig: FirebaseClientConfig;
+}) {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
@@ -26,21 +75,15 @@ export default function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
 
   const handleFormSubmit = () => {
     const { email, password } = form.values;
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-    if (callbackUrl) {
-      formData.append("redirectTo", callbackUrl);
-    }
     startTransition(() => {
-      authenticate(undefined, formData)
+      signIn(firebaseConfig, email, password, callbackUrl)
         .then((result) => {
           if (result) {
             setErrorMessage(result);
           }
         })
-        .catch(() => {
-          setErrorMessage("Something went wrong.");
+        .catch((error: unknown) => {
+          setErrorMessage(errorMessageFor(error));
         });
     });
   };

@@ -12,9 +12,13 @@ test("Can filter and search cocktails", async ({ page }) => {
   await expect(manhattan).toBeVisible();
   await expect(luigi).toBeVisible();
 
-  // Filter by gin
-  await page.getByLabel("Filter by base spirit").selectOption("Gin");
-  await expect(manhattan).toBeHidden();
+  // Filter by gin. The page can still be hydrating, when a change is shown in
+  // the select but never reaches React, so try again until it takes effect.
+  await expect(async () => {
+    await page.getByLabel("Filter by base spirit").selectOption("All spirits");
+    await page.getByLabel("Filter by base spirit").selectOption("Gin");
+    await expect(manhattan).toBeHidden({ timeout: 1_000 });
+  }).toPass();
   await expect(luigi).toBeVisible();
 
   // Clear filter

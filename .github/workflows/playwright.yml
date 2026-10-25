@@ -62,13 +62,12 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - name: Generate throwaway test secrets
-        run: |
-          for name in AUTH_SECRET TEST_PASSWORD; do
-            value=$(openssl rand -hex 32)
-            echo "::add-mask::$value"
-            echo "$name=$value" >> "$GITHUB_ENV"
-          done
+      # Signing in uses the Firebase Auth emulator, which runs alongside the
+      # Firestore emulator, a Java program
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Install Playwright with deps
@@ -82,7 +81,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Build application ready to test
         run: pnpm exec next build
-      - name: Run all Playwright tests against the disposable database
+      - name: Run all Playwright tests against the disposable database and emulators
         run: pnpm test:e2e --no-build
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}

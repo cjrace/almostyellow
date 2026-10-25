@@ -23,8 +23,7 @@ Database
 
 Auth
 
-- [Auth.js](https://authjs.dev/)
-- [bcrypt](https://github.com/kelektiv/node.bcrypt.js)
+- [Firebase Authentication](https://firebase.google.com/docs/auth)
 
 ### Run locally
 

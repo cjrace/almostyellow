@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { getCredentials } from "./helpers";
+import { getCredentials, getUnauthorisedCredentials } from "./helpers";
 
 async function tryLogin(
   page: import("@playwright/test").Page,
@@ -30,6 +30,57 @@ test("Rejects an unknown user", async ({ page }) => {
 
   await expect(page.getByText("Invalid credentials.")).toBeVisible();
   await expect(page).toHaveURL("/admin/login");
+});
+
+test("Rejects a Firebase account that is not on the allowlist", async ({
+  page,
+}) => {
+  const { email, password } = getUnauthorisedCredentials();
+
+  await tryLogin(page, email, password);
+
+  await expect(page.getByText("Invalid credentials.")).toBeVisible();
+  await expect(page).toHaveURL("/admin/login");
+
+  await page.goto("/admin/chopinliszt");
+  await page.waitForURL("**/admin/login?callbackUrl=**");
+});
+
+test("An expired session on an open page leads back to sign-in", async ({
+  page,
+}) => {
+  // Signs in twice, which can run past the default timeout in a busy full run
+  test.slow();
+  const { email, password } = getCredentials();
+
+  await page.goto(
+    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
+  );
+  await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
+  await page.getByPlaceholder("Enter password").fill(password);
+  await Promise.all([
+    page.waitForURL("/admin/chopinliszt", { timeout: 15_000 }),
+    page.getByRole("button", { name: "Log in" }).click(),
+  ]);
+  await expect(page.getByText("Limes")).toBeVisible();
+
+  // The session goes while the page stays open
+  await page.context().clearCookies({ name: "__session" });
+  await page.getByText("Limes").click();
+
+  await page.waitForURL("/admin/login");
+
+  // Nothing changed while signed out
+  await page.goto(
+    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
+  );
+  await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
+  await page.getByPlaceholder("Enter password").fill(password);
+  await Promise.all([
+    page.waitForURL("/admin/chopinliszt", { timeout: 15_000 }),
+    page.getByRole("button", { name: "Log in" }).click(),
+  ]);
+  await expect(page.getByRole("checkbox", { name: "Limes" })).not.toBeChecked();
 });
 
 test("Signing out locks the admin area again", async ({ page }) => {
