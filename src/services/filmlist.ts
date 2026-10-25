@@ -1,6 +1,6 @@
 "use server";
 
-import { sql } from "@vercel/postgres";
+import { sql } from "@/db";
 import { requireAuth } from "@/auth";
 import { Film } from "@/components/filmcard";
 

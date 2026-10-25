@@ -9,13 +9,16 @@ pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + build + Playwright E2E tests (full CI suite)
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database needed)
+pnpm test:e2e      # Build, then Playwright against a disposable Docker database
 ```
 
-Playwright tests require a running server (`next start` or existing dev server). To run a single test file:
+Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2e.mts`) starts Postgres from `docker-compose.test.yml`, seeded from `tests/database/`, then runs `next start` with the settings in `tests/test-env.ts`. It starts Docker Desktop first if it is not already running. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
 ```bash
-npx playwright test tests/public/00_initial_load.spec.ts
+pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
+
+Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
@@ -48,9 +51,9 @@ Auth.js uses two config files intentionally:
 
 ### Database
 
-Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. The `.env` file must have credentials — see `.env.example`. Tables: `users`, `whisky_journal`, `film_list`, `chopin_liszt`.
+Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users`, `whisky_journal`, `film_list`, `chopin_liszt`.
 
-Database seeding is done by creating a temporary `src/app/seed/route.ts` (git-ignored) and hitting `http://localhost:3000/seed` locally. See `src/seed.md` for the full pattern and table schemas.
+Database seeding is done by creating a temporary `src/app/seed/route.ts` (git-ignored) and hitting `http://localhost:3000/seed` locally. See `src/seed.md` for the full pattern. The schema the tests use is in `tests/database/01_schema.sql`, so keep it in step with any table changes.
 
 ### UI
 
@@ -63,6 +66,8 @@ Playwright E2E tests in `tests/`, split into three folders:
 - `tests/public/` — Public pages, no auth needed
 - `tests/public-database/` — Public pages that read from the database
 - `tests/admin/` — Admin area (requires auth)
+
+They run against the synthetic rows in `tests/database/02_fixtures.sql` and a test user made from `TEST_EMAIL` and `TEST_PASSWORD`. Some tests assert exact counts, so update them alongside the fixtures.
 
 Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
 

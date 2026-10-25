@@ -62,5 +62,6 @@ test("Download CSV and check contents", async ({ page }) => {
   const csv: string = fs.readFileSync(path, "utf-8");
   const rows: string[] = csv.split("\n");
 
-  expect(rows.length).toBeGreaterThan(30);
+  // Header plus the three whiskies in tests/database/02_fixtures.sql
+  expect(rows.length).toBe(4);
 });

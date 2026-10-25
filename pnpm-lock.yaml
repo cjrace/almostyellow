@@ -29,6 +29,9 @@ importers:
       "@mantine/hooks":
         specifier: ^9.7.3
         version: 9.7.3(react@19.3.1)
+      "@neondatabase/serverless":
+        specifier: 0.9.5
+        version: 0.9.5
       "@tabler/icons-react":
         specifier: ^3.49.0
         version: 3.49.0(react@19.3.1)

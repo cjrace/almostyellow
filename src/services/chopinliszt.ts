@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { sql } from "@vercel/postgres";
+import { sql } from "@/db";
 import { requireAuth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { Item } from "@/components/chopinliszt";

@@ -11,7 +11,7 @@ const { requireAuth, sql } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/auth", () => ({ requireAuth }));
-vi.mock("@vercel/postgres", () => ({ sql }));
+vi.mock("@/db", () => ({ sql }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import * as chopinliszt from "@/services/chopinliszt";

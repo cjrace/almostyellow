@@ -1,0 +1,37 @@
+# Disposable database for the Playwright tests, used locally and in CI.
+# Started and seeded by scripts/e2e.mts, see AGENTS.md. Data lives in memory,
+# so every start begins from tests/database/ again.
+name: almostyellow-test
+
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: main
+      TEST_EMAIL: ${TEST_EMAIL:?TEST_EMAIL is required}
+      TEST_PASSWORD: ${TEST_PASSWORD:?TEST_PASSWORD is required}
+    # No published port: only the Neon proxy needs to reach Postgres, so a local
+    # Postgres on 5432 cannot clash.
+    tmpfs:
+      - /var/lib/postgresql/data
+    volumes:
+      - ./tests/database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Over TCP, so it only passes once the init scripts have finished
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d main"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  # Translates the WebSocket protocol @vercel/postgres uses into plain Postgres
+  neon-proxy:
+    image: ghcr.io/timowilhelm/local-neon-http-proxy:main@sha256:cd2ae14edf2feafbc3330492de5c80506f77274c3bd013154cdef697bdeb768a
+    environment:
+      PG_CONNECTION_STRING: postgres://postgres:postgres@postgres:5432/main
+    ports:
+      - "4444:4444"
+    depends_on:
+      postgres:
+        condition: service_healthy
