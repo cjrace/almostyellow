@@ -37,21 +37,21 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
 - `src/components/` — All React components in a flat structure (no subdirectories)
-- `src/services/` — Server-side Postgres query functions (`authenticate.ts`, `chopinliszt.ts`, `filmlist.ts`, `whiskyjournal.ts`)
-- `src/actions/` — Next.js server actions (currently only `signOutAction.ts`)
+- `src/services/` — Server-side Postgres query functions (`chopinliszt.ts`, `filmlist.ts`, `whiskyjournal.ts`)
+- `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`)
 - `src/styles/` — Global CSS, CSS modules, and the Mantine theme (`acalat.tsx`)
 
-### Auth split (important)
+### Auth (Firebase Authentication)
 
-Auth.js uses two config files intentionally:
-
-- `src/auth.config.ts` — Edge-runtime-safe config (route protection callbacks, sign-in page redirect). Used by middleware.
-- `src/auth.ts` — Full Node.js auth config with the credentials provider (bcrypt + Postgres). Not safe for Edge.
-- `src/proxy.ts` — Acts as `middleware.ts`; re-exports the edge-compatible auth. All routes under `/admin` require authentication.
+- `src/components/login.tsx` — Signs in with the Firebase web SDK in the browser, then passes the ID token to `src/actions/signInAction.ts`.
+- `src/actions/signInAction.ts` — Swaps a fresh ID token from an authorised user for an HTTP-only `__session` cookie. Server actions only accept same-origin requests, which is the CSRF protection.
+- `src/auth.ts` — Creates and verifies session cookies with the Firebase Admin SDK (`src/firebase/admin.ts`), and checks the user is in the `authorizedUsers` allowlist. `getSession()` and `requireAuth()` live here.
+- `src/proxy.ts` — Acts as `middleware.ts`. Redirects anyone without a valid session from `/admin` pages to the login page. Server actions must still call `requireAuth()`.
+- `src/firebase/` — Admin SDK set-up for the server, and web SDK set-up for the browser. The browser's settings are read from the environment at request time and passed to the login form, so nothing is baked in at build time.
 
 ### Database
 
-Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users`, `whisky_journal`, `film_list`, `chopin_liszt`.
+Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users` (no longer used for sign-in), `whisky_journal`, `film_list`, `chopin_liszt`.
 
 Database seeding is done by creating a temporary `src/app/seed/route.ts` (git-ignored) and hitting `http://localhost:3000/seed` locally. See `src/seed.md` for the full pattern. The schema the tests use is in `tests/database/01_schema.sql`, so keep it in step with any table changes.
 
@@ -67,7 +67,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 - `tests/public-database/` — Public pages that read from the database
 - `tests/admin/` — Admin area (requires auth)
 
-They run against the synthetic rows in `tests/database/02_fixtures.sql` and a test user made from `TEST_EMAIL` and `TEST_PASSWORD`. Some tests assert exact counts, so update them alongside the fixtures.
+They run against the synthetic rows in `tests/database/02_fixtures.sql` and sign in as the synthetic users in `tests/firebase/fixtures.ts`, which `scripts/e2e.mts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
 Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
 

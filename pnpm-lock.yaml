@@ -44,18 +44,18 @@ importers:
       "@vercel/speed-insights":
         specifier: ^2.0.0
         version: 2.0.0(next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
-      bcrypt:
-        specifier: ^6.0.0
-        version: 6.0.0
       dotenv:
         specifier: ^18.0.8
         version: 18.0.8
+      firebase:
+        specifier: ^13.1.0
+        version: 13.1.0
+      firebase-admin:
+        specifier: ^14.5.0
+        version: 14.5.0(@firebase/app-compat@0.5.20)(@firebase/app@0.16.4)(supports-color@7.2.0)
       next:
         specifier: ^16.4.2
         version: 16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      next-auth:
-        specifier: 5.0.0-beta.32
-        version: 5.0.0-beta.32(next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -65,6 +65,9 @@ importers:
       react-icons:
         specifier: ^5.7.0
         version: 5.7.0(react@19.3.1)
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       sharp:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@26.6.5)
@@ -90,9 +93,6 @@ importers:
       "@playwright/test":
         specifier: ^1.64.1
         version: 1.64.1
-      "@types/bcrypt":
-        specifier: ^6.0.0
-        version: 6.0.0
       "@types/node":
         specifier: ^26.6.5
         version: 26.6.5
@@ -123,12 +123,6 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 7.1.1
         version: 7.1.1(eslint@10.13.0(supports-color@7.2.0))(supports-color@7.2.0)
-      firebase:
-        specifier: ^13.1.0
-        version: 13.1.0
-      firebase-admin:
-        specifier: ^14.5.0
-        version: 14.5.0(@firebase/app-compat@0.5.20)(@firebase/app@0.16.4)(supports-color@7.2.0)
       firebase-tools:
         specifier: ^15.34.1
         version: 15.34.1(@types/node@26.6.5)(bufferutil@4.1.0)(supports-color@7.2.0)
@@ -166,23 +160,6 @@ packages:
       {
         integrity: sha512-r1w81DpR+KyRWd3f+rk6TNqMgedmAxZP5v5KWlXQWlgMUUtyEJch0DKEci1SorPMiSeM8XPl7MZ3miJ60JIpQg==,
       }
-
-  "@auth/core@0.41.3":
-    resolution:
-      {
-        integrity: sha512-sJ3JMHHkXMD3aOjopv7mOBTO1Ocw4b0fAEXJBz6k7YHLpYQI6C40jCUPc5fNvUKxXRXNE1/sRISA15UrwWJBTw==,
-      }
-    peerDependencies:
-      "@simplewebauthn/browser": ^9.0.1
-      "@simplewebauthn/server": ^9.0.2
-      nodemailer: ^7.0.7 || ^8.0.5
-    peerDependenciesMeta:
-      "@simplewebauthn/browser":
-        optional: true
-      "@simplewebauthn/server":
-        optional: true
-      nodemailer:
-        optional: true
 
   "@babel/code-frame@7.29.7":
     resolution:
@@ -1758,13 +1735,6 @@ packages:
       }
     engines: { node: ">= 8" }
 
-  "@opentelemetry/api@1.10.0":
-    resolution:
-      {
-        integrity: sha512-lMkyes8iHrG+mk6WH7X70MdCLI2RS0FwNBY1PyQ8UemaijE2m5mv5A0Niy3HtbYTFrgkUEQjFMXmSAk2hQDuPQ==,
-      }
-    engines: { node: ">=8.0.0" }
-
   "@opentelemetry/api@1.9.1":
     resolution:
       {
@@ -1799,12 +1769,6 @@ packages:
     resolution:
       {
         integrity: sha512-SeE8JPwW1xs1tHeNycjUtUBdhorRa8o4jlvjwk49R7/Z291i+4DQa7JJIgOm/TaYQZx+QrPQbVJ/9c8dMIZN8Q==,
-      }
-
-  "@panva/hkdf@1.2.1":
-    resolution:
-      {
-        integrity: sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw==,
       }
 
   "@pkgjs/parseargs@0.11.0":
@@ -2081,12 +2045,6 @@ packages:
     resolution:
       {
         integrity: sha512-l+GnSkFETx0U26icxv1VUFnxxiTqXfCcVRiRAnyMwibupM2S2L/hSaZ9gmSgz01rkrsH/93NvLsxykqdanc6lw==,
-      }
-
-  "@types/bcrypt@6.0.0":
-    resolution:
-      {
-        integrity: sha512-/oJGukuH3D2+D+3H4JWLaAsJ/ji86dhRidzZ/Od7H/i8g+aCmvkeCc6Ni/f9uxGLSQVCRZkX2/lqEFG2BvWtlQ==,
       }
 
   "@types/chai@5.2.3":
@@ -2679,13 +2637,6 @@ packages:
         integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==,
       }
     engines: { node: ">= 0.8" }
-
-  bcrypt@6.0.0:
-    resolution:
-      {
-        integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==,
-      }
-    engines: { node: ">= 18" }
 
   bignumber.js@9.3.1:
     resolution:
@@ -5441,25 +5392,6 @@ packages:
       }
     engines: { node: ">=18" }
 
-  next-auth@5.0.0-beta.32:
-    resolution:
-      {
-        integrity: sha512-CGlChIEWZ6LltNVxrE5yiySMID+Idpmry47JYA5lLwgD8Sx02a8M65VL0TWVz9nbnOioS/tCW/rP/0+mE7Qp4Q==,
-      }
-    peerDependencies:
-      "@simplewebauthn/browser": ^9.0.1
-      "@simplewebauthn/server": ^9.0.2
-      next: ^14.0.0-0 || ^15.0.0 || ^16.0.0
-      nodemailer: ^7.0.7 || ^8.0.5
-      react: ^18.2.0 || ^19.0.0
-    peerDependenciesMeta:
-      "@simplewebauthn/browser":
-        optional: true
-      "@simplewebauthn/server":
-        optional: true
-      nodemailer:
-        optional: true
-
   next@16.4.2:
     resolution:
       {
@@ -5483,13 +5415,6 @@ packages:
         optional: true
       sass:
         optional: true
-
-  node-addon-api@8.5.0:
-    resolution:
-      {
-        integrity: sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A==,
-      }
-    engines: { node: ^18 || ^20 || >= 21 }
 
   node-domexception@1.0.0:
     resolution:
@@ -5561,12 +5486,6 @@ packages:
         integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==,
       }
     engines: { node: ">=0.10.0" }
-
-  oauth4webapi@3.8.6:
-    resolution:
-      {
-        integrity: sha512-iwemM91xz8nryHti2yTmg5fhyEMVOkOXwHNqbvcATjyajb5oQxCQzrNOA6uElRHuMhQQTKUyFKV9y/CNyg25BQ==,
-      }
 
   object-assign@4.1.1:
     resolution:
@@ -6026,20 +5945,6 @@ packages:
     resolution:
       {
         integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==,
-      }
-
-  preact-render-to-string@6.5.11:
-    resolution:
-      {
-        integrity: sha512-ubnauqoGczeGISiOh6RjX0/cdaF8v/oDXIjO85XALCQjwQP+SB4RDXXtvZ6yTYSjG+PC1QRP2AhPgCEsM2EvUw==,
-      }
-    peerDependencies:
-      preact: ">=10"
-
-  preact@10.24.3:
-    resolution:
-      {
-        integrity: sha512-Z2dPnBnMUfyQfSQ+GBdsGa16hz35YmLmtTLhM169uW944hYL6xzTYkJjC07j+Wosz733pMWx0fgON3JNw1jJQA==,
       }
 
   prelude-ls@1.2.1:
@@ -6502,6 +6407,12 @@ packages:
         integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==,
       }
     engines: { node: ">= 18" }
+
+  server-only@0.0.1:
+    resolution:
+      {
+        integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==,
+      }
 
   setprototypeof@1.2.0:
     resolution:
@@ -7530,14 +7441,6 @@ snapshots:
       call-me-maybe: 1.0.2
       js-yaml: 4.3.2
 
-  "@auth/core@0.41.3":
-    dependencies:
-      "@panva/hkdf": 1.2.1
-      jose: 6.2.3
-      oauth4webapi: 3.8.6
-      preact: 10.24.3
-      preact-render-to-string: 6.5.11(preact@10.24.3)
-
   "@babel/code-frame@7.29.7":
     dependencies:
       "@babel/helper-validator-identifier": 7.29.7
@@ -8171,7 +8074,7 @@ snapshots:
   "@google-cloud/firestore@9.4.0(supports-color@7.2.0)":
     dependencies:
       "@google-cloud/firestore-api": 0.2.0(supports-color@7.2.0)
-      "@opentelemetry/api": 1.10.0
+      "@opentelemetry/api": 1.9.1
       fast-deep-equal: 3.1.3
       functional-red-black-tree: 1.0.1
       google-gax: 6.13.0(supports-color@7.2.0)
@@ -8672,9 +8575,6 @@ snapshots:
       "@nodelib/fs.scandir": 2.1.5
       fastq: 1.20.1
 
-  "@opentelemetry/api@1.10.0":
-    optional: true
-
   "@opentelemetry/api@1.9.1": {}
 
   "@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1)":
@@ -8687,8 +8587,6 @@ snapshots:
   "@opentelemetry/semantic-conventions@1.39.0": {}
 
   "@oxc-project/types@0.155.0": {}
-
-  "@panva/hkdf@1.2.1": {}
 
   "@pkgjs/parseargs@0.11.0":
     optional: true
@@ -8795,10 +8693,6 @@ snapshots:
       react: 19.3.1
 
   "@tabler/icons@3.49.0": {}
-
-  "@types/bcrypt@6.0.0":
-    dependencies:
-      "@types/node": 26.6.5
 
   "@types/chai@5.2.3":
     dependencies:
@@ -9132,11 +9026,6 @@ snapshots:
   basic-auth@2.0.1:
     dependencies:
       safe-buffer: 5.1.2
-
-  bcrypt@6.0.0:
-    dependencies:
-      node-addon-api: 8.5.0
-      node-gyp-build: 4.8.4
 
   bignumber.js@9.3.1: {}
 
@@ -10391,7 +10280,7 @@ snapshots:
     dependencies:
       "@grpc/grpc-js": 1.14.6
       "@grpc/proto-loader": 0.8.1
-      "@opentelemetry/api": 1.10.0
+      "@opentelemetry/api": 1.9.1
       duplexify: 4.1.3
       google-auth-library: 11.3.1(supports-color@7.2.0)
       google-logging-utils: 2.1.0
@@ -10989,12 +10878,6 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  next-auth@5.0.0-beta.32(next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1):
-    dependencies:
-      "@auth/core": 0.41.3
-      next: 16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react: 19.3.1
-
   next@16.4.2(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       "@next/env": 16.4.2
@@ -11021,8 +10904,6 @@ snapshots:
       - "@babel/core"
       - "@types/node"
       - babel-plugin-macros
-
-  node-addon-api@8.5.0: {}
 
   node-domexception@1.0.0: {}
 
@@ -11067,8 +10948,6 @@ snapshots:
     optional: true
 
   normalize-path@3.0.0: {}
-
-  oauth4webapi@3.8.6: {}
 
   object-assign@4.1.1: {}
 
@@ -11307,12 +11186,6 @@ snapshots:
   postgres-interval@3.0.0: {}
 
   postgres-range@1.1.4: {}
-
-  preact-render-to-string@6.5.11(preact@10.24.3):
-    dependencies:
-      preact: 10.24.3
-
-  preact@10.24.3: {}
 
   prelude-ls@1.2.1: {}
 
@@ -11635,6 +11508,8 @@ snapshots:
       send: 1.2.1(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
+
+  server-only@0.0.1: {}
 
   setprototypeof@1.2.0: {}
 

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { getCredentials } from "./helpers";
+import { getCredentials, getUnauthorisedCredentials } from "./helpers";
 
 async function tryLogin(
   page: import("@playwright/test").Page,
@@ -30,6 +30,20 @@ test("Rejects an unknown user", async ({ page }) => {
 
   await expect(page.getByText("Invalid credentials.")).toBeVisible();
   await expect(page).toHaveURL("/admin/login");
+});
+
+test("Rejects a Firebase account that is not on the allowlist", async ({
+  page,
+}) => {
+  const { email, password } = getUnauthorisedCredentials();
+
+  await tryLogin(page, email, password);
+
+  await expect(page.getByText("Invalid credentials.")).toBeVisible();
+  await expect(page).toHaveURL("/admin/login");
+
+  await page.goto("/admin/chopinliszt");
+  await page.waitForURL("**/admin/login?callbackUrl=**");
 });
 
 test("Signing out locks the admin area again", async ({ page }) => {

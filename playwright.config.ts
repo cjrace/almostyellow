@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-/* Point at the Docker test database, never the production one in .env */
+/* Point at the Docker test database and Firebase emulators, never production */
 import "./tests/test-env";
 
 /**
@@ -9,6 +9,8 @@ export default defineConfig({
   testDir: "./tests",
   /* Unit and Firebase emulator tests are run by Vitest */
   testIgnore: ["unit/**", "firebase/**"],
+  /* Loads the synthetic users into the Firebase emulators */
+  globalSetup: "./tests/global-setup.ts",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

@@ -1,10 +1,29 @@
-import NextAuth from "next-auth";
-import { authConfig } from "@/auth.config";
+import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE, verifySessionCookie } from "@/auth";
 
-export default NextAuth(authConfig).auth;
+// Keeps signed-out visitors out of the /admin pages. Server actions check the
+// session again themselves, see requireAuth in src/auth.ts.
+export async function proxy(request: NextRequest) {
+  const { nextUrl } = request;
+  const session = await verifySessionCookie(
+    request.cookies.get(SESSION_COOKIE)?.value,
+  );
+  const isLoginPage = nextUrl.pathname === "/admin/login";
+
+  if (isLoginPage) {
+    return session
+      ? NextResponse.redirect(new URL("/admin", nextUrl))
+      : NextResponse.next();
+  }
+
+  if (!session) {
+    const login = new URL("/admin/login", nextUrl);
+    login.searchParams.set("callbackUrl", nextUrl.href);
+    return NextResponse.redirect(login);
+  }
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-  ],
+  matcher: ["/admin", "/admin/:path*"],
 };

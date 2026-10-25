@@ -1,12 +1,11 @@
+import { users } from "../firebase/fixtures";
+
+// Synthetic users that only exist in the Firebase Auth emulator
 export function getCredentials() {
-  const email = process.env.TEST_EMAIL;
-  const password = process.env.TEST_PASSWORD;
+  return users.alice;
+}
 
-  if (!email || !password) {
-    throw new Error(
-      "Missing environment variables: TEST_EMAIL or TEST_PASSWORD",
-    );
-  }
-
-  return { email, password };
+// Can sign in to Firebase, but is not on the allowlist
+export function getUnauthorisedCredentials() {
+  return users.mallory;
 }
