@@ -18,7 +18,7 @@ Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
 
-Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first.
+Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves Firefox and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 

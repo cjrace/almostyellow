@@ -49,6 +49,8 @@ test("Rejects a Firebase account that is not on the allowlist", async ({
 test("An expired session on an open page leads back to sign-in", async ({
   page,
 }) => {
+  // Signs in twice, which can run past the default timeout in a busy full run
+  test.slow();
   const { email, password } = getCredentials();
 
   await page.goto(

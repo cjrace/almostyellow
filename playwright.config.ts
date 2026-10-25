@@ -17,10 +17,14 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on all environments to reduce flakiness */
   retries: 3,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  /* Opt out of parallel tests on CI. Locally, more than 4 browsers alongside
+     the app, Docker and the Firebase emulators starves Firefox, which then
+     times out at random. */
+  workers: process.env.CI ? 1 : 4,
+  /* Never serve the report at the end of a run: it waits for Ctrl+C, which
+     keeps the emulators and test database running and blocks the next run.
+     Open it with "pnpm exec playwright show-report". */
+  reporter: [["html", { open: "never" }]],
   /* Give Firefox extra slack on assertions; default 5s races with App Router renders. */
   expect: {
     timeout: 10_000,
