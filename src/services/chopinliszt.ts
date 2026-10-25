@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { sql } from "@vercel/postgres";
+import { requireAuth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { Item } from "@/components/chopinliszt";
 import { v4 as generate_uuid } from "uuid";
@@ -22,6 +23,8 @@ export interface State {
 }
 
 export async function createChopin(formData: FormData) {
+  await requireAuth();
+
   const validatedFields = CreateChopin.safeParse({
     chopin_text: formData.get("chopin_text"),
   });
@@ -52,6 +55,8 @@ export async function createChopin(formData: FormData) {
 }
 
 export async function readChopin(): Promise<Item[]> {
+  await requireAuth();
+
   try {
     const data = await sql<{
       chopin_id: string;
@@ -76,6 +81,8 @@ export async function readChopin(): Promise<Item[]> {
 }
 
 export async function updateChopinChecked(chopinId: string, checked: boolean) {
+  await requireAuth();
+
   try {
     await sql`
         UPDATE chopin_liszt
@@ -92,6 +99,8 @@ export async function updateChopinChecked(chopinId: string, checked: boolean) {
 }
 
 export async function deleteChopin(chopin_id: string) {
+  await requireAuth();
+
   try {
     await sql`DELETE FROM chopin_liszt WHERE chopin_id = ${chopin_id}`;
     revalidatePath("/admin/chopinliszt");

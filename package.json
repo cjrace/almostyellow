@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "prettier . --write && pnpm run lint && next build && playwright test",
+    "test": "prettier . --write && pnpm run lint && vitest run && next build && playwright test",
+    "test:unit": "vitest run",
     "test-only": "pnpm run lint && playwright test",
     "pretty": "prettier . --write",
     "pretty-check": "prettier . --check",
@@ -57,7 +58,8 @@
     "postcss-simple-vars": "^7.0.1",
     "prettier": "3.9.10",
     "typescript": "^6.0.3",
-    "typescript-eslint": "8.72.0"
+    "typescript-eslint": "8.72.0",
+    "vitest": "^5.0.5"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"

@@ -1,11 +1,14 @@
 "use server";
 
 import { sql } from "@vercel/postgres";
+import { requireAuth } from "@/auth";
 import { Film } from "@/components/filmcard";
 
 // TODO: Think about backup plans?
 
 export async function createFilm(film: Film): Promise<void> {
+  await requireAuth();
+
   try {
     await sql`
                 INSERT INTO film_list
@@ -75,6 +78,8 @@ export async function readFilm(film_id: string): Promise<Film[]> {
 }
 
 export async function updateFilm(film: Film): Promise<void> {
+  await requireAuth();
+
   try {
     await sql`
                 UPDATE film_list
@@ -92,6 +97,8 @@ export async function updateFilm(film: Film): Promise<void> {
 }
 
 export async function deleteFilm(film_id: string) {
+  await requireAuth();
+
   try {
     await sql`DELETE FROM film_list WHERE id = ${film_id};`;
   } catch {

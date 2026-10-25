@@ -12,6 +12,8 @@ upgrade-insecure-requests;
 
 const nextConfig: NextConfig = {
   experimental: {
+    // Lets server actions return a 401 via unauthorized() from next/navigation
+    authInterrupts: true,
     optimizePackageImports: [
       "@mantine/core",
       "@mantine/hooks",

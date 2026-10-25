@@ -1,6 +1,7 @@
 "use server";
 
 import { sql } from "@vercel/postgres";
+import { requireAuth } from "@/auth";
 import { Whisky } from "@/components/whiskyjournal";
 import { v4 as generate_uuid } from "uuid";
 
@@ -8,6 +9,8 @@ import { v4 as generate_uuid } from "uuid";
 
 // Create new whisky
 export async function createWhisky(whisky: Whisky): Promise<void> {
+  await requireAuth();
+
   const whisky_id = generate_uuid();
   const last_edited = new Date().toISOString();
 
@@ -93,6 +96,8 @@ export async function readWhisky(whisky_id: string): Promise<Whisky[]> {
 
 // Update whisky entry
 export async function updateWhisky(whisky: Whisky): Promise<void> {
+  await requireAuth();
+
   const last_edited = new Date().toISOString();
 
   try {
@@ -118,6 +123,8 @@ export async function updateWhisky(whisky: Whisky): Promise<void> {
 
 // Delete whisky entry
 export async function deleteWhisky(whisky_id: string) {
+  await requireAuth();
+
   try {
     await sql`DELETE FROM whisky_journal WHERE whisky_id = ${whisky_id}`;
   } catch {
