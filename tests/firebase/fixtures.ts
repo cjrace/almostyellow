@@ -75,7 +75,7 @@ export const films = [
   {
     id: "0b6a4e02-1f1d-4d3b-9a77-2c6f0e8b1a01",
     name: "Seven Samurai",
-    releaseYear: "1954",
+    releaseYear: 1954,
     top30: true,
     watched: true,
     notInJar: false,
@@ -83,7 +83,7 @@ export const films = [
   {
     id: "0b6a4e02-1f1d-4d3b-9a77-2c6f0e8b1a02",
     name: "Final Destination",
-    releaseYear: "2000",
+    releaseYear: 2000,
     top30: false,
     watched: true,
     notInJar: false,
@@ -91,7 +91,7 @@ export const films = [
   {
     id: "0b6a4e02-1f1d-4d3b-9a77-2c6f0e8b1a03",
     name: "The Godfather",
-    releaseYear: "1972",
+    releaseYear: 1972,
     top30: true,
     watched: false,
     notInJar: false,
@@ -99,7 +99,7 @@ export const films = [
   {
     id: "0b6a4e02-1f1d-4d3b-9a77-2c6f0e8b1a04",
     name: "Paddington 2",
-    releaseYear: "2017",
+    releaseYear: 2017,
     top30: false,
     watched: false,
     notInJar: true,

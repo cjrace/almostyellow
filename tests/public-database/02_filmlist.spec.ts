@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
+import { films } from "../firebase/fixtures";
 
 test("Films Page Test", async ({ page }) => {
   await page.goto("/");
@@ -65,8 +66,13 @@ test("Download CSV and check contents", async ({ page }) => {
   const csv: string = fs.readFileSync(path, "utf-8");
   const rows: string[] = csv.split("\n");
 
-  // Header plus the four films in tests/database/02_fixtures.sql
-  expect(rows.length).toBe(5);
+  // The header, then the films in tests/firebase/fixtures.ts. Admin tests
+  // running at the same time can add their own, so check for these rather
+  // than an exact count.
+  expect(rows[0]).toContain("Name");
+  for (const film of films) {
+    expect(rows.some((row) => row.includes(film.name))).toBe(true);
+  }
 });
 
 test("Can search films by name", async ({ page }) => {

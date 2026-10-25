@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { readFilm } from "@/services/filmlist";
 import { FilmListEdit } from "@/components/filmedit";
 
@@ -7,7 +8,8 @@ interface Params {
 
 export default async function FilmEditServer({ params }: { params: Params }) {
   const { id } = params;
-  const data = await readFilm(id);
+  const film = await readFilm(id);
+  if (!film) notFound();
 
-  return <FilmListEdit filmData={data[0]} />;
+  return <FilmListEdit filmData={film} />;
 }

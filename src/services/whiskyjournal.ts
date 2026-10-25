@@ -9,6 +9,7 @@ import { v4 as generate_uuid } from "uuid";
 import { z } from "zod";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
+import { DocumentId } from "@/firebase/ids";
 import { Whisky } from "@/components/whiskyjournal";
 
 // The whisky journal is public, so it is read on the server and needs no
@@ -16,10 +17,6 @@ import { Whisky } from "@/components/whiskyjournal";
 // Rules, so they are checked here against the same limits as firestore.rules.
 
 const COLLECTION = "whiskies";
-
-// IDs are UUIDs, carried over from Postgres for existing whiskies. Checking
-// them also stops a "/" in an ID reaching a different document path.
-const WhiskyId = z.string().regex(/^[\w-]{1,128}$/);
 
 const text = z.string().trim().min(1).max(255);
 
@@ -112,7 +109,7 @@ export async function readWhiskyJournal(): Promise<Whisky[]> {
 
 // Read single whisky by id, or null if there is no such whisky
 export async function readWhisky(whisky_id: string): Promise<Whisky | null> {
-  if (!WhiskyId.safeParse(whisky_id).success) return null;
+  if (!DocumentId.safeParse(whisky_id).success) return null;
 
   try {
     const snapshot = await adminDb()
@@ -131,7 +128,7 @@ export async function readWhisky(whisky_id: string): Promise<Whisky | null> {
 export async function updateWhisky(whisky: Whisky): Promise<void> {
   await requireAuth();
 
-  const whisky_id = WhiskyId.parse(whisky.whisky_id);
+  const whisky_id = DocumentId.parse(whisky.whisky_id);
   const fields = toStored(whisky);
   try {
     await adminDb().collection(COLLECTION).doc(whisky_id).update(fields);
@@ -145,7 +142,7 @@ export async function updateWhisky(whisky: Whisky): Promise<void> {
 export async function deleteWhisky(whisky_id: string) {
   await requireAuth();
 
-  const parsed = WhiskyId.safeParse(whisky_id);
+  const parsed = DocumentId.safeParse(whisky_id);
   if (!parsed.success) {
     return { message: "No whisky found with the given ID." };
   }
