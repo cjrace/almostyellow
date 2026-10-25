@@ -6,10 +6,10 @@ import {
   type Timestamp,
 } from "firebase-admin/firestore";
 import { v4 as generate_uuid } from "uuid";
-import { z } from "zod";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
 import { DocumentId } from "@/firebase/ids";
+import { WhiskyFields } from "@/firebase/records";
 import { Whisky } from "@/components/whiskyjournal";
 
 // The whisky journal is public, so it is read on the server and needs no
@@ -17,20 +17,6 @@ import { Whisky } from "@/components/whiskyjournal";
 // Rules, so they are checked here against the same limits as firestore.rules.
 
 const COLLECTION = "whiskies";
-
-const text = z.string().trim().min(1).max(255);
-
-const WhiskyFields = z.object({
-  name: text,
-  distillery: text,
-  country_region: text,
-  age: z.number().int().min(0).max(100),
-  grain: text,
-  abv: z.number().gt(0).max(100),
-  rating: z.number().int().min(1).max(5),
-  price: z.number().int().min(1).max(3),
-  notes: z.string().max(5000),
-});
 
 interface StoredWhisky {
   name: string;

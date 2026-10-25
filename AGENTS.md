@@ -7,9 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
-pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
+pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests + import rehearsal (full CI suite)
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database needed)
 pnpm test:e2e      # Build, then Playwright against a disposable Docker database
+pnpm migrate:rehearse  # Export the Docker test database and import it into the emulator
 ```
 
 Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2e.mts`) starts Postgres from `docker-compose.test.yml`, seeded from `tests/database/`, then runs `next start` with the settings in `tests/test-env.ts`. It starts Docker Desktop first if it is not already running. Extra arguments go to Playwright, and `--no-build` reuses the last build:
@@ -89,6 +90,14 @@ Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disa
 Vitest unit tests live in `tests/unit/` and mock the database and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
+
+### Moving the data from Postgres to Firestore
+
+`scripts/migrate.mts` (`pnpm migrate <command> <file>`) exports the Postgres tables to a JSON file, checks every row against the limits in `src/firebase/records.ts`, imports them with their Postgres IDs and reconciles Firestore against the export field by field. The cocktails come from `data/cocktails.ts`. The `users` table is never exported. Running an import again gives the same result, so an import that stops part way is finished by running it again. Rows that fail the checks are listed and nothing is written unless `--allow-rejected` is given, and every import writes a report next to the export.
+
+Exports hold personal data, so keep them in `migration-output/`, which git ignores. The importer uses the emulator when `FIRESTORE_EMULATOR_HOST` is set, and refuses a real project unless it is named again.
+
+`pnpm migrate:rehearse` exports the Docker test database, imports it into the emulator twice and reconciles, as `pnpm test` and CI do. The logic is tested in `tests/unit/migration.test.ts` and, against the emulator, `tests/firebase/migration.test.ts`.
 
 ### Firebase emulators (migration branch)
 

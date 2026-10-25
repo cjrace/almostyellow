@@ -48,3 +48,6 @@ test-results.json
 # firebase emulators
 firestore-debug.log
 firebase-debug.log
+
+# Postgres exports and import reports, which hold personal data
+/migration-output/

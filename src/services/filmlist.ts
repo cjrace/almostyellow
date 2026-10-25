@@ -2,10 +2,10 @@
 
 import { type DocumentSnapshot } from "firebase-admin/firestore";
 import { v4 as generate_uuid } from "uuid";
-import { z } from "zod";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
 import { DocumentId } from "@/firebase/ids";
+import { FilmFields } from "@/firebase/records";
 import { Film } from "@/components/filmcard";
 
 // The film list is public, so it is read on the server and needs no sign-in.
@@ -13,20 +13,6 @@ import { Film } from "@/components/filmcard";
 // they are checked here against the same limits as firestore.rules.
 
 const COLLECTION = "films";
-
-const FilmFields = z.object({
-  name: z.string().trim().min(1).max(255),
-  release_year: z
-    .number()
-    .int()
-    .min(1800)
-    .refine((year) => year <= new Date().getFullYear() + 1, {
-      message: "Release year cannot be more than one year into the future",
-    }),
-  top_30: z.boolean(),
-  watched: z.boolean(),
-  not_in_jar: z.boolean(),
-});
 
 interface StoredFilm {
   name: string;

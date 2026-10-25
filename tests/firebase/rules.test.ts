@@ -326,12 +326,23 @@ describe("timestamps", () => {
   test.each(TIMESTAMPED_COLLECTIONS)(
     "%s updatedAt must move on with every change",
     async (name) => {
+      // Last changed long ago. A record created just before could share the
+      // update's timestamp on a coarse clock, so leaving it alone would pass.
+      await testEnv.withSecurityRulesDisabled(async (context) => {
+        await setDoc(doc(context.firestore(), name, "existing"), {
+          ...valid[name](),
+          createdAt: longAgo,
+          updatedAt: longAgo,
+        });
+      });
       const ref = doc(db(), name, "existing");
-      await assertSucceeds(setDoc(ref, valid[name]()));
       const change = validChange[name]();
       delete change.updatedAt;
       await assertFails(updateDoc(ref, change));
       await assertFails(updateDoc(ref, { ...change, updatedAt: longAgo }));
+      await assertSucceeds(
+        updateDoc(ref, { ...change, updatedAt: serverTimestamp() }),
+      );
     },
   );
 });

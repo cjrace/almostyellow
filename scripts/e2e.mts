@@ -5,6 +5,8 @@
 //   node scripts/e2e.mts                   build, then run every suite
 //   node scripts/e2e.mts --no-build        reuse the existing .next build
 //   node scripts/e2e.mts tests/admin       extra arguments go to Playwright
+//   node scripts/e2e.mts --rehearse-import rehearse the Postgres to Firestore
+//                                          import instead, see scripts/migrate.mts
 //
 // Settings come from tests/test-env.ts.
 import { spawnSync } from "node:child_process";
@@ -12,8 +14,11 @@ import { connect } from "node:net";
 import "../tests/test-env.ts";
 
 const args = process.argv.slice(2);
-const build = !args.includes("--no-build");
-const playwrightArgs = args.filter((arg) => arg !== "--no-build");
+const rehearse = args.includes("--rehearse-import");
+const build = !rehearse && !args.includes("--no-build");
+const playwrightArgs = args.filter(
+  (arg) => arg !== "--no-build" && arg !== "--rehearse-import",
+);
 
 function run(command: string) {
   const result = spawnSync(command, { shell: true, stdio: "inherit" });
@@ -72,9 +77,11 @@ try {
     if (status === 0) {
       // emulators:exec sets the emulator hosts for Playwright and next start,
       // and stops the emulators when the tests finish
-      const playwright = ["pnpm exec playwright test", ...playwrightArgs];
+      const script = rehearse
+        ? ["pnpm migrate rehearse migration-output/rehearsal.json"]
+        : ["pnpm exec playwright test", ...playwrightArgs];
       status = run(
-        `pnpm exec firebase emulators:exec --project ${process.env.FIREBASE_PROJECT_ID ?? ""} --only auth,firestore "${playwright.join(" ")}"`,
+        `pnpm exec firebase emulators:exec --project ${process.env.FIREBASE_PROJECT_ID ?? ""} --only auth,firestore "${script.join(" ")}"`,
       );
     }
   }
