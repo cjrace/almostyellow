@@ -7,8 +7,8 @@ import "./tests/test-env";
  */
 export default defineConfig({
   testDir: "./tests",
-  /* Unit tests are run by Vitest */
-  testIgnore: "unit/**",
+  /* Unit and Firebase emulator tests are run by Vitest */
+  testIgnore: ["unit/**", "firebase/**"],
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

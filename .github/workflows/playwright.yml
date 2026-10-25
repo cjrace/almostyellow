@@ -27,6 +27,30 @@ jobs:
       - name: Run unit tests
         run: pnpm test:unit
 
+  # Runs against the Firebase Auth and Firestore emulators only. No Firebase
+  # credentials are available to the job, and the tests refuse to run if any
+  # are present.
+  firebase:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      # The Firestore emulator is a Java program
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run Security Rules and seeding tests against the emulators
+        run: pnpm test:ci
+
   e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest

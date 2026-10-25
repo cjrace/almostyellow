@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
-pnpm test          # Format + lint + unit tests + build + Playwright E2E tests (full CI suite)
+pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database needed)
 pnpm test:e2e      # Build, then Playwright against a disposable Docker database
 ```
@@ -74,3 +74,18 @@ Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disa
 Vitest unit tests live in `tests/unit/` and mock the database and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
+
+### Firebase emulators (migration branch)
+
+The Firebase work is tested against the local Auth and Firestore emulators, never a real project. Java 21 or later must be installed for the Firestore emulator.
+
+```bash
+pnpm test:rules    # Security Rules tests, project demo-almostyellow
+pnpm test:ci       # Everything under tests/firebase, project demo-almostyellow-ci
+pnpm emulators     # Start the emulators by hand, for example while writing tests
+```
+
+- `firebase.json`, `firestore.rules` and `firestore.indexes.json` configure the emulators and rules.
+- `tests/firebase/fixtures.ts` holds the synthetic users and records, and `tests/firebase/seed.ts` resets the emulators to them. Seeding happens before every test, so each starts from the same data.
+- `tests/firebase/guard.ts` refuses to run unless the project is one of the two `demo-` projects, both emulator hosts are local, Security Rules are loaded and no Google or Firebase credentials are set. Its own tests are in `tests/unit/firebase_guard.test.ts`.
+- `pnpm test` and `pnpm test-only` run `pnpm test:ci` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.
