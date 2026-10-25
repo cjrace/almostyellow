@@ -107,5 +107,6 @@ export function firebaseClientConfig(): FirebaseClientConfig {
       process.env.FIREBASE_AUTH_DOMAIN ?? `${projectId}.firebaseapp.com`,
     projectId,
     authEmulatorHost,
+    firestoreEmulatorHost: process.env.FIRESTORE_EMULATOR_HOST,
   };
 }

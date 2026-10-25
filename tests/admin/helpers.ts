@@ -9,3 +9,8 @@ export function getCredentials() {
 export function getUnauthorisedCredentials() {
   return users.mallory;
 }
+
+// The other authorised user, for tests that need two people
+export function getSecondCredentials() {
+  return users.bob;
+}

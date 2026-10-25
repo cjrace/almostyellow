@@ -131,6 +131,7 @@ export const shoppingItems = [
     order: 1,
     createdAt: CREATED,
     updatedAt: CREATED,
+    updatedBy: users.alice.uid,
   },
   {
     id: "item-tonic",
@@ -139,5 +140,6 @@ export const shoppingItems = [
     order: 2,
     createdAt: CREATED,
     updatedAt: CREATED,
+    updatedBy: users.alice.uid,
   },
 ];
