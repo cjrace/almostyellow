@@ -3,9 +3,9 @@ permissions:
   contents: read
 on:
   push:
-    branches: [main]
+    branches: [main, feat/firebase-migration]
   pull_request:
-    branches: [main]
+    branches: [main, feat/firebase-migration]
 jobs:
   checks:
     timeout-minutes: 15
