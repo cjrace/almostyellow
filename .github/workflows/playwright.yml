@@ -8,6 +8,7 @@ on:
     branches: [main]
 jobs:
   checks:
+    name: Format, lint and unit tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
@@ -31,6 +32,7 @@ jobs:
   # credentials are available to the job, and the tests refuse to run if any
   # are present.
   firebase:
+    name: Firebase emulator tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
@@ -52,6 +54,7 @@ jobs:
         run: pnpm test:ci
 
   e2e:
+    name: End to end tests (Playwright)
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
