@@ -1,7 +1,5 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
 
 ```bash
@@ -61,11 +59,11 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 
 ### Chopin Liszt (Firestore)
 
-The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The queue is only kept in memory, so changes not yet sent are lost if the page closes, and the list needs a connection to open. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
 
 ### UI
 
-[Mantine](https://mantine.dev/) v9 with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
+[Mantine](https://mantine.dev/) with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
 
 ### Tests
 

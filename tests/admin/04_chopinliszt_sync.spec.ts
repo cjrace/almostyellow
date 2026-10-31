@@ -2,6 +2,20 @@ import { randomUUID } from "node:crypto";
 import { test as base, expect, type Page } from "@playwright/test";
 import { getCredentials, getSecondCredentials } from "./helpers";
 
+// How the list behaves for the people using it, each tested below:
+//
+// - A change on one phone shows on the other without a refresh.
+// - Without signal, changes still show straight away, marked "Not synced
+//   yet", and save once the phone is back online. They are only kept while
+//   the list is open, so closing the app before they save loses them.
+// - The list can't be opened without signal, so open it before going into
+//   the shop and keep it open.
+// - If both people change the same item, the change that saves last wins.
+//   Someone who was offline usually saves last, as their change only arrives
+//   when they reconnect.
+// - If one person deletes an item, it stays deleted. A change to it from the
+//   other person's phone is dropped, and they see a message saying so.
+//
 // Alice and Bob each have the list open in their own browser, as on two
 // phones. Every test running at the same time shares the one list, so each
 // test only adds and changes items with names of its own.

@@ -38,7 +38,8 @@ import {
 // Each item is its own Firestore document, read with a live listener so
 // changes from the other person's device appear without a refresh. Changes
 // show straight away and the Firestore SDK queues them while offline, sending
-// them once the connection is back.
+// them once the connection is back. The queue is only kept in memory, so
+// changes not yet sent are lost if the page is closed.
 //
 // When two devices change the same item, the change that reaches Firestore
 // last wins. A deleted item stays deleted: a change to it from a device that
