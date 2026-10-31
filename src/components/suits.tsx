@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer, useState } from "react";
+import { RefObject, useEffect, useReducer, useRef, useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -78,24 +78,52 @@ function suitsReducer(state: SuitsState, action: SuitsAction): SuitsState {
 
 const newDeck = () => shuffleDeck(createCardDeck());
 
+// The symbol is decoration, as screen readers would read "♥ Hearts" as "black
+// heart suit Hearts"
+function SuitLabel({ suit }: { suit: string }) {
+  return (
+    <>
+      <span aria-hidden="true">{suitSymbols[suit]}</span> {suit}
+    </>
+  );
+}
+
 // Each setup row has an id so React keeps the right input when one is removed
 interface PlayerRow {
   id: number;
   name: string;
 }
 
-const toRows = (names: string[]): PlayerRow[] =>
-  names.map((name, index) => ({ id: index, name }));
-
 export default function Suits() {
   usePreloadCards();
   const [state, dispatch] = useReducer(suitsReducer, initialSuitsState);
-  const [rows, setRows] = useState<PlayerRow[]>(() => toRows(["", ""]));
+  // Kept through the game, so changing players shows the names as typed, with
+  // blank ones still blank
+  const [rows, setRows] = useState<PlayerRow[]>([
+    { id: 0, name: "" },
+    { id: 1, name: "" },
+  ]);
   const [confirmOpened, setConfirmOpened] = useState(false);
 
+  // Most buttons here disappear once pressed, so focus moves on to whatever
+  // comes next rather than dropping back to the top of the page
+  const turnHeadingRef = useRef<HTMLHeadingElement>(null);
+  const setupHeadingRef = useRef<HTMLHeadingElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const playAgainButtonRef = useRef<HTMLButtonElement>(null);
+  const focusNextRef = useRef<RefObject<HTMLElement | null> | null>(null);
+  useEffect(() => {
+    focusNextRef.current?.current?.focus();
+    focusNextRef.current = null;
+  }, [state]);
+
+  const act = (action: SuitsAction, focus: RefObject<HTMLElement | null>) => {
+    focusNextRef.current = focus;
+    dispatch(action);
+  };
+
   const changePlayers = () => {
-    setRows(toRows(state.players));
-    dispatch({ type: "changePlayers" });
+    act({ type: "changePlayers" }, setupHeadingRef);
     setConfirmOpened(false);
   };
 
@@ -137,18 +165,28 @@ export default function Suits() {
           <PlayerSetup
             rows={rows}
             setRows={setRows}
+            headingRef={setupHeadingRef}
             onStart={() => {
-              dispatch({
-                type: "start",
-                players: rows.map((row) => row.name),
-                deck: newDeck(),
-              });
+              act(
+                {
+                  type: "start",
+                  players: rows.map((row) => row.name),
+                  deck: newDeck(),
+                },
+                turnHeadingRef,
+              );
             }}
           />
         ) : (
           <Stack maw={560} mx="auto">
             <Group justify="space-between">
-              <Title order={2} size="h3" id="suits_turn">
+              <Title
+                order={2}
+                size="h3"
+                id="suits_turn"
+                ref={turnHeadingRef}
+                tabIndex={-1}
+              >
                 {state.phase === "complete"
                   ? "Game over"
                   : `${currentPlayer(state)}'s turn`}
@@ -177,7 +215,7 @@ export default function Suits() {
                     <Radio
                       key={suit}
                       value={suit}
-                      label={`${suitSymbols[suit]} ${suit}`}
+                      label={<SuitLabel suit={suit} />}
                     />
                   ))}
                 </Group>
@@ -186,8 +224,7 @@ export default function Suits() {
               // The guess is locked in once the cards are showing
               <Text id="suits_chosen">
                 {currentPlayer(state)} picked{" "}
-                {state.chosenSuit &&
-                  `${suitSymbols[state.chosenSuit]} ${state.chosenSuit}`}
+                {state.chosenSuit && <SuitLabel suit={state.chosenSuit} />}
               </Text>
             )}
 
@@ -212,7 +249,10 @@ export default function Suits() {
               <Button
                 disabled={state.chosenSuit === null}
                 onClick={() => {
-                  dispatch({ type: "reveal" });
+                  act(
+                    { type: "reveal" },
+                    isFinalTurn(state) ? playAgainButtonRef : nextButtonRef,
+                  );
                 }}
               >
                 Reveal four cards
@@ -221,8 +261,9 @@ export default function Suits() {
 
             {state.phase === "revealed" && (
               <Button
+                ref={nextButtonRef}
                 onClick={() => {
-                  dispatch({ type: "next" });
+                  act({ type: "next" }, turnHeadingRef);
                 }}
               >
                 Next player
@@ -235,8 +276,9 @@ export default function Suits() {
                   All {TOTAL_TURNS} turns have been played.
                 </Alert>
                 <Button
+                  ref={playAgainButtonRef}
                   onClick={() => {
-                    dispatch({ type: "replay", deck: newDeck() });
+                    act({ type: "replay", deck: newDeck() }, turnHeadingRef);
                   }}
                 >
                   Play again
@@ -290,13 +332,24 @@ export default function Suits() {
 interface PlayerSetupProps {
   rows: PlayerRow[];
   setRows: (rows: PlayerRow[]) => void;
+  headingRef: RefObject<HTMLHeadingElement | null>;
   onStart: () => void;
 }
 
-function PlayerSetup({ rows, setRows, onStart }: PlayerSetupProps) {
+function PlayerSetup({ rows, setRows, headingRef, onStart }: PlayerSetupProps) {
+  // Adding or removing a player moves focus to the name box in that place, as
+  // the button pressed may have gone or been disabled
+  const listRef = useRef<HTMLDivElement>(null);
+  const focusRowRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusRowRef.current === null) return;
+    listRef.current?.querySelectorAll("input")[focusRowRef.current]?.focus();
+    focusRowRef.current = null;
+  }, [rows]);
+
   return (
-    <Stack maw={420} mx="auto">
-      <Title order={2} size="h3">
+    <Stack maw={420} mx="auto" ref={listRef}>
+      <Title order={2} size="h3" ref={headingRef} tabIndex={-1}>
         Who&apos;s playing?
       </Title>
       <Text c="dimmed">
@@ -327,6 +380,7 @@ function PlayerSetup({ rows, setRows, onStart }: PlayerSetupProps) {
               aria-label={`Remove ${label}`}
               disabled={rows.length <= MIN_PLAYERS}
               onClick={() => {
+                focusRowRef.current = Math.min(index, rows.length - 2);
                 setRows(rows.filter((r) => r.id !== row.id));
               }}
             >
@@ -342,6 +396,7 @@ function PlayerSetup({ rows, setRows, onStart }: PlayerSetupProps) {
         disabled={rows.length >= MAX_PLAYERS}
         onClick={() => {
           const id = Math.max(...rows.map((r) => r.id)) + 1;
+          focusRowRef.current = rows.length;
           setRows([...rows, { id, name: "" }]);
         }}
       >

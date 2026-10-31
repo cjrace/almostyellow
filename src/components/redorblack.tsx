@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Button, Grid, List, Space, Stack, Text } from "@mantine/core";
 import {
   Card,
@@ -20,16 +20,28 @@ export default function RedOrBlack() {
   const [latestCard, setLatestCard] = useState<Card | null>(null);
   const cardsRemaining = deck?.length ?? 52;
 
+  // Each button disables itself at one end of the deck, so focus moves to the
+  // other one rather than being lost
+  const drawButtonRef = useRef<HTMLButtonElement>(null);
+  const shuffleButtonRef = useRef<HTMLButtonElement>(null);
+  const focusNextRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    focusNextRef.current?.focus();
+    focusNextRef.current = null;
+  }, [deck]);
+
   const drawCard = () => {
     const currentDeck = deck ?? shuffleDeck(createCardDeck());
     if (currentDeck.length === 0) return;
 
     const { drawn, remaining } = drawCards(currentDeck, 1);
+    if (remaining.length === 0) focusNextRef.current = shuffleButtonRef.current;
     setLatestCard(drawn[0]);
     setDeck(remaining);
   };
 
   const newDeck = () => {
+    focusNextRef.current = drawButtonRef.current;
     setDeck(null);
     setLatestCard(null);
   };
@@ -37,7 +49,10 @@ export default function RedOrBlack() {
   return (
     <Grid>
       <Grid.Col span={12}>
-        <CardGameTitle title="Red or Black">
+        <CardGameTitle
+          title="Red or Black"
+          creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
+        >
           <Text mb="sm">
             Ben made this to play at university, so you only need a phone rather
             than a pack of cards.
@@ -72,7 +87,12 @@ export default function RedOrBlack() {
               : ""}
             {`${cardsRemaining.toString()} cards remaining`}
           </Text>
-          <Button disabled={cardsRemaining === 0} onClick={drawCard} fullWidth>
+          <Button
+            ref={drawButtonRef}
+            disabled={cardsRemaining === 0}
+            onClick={drawCard}
+            fullWidth
+          >
             Draw a card
           </Button>
           {cardsRemaining === 0 && (
@@ -81,6 +101,7 @@ export default function RedOrBlack() {
             </Alert>
           )}
           <Button
+            ref={shuffleButtonRef}
             variant="default"
             onClick={newDeck}
             fullWidth

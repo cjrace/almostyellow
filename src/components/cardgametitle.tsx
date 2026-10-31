@@ -18,12 +18,16 @@ import { IconInfoCircle } from "@tabler/icons-react";
 interface CardGameTitleProps {
   title: string;
   children: React.ReactNode; // The instructions
+  creditLink?: string; // Where Ben published the game, if he did
 }
 
 // Title, instructions and credit for Ben Palmer's card games
-export default function CardGameTitle({ title, children }: CardGameTitleProps) {
+export default function CardGameTitle({
+  title,
+  children,
+  creditLink,
+}: CardGameTitleProps) {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
-  const instructionsId = `${title.toLowerCase().replace(/\W+/g, "_")}_instructions`;
 
   return (
     <>
@@ -48,52 +52,57 @@ export default function CardGameTitle({ title, children }: CardGameTitleProps) {
         </Tooltip>
       </Group>
       <Text c="dimmed" mt={4}>
-        <Anchor
-          href="https://github.com/BenjaminJPalmer/red-or-black-v1"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="A Ben Palmer original (opens in new tab)"
-        >
-          A Ben Palmer original
-        </Anchor>
+        {creditLink ? (
+          <Anchor
+            href={creditLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="A Ben Palmer original (opens in new tab)"
+          >
+            A Ben Palmer original
+          </Anchor>
+        ) : (
+          "A Ben Palmer original"
+        )}
       </Text>
 
-      <Modal
+      {/* Built from parts so Modal.Title can name the dialog without the
+          default header and close button */}
+      <Modal.Root
         size="auto"
         opened={modalInstructionsOpened}
         onClose={() => {
           setModalInstructionsOpened(false);
         }}
-        aria-labelledby={instructionsId}
-        withCloseButton={false}
         transitionProps={{
           transition: "fade",
           duration: 300,
           timingFunction: "linear",
         }}
-        overlayProps={{
-          backgroundOpacity: 0.75,
-          blur: 3,
-        }}
       >
-        <Container>
-          <Title order={2} mb="sm" id={instructionsId}>
-            {title} instructions
-          </Title>
-          {children}
-          <Center>
-            <Button
-              variant="subtle"
-              mt="md"
-              onClick={() => {
-                setModalInstructionsOpened(false);
-              }}
-            >
-              Close instructions modal
-            </Button>
-          </Center>
-        </Container>
-      </Modal>
+        <Modal.Overlay backgroundOpacity={0.75} blur={3} />
+        <Modal.Content>
+          <Modal.Body>
+            <Container>
+              <Modal.Title fz="h2" fw={700} lh="h2" mb="sm">
+                {title} instructions
+              </Modal.Title>
+              {children}
+              <Center>
+                <Button
+                  variant="subtle"
+                  mt="md"
+                  onClick={() => {
+                    setModalInstructionsOpened(false);
+                  }}
+                >
+                  Close instructions modal
+                </Button>
+              </Center>
+            </Container>
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
     </>
   );
 }

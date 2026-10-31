@@ -13,12 +13,11 @@ async function startGame(page: Page, names: string[]) {
 test("Credits Ben and shows the instructions", async ({ page }) => {
   await page.goto("/games/suits");
 
+  // Suits isn't published anywhere, so the credit has no link
+  await expect(page.getByText("A Ben Palmer original")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "A Ben Palmer original" }),
-  ).toHaveAttribute(
-    "href",
-    "https://github.com/BenjaminJPalmer/red-or-black-v1",
-  );
+  ).toHaveCount(0);
 
   await page.getByLabel("Open game instructions modal").click();
   const instructions = page.getByRole("dialog");
@@ -123,6 +122,25 @@ test("Plays a full game of 13 turns", async ({ page }) => {
   await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
   await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
   await expect(result).toHaveText("");
+});
+
+test("Keeps blank names blank when changing players", async ({ page }) => {
+  await startGame(page, ["Ben", "", "Cam"]);
+  await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
+
+  await page.getByRole("button", { name: "Change players" }).click();
+  await page
+    .getByRole("dialog", { name: "End this game?" })
+    .getByRole("button", { name: "End game" })
+    .click();
+
+  await expect(page.getByLabel("Player 2 name")).toHaveValue("");
+
+  // Removing Ben moves the blank player up, so they're named by their new place
+  await page.getByRole("button", { name: "Remove Player 1" }).click();
+  await expect(page.getByLabel("Player 1 name")).toHaveValue("");
+  await page.getByRole("button", { name: "Start game" }).click();
+  await expect(page.locator("#suits_turn")).toHaveText("Player 1's turn");
 });
 
 test("Asks before ending an unfinished game", async ({ page }) => {
