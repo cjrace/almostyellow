@@ -23,7 +23,13 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "cache-uno") return;
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(CACHE);
+      let cache;
+      try {
+        cache = await caches.open(CACHE);
+      } catch {
+        event.source?.postMessage("uno-offline-failed");
+        return;
+      }
       const assets = Array.isArray(event.data.assets)
         ? event.data.assets.filter(
             (asset) =>
@@ -74,6 +80,15 @@ self.addEventListener("message", (event) => {
     })(),
   );
 });
+async function offlineUnavailable(clientId) {
+  try {
+    const client = await self.clients.get(clientId);
+    client?.postMessage("uno-offline-failed");
+  } catch {
+    /* A closed page needs no notification. */
+  }
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
@@ -81,11 +96,22 @@ self.addEventListener("fetch", (event) => {
   if (isAsset(url)) {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(CACHE);
-        const saved = await cache.match(request);
-        if (saved) return saved;
+        let cache;
+        try {
+          cache = await caches.open(CACHE);
+          const saved = await cache.match(request);
+          if (saved) return saved;
+        } catch {
+          await offlineUnavailable(event.clientId);
+        }
         const response = await fetch(request);
-        if (response.ok) await cache.put(request, response.clone());
+        if (response.ok && cache) {
+          try {
+            await cache.put(request, response.clone());
+          } catch {
+            await offlineUnavailable(event.clientId);
+          }
+        }
         return response;
       })(),
     );

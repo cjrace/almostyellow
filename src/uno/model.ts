@@ -128,15 +128,22 @@ export function gameDate(game: Game) {
     ? game.playedOn
     : new Date(game.finishedAt ?? game.startedAt).toISOString().slice(0, 10);
 }
+// Historic entries have no recorded time. Keep their order deterministic and
+// place them before live games on the same date, whose finish times are known.
+export function compareGames(a: Game, b: Game) {
+  const dateOrder = (gameDate(a) ?? "").localeCompare(gameDate(b) ?? "");
+  if (dateOrder) return dateOrder;
+  if (a.source !== b.source) return a.source === "historic" ? -1 : 1;
+  if (a.source === "live") {
+    const timeOrder =
+      (a.finishedAt ?? a.startedAt) - (b.finishedAt ?? b.startedAt);
+    if (timeOrder) return timeOrder;
+  }
+  return a.id.localeCompare(b.id);
+}
 export function statistics(state: UnoState) {
   const games = state.games.filter((g) => g.status === "completed");
-  const dated = games
-    .filter((g) => gameDate(g))
-    .sort(
-      (a, b) =>
-        (gameDate(a) ?? "").localeCompare(gameDate(b) ?? "") ||
-        a.id.localeCompare(b.id),
-    );
+  const dated = games.filter((g) => gameDate(g)).sort(compareGames);
   const wins = { cam: 0, laura: 0 };
   let draws = 0;
   for (const g of games) {

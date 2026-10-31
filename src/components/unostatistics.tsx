@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -17,6 +17,7 @@ import {
 import { readUnoHistory } from "@/services/uno";
 import { UnoNavigation, UnoOfflineShell } from "@/components/unotracker";
 import {
+  compareGames,
   gameDate,
   HistoricGameSchema,
   names,
@@ -179,6 +180,13 @@ export default function UnoStatistics() {
   const [events, setEvents] = useState<EventHistory[] | null>(null);
   const [historyError, setHistoryError] = useState("");
   const entryIdRef = useRef<string | null>(null);
+  const historyRequestRef = useRef(0);
+  useEffect(
+    () => () => {
+      historyRequestRef.current++;
+    },
+    [],
+  );
   const summary = uno.state ? statistics(uno.state) : null;
   const games =
     summary?.games
@@ -187,8 +195,11 @@ export default function UnoStatistics() {
           (winnerFilter === "all" || g.winner === winnerFilter) &&
           (!dateFilter || gameDate(g)?.startsWith(dateFilter)),
       )
-      .sort((a, b) => (gameDate(b) ?? "").localeCompare(gameDate(a) ?? "")) ??
-    [];
+      .sort(
+        (a, b) =>
+          (gameDate(b) ?? "").localeCompare(gameDate(a) ?? "") ||
+          compareGames(a, b),
+      ) ?? [];
   async function saveHistory(event: React.SyntheticEvent) {
     event.preventDefault();
     setError("");
@@ -225,6 +236,7 @@ export default function UnoStatistics() {
     }
   }
   async function openHistory(game: Game) {
+    const request = ++historyRequestRef.current;
     setSelected(game);
     setEvents(null);
     setHistoryError("");
@@ -235,8 +247,10 @@ export default function UnoStatistics() {
       return;
     }
     try {
-      setEvents(await readUnoHistory(game.id));
+      const history = await readUnoHistory(game.id);
+      if (request === historyRequestRef.current) setEvents(history);
     } catch {
+      if (request !== historyRequestRef.current) return;
       setHistoryError(
         "Could not load scoring history. Close this window and try again.",
       );
@@ -247,6 +261,11 @@ export default function UnoStatistics() {
       <Title>Uno statistics</Title>
       <UnoNavigation stats />
       <UnoOfflineShell />
+      {uno.notice && (
+        <Text role="status" size="sm">
+          {uno.notice}
+        </Text>
+      )}
       {!uno.online && (
         <Alert>
           Offline · showing saved statistics from{" "}
@@ -359,7 +378,7 @@ export default function UnoStatistics() {
                 [
                   "Longest winning streak",
                   `Cam ${String(summary.streak.cam)} · Laura ${String(summary.streak.laura)}`,
-                  "Dated games, in recorded date order. Approximate dates may affect ordering.",
+                  "Dated games, in recorded date order. Historic entries have no recorded time and come before live games on the same date. Approximate dates may affect ordering.",
                 ],
                 [
                   "Highest individual score",
@@ -576,6 +595,7 @@ export default function UnoStatistics() {
       <Modal
         opened={!!selected}
         onClose={() => {
+          historyRequestRef.current++;
           setSelected(null);
         }}
         title="Scoring history"

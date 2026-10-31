@@ -4,6 +4,7 @@ export interface LocalEvent extends PendingEvent {
   order: number;
 }
 export interface LocalData {
+  revision: number;
   state: UnoState | null;
   events: LocalEvent[];
   lease: Lease | null;
@@ -11,13 +12,21 @@ export interface LocalData {
   checkedAt: number;
 }
 const DB = "almostyellow-uno";
-const empty = (): LocalData => ({
+export const emptyLocal = (): LocalData => ({
+  revision: 0,
   state: null,
   events: [],
   lease: null,
   accountId: null,
   checkedAt: 0,
 });
+
+// Existing version-1 records have no revision; their queue and event IDs remain intact.
+export function normaliseLocal(
+  value: (Omit<LocalData, "revision"> & { revision?: number }) | undefined,
+): LocalData {
+  return value ? { ...value, revision: value.revision ?? 0 } : emptyLocal();
+}
 
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -69,9 +78,9 @@ export async function changeLocal(
     let failure: unknown;
     request.onsuccess = () => {
       try {
-        value = (request.result as LocalData | undefined) ?? empty();
+        value = normaliseLocal(request.result as LocalData | undefined);
         if (update) {
-          value = update(value);
+          value = { ...update(value), revision: value.revision + 1 };
           store.put(value, "current");
         }
       } catch (error) {
@@ -106,31 +115,33 @@ export async function changeLocal(
   });
 }
 
-export async function saveEvent(event: PendingEvent) {
-  return changeLocal((data) => {
-    if (
-      !data.state ||
-      data.accountId !== event.accountId ||
-      data.lease?.id !== event.leaseId
+export function appendEvent(data: LocalData, event: PendingEvent): LocalData {
+  if (
+    !data.state ||
+    data.accountId !== event.accountId ||
+    data.lease?.id !== event.leaseId
+  )
+    throw new Error(
+      "Open this game online with the account recording its rounds first.",
+    );
+  const game = data.state.games.find((g) => g.id === event.gameId);
+  if (game?.status !== "active") throw new Error("This game has finished.");
+  const pending = data.events
+    .filter(
+      (e) =>
+        e.gameId === game.id &&
+        e.player === event.player &&
+        e.status === "pending",
     )
-      throw new Error(
-        "Open this game online with the account recording its rounds first.",
-      );
-    const game = data.state.games.find((g) => g.id === event.gameId);
-    if (game?.status !== "active") throw new Error("This game has finished.");
-    const pending = data.events
-      .filter(
-        (e) =>
-          e.gameId === game.id &&
-          e.player === event.player &&
-          e.status === "pending",
-      )
-      .reduce((sum, e) => sum + e.delta, 0);
-    if (game[event.player] + pending + event.delta < 0)
-      throw new Error("The score cannot go below zero.");
-    const order = data.events.reduce((n, e) => Math.max(n, e.order), 0) + 1;
-    return { ...data, events: [...data.events, { ...event, order }] };
-  });
+    .reduce((sum, e) => sum + e.delta, 0);
+  if (game[event.player] + pending + event.delta < 0)
+    throw new Error("The score cannot go below zero.");
+  const order = data.events.reduce((n, e) => Math.max(n, e.order), 0) + 1;
+  return { ...data, events: [...data.events, { ...event, order }] };
+}
+
+export async function saveEvent(event: PendingEvent) {
+  return changeLocal((data) => appendEvent(data, event));
 }
 
 export function publicEvent(event: LocalEvent) {

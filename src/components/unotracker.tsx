@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { names, players, result, type Game } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
+import { unoController } from "@/uno/browser";
 import styles from "@/styles/uno.module.css";
 
 export function UnoNavigation({ stats = false }: { stats?: boolean }) {
@@ -392,10 +393,9 @@ export default function UnoTracker() {
                       setConfirmation(null);
                       setMessage("");
                     } else {
-                      const { readUnoState } = await import("@/services/uno");
-                      const latest = await readUnoState();
+                      const latest = unoController.getSnapshot().data.state;
                       setConfirmation(
-                        latest.games.find((g) => g.id === confirmation.id) ??
+                        latest?.games.find((g) => g.id === confirmation.id) ??
                           null,
                       );
                       setMessage(

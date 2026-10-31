@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  compareGames,
   emptyBoard,
   HistoricGameSchema,
   result,
@@ -102,3 +103,72 @@ it.each(["2024-02-30", "2024-13-01", "not a date"])(
     ).toBe(false);
   },
 );
+
+it("orders same-day live games by completion time rather than UUID", () => {
+  const start = Date.parse("2026-10-31T12:00:00Z");
+  const winners = ["cam", "cam", "laura", "cam"];
+  const ids = ["d", "c", "a", "b"];
+  const games = winners.map((winner, index) => ({
+    ...game(
+      ids[index],
+      winner === "cam" ? 2 : 1,
+      winner === "laura" ? 2 : 1,
+      null,
+    ),
+    source: "live" as const,
+    startedAt: start + index * 60000,
+    finishedAt: start + index * 60000 + 1000,
+  }));
+  const stats = statistics({
+    board: emptyBoard(),
+    games: [...games].reverse(),
+  });
+  expect(stats.dated.map((item) => item.winner)).toEqual(winners);
+  expect(stats.streak.cam).toBe(2);
+  expect(stats.cumulative.map((item) => item.id)).toEqual(ids);
+});
+it("uses start time when completion time is absent and IDs for exact ties", () => {
+  const early = {
+    ...game("z", 1, 0, null),
+    source: "live" as const,
+    startedAt: 1000,
+    finishedAt: null,
+  };
+  const late = { ...early, id: "a", startedAt: 2000, finishedAt: 2000 };
+  expect([late, early].sort(compareGames).map((item) => item.id)).toEqual([
+    "z",
+    "a",
+  ]);
+  expect(
+    [{ ...late, id: "b" }, late].sort(compareGames).map((item) => item.id),
+  ).toEqual(["a", "b"]);
+});
+it("places stable historic entries before live games on the same date", () => {
+  const historic = game("b", 1, 0, "2026-10-31");
+  const live = {
+    ...historic,
+    id: "a",
+    source: "live" as const,
+    finishedAt: Date.parse("2026-10-31T12:00:00Z"),
+  };
+  expect(
+    [live, historic, { ...historic, id: "a" }]
+      .sort(compareGames)
+      .map((item) => [item.source, item.id]),
+  ).toEqual([
+    ["historic", "a"],
+    ["historic", "b"],
+    ["live", "a"],
+  ]);
+});
+it("keeps approximate dates deterministic and excludes undated games from trends", () => {
+  const games = [
+    game("unknown", 5, 1, null),
+    { ...game("year", 1, 0, "2020"), datePrecision: "year" as const },
+    { ...game("month", 0, 1, "2020-06"), datePrecision: "month" as const },
+    game("day", 1, 0, "2020-06-02"),
+  ];
+  const stats = statistics({ board: emptyBoard(), games });
+  expect(stats.dated.map((item) => item.id)).toEqual(["year", "month", "day"]);
+  expect(stats.games).toHaveLength(4);
+});

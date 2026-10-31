@@ -141,11 +141,41 @@ test.describe("Uno durable scoring", () => {
     await expect(
       page.getByRole("button", { name: "Finish game", exact: true }),
     ).toBeDisabled();
-    expect((await local(page)).events).toHaveLength(4);
+    const legacyEventIds = (await local(page)).events.map((event) => event.id);
+    expect(legacyEventIds).toHaveLength(4);
+    // Emulate an existing version-1 record written before local revisions existed.
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open("almostyellow-uno", 1);
+          open.onsuccess = () => {
+            const db = open.result;
+            const transaction = db.transaction("data", "readwrite");
+            const store = transaction.objectStore("data");
+            const read = store.get("current");
+            read.onsuccess = () => {
+              const value = read.result as Partial<LocalData>;
+              delete value.revision;
+              store.put(value, "current");
+            };
+            transaction.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            transaction.onerror = () => {
+              db.close();
+              reject(new Error("Could not prepare legacy storage"));
+            };
+          };
+        }),
+    );
     await page.close();
     const reopened = await context.newPage();
     await reopened.goto("/games/uno");
     await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
+    expect((await local(reopened)).events.map((event) => event.id)).toEqual(
+      legacyEventIds,
+    );
     await reopened
       .getByRole("button", { name: "Add a round for Laura" })
       .click();
@@ -299,4 +329,274 @@ test.describe("Uno durable scoring", () => {
     ).toBeVisible();
     await otherContext.close();
   });
+
+  test("a slow start serialises other tabs and keeps its acknowledged score usable offline", async ({
+    page,
+    context,
+  }) => {
+    test.slow();
+    await signIn(page);
+    const other = await context.newPage();
+    await other.goto("/games/uno");
+    await expect(
+      other.getByRole("button", { name: "Start new game" }),
+    ).toBeEnabled(SYNC);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let captured!: () => void;
+    const received = new Promise<void>((resolve) => {
+      captured = resolve;
+    });
+    let armed = true;
+    await page.route("**/games/uno", async (route) => {
+      if (
+        armed &&
+        route.request().method() === "POST" &&
+        route.request().postData() === "[]"
+      ) {
+        armed = false;
+        const response = await route.fetch();
+        captured();
+        await held;
+        await route.fulfill({ response });
+      } else await route.continue();
+    });
+    await page.getByRole("button", { name: "Start new game" }).click();
+    await received;
+    await expect(
+      other.getByRole("button", { name: "Add a round for Cam" }),
+    ).toHaveCount(0);
+    release();
+    await expect(
+      other.getByRole("button", { name: "Add a round for Cam" }),
+    ).toBeEnabled(SYNC);
+    await other.getByRole("button", { name: "Add a round for Cam" }).click();
+    await idle(other);
+    await expect(page.getByTestId("score-cam")).toHaveText("1", SYNC);
+    await context.setOffline(true);
+    await page.getByRole("button", { name: "Add a round for Cam" }).click();
+    await expect(page.getByTestId("score-cam")).toHaveText("2");
+    expect((await local(page)).events).toHaveLength(1);
+    await context.setOffline(false);
+    await idle(page);
+    await expect(other.getByTestId("score-cam")).toHaveText("2", SYNC);
+  });
+
+  test("a delayed finish retains points recorded by another tab during its request", async ({
+    page,
+    context,
+  }) => {
+    test.slow();
+    await signIn(page);
+    await start(page);
+    await idle(page);
+    const other = await context.newPage();
+    await other.goto("/games/uno");
+    await expect(
+      other.getByRole("button", { name: "Add a round for Cam" }),
+    ).toBeEnabled(SYNC);
+    const gameId = (await local(page)).state?.board.activeGameId ?? "";
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let captured!: () => void;
+    const received = new Promise<void>((resolve) => {
+      captured = resolve;
+    });
+    await page.route("**/games/uno", async (route) => {
+      if (
+        route.request().method() === "POST" &&
+        route.request().postData()?.includes(gameId) &&
+        route.request().postData()?.includes(",")
+      ) {
+        const response = await route.fetch();
+        captured();
+        await held;
+        await route.fulfill({ response });
+      } else await route.continue();
+    });
+    await page
+      .getByRole("button", { name: "Finish game", exact: true })
+      .click();
+    await page.getByRole("button", { name: "Confirm finish" }).click();
+    await received;
+    await other.getByRole("button", { name: "Add a round for Cam" }).click();
+    expect((await local(other)).events).toHaveLength(1);
+    release();
+    await idle(other);
+    await expect(page.getByTestId("lifetime-cam")).toHaveText("1", SYNC);
+    await expect
+      .poll(async () => (await local(page)).events.length, SYNC)
+      .toBe(0);
+    await expect(
+      page.getByRole("button", { name: "Add a round for Cam" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText("Result amended after offline rounds synced.", {
+        exact: true,
+      }),
+    ).toBeVisible(SYNC);
+  });
+
+  test("a delayed historic entry merges once alongside newly queued points", async ({
+    page,
+    context,
+  }) => {
+    test.slow();
+    await signIn(page);
+    await start(page);
+    await idle(page);
+    const other = await context.newPage();
+    await other.goto("/games/uno");
+    await expect(
+      other.getByRole("button", { name: "Add a round for Cam" }),
+    ).toBeEnabled(SYNC);
+    await page.getByRole("link", { name: "Statistics", exact: true }).click();
+    await page.getByRole("button", { name: "Add historic game" }).click();
+    await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("5");
+    await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("3");
+    await page.getByLabel("Game date").fill("2020-06-12");
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let captured!: () => void;
+    const received = new Promise<void>((resolve) => {
+      captured = resolve;
+    });
+    await page.route("**/games/uno/stats", async (route) => {
+      if (
+        route.request().method() === "POST" &&
+        route.request().postData()?.includes("datePrecision")
+      ) {
+        const response = await route.fetch();
+        captured();
+        await held;
+        await route.fulfill({ response });
+      } else await route.continue();
+    });
+    await page.getByRole("button", { name: "Save historic game" }).click();
+    await received;
+    await other.getByRole("button", { name: "Add a round for Cam" }).click();
+    expect((await local(other)).events).toHaveLength(1);
+    release();
+    await expect(page.getByText("2020-06-12 · historic game")).toBeVisible(
+      SYNC,
+    );
+    await idle(other);
+    await expect(other.getByTestId("lifetime-cam")).toHaveText("6", SYNC);
+    await expect(other.getByTestId("lifetime-laura")).toHaveText("3");
+    expect((await local(other)).events).toHaveLength(0);
+  });
+
+  for (const firstFails of [false, true]) {
+    test(`history responses and errors from a closed game are ignored (${firstFails ? "error" : "success"})`, async ({
+      page,
+    }) => {
+      const { projectId } = assertEmulatorEnvironment();
+      const db = getFirestore(getApps()[0] ?? initializeApp({ projectId }));
+      const ids = [
+        "dbeb9180-6337-4257-8cca-97bf1bb0a151",
+        "dbeb9180-6337-4257-8cca-97bf1bb0a152",
+      ];
+      for (let i = 0; i < 2; i++) {
+        const when = Date.parse(
+          i === 0 ? "2026-10-31T12:00:00Z" : "2026-10-30T12:00:00Z",
+        );
+        const player = i === 0 ? "cam" : "laura";
+        await db.doc(`unoGames/${ids[i]}`).set({
+          id: ids[i],
+          cam: i === 0 ? 1 : 0,
+          laura: i === 1 ? 1 : 0,
+          status: "completed",
+          startedAt: when,
+          finishedAt: when,
+          playedOn: null,
+          datePrecision: "day",
+          notes: "",
+          source: "live",
+          winner: player,
+          rounds: 1,
+          margin: 1,
+          version: 1,
+          amended: false,
+        });
+        await db
+          .doc(`unoGames/${ids[i]}/events/dbeb9180-6337-4257-8cca-97bf1bb0a153`)
+          .set({ player, delta: 1, createdAt: when, receivedAt: when });
+      }
+      await db.doc("uno/scoreboard").set({
+        cam: 1,
+        laura: 1,
+        startingTotals: { cam: 0, laura: 0 },
+        activeGameId: null,
+        lastFinishedGameId: ids[0],
+        version: 1,
+        updatedAt: Date.now(),
+      });
+      await page.goto("/games/uno/stats");
+      await expect(
+        page.getByRole("button", { name: "Scoring history" }),
+      ).toHaveCount(2);
+      let release!: () => void;
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let captured!: () => void;
+      const received = new Promise<void>((resolve) => {
+        captured = resolve;
+      });
+      let releaseSecond!: () => void;
+      const heldSecond = new Promise<void>((resolve) => {
+        releaseSecond = resolve;
+      });
+      let capturedSecond!: () => void;
+      const receivedSecond = new Promise<void>((resolve) => {
+        capturedSecond = resolve;
+      });
+      await page.route("**/games/uno/stats", async (route) => {
+        const body = route.request().postData();
+        if (route.request().method() === "POST" && body?.includes(ids[0])) {
+          const response = await route.fetch();
+          captured();
+          await held;
+          if (firstFails) await route.abort();
+          else await route.fulfill({ response });
+        } else if (
+          route.request().method() === "POST" &&
+          body?.includes(ids[1])
+        ) {
+          const response = await route.fetch();
+          capturedSecond();
+          await heldSecond;
+          await route.fulfill({ response });
+        } else await route.continue();
+      });
+      await page
+        .getByRole("button", { name: "Scoring history" })
+        .nth(0)
+        .click();
+      await received;
+      await page.getByRole("button", { name: "Close scoring history" }).click();
+      await page
+        .getByRole("button", { name: "Scoring history" })
+        .nth(1)
+        .click();
+      release();
+      await receivedSecond;
+      await expect(page.getByRole("dialog")).toContainText("2026-10-30");
+      await expect(page.getByRole("dialog")).toContainText("Loading rounds…");
+      await expect(page.getByRole("dialog").locator("li")).toHaveCount(0);
+      await expect(page.getByRole("dialog")).not.toContainText(
+        "Could not load scoring history",
+      );
+      releaseSecond();
+      await expect(page.getByRole("dialog").locator("li")).toContainText(
+        "Laura +1",
+      );
+    });
+  }
 });
