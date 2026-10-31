@@ -22,6 +22,7 @@ import {
   Container,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
+import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
 
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
@@ -63,10 +64,14 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
         No cards drawn yet
       </Text>
     )}
+    <Box w="min(100% - 2rem, 160px)" mx="auto" mb="md">
+      <PlayingCard card={card} decorative />
+    </Box>
   </Box>
 );
 
 export default function IrishBingo() {
+  usePreloadCards();
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);

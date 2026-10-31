@@ -6,6 +6,10 @@ test("No card drawn on load", async ({ page }) => {
   await expect(page.locator("#latest_card")).toContainText(
     "No cards drawn yet",
   );
+  await expect(page.locator("#calling_card ~ div img")).toHaveAttribute(
+    "src",
+    "/images/cards/back.svg",
+  );
 });
 
 test("Gameplay works", async ({ page }) => {
@@ -31,6 +35,13 @@ test("Gameplay works", async ({ page }) => {
 
     const drawnCard = (await page.locator("#latest_card").textContent()) ?? "";
     drawnCards.push(drawnCard);
+
+    // The picture matches the card called out
+    const [rank, suit] = drawnCard.toLowerCase().split(" of ");
+    await expect(page.locator("#calling_card ~ div img")).toHaveAttribute(
+      "src",
+      `/images/cards/${rank}-${suit}.svg`,
+    );
 
     await expect(page.locator("#card_count")).toContainText(
       `${String(buttonpress_reindexed)} / 52 cards`,

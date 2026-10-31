@@ -21,15 +21,17 @@ export function usePreloadCards() {
 
 interface PlayingCardProps {
   card: Card | null; // null shows the back of the card
+  decorative?: boolean; // When the card is already named in text beside it
 }
 
-export default function PlayingCard({ card }: PlayingCardProps) {
+export default function PlayingCard({ card, decorative }: PlayingCardProps) {
   // Face-down cards never say which card they are
+  const name = card ? getCardName(card.suit, card.rank) : "Face-down card";
   return (
     <Image
       className={styles.card}
       src={card ? getCardImagePath(card) : CardBackImagePath}
-      alt={card ? getCardName(card.suit, card.rank) : "Face-down card"}
+      alt={decorative ? "" : name}
       fit="contain"
     />
   );
