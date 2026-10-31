@@ -113,8 +113,8 @@ describe("anonymous visitors", () => {
 
   test("cannot read or change the allowlist", async () => {
     const db = anonymous();
-    await assertFails(getDocs(collection(db, "authorizedUsers")));
-    await assertFails(setDoc(doc(db, "authorizedUsers", "anyone"), {}));
+    await assertFails(getDocs(collection(db, "authorisedUsers")));
+    await assertFails(setDoc(doc(db, "authorisedUsers", "anyone"), {}));
   });
 
   test("cannot use a collection no rule mentions", async () => {
@@ -158,13 +158,13 @@ describe.each([
 
   test("cannot read or change the allowlist", async () => {
     const db = signedInAs(uid);
-    await assertFails(getDocs(collection(db, "authorizedUsers")));
-    await assertFails(getDoc(doc(db, "authorizedUsers", uid)));
-    await assertFails(setDoc(doc(db, "authorizedUsers", "friend"), {}));
+    await assertFails(getDocs(collection(db, "authorisedUsers")));
+    await assertFails(getDoc(doc(db, "authorisedUsers", uid)));
+    await assertFails(setDoc(doc(db, "authorisedUsers", "friend"), {}));
     await assertFails(
-      updateDoc(doc(db, "authorizedUsers", uid), { admin: true }),
+      updateDoc(doc(db, "authorisedUsers", uid), { admin: true }),
     );
-    await assertFails(deleteDoc(doc(db, "authorizedUsers", users.bob.uid)));
+    await assertFails(deleteDoc(doc(db, "authorisedUsers", users.bob.uid)));
   });
 });
 
@@ -199,7 +199,7 @@ describe("a signed-in user who is not on the allowlist", () => {
 
   test("cannot add themselves to the allowlist", async () => {
     await assertFails(
-      setDoc(doc(mallory(), "authorizedUsers", users.mallory.uid), {}),
+      setDoc(doc(mallory(), "authorisedUsers", users.mallory.uid), {}),
     );
   });
 });

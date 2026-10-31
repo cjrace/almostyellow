@@ -7,11 +7,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Only people listed in authorizedUsers count as signed in. A Firebase
+    // Only people listed in authorisedUsers count as signed in. A Firebase
     // account that is not listed gets no more access than an anonymous visitor.
     function isAuthorized() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/authorizedUsers/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/authorisedUsers/$(request.auth.uid));
     }
 
     function incoming() {
@@ -129,7 +129,7 @@ service cloud.firestore {
     }
 
     // The allowlist is managed with the Admin SDK only, which bypasses rules
-    match /authorizedUsers/{uid} {
+    match /authorisedUsers/{uid} {
       allow read, write: if false;
     }
   }

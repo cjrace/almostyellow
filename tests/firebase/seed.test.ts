@@ -48,7 +48,7 @@ describe("seeding the emulators", () => {
 
   test("lists only the two authorised users on the allowlist", async () => {
     const { db } = admin();
-    const snapshot = await db.collection("authorizedUsers").get();
+    const snapshot = await db.collection("authorisedUsers").get();
     expect(snapshot.docs.map((doc) => doc.id).sort()).toEqual(
       [users.alice.uid, users.bob.uid].sort(),
     );

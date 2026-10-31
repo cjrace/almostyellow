@@ -30,9 +30,9 @@ function isRejectedCredential(error: unknown) {
 }
 
 // A Firebase account is not enough on its own: only the users listed in
-// authorizedUsers, which only the Admin SDK can change, get in
+// authorisedUsers, which only the Admin SDK can change, get in
 async function isAuthorized(uid: string) {
-  const member = await adminDb().doc(`authorizedUsers/${uid}`).get();
+  const member = await adminDb().doc(`authorisedUsers/${uid}`).get();
   return member.exists;
 }
 

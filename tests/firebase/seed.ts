@@ -40,7 +40,7 @@ export async function resetAndSeed() {
   const batch = db.batch();
   for (const user of Object.values(users)) {
     if (user.authorized) {
-      batch.set(db.doc(`authorizedUsers/${user.uid}`), { email: user.email });
+      batch.set(db.doc(`authorisedUsers/${user.uid}`), { email: user.email });
     }
   }
   const collections = { whiskies, films, cocktails, shoppingItems };

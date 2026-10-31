@@ -119,7 +119,7 @@ describe("checking a session", () => {
 
   test("rejects a session once the user is taken off the allowlist", async () => {
     const cookie = await sessionFor(users.alice);
-    await adminDb().doc(`authorizedUsers/${users.alice.uid}`).delete();
+    await adminDb().doc(`authorisedUsers/${users.alice.uid}`).delete();
 
     expect(await verifySessionCookie(cookie)).toBe(null);
   });
