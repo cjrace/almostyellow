@@ -5,11 +5,12 @@ import { getCredentials, getSecondCredentials } from "./helpers";
 // How the list behaves for the people using it, each tested below:
 //
 // - A change on one phone shows on the other without a refresh.
-// - Without signal, a message says you're offline. Changes still show
-//   straight away, marked "Not synced yet", and save once the phone is back
-//   online. They are only kept while the list is open, so closing the app
-//   before they save loses them. Leaving or reloading the page asks first,
-//   but swiping the app away on a phone does not.
+// - Without signal for more than a second, a message says you're offline.
+//   Changes still show straight away, and any not saved after a second are
+//   marked "Not synced yet". They save once the phone is back online. They
+//   are only kept while the list is open, so closing the app before they
+//   save loses them. Leaving or reloading the page asks first, but swiping
+//   the app away on a phone does not.
 // - The list can't be opened without signal, so open it before going into
 //   the shop and keep it open. Trying anyway says it needs a connection.
 // - If both people change the same item, the change that saves last wins.

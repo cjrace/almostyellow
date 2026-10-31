@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import {
   Checkbox,
   Modal,
@@ -75,6 +80,11 @@ const LOAD_OFFLINE =
 const SAVE_FAILED =
   "A change could not be saved, so the list shows what was saved last. Someone may have deleted the item on another device.";
 
+// Online a change usually saves within a moment and a dropped connection often
+// comes straight back, so only say so once it has lasted this long, rather
+// than flashing a message every time
+const SHOW_AFTER_MS = 1000;
+
 function subscribeToConnection(callback: () => void) {
   window.addEventListener("online", callback);
   window.addEventListener("offline", callback);
@@ -89,6 +99,20 @@ function subscribeToConnection(callback: () => void) {
 function checkSession() {
   // Offline the check cannot reach the server, so try again next time
   firestoreTokenAction().catch(() => undefined);
+}
+
+// Shows its children once they have been on the page for SHOW_AFTER_MS
+function ShowAfterDelay({ children }: { children: ReactNode }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, SHOW_AFTER_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
+  return show ? children : null;
 }
 
 function ItemRow({
@@ -113,9 +137,11 @@ function ItemRow({
           size="lg"
         />
         {item.pending && (
-          <Text size="xs" c="dimmed">
-            Not synced yet
-          </Text>
+          <ShowAfterDelay>
+            <Text size="xs" c="dimmed">
+              Not synced yet
+            </Text>
+          </ShowAfterDelay>
         )}
       </Group>
       <ActionIcon
@@ -351,10 +377,12 @@ const ChopinLiszt = ({
 
       {errorAlert}
       {(!online || !connected) && (
-        <Alert mb="md">
-          You&apos;re offline. Changes will sync when you reconnect, as long as
-          this page stays open.
-        </Alert>
+        <ShowAfterDelay>
+          <Alert mb="md">
+            You&apos;re offline. Changes will sync when you reconnect, as long
+            as this page stays open.
+          </Alert>
+        </ShowAfterDelay>
       )}
 
       <Button onClick={open}>Add new item(s)</Button>
