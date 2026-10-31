@@ -89,6 +89,10 @@ View other available commands, including for running linting, formatting (includ
 pnpm run
 ```
 
+## Uno
+
+See [UNO.md](UNO.md) for scoring, offline storage, historic games and statistics.
+
 ## Deployment
 
 This site is deployed to the following places using [Vercel](https://vercel.com/), deploys are triggered from pushes to the `main` branch.

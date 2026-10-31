@@ -1,19 +1,14 @@
-import { Metadata } from "next";
-import { Title, Text } from "@mantine/core";
+import type { Metadata } from "next";
 import Header from "@/components/header";
+import UnoTracker from "@/components/unotracker";
 
-export const metadata: Metadata = {
-  title: "Uno",
-};
-
+export const metadata: Metadata = { title: "Uno" };
 export default function UnoPage() {
   return (
     <>
-      <Header noCrumbs={true} game={true} />
-
+      <Header noCrumbs game />
       <main id="main-content">
-        <Title>Uno</Title>
-        <Text>Under construction...</Text>
+        <UnoTracker />
       </main>
     </>
   );

@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
   headers() {
     return [
       {
+        source: "/games/uno/sw.js",
+        headers: [
+          { key: "Service-Worker-Allowed", value: "/games/uno" },
+          { key: "Cache-Control", value: "no-cache" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           {

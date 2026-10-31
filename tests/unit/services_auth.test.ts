@@ -35,6 +35,7 @@ function databaseUsed() {
 }
 
 import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
+import * as uno from "@/services/uno";
 import * as filmlist from "@/services/filmlist";
 import * as whiskyjournal from "@/services/whiskyjournal";
 
@@ -131,5 +132,23 @@ describe("firestoreTokenAction", () => {
 
     await expect(firestoreTokenAction()).resolves.toBe("custom-token");
     expect(createCustomToken).toHaveBeenCalledWith("test-user-alice");
+  });
+});
+
+// Uno's transaction behaviour runs against the emulator; these checks ensure
+// every mutation refuses an unauthorised call before validating input or using it.
+describe("Uno authentication", () => {
+  it.each([
+    ["startUnoGame", () => uno.startUnoGame()],
+    ["openUnoScoring", () => uno.openUnoScoring(fakeId)],
+    ["syncUnoEvents", () => uno.syncUnoEvents([])],
+    ["finishUnoGame", () => uno.finishUnoGame(fakeId, 1)],
+    ["addHistoricUnoGame", () => uno.addHistoricUnoGame({})],
+  ] as const)("%s requires an authorised session", async (_name, action) => {
+    const refused = new Error("unauthorised");
+    requireAuth.mockRejectedValue(refused);
+    await expect(action()).rejects.toBe(refused);
+    expect(requireAuth).toHaveBeenCalledOnce();
+    expect(databaseUsed()).toBe(false);
   });
 });
