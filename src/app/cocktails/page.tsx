@@ -1,19 +1,15 @@
 import Cocktails from "@/components/cocktails";
 import BackToTop from "@/components/backtotop";
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import { connection } from "next/server";
 import { readCocktails } from "@/services/cocktails";
 import Header from "@/components/header";
 import { Container, Title } from "@mantine/core";
 
-export const metadata: Metadata = {
-  title: "Cocktails",
-  description: "Our selection of cocktail recipes.",
-  openGraph: {
-    title: "Cocktails | Almost Yellow",
-    description: "Our selection of top cocktail recipes.",
-  },
-};
+export const metadata = pageMetadata(
+  "Cocktails",
+  "Our selection of cocktail recipes.",
+);
 
 const crumbitems = [
   { title: "Home", href: "/" },

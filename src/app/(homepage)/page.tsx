@@ -10,10 +10,25 @@ import {
 } from "@tabler/icons-react";
 import Header from "@/components/header";
 import styles from "@/styles/gradient.module.css";
+import { siteUrl } from "@/routes";
+
+// Tells search engines the name of the site
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Almost Yellow",
+  url: siteUrl,
+};
 
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Built from constants above, never user input
+        // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Header noCrumbs={true} />
 
       <main id="main-content">

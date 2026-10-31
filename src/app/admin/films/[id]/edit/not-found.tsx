@@ -13,7 +13,7 @@ export default function FilmNotFound() {
             <Text ta="center">
               We couldn&apos;t find the film you were looking for.
             </Text>
-            <Button href="/film" component="a">
+            <Button href="/films" component="a">
               Return to films list
             </Button>
           </Stack>

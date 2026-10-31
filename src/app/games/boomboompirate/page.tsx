@@ -1,16 +1,12 @@
 import { Space, Title } from "@mantine/core";
 import BoomBoomPirate from "@/components/boomboompirate";
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 
-export const metadata: Metadata = {
-  title: "Boom Boom Pirate",
-  description: "Pull the right ropes or things will go boom!",
-  openGraph: {
-    title: "Boom Boom Pirate | Almost Yellow",
-    description: "Pull the right ropes or things will go boom!",
-  },
-};
+export const metadata = pageMetadata(
+  "Boom Boom Pirate",
+  "Pull the right ropes or things will go boom!",
+);
 
 export default function BoomBoomPiratePage() {
   return (

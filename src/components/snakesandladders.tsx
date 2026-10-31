@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Grid,
   Button,
@@ -52,6 +52,7 @@ interface Player {
 
 interface PlayerListProps {
   players: Player[];
+  positions: number[];
   currentPlayer: number;
 }
 
@@ -112,16 +113,16 @@ const generateSpecialSpaces = () => {
 };
 
 const icons = [
-  { id: "cat", component: <IconCat size={32} /> },
-  { id: "dog", component: <PiDog size={32} /> },
-  { id: "fish", component: <PiFishSimple size={32} /> },
-  { id: "pig", component: <IconPig size={32} /> },
-  { id: "butterfly", component: <PiButterfly size={32} /> },
-  { id: "bat", component: <IconBat size={32} /> },
-  { id: "cow", component: <PiCow size={32} /> },
-  { id: "rabbit", component: <PiRabbit size={32} /> },
-  { id: "star", component: <PiShootingStar size={32} /> },
-  { id: "flower", component: <IconFlower size={32} /> },
+  { id: "cat", name: "Cat", component: <IconCat size={32} /> },
+  { id: "dog", name: "Dog", component: <PiDog size={32} /> },
+  { id: "fish", name: "Fish", component: <PiFishSimple size={32} /> },
+  { id: "pig", name: "Pig", component: <IconPig size={32} /> },
+  { id: "butterfly", name: "Butterfly", component: <PiButterfly size={32} /> },
+  { id: "bat", name: "Bat", component: <IconBat size={32} /> },
+  { id: "cow", name: "Cow", component: <PiCow size={32} /> },
+  { id: "rabbit", name: "Rabbit", component: <PiRabbit size={32} /> },
+  { id: "star", name: "Star", component: <PiShootingStar size={32} /> },
+  { id: "flower", name: "Flower", component: <IconFlower size={32} /> },
 ];
 
 const IconSelection: React.FC<IconSelectionProps> = ({
@@ -133,6 +134,8 @@ const IconSelection: React.FC<IconSelectionProps> = ({
       {icons.map((icon) => (
         <ActionIcon
           key={icon.id}
+          aria-label={icon.name}
+          aria-pressed={selectedIcon === icon.id}
           onClick={() => {
             onChange(icon.id);
           }}
@@ -149,7 +152,12 @@ const IconSelection: React.FC<IconSelectionProps> = ({
   );
 };
 
-const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
+// Gives each player's square in words, as the board only shows it visually
+const PlayerList: React.FC<PlayerListProps> = ({
+  players,
+  positions,
+  currentPlayer,
+}) => (
   <div>
     <Text size="xl" ta="left" mb="md" fw={700}>
       Players
@@ -161,6 +169,7 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
         key={index}
         mb="sm"
         w="60%"
+        aria-current={currentPlayer === index ? "step" : undefined}
         style={{
           border: currentPlayer === index ? "2px solid orange" : "none",
           borderRadius: "8px",
@@ -168,7 +177,13 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
         }}
       >
         {icons.find((icon) => icon.id === player.icon)?.component}
-        <Text>{player.name}</Text>
+        <Text>
+          {player.name},{" "}
+          {positions[index]
+            ? `square ${positions[index].toString()}`
+            : "not on the board yet"}
+          {currentPlayer === index && " (your turn)"}
+        </Text>
       </Group>
     ))}
   </div>
@@ -191,6 +206,25 @@ const SnakesAndLadders = () => {
   const [gameInitialized, setGameInitialized] = useState(false);
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
+
+  // The buttons a keyboard user is on disappear or are disabled as the game
+  // moves on, so put focus back where they can carry on playing
+  const setupRef = useRef<HTMLInputElement>(null);
+  const rollRef = useRef<HTMLButtonElement>(null);
+  const backToSetupRef = useRef(false);
+
+  useEffect(() => {
+    if (gameInitialized && !isRolling && popupMessage === null) {
+      rollRef.current?.focus();
+    }
+  }, [gameInitialized, isRolling, popupMessage]);
+
+  useEffect(() => {
+    if (!gameInitialized && backToSetupRef.current) {
+      backToSetupRef.current = false;
+      setupRef.current?.focus();
+    }
+  }, [gameInitialized]);
 
   const initializePlayers = () => {
     if (players.length === 0 || players.some((player) => player.name === "")) {
@@ -354,6 +388,7 @@ const SnakesAndLadders = () => {
     }));
     setPlayers(defaultPlayers);
 
+    backToSetupRef.current = true;
     setGameInitialized(false); // Reset to show initiation step };
   };
 
@@ -364,6 +399,7 @@ const SnakesAndLadders = () => {
           <>
             {/* Form to set up the players */}
             <NumberInput
+              ref={setupRef}
               value={numPlayers}
               onChange={(value) => {
                 setNumPlayers(Number(value) || 2);
@@ -425,17 +461,25 @@ const SnakesAndLadders = () => {
 
         {gameInitialized && (
           <Box>
-            <PlayerList players={players} currentPlayer={currentPlayer} />
+            <PlayerList
+              players={players}
+              positions={playerPositions}
+              currentPlayer={currentPlayer}
+            />
 
-            {showDiceResult && diceResult !== null && (
-              <Text ta="left" mt="md">
-                {players[currentPlayer]?.name} moves {diceResult} places!
-              </Text>
-            )}
+            {/* Always rendered, so screen readers announce each roll */}
+            <div role="status">
+              {showDiceResult && diceResult !== null && (
+                <Text ta="left" mt="md">
+                  {players[currentPlayer]?.name} moves {diceResult} places!
+                </Text>
+              )}
+            </div>
 
             <Space h="md" />
 
             <Button
+              ref={rollRef}
               onClick={rollDice}
               mt="md"
               w="50%"
@@ -509,6 +553,7 @@ const SnakesAndLadders = () => {
               opened={!!popupMessage}
               onClose={closePopup}
               title="Game Update"
+              closeButtonProps={{ "aria-label": "Close" }}
             >
               {popupMessage}
               {winner !== null && (

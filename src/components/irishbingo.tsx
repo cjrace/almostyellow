@@ -54,15 +54,10 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
     <Title mt="md" order={2}>
       Calling..
     </Title>
-    {card ? (
-      <Text my="md" id="latest_card">
-        {getCardName(card.suit, card.rank)}
-      </Text>
-    ) : (
-      <Text my="md" id="latest_card">
-        No cards drawn yet
-      </Text>
-    )}
+    {/* A status is read out by screen readers whenever it changes */}
+    <Text my="md" id="latest_card" role="status">
+      {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
+    </Text>
   </Box>
 );
 
@@ -122,97 +117,97 @@ export default function IrishBingo() {
           </Tooltip>
         </Group>
 
-        <Modal
+        {/* Mantine only names a dialog from its own title, so name it here */}
+        <Modal.Root
           size="auto"
           opened={modalInstructionsOpened}
           onClose={() => {
             setModalInstructionsOpened(false);
           }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ib_instructions"
-          withCloseButton={false}
           transitionProps={{
             transition: "fade",
             duration: 300,
             timingFunction: "linear",
           }}
-          overlayProps={{
-            backgroundOpacity: 0.75,
-            blur: 3,
-          }}
         >
-          <Container>
-            <Title order={2} mb="sm" id="ib_instructions">
-              Irish Bingo instructions
-            </Title>
-            <Text>This game can be played with any number of players.</Text>
-            <Title order={3} my="md">
-              Standard rules
-            </Title>
-            <List variant="ordered" mb="md">
-              <List.Item>
-                deal 13 cards at random to all players from a standard 52 card
-                deck (use multiple decks if necessary based on the number of
-                players)
-              </List.Item>
-              <List.Item>players then lay out all cards face up</List.Item>
-              <List.Item>
-                the caller then starts calling cards, players turn their cards
-                face down if they are called
-              </List.Item>
-              <List.Item>
-                first player to turn over all of their cards shouts
-                &apos;Tayto&apos; and wins
-              </List.Item>
-            </List>
-            <Text mb="sm">
-              Note that it is usually worth double checking the winners cards,
-              especially if alcohol has been involved.
-            </Text>
-            <Text mb="sm">
-              Different players can have have duplicates of cards, though no
-              individual player should have duplicate cards themselves.
-            </Text>
-            <Text>
-              For example players A and B both having the 7 of Hearts is fine,
-              but player A should not have two 7 of Hearts cards.
-            </Text>
-            <Title order={3} my="md">
-              Tie breaks
-            </Title>
-            <Text>
-              Tie breaks are decided in any way you like. We suggest a quick
-              game of{" "}
-              <Anchor
-                target="_blank"
-                href="/games/boomboompirate"
-                rel="noreferrer"
-              >
-                Boom Boom Pirate (opens in new tab)
-              </Anchor>
-              , or a simple high card draw.
-            </Text>
-            <Title order={3} my="md">
-              Variations
-            </Title>
-            <Text>
-              You can change the number of cards per player if you want a longer
-              or shorter game, or are limited in the number of cards you have.
-            </Text>
-            <Center>
-              <Button
-                variant="subtle"
-                mt="md"
-                onClick={() => {
-                  setModalInstructionsOpened(false);
-                }}
-              >
-                Close instructions modal
-              </Button>
-            </Center>
-          </Container>
-        </Modal>
+          <Modal.Overlay backgroundOpacity={0.75} blur={3} />
+          <Modal.Content aria-label="Irish Bingo instructions">
+            <Modal.Body>
+              <Container>
+                <Title order={2} mb="sm" id="ib_instructions">
+                  Irish Bingo instructions
+                </Title>
+                <Text>This game can be played with any number of players.</Text>
+                <Title order={3} my="md">
+                  Standard rules
+                </Title>
+                <List variant="ordered" mb="md">
+                  <List.Item>
+                    deal 13 cards at random to all players from a standard 52
+                    card deck (use multiple decks if necessary based on the
+                    number of players)
+                  </List.Item>
+                  <List.Item>players then lay out all cards face up</List.Item>
+                  <List.Item>
+                    the caller then starts calling cards, players turn their
+                    cards face down if they are called
+                  </List.Item>
+                  <List.Item>
+                    first player to turn over all of their cards shouts
+                    &apos;Tayto&apos; and wins
+                  </List.Item>
+                </List>
+                <Text mb="sm">
+                  Note that it is usually worth double checking the winners
+                  cards, especially if alcohol has been involved.
+                </Text>
+                <Text mb="sm">
+                  Different players can have have duplicates of cards, though no
+                  individual player should have duplicate cards themselves.
+                </Text>
+                <Text>
+                  For example players A and B both having the 7 of Hearts is
+                  fine, but player A should not have two 7 of Hearts cards.
+                </Text>
+                <Title order={3} my="md">
+                  Tie breaks
+                </Title>
+                <Text>
+                  Tie breaks are decided in any way you like. We suggest a quick
+                  game of{" "}
+                  <Anchor
+                    underline="always"
+                    target="_blank"
+                    href="/games/boomboompirate"
+                    rel="noreferrer"
+                  >
+                    Boom Boom Pirate (opens in new tab)
+                  </Anchor>
+                  , or a simple high card draw.
+                </Text>
+                <Title order={3} my="md">
+                  Variations
+                </Title>
+                <Text>
+                  You can change the number of cards per player if you want a
+                  longer or shorter game, or are limited in the number of cards
+                  you have.
+                </Text>
+                <Center>
+                  <Button
+                    variant="subtle"
+                    mt="md"
+                    onClick={() => {
+                      setModalInstructionsOpened(false);
+                    }}
+                  >
+                    Close instructions modal
+                  </Button>
+                </Center>
+              </Container>
+            </Modal.Body>
+          </Modal.Content>
+        </Modal.Root>
       </Grid.Col>
 
       <Space h="xl" />

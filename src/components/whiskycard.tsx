@@ -56,7 +56,7 @@ export const WhiskyCard: React.FC<Whisky> = ({
             variant="default"
             component="a"
             href={`/admin/whiskyjournal/${whisky_id}/edit`}
-            aria-label="Edit whisky"
+            aria-label={`Edit ${name}`}
           >
             {<IconPencil />}
           </ActionIcon>

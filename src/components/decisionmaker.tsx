@@ -36,6 +36,7 @@ export default function DecisionMaker() {
   const [isLoading, setIsLoading] = useState(false);
 
   const makeDecision = (data: DecisionOptions) => {
+    if (isLoading) return;
     setIsLoading(true);
 
     setTimeout(() => {
@@ -99,21 +100,31 @@ Laura`;
           minRows={2}
           {...form.getInputProps("options")}
         />
-        <Button mt="xl" type="submit" fullWidth disabled={isLoading}>
+        {/* Looks disabled while deciding, but keeps keyboard focus */}
+        <Button
+          mt="xl"
+          type="submit"
+          fullWidth
+          data-disabled={isLoading || undefined}
+          aria-disabled={isLoading}
+        >
           {isLoading ? "Pondering choices..." : "Make a decision"}
         </Button>
       </form>
 
-      {chosenOption && (
-        <Stack>
-          <Text ta="center" size="xl">
-            The decision has been made, you choose...
-          </Text>
-          <Text ta="center" size="xl">
-            <span data-testid="choice_made">{chosenOption}</span>
-          </Text>
-        </Stack>
-      )}
+      {/* Always rendered, so screen readers announce the decision */}
+      <div role="status">
+        {chosenOption && (
+          <Stack>
+            <Text ta="center" size="xl">
+              The decision has been made, you choose...
+            </Text>
+            <Text ta="center" size="xl">
+              <span data-testid="choice_made">{chosenOption}</span>
+            </Text>
+          </Stack>
+        )}
+      </div>
     </SimpleGrid>
   );
 }

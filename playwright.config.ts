@@ -7,8 +7,9 @@ import "./tests/test-env";
  */
 export default defineConfig({
   testDir: "./tests",
-  /* Unit and Firebase emulator tests are run by Vitest */
-  testIgnore: ["unit/**", "firebase/**"],
+  /* Unit and Firebase emulator tests are run by Vitest, and Lighthouse by
+     scripts/lighthouse.mts */
+  testIgnore: ["unit/**", "firebase/**", "lighthouse/**"],
   /* Loads the synthetic users into the Firebase emulators */
   globalSetup: "./tests/global-setup.ts",
   /* Run tests in files in parallel */

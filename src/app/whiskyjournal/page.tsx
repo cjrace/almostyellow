@@ -1,17 +1,12 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import { Container } from "@mantine/core";
 import WhiskyJournal from "@/components/whiskyjournal";
 
-export const metadata: Metadata = {
-  title: "Whisky Journal",
-  description: "Details, ratings, and ponderings on the whiskies I've tasted.",
-  openGraph: {
-    title: "Whisky Journal | Almost Yellow",
-    description:
-      "Details, ratings, and ponderings on the whiskies I've tasted.",
-  },
-};
+export const metadata = pageMetadata(
+  "Whisky Journal",
+  "Details, ratings, and ponderings on the whiskies I've tasted.",
+);
 
 const crumbitems = [
   { title: "Home", href: "/" },
