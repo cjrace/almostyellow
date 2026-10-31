@@ -91,7 +91,7 @@ pnpm run
 
 ## Uno
 
-See [UNO.md](UNO.md) for scoring, offline storage, historic games and statistics.
+See [Uno tracker](docs/uno.md) for scoring, offline storage, historic games and statistics.
 
 ## Deployment
 
