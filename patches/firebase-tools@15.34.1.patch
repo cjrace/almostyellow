@@ -1,0 +1,13 @@
+diff --git a/lib/fsAsync.js b/lib/fsAsync.js
+index a474978f0b2430f380de30a53e0527cee44e141e..9fd4b73fd0ae7be741930001e026901aa58a2f4b 100644
+--- a/lib/fsAsync.js
++++ b/lib/fsAsync.js
+@@ -4,7 +4,7 @@ exports.readdirRecursive = readdirRecursive;
+ const fs_extra_1 = require("fs-extra");
+ const ignore_1 = require("ignore");
+ const _ = require("lodash");
+-const minimatch = require("minimatch");
++const { minimatch } = require("minimatch");
+ const path_1 = require("path");
+ const logger_1 = require("./logger");
+ async function readdirRecursiveHelper(options) {
