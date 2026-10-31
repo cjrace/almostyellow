@@ -61,10 +61,10 @@ export default function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Red or Black"
+            title="Red or Black v1"
             description="Red or black? Simple but deadly. A Ben Palmer original."
             link="/games/redorblack"
-            linktext="Red or Black"
+            linktext="Red or Black v1"
           />
 
           <GamesCard

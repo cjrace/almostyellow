@@ -75,10 +75,10 @@ test("Can navigate to the games page and through its subpages", async ({
   ]);
   await Promise.all([
     page.waitForURL("/games/redorblack"),
-    page.getByRole("link", { name: "Red or Black" }).click(),
+    page.getByRole("link", { name: "Red or Black v1" }).click(),
   ]);
-  await expect(page).toHaveTitle("Red or Black | Almost Yellow");
-  await expect(page.locator("h1")).toContainText("Red or Black");
+  await expect(page).toHaveTitle("Red or Black v1 | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("Red or Black v1");
 
   await Promise.all([
     page.waitForURL("/games"),

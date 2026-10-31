@@ -4,10 +4,10 @@ import Header from "@/components/header";
 import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
-  title: "Red or Black",
+  title: "Red or Black v1",
   description: "Guess the colour of the next card. A Ben Palmer original.",
   openGraph: {
-    title: "Red or Black | Almost Yellow",
+    title: "Red or Black v1 | Almost Yellow",
     description: "Guess the colour of the next card. A Ben Palmer original.",
   },
 };

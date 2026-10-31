@@ -277,7 +277,8 @@ export default function IrishBingo() {
         <Space h="md" />
 
         <Button
-          variant="default"
+          // Once the deck runs out, shuffling is the next thing to do
+          variant={mainDeck.length === 0 ? "filled" : "default"}
           onClick={newDeck}
           fullWidth
           disabled={drawnCards.length > 0 ? false : true}

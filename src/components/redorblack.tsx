@@ -53,7 +53,7 @@ export default function RedOrBlack() {
   return (
     <div className={layout.game}>
       <CardGameTitle
-        title="Red or Black"
+        title="Red or Black v1"
         creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
       >
         <Text mb="sm">
@@ -113,7 +113,8 @@ export default function RedOrBlack() {
           </Button>
           <Button
             ref={shuffleButtonRef}
-            variant="default"
+            // Once the deck runs out, shuffling is the next thing to do
+            variant={cardsRemaining === 0 ? "filled" : "default"}
             onClick={newDeck}
             fullWidth
             disabled={latestCard === null}

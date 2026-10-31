@@ -13,7 +13,7 @@ test("Credits Ben and shows the instructions", async ({ page }) => {
 
   await page.getByLabel("Open game instructions modal").click();
   const instructions = page.getByRole("dialog");
-  await expect(instructions).toContainText("Red or Black instructions");
+  await expect(instructions).toContainText("Red or Black v1 instructions");
   await expect(instructions).toContainText("encourage drinking");
   await instructions
     .getByRole("button", { name: "Close instructions modal" })
