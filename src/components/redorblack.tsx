@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Alert, Button, Grid, List, Space, Stack, Text } from "@mantine/core";
+import { Alert, Button, List, Modal, Text } from "@mantine/core";
 import {
   Card,
   createCardDeck,
   drawCards,
+  getCardName,
   shuffleDeck,
 } from "@/components/carddeck";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
+import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/playingcard.module.css";
 
 export default function RedOrBlack() {
@@ -17,7 +19,9 @@ export default function RedOrBlack() {
   // The deck is shuffled on the first draw rather than on the server, so the
   // page renders the same on both
   const [deck, setDeck] = useState<Card[] | null>(null);
-  const [latestCard, setLatestCard] = useState<Card | null>(null);
+  const [drawnCards, setDrawnCards] = useState<Card[]>([]);
+  const [drawnOpened, setDrawnOpened] = useState(false);
+  const latestCard = drawnCards.at(-1) ?? null;
   const cardsRemaining = deck?.length ?? 52;
 
   // Each button disables itself at one end of the deck, so focus moves to the
@@ -36,54 +40,51 @@ export default function RedOrBlack() {
 
     const { drawn, remaining } = drawCards(currentDeck, 1);
     if (remaining.length === 0) focusNextRef.current = shuffleButtonRef.current;
-    setLatestCard(drawn[0]);
+    setDrawnCards([...drawnCards, ...drawn]);
     setDeck(remaining);
   };
 
   const newDeck = () => {
     focusNextRef.current = drawButtonRef.current;
     setDeck(null);
-    setLatestCard(null);
+    setDrawnCards([]);
   };
 
   return (
-    <Grid>
-      <Grid.Col span={12}>
-        <CardGameTitle
-          title="Red or Black"
-          creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
-        >
-          <Text mb="sm">
-            Ben made this to play at university, so you only need a phone rather
-            than a pack of cards.
-          </Text>
-          <List variant="ordered">
-            <List.Item>
-              guess out loud whether the next card is red or black
-            </List.Item>
-            <List.Item>
-              press &apos;Draw a card&apos; to see if you were right
-            </List.Item>
-            <List.Item>
-              keep going until the deck runs out, then shuffle a new one
-            </List.Item>
-          </List>
-        </CardGameTitle>
-      </Grid.Col>
+    <div className={layout.game}>
+      <CardGameTitle
+        title="Red or Black"
+        creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
+      >
+        <Text mb="sm">
+          A Ben Palmer special designed to encourage drinking.
+        </Text>
+        <List variant="ordered">
+          <List.Item>
+            guess out loud whether the next card is red or black
+          </List.Item>
+          <List.Item>
+            &apos;Draw a card&apos; to see if you were right
+          </List.Item>
+          <List.Item>if you guess wrong, take a drink</List.Item>
+          <List.Item>if you guess right, assign drinks to others</List.Item>
+          <List.Item>
+            keep going until the deck runs out, then shuffle a new one
+          </List.Item>
+        </List>
+      </CardGameTitle>
 
-      <Space h="xl" />
-
-      <Grid.Col span={{ base: 12, sm: 6 }}>
-        <div className={styles.single}>
-          <PlayingCard card={latestCard} />
+      <div className={`${layout.board} ${layout.sideBySide}`}>
+        <div className={layout.table}>
+          <div className={styles.single}>
+            <PlayingCard card={latestCard} />
+          </div>
         </div>
-      </Grid.Col>
 
-      <Grid.Col span={{ base: 12, sm: 5, lg: 4 }}>
-        <Stack>
+        <div className={layout.controls}>
           <Text ta="center" id="cards_remaining" aria-live="polite">
             {latestCard
-              ? `You drew the ${latestCard.rank} of ${latestCard.suit}. `
+              ? `You drew the ${getCardName(latestCard.suit, latestCard.rank)}. `
               : ""}
             {`${cardsRemaining.toString()} cards remaining`}
           </Text>
@@ -101,6 +102,16 @@ export default function RedOrBlack() {
             </Alert>
           )}
           <Button
+            variant="default"
+            onClick={() => {
+              setDrawnOpened(true);
+            }}
+            fullWidth
+            disabled={latestCard === null}
+          >
+            View all drawn cards
+          </Button>
+          <Button
             ref={shuffleButtonRef}
             variant="default"
             onClick={newDeck}
@@ -109,8 +120,26 @@ export default function RedOrBlack() {
           >
             Shuffle new deck
           </Button>
-        </Stack>
-      </Grid.Col>
-    </Grid>
+        </div>
+      </div>
+
+      <Modal
+        opened={drawnOpened}
+        onClose={() => {
+          setDrawnOpened(false);
+        }}
+        size="xs"
+        title="All drawn cards"
+        closeButtonProps={{ "aria-label": "Close modal" }}
+      >
+        <List type="ordered" withPadding>
+          {drawnCards.map((card) => (
+            <List.Item key={`${card.rank}-${card.suit}`}>
+              {getCardName(card.suit, card.rank)}
+            </List.Item>
+          ))}
+        </List>
+      </Modal>
+    </div>
   );
 }

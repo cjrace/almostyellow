@@ -1,6 +1,7 @@
 import Suits from "@/components/suits";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
   title: "Suits",
@@ -13,12 +14,12 @@ export const metadata: Metadata = {
 
 export default function SuitsPage() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
         <Suits />
       </main>
-    </>
+    </div>
   );
 }

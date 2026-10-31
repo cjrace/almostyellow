@@ -62,7 +62,7 @@ export default function Games() {
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Red or Black"
-            description="Red or black? Call it, then draw a card. A Ben Palmer original."
+            description="Red or black? Simple but deadly. A Ben Palmer original."
             link="/games/redorblack"
             linktext="Red or Black"
           />
@@ -70,7 +70,7 @@ export default function Games() {
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Suits"
-            description="Pick a suit and reveal four cards. Match and hand out drinks, miss and take them. A Ben Palmer original."
+            description="Pick your suit and reap the consequences. Another Ben Palmer special."
             link="/games/suits"
             linktext="Suits"
           />

@@ -64,6 +64,10 @@ test("Plays a full game of 13 turns", async ({ page }) => {
     await expect(page.locator("#suits_turn_count")).toHaveText(
       `Turn ${String(turn + 1)} of 13`,
     );
+    // Three players, so each other player's share is 2
+    await expect(page.locator("#suits_magic_number")).toHaveText(
+      "Magic number2",
+    );
     await expect(cards).toHaveCount(4);
     for (const card of await cards.all()) {
       await expect(card).toHaveAttribute("alt", "Face-down card");
@@ -77,7 +81,9 @@ test("Plays a full game of 13 turns", async ({ page }) => {
       name: "Reveal four cards",
     });
     await expect(revealButton).toBeDisabled();
-    await page.getByRole("radio", { name: suit }).check();
+    // The segmented control hides its radio inputs, so press the label
+    await page.locator("label").filter({ hasText: suit }).click();
+    await expect(page.getByRole("radio", { name: suit })).toBeChecked();
     await revealButton.click();
     await expect(revealButton).toHaveCount(0);
 
@@ -86,9 +92,15 @@ test("Plays a full game of 13 turns", async ({ page }) => {
       (await cards.all()).map((card) => card.getAttribute("alt")),
     );
     const matches = alts.filter((alt) => alt?.endsWith(` of ${suit}`)).length;
+    const suitsDrawn = new Set(alts.map((alt) => alt?.split(" of ")[1]));
     const multiplier = finalTurn ? 2 : 1;
     const doubled = finalTurn ? " (doubled for the final turn)" : "";
-    if (matches > 0) {
+    if (suitsDrawn.size === 4) {
+      await expect(result).toContainText("Safe round");
+      await expect(result).toContainText(
+        `One of every suit, so everyone except ${player} drinks ${String(multiplier)}${doubled}.`,
+      );
+    } else if (matches > 0) {
       const drinks = matches * 2 * multiplier;
       await expect(result).toHaveText(
         `${player} matched ${String(matches)} ${matches === 1 ? "card" : "cards"}. Hand out ${String(drinks)} drinks${doubled}.`,
@@ -118,7 +130,9 @@ test("Plays a full game of 13 turns", async ({ page }) => {
   );
 
   // Replay keeps the players
-  await page.getByRole("button", { name: "Play again" }).click();
+  await page
+    .getByRole("button", { name: "Play again with the same players" })
+    .click();
   await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
   await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
   await expect(result).toHaveText("");

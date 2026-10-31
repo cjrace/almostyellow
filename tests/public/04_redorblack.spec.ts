@@ -14,7 +14,7 @@ test("Credits Ben and shows the instructions", async ({ page }) => {
   await page.getByLabel("Open game instructions modal").click();
   const instructions = page.getByRole("dialog");
   await expect(instructions).toContainText("Red or Black instructions");
-  await expect(instructions).toContainText("university");
+  await expect(instructions).toContainText("encourage drinking");
   await instructions
     .getByRole("button", { name: "Close instructions modal" })
     .click();
@@ -28,6 +28,9 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
   const remaining = page.locator("#cards_remaining");
   await expect(card).toHaveAttribute("alt", "Face-down card");
   await expect(remaining).toContainText("52 cards remaining");
+  await expect(
+    page.getByRole("button", { name: "View all drawn cards" }),
+  ).toBeDisabled();
 
   const allCardNames: string[] = [];
   SuitNames.forEach((suit) => {
@@ -47,6 +50,14 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
     drawnCards.push((await card.getAttribute("alt")) ?? "");
   }
 
+  // The list of drawn cards is in the order they came out
+  const viewDrawn = page.getByRole("button", { name: "View all drawn cards" });
+  await viewDrawn.click();
+  const drawnList = page.getByRole("dialog", { name: "All drawn cards" });
+  await expect(drawnList.getByRole("listitem")).toHaveText(drawnCards);
+  await drawnList.getByRole("button", { name: "Close modal" }).click();
+  await expect(drawnList).toBeHidden();
+
   expect(drawnCards.sort()).toEqual(allCardNames.sort());
   await expect(
     page.getByRole("button", { name: "Draw a card" }),
@@ -56,6 +67,7 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
   await page.getByRole("button", { name: "Shuffle new deck" }).click();
   await expect(remaining).toContainText("52 cards remaining");
   await expect(card).toHaveAttribute("alt", "Face-down card");
+  await expect(viewDrawn).toBeDisabled();
 
   await page.getByRole("button", { name: "Draw a card" }).click();
   await expect(remaining).toContainText("51 cards remaining");

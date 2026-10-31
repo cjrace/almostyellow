@@ -11,8 +11,10 @@ export type SuitsPhase = "setup" | "guessing" | "revealed" | "complete";
 
 export interface SuitsResult {
   matches: number;
-  kind: "assign" | "drink"; // Hand drinks out, or drink them yourself
-  drinks: number;
+  // Hand drinks out, drink them yourself, or a safe round where everyone else
+  // drinks instead
+  kind: "assign" | "drink" | "safe";
+  drinks: number; // For a safe round, what each other player drinks
   doubled: boolean;
 }
 
@@ -71,6 +73,16 @@ export function isFinalTurn(state: SuitsState): boolean {
   return state.turn === TOTAL_TURNS - 1;
 }
 
+// The number of other players, which every drink is multiplied by
+export function magicNumber(playerCount: number): number {
+  return playerCount - 1;
+}
+
+// One card of every suit
+export function isSafeRound(cards: Card[]): boolean {
+  return new Set(cards.map((card) => card.suit)).size === CARDS_PER_TURN;
+}
+
 export function calculateResult(
   chosenSuit: string,
   cards: Card[],
@@ -79,7 +91,11 @@ export function calculateResult(
 ): SuitsResult {
   const matches = cards.filter((card) => card.suit === chosenSuit).length;
   const multiplier = finalTurn ? 2 : 1;
-  const others = playerCount - 1;
+  const others = magicNumber(playerCount);
+
+  if (isSafeRound(cards)) {
+    return { matches, kind: "safe", drinks: multiplier, doubled: finalTurn };
+  }
 
   return matches > 0
     ? {
@@ -150,6 +166,10 @@ export function isUnfinished(state: SuitsState): boolean {
 export function describeResult(player: string, result: SuitsResult): string {
   const drinks = `${result.drinks.toString()} ${result.drinks === 1 ? "drink" : "drinks"}`;
   const doubled = result.doubled ? " (doubled for the final turn)" : "";
+
+  if (result.kind === "safe") {
+    return `One of every suit, so everyone except ${player} drinks ${result.drinks.toString()}${doubled}.`;
+  }
 
   if (result.kind === "assign") {
     const cards = result.matches === 1 ? "card" : "cards";

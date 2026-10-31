@@ -5,21 +5,21 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Grid,
   Group,
   List,
   Modal,
-  Radio,
-  Space,
+  Paper,
+  SegmentedControl,
   Stack,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconShieldCheck, IconTrash } from "@tabler/icons-react";
 import {
   Card,
   createCardDeck,
+  isRedSuit,
   shuffleDeck,
   SuitNames,
 } from "@/components/carddeck";
@@ -32,6 +32,7 @@ import {
   initialSuitsState,
   isFinalTurn,
   isUnfinished,
+  magicNumber,
   MAX_PLAYERS,
   MIN_PLAYERS,
   nextPlayer,
@@ -41,6 +42,7 @@ import {
   SuitsState,
   TOTAL_TURNS,
 } from "@/components/suitsgame";
+import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/playingcard.module.css";
 
 const suitSymbols: Record<string, string> = {
@@ -88,6 +90,26 @@ function SuitLabel({ suit }: { suit: string }) {
   );
 }
 
+// The symbol sits above the name, so all four suits fit across a phone
+function SuitOption({ suit }: { suit: string }) {
+  return (
+    <Stack gap={0} align="center">
+      <Text
+        span
+        aria-hidden="true"
+        fz="xl"
+        lh={1.2}
+        c={isRedSuit(suit) ? "red.6" : undefined}
+      >
+        {suitSymbols[suit]}
+      </Text>
+      <Text span size="sm">
+        {suit}
+      </Text>
+    </Stack>
+  );
+}
+
 // Each setup row has an id so React keeps the right input when one is removed
 interface PlayerRow {
   id: number;
@@ -128,40 +150,41 @@ export default function Suits() {
   };
 
   return (
-    <Grid>
-      <Grid.Col span={12}>
-        <CardGameTitle title="Suits">
-          <Text mb="sm">
-            Another of Ben&apos;s games from university, for 2 to 13 players
-            sharing one phone.
-          </Text>
-          <List variant="ordered" mb="md">
-            <List.Item>
-              on your turn, pick a suit and reveal four cards
-            </List.Item>
-            <List.Item>
-              if any cards match your suit, hand out drinks to the other
-              players: one for each match, for each other player
-            </List.Item>
-            <List.Item>
-              if nothing matches, drink two for each other player
-            </List.Item>
-            <List.Item>
-              the game lasts {TOTAL_TURNS} turns, using the whole deck
-            </List.Item>
-            <List.Item>the final turn counts double</List.Item>
-          </List>
-          <Text>
-            For example, with 4 players, matching 2 cards means handing out 6
-            drinks, and matching none means drinking 6.
-          </Text>
-        </CardGameTitle>
-      </Grid.Col>
+    <div className={layout.game}>
+      <CardGameTitle title="Suits">
+        <Text mb="sm">
+          Another of Ben&apos;s games from university, for 2 to 13 players
+          sharing one phone.
+        </Text>
+        <List variant="ordered" mb="md">
+          <List.Item>on your turn, pick a suit and reveal four cards</List.Item>
+          <List.Item>
+            the magic number is the number of players minus one
+          </List.Item>
+          <List.Item>
+            if any cards match your suit, hand out the magic number of drinks
+            for each match
+          </List.Item>
+          <List.Item>
+            if nothing matches, drink twice the magic number
+          </List.Item>
+          <List.Item>
+            if the four cards are one of every suit, it&apos;s a safe round:
+            nobody hands out drinks, and everyone except you drinks one
+          </List.Item>
+          <List.Item>
+            the game lasts {TOTAL_TURNS} turns, using the whole deck
+          </List.Item>
+          <List.Item>the final turn counts double, safe rounds too</List.Item>
+        </List>
+        <Text>
+          For example, with 4 players the magic number is 3, so matching 2 cards
+          means handing out 6 drinks, and matching none means drinking 6.
+        </Text>
+      </CardGameTitle>
 
-      <Space h="xl" />
-
-      <Grid.Col span={12}>
-        {state.phase === "setup" ? (
+      {state.phase === "setup" ? (
+        <div className={layout.board}>
           <PlayerSetup
             rows={rows}
             setRows={setRows}
@@ -177,9 +200,11 @@ export default function Suits() {
               );
             }}
           />
-        ) : (
-          <Stack maw={560} mx="auto">
-            <Group justify="space-between">
+        </div>
+      ) : (
+        <div className={layout.board}>
+          <Group justify="space-between" align="flex-start" wrap="nowrap">
+            <div>
               <Title
                 order={2}
                 size="h3"
@@ -194,57 +219,84 @@ export default function Suits() {
               <Text c="dimmed" id="suits_turn_count">
                 Turn {Math.min(state.turn + 1, TOTAL_TURNS)} of {TOTAL_TURNS}
               </Text>
-            </Group>
+            </div>
+            <Paper
+              withBorder
+              px="sm"
+              py={4}
+              ta="center"
+              id="suits_magic_number"
+            >
+              <Text size="xs" c="dimmed">
+                Magic number
+              </Text>
+              <Text fz={28} fw={700} lh={1.1}>
+                {magicNumber(state.players.length)}
+              </Text>
+            </Paper>
+          </Group>
 
-            {state.phase === "guessing" && isFinalTurn(state) && (
-              <Alert color="orange" title="Final turn">
-                This turn counts double.
-              </Alert>
-            )}
+          {state.phase === "guessing" && isFinalTurn(state) && (
+            <Alert color="orange" title="Final turn">
+              This turn counts double.
+            </Alert>
+          )}
 
-            {state.phase === "guessing" ? (
-              <Radio.Group
-                label="Choose a suit"
-                value={state.chosenSuit}
+          {state.phase === "guessing" ? (
+            <div>
+              <Text id="suits_choose" fw={500} size="sm">
+                Choose a suit
+              </Text>
+              <SegmentedControl
+                aria-labelledby="suits_choose"
+                fullWidth
+                mt={4}
+                color="orange"
+                // No suit matches "", so nothing shows as picked until a guess
+                value={state.chosenSuit ?? ""}
                 onChange={(suit) => {
                   dispatch({ type: "choose", suit });
                 }}
-              >
-                <Group mt="xs">
-                  {SuitNames.map((suit) => (
-                    <Radio
-                      key={suit}
-                      value={suit}
-                      label={<SuitLabel suit={suit} />}
-                    />
-                  ))}
-                </Group>
-              </Radio.Group>
-            ) : (
-              // The guess is locked in once the cards are showing
-              <Text id="suits_chosen">
-                {currentPlayer(state)} picked{" "}
-                {state.chosenSuit && <SuitLabel suit={state.chosenSuit} />}
-              </Text>
-            )}
+                data={SuitNames.map((suit) => ({
+                  value: suit,
+                  label: <SuitOption suit={suit} />,
+                }))}
+              />
+            </div>
+          ) : (
+            // The guess is locked in once the cards are showing
+            <Text id="suits_chosen">
+              {currentPlayer(state)} picked{" "}
+              {state.chosenSuit && <SuitLabel suit={state.chosenSuit} />}
+            </Text>
+          )}
 
+          <div className={layout.table}>
             <div className={styles.row}>
               {[0, 1, 2, 3].map((index) => (
                 <PlayingCard key={index} card={state.revealed[index] ?? null} />
               ))}
             </div>
+          </div>
 
-            <Text
-              aria-live="polite"
-              id="suits_result"
-              fw={500}
-              ta="center"
-              mih="1.5em"
-            >
-              {state.result &&
-                describeResult(currentPlayer(state), state.result)}
-            </Text>
+          <div aria-live="polite" id="suits_result">
+            {state.result?.kind === "safe" ? (
+              <Alert
+                color="green"
+                title="Safe round"
+                icon={<IconShieldCheck aria-hidden="true" />}
+              >
+                {describeResult(currentPlayer(state), state.result)}
+              </Alert>
+            ) : (
+              <Text fw={500} ta="center" mih="1.5em">
+                {state.result &&
+                  describeResult(currentPlayer(state), state.result)}
+              </Text>
+            )}
+          </div>
 
+          <div className={layout.controls}>
             {state.phase === "guessing" && (
               <Button
                 disabled={state.chosenSuit === null}
@@ -281,7 +333,7 @@ export default function Suits() {
                     act({ type: "replay", deck: newDeck() }, turnHeadingRef);
                   }}
                 >
-                  Play again
+                  Play again with same players
                 </Button>
               </>
             )}
@@ -298,9 +350,9 @@ export default function Suits() {
             >
               Change players
             </Button>
-          </Stack>
-        )}
-      </Grid.Col>
+          </div>
+        </div>
+      )}
 
       <Modal
         opened={confirmOpened}
@@ -325,7 +377,7 @@ export default function Suits() {
           <Button onClick={changePlayers}>End game</Button>
         </Group>
       </Modal>
-    </Grid>
+    </div>
   );
 }
 
@@ -348,7 +400,7 @@ function PlayerSetup({ rows, setRows, headingRef, onStart }: PlayerSetupProps) {
   }, [rows]);
 
   return (
-    <Stack maw={420} mx="auto" ref={listRef}>
+    <Stack maw={420} w="100%" mx="auto" ref={listRef}>
       <Title order={2} size="h3" ref={headingRef} tabIndex={-1}>
         Who&apos;s playing?
       </Title>

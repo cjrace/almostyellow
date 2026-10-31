@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { Card, createCardDeck, shuffleDeck } from "@/components/carddeck";
+import {
+  Card,
+  createCardDeck,
+  shuffleDeck,
+  SuitNames,
+} from "@/components/carddeck";
 import {
   calculateResult,
   chooseSuit,
   currentPlayer,
   describeResult,
   isFinalTurn,
+  isSafeRound,
+  magicNumber,
   namePlayers,
   nextPlayer,
   replay,
@@ -74,6 +81,30 @@ describe("Suits scoring", () => {
   it("doubles both results on the final turn", () => {
     expect(calculateResult("Hearts", hand(3), 4, true).drinks).toBe(18);
     expect(calculateResult("Hearts", hand(0), 4, true).drinks).toBe(12);
+  });
+
+  it("makes one of every suit a safe round, whatever the guess", () => {
+    const oneOfEach = SuitNames.map((suit) => ({ suit, rank: "Two" }));
+    expect(isSafeRound(oneOfEach)).toBe(true);
+    expect(isSafeRound(hand(2))).toBe(false);
+
+    expect(calculateResult("Hearts", oneOfEach, 4, false)).toEqual({
+      matches: 1,
+      kind: "safe",
+      drinks: 1,
+      doubled: false,
+    });
+    expect(calculateResult("Clubs", oneOfEach, 4, true).drinks).toBe(2);
+    expect(
+      describeResult("Ben", calculateResult("Clubs", oneOfEach, 4, true)),
+    ).toBe(
+      "One of every suit, so everyone except Ben drinks 2 (doubled for the final turn).",
+    );
+  });
+
+  it("makes the magic number the number of other players", () => {
+    expect(magicNumber(2)).toBe(1);
+    expect(magicNumber(13)).toBe(12);
   });
 
   it("describes results", () => {

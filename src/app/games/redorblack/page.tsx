@@ -1,6 +1,7 @@
 import RedOrBlack from "@/components/redorblack";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
   title: "Red or Black",
@@ -13,12 +14,12 @@ export const metadata: Metadata = {
 
 export default function RedOrBlackPage() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
         <RedOrBlack />
       </main>
-    </>
+    </div>
   );
 }

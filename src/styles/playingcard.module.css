@@ -12,11 +12,30 @@
   margin-inline: auto;
 }
 
-/* Four cards side by side, still legible on a 375px phone */
+/* Four cards side by side on wider screens */
 .row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--mantine-spacing-sm);
+  width: 100%;
   max-width: 560px;
   margin-inline: auto;
+}
+
+/* On phones the cards fit the height of the space they're in (a size
+   container), as well as its width */
+@media (max-width: 47.99em) {
+  .single {
+    width: min(100cqw, 260px, 100cqh * 5 / 7);
+  }
+
+  /* Two by two, so each card is big enough to read */
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(
+      100cqw,
+      360px,
+      (100cqh - var(--mantine-spacing-sm)) * 5 / 7 + var(--mantine-spacing-sm)
+    );
+  }
 }
