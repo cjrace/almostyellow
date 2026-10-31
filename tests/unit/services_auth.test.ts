@@ -5,16 +5,39 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // public reads do not. The database and auth are mocked, so nothing here
 // needs credentials.
 
-const { requireAuth, sql } = vi.hoisted(() => ({
-  requireAuth: vi.fn(),
-  sql: vi.fn(),
-}));
+const { requireAuth, sql, createCustomToken, collection } = vi.hoisted(() => {
+  // A stand-in for the Admin SDK's Firestore, with nothing stored in it
+  const document = {
+    get: () => Promise.resolve({ exists: false }),
+    create: () => Promise.resolve(),
+    update: () => Promise.resolve(),
+    delete: () => Promise.resolve(),
+  };
+  return {
+    requireAuth: vi.fn(),
+    sql: vi.fn(),
+    createCustomToken: vi.fn(),
+    collection: vi.fn(() => ({
+      doc: () => document,
+      get: () => Promise.resolve({ docs: [] }),
+    })),
+  };
+});
 
 vi.mock("@/auth", () => ({ requireAuth }));
 vi.mock("@/db", () => ({ sql }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/firebase/admin", () => ({
+  adminAuth: () => ({ createCustomToken }),
+  adminDb: () => ({ collection }),
+}));
 
-import * as chopinliszt from "@/services/chopinliszt";
+// Postgres or Firestore, depending on which the feature has moved to
+function databaseUsed() {
+  return sql.mock.calls.length + collection.mock.calls.length > 0;
+}
+
+import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import * as filmlist from "@/services/filmlist";
 import * as whiskyjournal from "@/services/whiskyjournal";
 
@@ -43,17 +66,7 @@ const whisky = {
   notes: "",
 };
 
-function chopinForm() {
-  const formData = new FormData();
-  formData.set("chopin_text", "Test item");
-  return formData;
-}
-
 const protectedActions: [string, () => Promise<unknown>][] = [
-  ["createChopin", () => chopinliszt.createChopin(chopinForm())],
-  ["readChopin", () => chopinliszt.readChopin()],
-  ["updateChopinChecked", () => chopinliszt.updateChopinChecked(fakeId, true)],
-  ["deleteChopin", () => chopinliszt.deleteChopin(fakeId)],
   ["createFilm", () => filmlist.createFilm(film)],
   ["updateFilm", () => filmlist.updateFilm(film)],
   ["deleteFilm", () => filmlist.deleteFilm(fakeId)],
@@ -82,7 +95,7 @@ describe("protected server actions", () => {
 
       await expect(action()).rejects.toBe(refused);
       expect(requireAuth).toHaveBeenCalledOnce();
-      expect(sql).not.toHaveBeenCalled();
+      expect(databaseUsed()).toBe(false);
     },
   );
 
@@ -94,7 +107,7 @@ describe("protected server actions", () => {
 
       await action();
       expect(requireAuth).toHaveBeenCalledOnce();
-      expect(sql).toHaveBeenCalled();
+      expect(databaseUsed()).toBe(true);
     },
   );
 });
@@ -105,6 +118,24 @@ describe("public server actions", () => {
 
     await action();
     expect(requireAuth).not.toHaveBeenCalled();
-    expect(sql).toHaveBeenCalled();
+    expect(databaseUsed()).toBe(true);
+  });
+});
+
+describe("firestoreTokenAction", () => {
+  it("is refused without a session and hands out no token", async () => {
+    const refused = new Error("unauthorised");
+    requireAuth.mockRejectedValue(refused);
+
+    await expect(firestoreTokenAction()).rejects.toBe(refused);
+    expect(createCustomToken).not.toHaveBeenCalled();
+  });
+
+  it("signs the browser in as the user the session belongs to", async () => {
+    requireAuth.mockResolvedValue({ uid: "test-user-alice" });
+    createCustomToken.mockResolvedValue("custom-token");
+
+    await expect(firestoreTokenAction()).resolves.toBe("custom-token");
+    expect(createCustomToken).toHaveBeenCalledWith("test-user-alice");
   });
 });

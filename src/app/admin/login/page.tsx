@@ -1,6 +1,7 @@
 import Header from "@/components/header";
 import LoginForm from "@/components/login";
 import { Metadata } from "next";
+import { firebaseClientConfig } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -44,7 +45,10 @@ export default async function Login(props: {
       <Header noCrumbs={true} homeOnly={true} />
 
       <main id="main-content">
-        <LoginForm callbackUrl={callbackUrl} />
+        <LoginForm
+          callbackUrl={callbackUrl}
+          firebaseConfig={firebaseClientConfig()}
+        />
       </main>
     </>
   );

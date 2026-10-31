@@ -1,21 +1,57 @@
 "use server";
 
-import { sql } from "@/db";
+import { type DocumentSnapshot } from "firebase-admin/firestore";
+import { v4 as generate_uuid } from "uuid";
 import { requireAuth } from "@/auth";
+import { adminDb } from "@/firebase/admin";
+import { DocumentId } from "@/firebase/ids";
+import { FilmFields } from "@/firebase/records";
 import { Film } from "@/components/filmcard";
 
-// TODO: Think about backup plans?
+// The film list is public, so it is read on the server and needs no sign-in.
+// Changes go through the Admin SDK too, which bypasses the Security Rules, so
+// they are checked here against the same limits as firestore.rules.
+
+const COLLECTION = "films";
+
+interface StoredFilm {
+  name: string;
+  releaseYear: number;
+  top30: boolean;
+  watched: boolean;
+  notInJar: boolean;
+}
+
+function toFilm(snapshot: DocumentSnapshot): Film {
+  const data = snapshot.data() as StoredFilm;
+  return {
+    id: snapshot.id,
+    name: data.name,
+    release_year: data.releaseYear,
+    top_30: data.top30,
+    watched: data.watched,
+    not_in_jar: data.notInJar,
+  };
+}
+
+// Throws if the film breaks any of the limits, before anything is written
+function toStored(film: Film): StoredFilm {
+  const fields = FilmFields.parse(film);
+  return {
+    name: fields.name,
+    releaseYear: fields.release_year,
+    top30: fields.top_30,
+    watched: fields.watched,
+    notInJar: fields.not_in_jar,
+  };
+}
 
 export async function createFilm(film: Film): Promise<void> {
   await requireAuth();
 
+  const fields = toStored(film);
   try {
-    await sql`
-                INSERT INTO film_list
-                (id, name, release_year, top_30, watched, not_in_jar)
-                VALUES
-                (uuid_generate_v4(), ${film.name}, ${film.release_year}, ${film.top_30}, ${film.watched}, ${film.not_in_jar});
-            `;
+    await adminDb().collection(COLLECTION).doc(generate_uuid()).create(fields);
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to create a new film entry.", { cause: error });
@@ -24,72 +60,38 @@ export async function createFilm(film: Film): Promise<void> {
 
 export async function readFilmList(): Promise<Film[]> {
   try {
-    const data = await sql<Film>`
-      SELECT id, name, release_year, top_30, watched, not_in_jar
-      FROM film_list;
-    `;
-
-    const films: Film[] = data.rows.map((film) => ({
-      id: film.id,
-      name: film.name,
-      release_year: film.release_year,
-      top_30: film.top_30,
-      watched: film.watched,
-      not_in_jar: film.not_in_jar,
-    }));
-
-    return films;
+    const snapshot = await adminDb().collection(COLLECTION).get();
+    return snapshot.docs.map(toFilm);
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch the film list.", { cause: error });
   }
 }
 
-export async function readFilm(film_id: string): Promise<Film[]> {
+// The film with this id, or null if there is no such film
+export async function readFilm(film_id: string): Promise<Film | null> {
+  if (!DocumentId.safeParse(film_id).success) return null;
+
   try {
-    const data = await sql<Film>`
-      SELECT id, name, release_year, top_30, watched, not_in_jar
-      FROM film_list
-      WHERE id = ${film_id};
-    `;
-
-    if (data.rows.length > 1) {
-      throw new Error("More than one film found with the given name.");
-    }
-
-    if (data.rows.length === 0) {
-      throw new Error("No film found with the given name.");
-    }
-
-    const film: Film = {
-      id: data.rows[0].id,
-      name: data.rows[0].name,
-      release_year: data.rows[0].release_year,
-      top_30: data.rows[0].top_30,
-      watched: data.rows[0].watched,
-      not_in_jar: data.rows[0].not_in_jar,
-    };
-
-    return [film];
+    const snapshot = await adminDb().collection(COLLECTION).doc(film_id).get();
+    return snapshot.exists ? toFilm(snapshot) : null;
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch the film.", { cause: error });
   }
 }
 
+// Fails if the film has been deleted, rather than bringing it back
 export async function updateFilm(film: Film): Promise<void> {
   await requireAuth();
 
+  const film_id = DocumentId.parse(film.id);
+  const fields = toStored(film);
   try {
-    await sql`
-                UPDATE film_list
-                SET name = ${film.name},
-                    release_year = ${film.release_year},
-                    top_30 = ${film.top_30},
-                    watched = ${film.watched},
-                    not_in_jar = ${film.not_in_jar}
-                WHERE id = ${film.id};
-            `;
+    await adminDb()
+      .collection(COLLECTION)
+      .doc(film_id)
+      .update({ ...fields });
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to update film entry.", { cause: error });
@@ -99,8 +101,13 @@ export async function updateFilm(film: Film): Promise<void> {
 export async function deleteFilm(film_id: string) {
   await requireAuth();
 
+  const parsed = DocumentId.safeParse(film_id);
+  if (!parsed.success) {
+    return { message: "No film found with the given ID." };
+  }
+
   try {
-    await sql`DELETE FROM film_list WHERE id = ${film_id};`;
+    await adminDb().collection(COLLECTION).doc(parsed.data).delete();
   } catch {
     return {
       message: "Database Error: Failed to delete item from film list.",

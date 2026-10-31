@@ -1,7 +1,11 @@
 "use server";
 
-import { signOut } from "@/auth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { SESSION_COOKIE } from "@/auth";
 
 export async function signOutAction() {
-  await signOut();
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE);
+  redirect("/");
 }

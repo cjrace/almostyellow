@@ -45,6 +45,9 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
         if (!/^\d{4}$/.test(value)) {
           return "Release year must be a four-digit number";
         }
+        if (parseInt(value) < 1800) {
+          return "Release year must be 1800 or later";
+        }
         if (parseInt(value) > new Date().getFullYear() + 1) {
           return "Release year cannot be more than one year into the future";
         }

@@ -10,8 +10,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: main
-      TEST_EMAIL: ${TEST_EMAIL:?TEST_EMAIL is required}
-      TEST_PASSWORD: ${TEST_PASSWORD:?TEST_PASSWORD is required}
     # No published port: only the Neon proxy needs to reach Postgres, so a local
     # Postgres on 5432 cannot clash.
     tmpfs:

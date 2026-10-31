@@ -1,6 +1,8 @@
 import Cocktails from "@/components/cocktails";
 import BackToTop from "@/components/backtotop";
 import { Metadata } from "next";
+import { connection } from "next/server";
+import { readCocktails } from "@/services/cocktails";
 import Header from "@/components/header";
 import { Container, Title } from "@mantine/core";
 
@@ -18,7 +20,11 @@ const crumbitems = [
   { title: "Cocktails", href: "" },
 ];
 
-export default function CocktailsPage() {
+export default async function CocktailsPage() {
+  // Read the recipes on each request, so changes show without a rebuild
+  await connection();
+  const cocktails = await readCocktails();
+
   return (
     <>
       <Header crumbs={crumbitems} />
@@ -26,7 +32,7 @@ export default function CocktailsPage() {
       <main id="main-content">
         <Container size="lg">
           <Title>Cocktails</Title>
-          <Cocktails />
+          <Cocktails cocktails={cocktails} />
           <BackToTop />
         </Container>
       </main>

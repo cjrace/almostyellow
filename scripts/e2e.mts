@@ -1,9 +1,12 @@
 // Runs the Playwright tests against the disposable database from
-// docker-compose.test.yml, so they never touch production data.
+// docker-compose.test.yml and the Firebase Auth and Firestore emulators, so
+// they never touch production data or accounts.
 //
 //   node scripts/e2e.mts                   build, then run every suite
 //   node scripts/e2e.mts --no-build        reuse the existing .next build
 //   node scripts/e2e.mts tests/admin       extra arguments go to Playwright
+//   node scripts/e2e.mts --rehearse-import rehearse the Postgres to Firestore
+//                                          import instead, see scripts/migrate.mts
 //
 // Settings come from tests/test-env.ts.
 import { spawnSync } from "node:child_process";
@@ -11,8 +14,11 @@ import { connect } from "node:net";
 import "../tests/test-env.ts";
 
 const args = process.argv.slice(2);
-const build = !args.includes("--no-build");
-const playwrightArgs = args.filter((arg) => arg !== "--no-build");
+const rehearse = args.includes("--rehearse-import");
+const build = !rehearse && !args.includes("--no-build");
+const playwrightArgs = args.filter(
+  (arg) => arg !== "--no-build" && arg !== "--rehearse-import",
+);
 
 function run(command: string) {
   const result = spawnSync(command, { shell: true, stdio: "inherit" });
@@ -46,7 +52,12 @@ run(`${compose} down`);
 // Fail early and clearly rather than part way through the run. Another copy of
 // this script or a dev server would otherwise clash: the compose project is
 // shared, so two runs also tear down each other's database.
-const needed = { 3000: "the app", 4444: "the Neon proxy" };
+const needed = {
+  3000: "the app",
+  4444: "the Neon proxy",
+  8080: "the Firestore emulator",
+  9099: "the Auth emulator",
+};
 const clashes: string[] = [];
 for (const [port, what] of Object.entries(needed)) {
   if (await inUse(Number(port))) clashes.push(`  port ${port} (${what})`);
@@ -64,7 +75,14 @@ try {
   if (run(`${compose} up -d --wait`) === 0) {
     status = build ? run("pnpm exec next build") : 0;
     if (status === 0) {
-      status = run(["pnpm exec playwright test", ...playwrightArgs].join(" "));
+      // emulators:exec sets the emulator hosts for Playwright and next start,
+      // and stops the emulators when the tests finish
+      const script = rehearse
+        ? ["pnpm migrate rehearse migration-output/rehearsal.json"]
+        : ["pnpm exec playwright test", ...playwrightArgs];
+      status = run(
+        `pnpm exec firebase emulators:exec --project ${process.env.FIREBASE_PROJECT_ID ?? ""} --only auth,firestore "${script.join(" ")}"`,
+      );
     }
   }
 } finally {

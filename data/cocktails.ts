@@ -1,4 +1,7 @@
-// Create the options for the cocktails page, could be a database table eventually
+// The cocktail catalogue, as it was kept in the code before it moved to
+// Firestore. The tests load it into the emulator, and the same records are
+// what get imported into production. Change the recipes in Firestore now,
+// not here.
 export const cocktaildata = [
   {
     name: "Stone cold margarita",
@@ -269,3 +272,21 @@ export const cocktaildata = [
 
   // Add more cocktails...
 ];
+
+// One Firestore document per cocktail, with a slug of its name as the ID
+export function cocktailId(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export const cocktailDocuments = cocktaildata.map((cocktail) => ({
+  id: cocktailId(cocktail.name),
+  name: cocktail.name,
+  spirits: cocktail.spirits,
+  rating: cocktail.rating,
+  photoUrl: cocktail.photoUrl,
+  ingredients: cocktail.recipe.ingredients,
+  instructions: cocktail.recipe.instructions,
+}));
