@@ -108,6 +108,22 @@ test("Changes on one device show on the other without a refresh", async ({
   await expect(item(bobPage, milk)).toBeHidden();
 });
 
+test("Ctrl+Enter in the add dialog adds the items and closes it", async ({
+  page,
+}) => {
+  const flour = uniqueName("Flour");
+  await openList(page, getCredentials());
+
+  await page.getByRole("button", { name: "Add new item(s)" }).click();
+  await page.getByPlaceholder("Add new items, one per line...").fill(flour);
+  await page.keyboard.press("Control+Enter");
+
+  await expect(item(page, flour)).toBeVisible();
+  await expect(
+    page.getByPlaceholder("Add new items, one per line..."),
+  ).toBeHidden();
+});
+
 test("Both people can change different items at the same time", async ({
   page,
   bobPage,

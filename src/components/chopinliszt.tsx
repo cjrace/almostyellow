@@ -362,6 +362,12 @@ const ChopinLiszt = ({
           onChange={(e) => {
             setNewItemText(e.target.value);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              addItems();
+            }
+          }}
           error={inputError}
           autosize
           minRows={7}
