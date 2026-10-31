@@ -7,7 +7,7 @@ export const CARDS_PER_TURN = 4;
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 13;
 
-export type SuitsPhase = "setup" | "guessing" | "revealed" | "complete";
+export type SuitsPhase = "setup" | "guessing" | "complete";
 
 export interface SuitsResult {
   matches: number;
@@ -18,14 +18,22 @@ export interface SuitsResult {
   doubled: boolean;
 }
 
+// The cards from the turn just played, which stay on show while the next
+// player picks their suit
+export interface SuitsTurn {
+  player: string;
+  suit: string;
+  cards: Card[];
+  result: SuitsResult;
+}
+
 export interface SuitsState {
   phase: SuitsPhase;
   players: string[];
   deck: Card[];
   turn: number; // 0 to TOTAL_TURNS - 1
   chosenSuit: string | null;
-  revealed: Card[];
-  result: SuitsResult | null;
+  lastTurn: SuitsTurn | null;
 }
 
 export const initialSuitsState: SuitsState = {
@@ -34,8 +42,7 @@ export const initialSuitsState: SuitsState = {
   deck: [],
   turn: 0,
   chosenSuit: null,
-  revealed: [],
-  result: null,
+  lastTurn: null,
 };
 
 // Blank names become "Player 1", "Player 2" and so on
@@ -112,26 +119,23 @@ export function calculateResult(
       };
 }
 
-// A guess can only change before the cards are revealed
+// A guess can only be made while the game is going
 export function chooseSuit(state: SuitsState, suit: string): SuitsState {
   if (state.phase !== "guessing") return state;
   return { ...state, chosenSuit: suit };
 }
 
-// Does nothing if there's no guess yet or the cards are already showing, so a
-// double click can't draw twice
+// Plays the turn and moves straight on to the next player, who starts with no
+// suit picked. Does nothing without a guess, so a double click can't draw twice
 export function reveal(state: SuitsState): SuitsState {
   if (state.phase !== "guessing" || state.chosenSuit === null) return state;
 
   const { drawn, remaining } = drawCards(state.deck, CARDS_PER_TURN);
   const finalTurn = isFinalTurn(state);
-
-  return {
-    ...state,
-    // The final result stays on screen with the end of game controls
-    phase: finalTurn ? "complete" : "revealed",
-    deck: remaining,
-    revealed: drawn,
+  const lastTurn: SuitsTurn = {
+    player: currentPlayer(state),
+    suit: state.chosenSuit,
+    cards: drawn,
     result: calculateResult(
       state.chosenSuit,
       drawn,
@@ -139,18 +143,15 @@ export function reveal(state: SuitsState): SuitsState {
       finalTurn,
     ),
   };
-}
-
-export function nextPlayer(state: SuitsState): SuitsState {
-  if (state.phase !== "revealed") return state;
 
   return {
     ...state,
-    phase: "guessing",
-    turn: state.turn + 1,
+    // The final result stays on screen with the end of game controls
+    phase: finalTurn ? "complete" : "guessing",
+    turn: finalTurn ? state.turn : state.turn + 1,
+    deck: remaining,
     chosenSuit: null,
-    revealed: [],
-    result: null,
+    lastTurn,
   };
 }
 
@@ -160,7 +161,7 @@ export function replay(state: SuitsState, shuffledDeck: Card[]): SuitsState {
 }
 
 export function isUnfinished(state: SuitsState): boolean {
-  return state.phase === "guessing" || state.phase === "revealed";
+  return state.phase === "guessing";
 }
 
 export function describeResult(player: string, result: SuitsResult): string {

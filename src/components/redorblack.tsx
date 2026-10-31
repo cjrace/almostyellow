@@ -82,11 +82,17 @@ export default function RedOrBlack() {
         </div>
 
         <div className={layout.controls}>
+          {/* Always two lines, even before the first draw, so the buttons
+              below don't jump about as card names change length */}
           <Text ta="center" id="cards_remaining" aria-live="polite">
-            {latestCard
-              ? `You drew the ${getCardName(latestCard.suit, latestCard.rank)}. `
-              : ""}
-            {`${cardsRemaining.toString()} cards remaining`}
+            <span className={layout.line}>
+              {latestCard
+                ? `You drew the ${getCardName(latestCard.suit, latestCard.rank)}.`
+                : " "}
+            </span>{" "}
+            <span className={layout.line}>
+              {`${cardsRemaining.toString()} cards remaining`}
+            </span>
           </Text>
           <Button
             ref={drawButtonRef}

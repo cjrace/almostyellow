@@ -14,7 +14,6 @@ import {
   isSafeRound,
   magicNumber,
   namePlayers,
-  nextPlayer,
   replay,
   reveal,
   startGame,
@@ -38,7 +37,7 @@ function playTurn(state: SuitsState, suit = "Hearts") {
 
 function playWholeGame(state: SuitsState) {
   while (state.phase !== "complete") {
-    state = nextPlayer(playTurn(state));
+    state = playTurn(state);
   }
   return state;
 }
@@ -126,8 +125,8 @@ describe("Suits turns", () => {
       order.push(currentPlayer(state));
       expect(isFinalTurn(state)).toBe(turn === TOTAL_TURNS - 1);
       state = playTurn(state);
-      expect(state.result?.doubled).toBe(turn === TOTAL_TURNS - 1);
-      state = nextPlayer(state);
+      expect(state.lastTurn?.player).toBe(order[turn]);
+      expect(state.lastTurn?.result.doubled).toBe(turn === TOTAL_TURNS - 1);
     }
 
     expect(order).toEqual(
@@ -146,21 +145,35 @@ describe("Suits turns", () => {
 
     while (state.phase !== "complete") {
       state = playTurn(state);
-      seen.push(...state.revealed);
-      state = nextPlayer(state);
+      seen.push(...(state.lastTurn?.cards ?? []));
     }
 
     expect(new Set(seen.map((c) => `${c.rank}${c.suit}`)).size).toBe(52);
   });
 
+  it("moves straight on to the next player, with the last turn on show", () => {
+    const state = playTurn(
+      startGame(["Ben", "Cam"], createCardDeck()),
+      "Clubs",
+    );
+
+    expect(state.phase).toBe("guessing");
+    expect(currentPlayer(state)).toBe("Cam");
+    expect(state.chosenSuit).toBeNull();
+    expect(state.lastTurn?.player).toBe("Ben");
+    expect(state.lastTurn?.suit).toBe("Clubs");
+    expect(state.lastTurn?.cards).toHaveLength(4);
+  });
+
   it("keeps the final result on screen when the game ends", () => {
     const state = playWholeGame(startGame(players(2), createCardDeck()));
     expect(state.phase).toBe("complete");
-    expect(state.revealed).toHaveLength(4);
-    expect(state.result).not.toBeNull();
+    expect(state.turn).toBe(TOTAL_TURNS - 1);
+    expect(state.lastTurn?.cards).toHaveLength(4);
+    expect(state.lastTurn?.result.doubled).toBe(true);
   });
 
-  it("ignores a reveal with no suit or a second reveal", () => {
+  it("ignores a reveal with no suit, so a double click can't draw twice", () => {
     const start = startGame(players(2), createCardDeck());
     expect(reveal(start)).toBe(start);
 
@@ -169,14 +182,9 @@ describe("Suits turns", () => {
     expect(revealed.deck).toHaveLength(48);
   });
 
-  it("won't change the suit once the cards are showing", () => {
-    const revealed = playTurn(startGame(players(2), createCardDeck()));
-    expect(chooseSuit(revealed, "Clubs").chosenSuit).toBe("Hearts");
-  });
-
-  it("only moves on after a reveal", () => {
-    const start = startGame(players(2), createCardDeck());
-    expect(nextPlayer(start)).toBe(start);
+  it("won't take a guess once the game is over", () => {
+    const finished = playWholeGame(startGame(players(2), createCardDeck()));
+    expect(chooseSuit(finished, "Clubs")).toBe(finished);
   });
 
   it("replays with the same players and a new deck", () => {
@@ -188,6 +196,6 @@ describe("Suits turns", () => {
     expect(again.phase).toBe("guessing");
     expect(again.turn).toBe(0);
     expect(again.deck).toBe(newDeck);
-    expect(again.result).toBeNull();
+    expect(again.lastTurn).toBeNull();
   });
 });

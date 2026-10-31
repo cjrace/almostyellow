@@ -55,6 +55,10 @@ test("Plays a full game of 13 turns", async ({ page }) => {
   const cards = page.locator("main img");
   const result = page.locator("#suits_result");
 
+  const revealButton = page.getByRole("button", {
+    name: "Reveal four cards",
+  });
+
   for (let turn = 0; turn < 13; turn++) {
     const player = players[turn % 3];
     const suit = SuitNames[turn % 4];
@@ -68,24 +72,42 @@ test("Plays a full game of 13 turns", async ({ page }) => {
     await expect(page.locator("#suits_magic_number")).toHaveText(
       "Magic number2",
     );
+    await expect(page.locator("#suits_choose")).toHaveText(
+      `${player}, choose a suit`,
+    );
     await expect(cards).toHaveCount(4);
-    for (const card of await cards.all()) {
-      await expect(card).toHaveAttribute("alt", "Face-down card");
+    if (turn === 0) {
+      for (const card of await cards.all()) {
+        await expect(card).toHaveAttribute("alt", "Face-down card");
+      }
     }
     // Players hear about the double before they guess
     await expect(page.getByText("This turn counts double.")).toBeVisible({
       visible: finalTurn,
     });
 
-    const revealButton = page.getByRole("button", {
-      name: "Reveal four cards",
-    });
+    // Each player starts with no suit picked
     await expect(revealButton).toBeDisabled();
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
     // The segmented control hides its radio inputs, so press the label
     await page.locator("label").filter({ hasText: suit }).click();
     await expect(page.getByRole("radio", { name: suit })).toBeChecked();
-    await revealButton.click();
-    await expect(revealButton).toHaveCount(0);
+
+    // Every other turn uses the keyboard shortcut instead of the button
+    if (turn % 2 === 0) {
+      await revealButton.click();
+    } else {
+      await page.keyboard.press("Control+Enter");
+    }
+
+    // Wait for the turn to move on before reading the cards
+    await expect(page.locator("#suits_turn")).toHaveText(
+      finalTurn ? "Game over" : `${players[(turn + 1) % 3]}'s turn`,
+    );
+    await expect(page.locator("#suits_chosen")).toContainText(
+      `${player} picked`,
+    );
+    await expect(page.locator("#suits_chosen")).toContainText(suit);
 
     // Work out the result from the cards on screen
     const alts = await Promise.all(
@@ -111,23 +133,15 @@ test("Plays a full game of 13 turns", async ({ page }) => {
       );
     }
 
-    // The guess can't change once the cards are showing
-    await expect(page.getByRole("radio")).toHaveCount(0);
-    await expect(page.locator("#suits_chosen")).toContainText(
-      `${player} picked`,
-    );
-    await expect(page.locator("#suits_chosen")).toContainText(suit);
-
+    // Focus moves to the next player's suit picker
     if (!finalTurn) {
-      await page.getByRole("button", { name: "Next player" }).click();
+      await expect(page.getByRole("radio", { name: "Hearts" })).toBeFocused();
     }
   }
 
-  await expect(page.locator("#suits_turn")).toHaveText("Game over");
   await expect(page.getByText("All 13 turns have been played.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Next player" })).toHaveCount(
-    0,
-  );
+  await expect(page.getByRole("radio")).toHaveCount(0);
+  await expect(revealButton).toHaveCount(0);
 
   // Replay keeps the players
   await page
@@ -136,6 +150,19 @@ test("Plays a full game of 13 turns", async ({ page }) => {
   await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
   await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
   await expect(result).toHaveText("");
+  await expect(page.locator("#suits_chosen")).toHaveText("");
+});
+
+test("Won't reveal with the shortcut before a suit is picked", async ({
+  page,
+}) => {
+  await startGame(page, ["Ben", "Cam", "Laura"]);
+  await page.keyboard.press("Control+Enter");
+  await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
+  await expect(page.locator("main img").first()).toHaveAttribute(
+    "alt",
+    "Face-down card",
+  );
 });
 
 test("Keeps blank names blank when changing players", async ({ page }) => {

@@ -1,11 +1,19 @@
 "use client";
 
-import { RefObject, useEffect, useReducer, useRef, useState } from "react";
+import {
+  RefObject,
+  useEffect,
+  useEffectEvent,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import {
   ActionIcon,
   Alert,
   Button,
   Group,
+  Kbd,
   List,
   Modal,
   Paper,
@@ -35,7 +43,6 @@ import {
   magicNumber,
   MAX_PLAYERS,
   MIN_PLAYERS,
-  nextPlayer,
   replay,
   reveal,
   startGame,
@@ -57,7 +64,6 @@ type SuitsAction =
   | { type: "start"; players: string[]; deck: Card[] }
   | { type: "choose"; suit: string }
   | { type: "reveal" }
-  | { type: "next" }
   | { type: "replay"; deck: Card[] }
   | { type: "changePlayers" };
 
@@ -69,8 +75,6 @@ function suitsReducer(state: SuitsState, action: SuitsAction): SuitsState {
       return chooseSuit(state, action.suit);
     case "reveal":
       return reveal(state);
-    case "next":
-      return nextPlayer(state);
     case "replay":
       return replay(state, action.deck);
     case "changePlayers":
@@ -127,27 +131,64 @@ export default function Suits() {
   ]);
   const [confirmOpened, setConfirmOpened] = useState(false);
 
-  // Most buttons here disappear once pressed, so focus moves on to whatever
-  // comes next rather than dropping back to the top of the page
+  // Most buttons here disappear or disable once pressed, so focus moves on to
+  // whatever comes next rather than dropping back to the top of the page
   const turnHeadingRef = useRef<HTMLHeadingElement>(null);
   const setupHeadingRef = useRef<HTMLHeadingElement>(null);
-  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const playAgainButtonRef = useRef<HTMLButtonElement>(null);
-  const focusNextRef = useRef<RefObject<HTMLElement | null> | null>(null);
+  const focusNextRef = useRef<(() => void) | null>(null);
   useEffect(() => {
-    focusNextRef.current?.current?.focus();
+    focusNextRef.current?.();
     focusNextRef.current = null;
   }, [state]);
 
-  const act = (action: SuitsAction, focus: RefObject<HTMLElement | null>) => {
+  const act = (action: SuitsAction, focus: () => void) => {
     focusNextRef.current = focus;
     dispatch(action);
   };
+  const focusOn = (ref: RefObject<HTMLElement | null>) => () => {
+    ref.current?.focus();
+  };
+  // The next player's suit picker, so they can choose with the arrow keys
+  const focusPicker = () => {
+    pickerRef.current?.querySelector("input")?.focus();
+  };
 
   const changePlayers = () => {
-    act({ type: "changePlayers" }, setupHeadingRef);
+    act({ type: "changePlayers" }, focusOn(setupHeadingRef));
     setConfirmOpened(false);
   };
+
+  const revealCards = () => {
+    act(
+      { type: "reveal" },
+      isFinalTurn(state) ? focusOn(playAgainButtonRef) : focusPicker,
+    );
+  };
+
+  // Ctrl + Enter (or Cmd + Enter) reveals the cards once a suit is picked, but
+  // not from behind an open dialog
+  const onShortcut = useEffectEvent((event: KeyboardEvent) => {
+    if (!(event.ctrlKey || event.metaKey) || event.key !== "Enter") return;
+    if (event.repeat || state.phase !== "guessing") return;
+    if (state.chosenSuit === null || confirmOpened) return;
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[role="dialog"]')
+    )
+      return;
+    event.preventDefault();
+    revealCards();
+  });
+  useEffect(() => {
+    window.addEventListener("keydown", onShortcut);
+    return () => {
+      window.removeEventListener("keydown", onShortcut);
+    };
+  }, []);
+
+  const lastTurn = state.lastTurn;
 
   return (
     <div className={layout.game}>
@@ -196,7 +237,7 @@ export default function Suits() {
                   players: rows.map((row) => row.name),
                   deck: newDeck(),
                 },
-                turnHeadingRef,
+                focusOn(turnHeadingRef),
               );
             }}
           />
@@ -242,10 +283,10 @@ export default function Suits() {
             </Alert>
           )}
 
-          {state.phase === "guessing" ? (
-            <div>
+          {state.phase === "guessing" && (
+            <div ref={pickerRef}>
               <Text id="suits_choose" fw={500} size="sm">
-                Choose a suit
+                {currentPlayer(state)}, choose a suit
               </Text>
               <SegmentedControl
                 aria-labelledby="suits_choose"
@@ -263,63 +304,59 @@ export default function Suits() {
                 }))}
               />
             </div>
-          ) : (
-            // The guess is locked in once the cards are showing
-            <Text id="suits_chosen">
-              {currentPlayer(state)} picked{" "}
-              {state.chosenSuit && <SuitLabel suit={state.chosenSuit} />}
-            </Text>
           )}
+
+          {/* The last turn stays on show while the next player picks */}
+          <Text id="suits_chosen" mih="1.5em">
+            {lastTurn && (
+              <>
+                {lastTurn.player} picked <SuitLabel suit={lastTurn.suit} />
+              </>
+            )}
+          </Text>
 
           <div className={layout.table}>
             <div className={styles.row}>
               {[0, 1, 2, 3].map((index) => (
-                <PlayingCard key={index} card={state.revealed[index] ?? null} />
+                <PlayingCard
+                  key={index}
+                  card={lastTurn?.cards[index] ?? null}
+                />
               ))}
             </div>
           </div>
 
           <div aria-live="polite" id="suits_result">
-            {state.result?.kind === "safe" ? (
+            {lastTurn?.result.kind === "safe" ? (
               <Alert
                 color="green"
                 title="Safe round"
                 icon={<IconShieldCheck aria-hidden="true" />}
               >
-                {describeResult(currentPlayer(state), state.result)}
+                {describeResult(lastTurn.player, lastTurn.result)}
               </Alert>
             ) : (
               <Text fw={500} ta="center" mih="1.5em">
-                {state.result &&
-                  describeResult(currentPlayer(state), state.result)}
+                {lastTurn && describeResult(lastTurn.player, lastTurn.result)}
               </Text>
             )}
           </div>
 
           <div className={layout.controls}>
             {state.phase === "guessing" && (
-              <Button
-                disabled={state.chosenSuit === null}
-                onClick={() => {
-                  act(
-                    { type: "reveal" },
-                    isFinalTurn(state) ? playAgainButtonRef : nextButtonRef,
-                  );
-                }}
-              >
-                Reveal four cards
-              </Button>
-            )}
-
-            {state.phase === "revealed" && (
-              <Button
-                ref={nextButtonRef}
-                onClick={() => {
-                  act({ type: "next" }, turnHeadingRef);
-                }}
-              >
-                Next player
-              </Button>
+              <>
+                <Button
+                  disabled={state.chosenSuit === null}
+                  aria-keyshortcuts="Control+Enter Meta+Enter"
+                  onClick={revealCards}
+                >
+                  Reveal four cards
+                </Button>
+                <Text size="xs" c="dimmed" ta="center" visibleFrom="sm">
+                  or press <Kbd size="xs">Ctrl</Kbd> +{" "}
+                  <Kbd size="xs">Enter</Kbd>
+                </Text>
+              </>
             )}
 
             {state.phase === "complete" && (
@@ -330,7 +367,10 @@ export default function Suits() {
                 <Button
                   ref={playAgainButtonRef}
                   onClick={() => {
-                    act({ type: "replay", deck: newDeck() }, turnHeadingRef);
+                    act(
+                      { type: "replay", deck: newDeck() },
+                      focusOn(turnHeadingRef),
+                    );
                   }}
                 >
                   Play again with same players
