@@ -151,13 +151,40 @@ function corner(label: string, suit: Suit) {
   return `<text x="27" y="48" font-size="${label === "10" ? 34 : 40}" font-weight="700" text-anchor="middle">${label}</text>${suitAt(suit, 27, 70, 26)}`;
 }
 
+// Headwear for the court cards, each drawn in a 100 x 60 box. White details
+// are cut-outs so the shapes read at small sizes.
+const headwear: Record<string, string> = {
+  // King: tall crown with three points
+  K: '<path d="M5 58 L5 18 L28 38 L50 6 L72 38 L95 18 L95 58 Z"/><circle cx="5" cy="14" r="6"/><circle cx="50" cy="5" r="6"/><circle cx="95" cy="14" r="6"/><rect x="5" y="50" width="90" height="8" fill="#ffffff" opacity="0.5"/>',
+  // Queen: lower coronet with pearls on its points
+  Q: '<path d="M8 58 L8 30 L22 42 L36 22 L50 38 L64 22 L78 42 L92 30 L92 58 Z"/><circle cx="8" cy="25" r="5.5"/><circle cx="36" cy="17" r="5.5"/><circle cx="64" cy="17" r="5.5"/><circle cx="92" cy="25" r="5.5"/><rect x="8" y="49" width="84" height="9" fill="#ffffff" opacity="0.5"/><circle cx="30" cy="53.5" r="3" fill="#ffffff"/><circle cx="50" cy="53.5" r="3" fill="#ffffff"/><circle cx="70" cy="53.5" r="3" fill="#ffffff"/>',
+  // Jack: feathered cap
+  J: '<path d="M8 50 Q45 8 88 50 Z"/><rect x="4" y="48" width="88" height="10" rx="4"/><path d="M58 30 Q86 -4 99 2 Q86 16 66 38 Z"/>',
+};
+
+// The Ace of Spades gets an electric guitar, drawn in a 100 x 200 box, with
+// a spade inlaid on the body
+const guitar = `<path d="M44 0 L60 3 L58 26 L44 26 Z"/>
+<circle cx="63" cy="4" r="2"/><circle cx="63" cy="8" r="2"/><circle cx="62.6" cy="12" r="2"/><circle cx="62.2" cy="16" r="2"/><circle cx="61.8" cy="20" r="2"/><circle cx="61.4" cy="24" r="2"/>
+<rect x="45" y="24" width="10" height="82"/>
+<path d="M38 104 C36 96 30 92 24 96 C18 100 22 112 24 122 C26 132 14 140 14 160 C14 184 30 196 50 196 C70 196 86 186 86 166 C86 150 76 142 78 130 C80 118 88 104 80 96 C74 90 64 96 62 104 Z"/>
+<g fill="#ffffff"><rect x="39" y="120" width="22" height="6" rx="2"/><rect x="39" y="138" width="22" height="6" rx="2"/><rect x="38" y="160" width="24" height="7" rx="1"/><circle cx="70" cy="174" r="3.5"/><circle cx="62" cy="184" r="3.5"/></g>
+<g transform="translate(23 166) scale(0.16)" fill="#ffffff">${suitShapes.Spades}</g>
+<g stroke="#ffffff" stroke-width="0.8" opacity="0.8"><line x1="47" y1="26" x2="47" y2="162"/><line x1="49" y1="26" x2="49" y2="162"/><line x1="51" y1="26" x2="51" y2="162"/><line x1="53" y1="26" x2="53" y2="162"/></g>
+<g stroke="#ffffff" stroke-width="1.5"><line x1="45" y1="40" x2="55" y2="40"/><line x1="45" y1="54" x2="55" y2="54"/><line x1="45" y1="67" x2="55" y2="67"/><line x1="45" y1="79" x2="55" y2="79"/><line x1="45" y1="90" x2="55" y2="90"/><line x1="45" y1="99" x2="55" y2="99"/></g>`;
+
 function centre(label: string, suit: Suit) {
-  if (label === "A") {
-    return suitAt(suit, middle, 170, 120);
+  if (label === "A" && suit === "Spades") {
+    return `<g transform="rotate(-18 ${middle} 175) translate(${middle - 57.5} 62) scale(1.15)">${guitar}</g>`;
   }
 
-  if (label === "J" || label === "Q" || label === "K") {
-    return `<rect x="55" y="45" width="140" height="260" rx="10" fill="none" stroke="currentColor" stroke-width="3"/><text x="${middle}" y="185" font-size="120" font-weight="700" text-anchor="middle">${label}</text>${suitAt(suit, middle, 245, 56)}`;
+  if (label === "A") {
+    return suitAt(suit, middle, 175, 130);
+  }
+
+  if (label in headwear) {
+    const size = 110;
+    return `<g transform="translate(${middle - size / 2} ${130 - size * 0.3}) scale(${size / 100})">${headwear[label]}</g>${suitAt(suit, middle, 225, 90)}`;
   }
 
   return pipLayouts[label]
