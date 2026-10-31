@@ -99,7 +99,7 @@ function SuitOption({ suit }: { suit: string }) {
         aria-hidden="true"
         fz="xl"
         lh={1.2}
-        c={isRedSuit(suit) ? "red.6" : undefined}
+        className={isRedSuit(suit) ? layout.redSuit : undefined}
       >
         {suitSymbols[suit]}
       </Text>
@@ -202,7 +202,7 @@ export default function Suits() {
           />
         </div>
       ) : (
-        <div className={layout.board}>
+        <div className={`${layout.board} ${layout.wideTable}`}>
           <Group justify="space-between" align="flex-start" wrap="nowrap">
             <div>
               <Title
