@@ -329,6 +329,8 @@ export default function Suits() {
                 aria-labelledby="suits_choose"
                 fullWidth
                 mt={4}
+                // The highlight would otherwise slide across from the last pick
+                transitionDuration={0}
                 color="orange"
                 // No suit matches "", so nothing shows as picked until a guess
                 value={state.chosenSuit ?? ""}
