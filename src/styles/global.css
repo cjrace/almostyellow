@@ -9,3 +9,21 @@ body {
     margin: 10px;
   }
 }
+
+/* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
+html {
+  scroll-padding-top: 100px;
+}
+
+/* The orange focus ring and focused input border are 2.6:1 on white, below
+   the 3:1 WCAG 1.4.11 asks of focus indicators, so darken them in the light
+   scheme. They are 6:1 on the dark background already. */
+[data-mantine-color-scheme="light"] .mantine-focus-auto:focus-visible,
+[data-mantine-color-scheme="light"] .mantine-focus-always:focus {
+  outline-color: #c2410c;
+}
+
+[data-mantine-color-scheme="light"] .mantine-Input-input:focus,
+[data-mantine-color-scheme="light"] .mantine-Input-input:focus-within {
+  --input-bd: #c2410c;
+}

@@ -20,6 +20,8 @@ const ignoresConfig = defineConfig([
       ".vscode/",
       "next-env.d.ts",
       "playwright-report/",
+      "test-results/",
+      ".lighthouseci/",
       ".vercel/",
       "**/pnpm-*/dist/",
     ],
@@ -125,20 +127,14 @@ const reactConfig = defineConfig([
       // Next.js Core Web Vitals rules
       ...nextPlugin.configs["core-web-vitals"].rules,
 
-      // Fine-tuned accessibility rules
+      // Also check Next.js Image components have alt text
       "jsx-a11y-x/alt-text": [
-        "warn",
+        "error",
         {
           elements: ["img"],
-          img: ["Image"], // Next.js Image component
+          img: ["Image"],
         },
       ],
-      "jsx-a11y-x/media-has-caption": "warn",
-      "jsx-a11y-x/aria-props": "warn",
-      "jsx-a11y-x/aria-proptypes": "warn",
-      "jsx-a11y-x/aria-unsupported-elements": "warn",
-      "jsx-a11y-x/role-has-required-aria-props": "warn",
-      "jsx-a11y-x/role-supports-aria-props": "warn",
     },
     settings: eslintReactRecommended.settings,
   },

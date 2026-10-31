@@ -61,7 +61,9 @@ test("Can add, edit and delete a whisky", async ({ page }) => {
   await expect(card(page, name)).toContainText("46%");
 
   // Edit it
-  await card(page, name).getByRole("link", { name: "Edit whisky" }).click();
+  await card(page, name)
+    .getByRole("link", { name: `Edit ${name}` })
+    .click();
   await expect(page.getByLabel("Name")).toHaveValue(name);
   await page.getByLabel("Notes").fill("Edited by a test");
   await Promise.all([
@@ -71,7 +73,9 @@ test("Can add, edit and delete a whisky", async ({ page }) => {
   await expect(card(page, name)).toContainText("Edited by a test");
 
   // Delete it
-  await card(page, name).getByRole("link", { name: "Edit whisky" }).click();
+  await card(page, name)
+    .getByRole("link", { name: `Edit ${name}` })
+    .click();
   await page.getByRole("button", { name: "Delete Whisky" }).click();
   await Promise.all([
     page.waitForURL("/whiskyjournal"),

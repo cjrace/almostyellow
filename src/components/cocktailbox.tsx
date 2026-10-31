@@ -12,7 +12,12 @@ const renderRatingMoons = (rating: number) => {
     `🌝`.repeat(fullMoons) +
     (hasHalfMoon ? `🌗` : "") +
     `🌚`.repeat(emptyMoons);
-  return <span>{moonString}</span>;
+  // Screen readers would otherwise read out every moon by name
+  return (
+    <span role="img" aria-label={`Rated ${rating.toString()} out of 5`}>
+      {moonString}
+    </span>
+  );
 };
 
 // Create the design for each cocktail entry on the cocktails page

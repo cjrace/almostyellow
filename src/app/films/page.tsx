@@ -1,19 +1,13 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import { Container, Group, Title, Button } from "@mantine/core";
 import FilmList from "@/components/filmlist";
 import { IconPlus } from "@tabler/icons-react";
 
-export const metadata: Metadata = {
-  title: "Films",
-  description:
-    "Films to see before I'm 30. Top 30 from IMDB and other recommendations.",
-  openGraph: {
-    title: "Films | Almost Yellow",
-    description:
-      "Films to see before I'm 30. Top 30 from IMDB and other recommendations.",
-  },
-};
+export const metadata = pageMetadata(
+  "Films",
+  "Films to see before I'm 30. Top 30 from IMDB and other recommendations.",
+);
 
 const crumbitems = [
   { title: "Home", href: "/" },

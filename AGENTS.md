@@ -8,6 +8,7 @@ pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
+pnpm test:lighthouse  # Build, then Lighthouse on every public page against the Firebase emulators
 ```
 
 Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
@@ -80,6 +81,31 @@ Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disa
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
+
+### Accessibility and SEO
+
+The site aims for WCAG 2.2 AA. Every change to a page or component is checked against it before committing.
+
+- Every page is listed in `src/routes.ts`, which feeds the sitemap and the checks below. `tests/public/06_seo.spec.ts` fails if a `page.tsx` is missing from it.
+- Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
+- `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check every page in both colour schemes, in Chrome and Mobile Chrome. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
+- `pnpm test:lighthouse` runs Lighthouse CI (`lighthouserc.cjs`) on every public page. Accessibility and SEO must score 100 and best practices 90; performance only warns. Reports are written to `.lighthouseci/`. Run it through the script, never `lhci` by hand, so the app reads from the emulators.
+- Colour contrast comes from the theme in `src/styles/acalat.tsx`: `autoContrast` picks the text colour on filled components, and `acalatCssVariables` darkens Mantine's dimmed, error and link colours. Use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
+- Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
+
+The automated checks find about half of WCAG problems, so whenever you run them for a change to a page or component, also check by hand in the browser. This is not optional: report the result of each check, and if one cannot be run, say which and why.
+
+Check the pages the change affects. A change to shared code (`src/app/layout.tsx`, `src/components/header.tsx`, `src/styles/`, the theme, or a component used on several pages) affects every page, so check them all. A change to one page or a component only it uses needs only that page, including any states the change touches, such as a dialog or a game in progress.
+
+Start the app with `pnpm serve:test`, which serves the last build against the emulators loaded with the test fixtures (in the desktop app, start `almostyellow-emulators` from `.claude/launch.json`). Then, on each affected page:
+
+1. **Keyboard:** tab through the page and use every control with Enter or Space. The order makes sense, focus is always visible, nothing traps focus, and focus is never lost to the top of the page after an action, such as when a button is disabled or replaced, or a dialog closes.
+2. **Both colour schemes:** look again after using "Toggle color scheme".
+3. **Reflow and zoom:** at 320 pixels wide and at 200% zoom, nothing is cut off, overlaps or scrolls sideways.
+4. **Announcements:** results that appear without a page load are in a `role="status"` region, and dialogs have a name.
+5. **Motion:** nothing flashes more than three times a second, and animations stop under `prefers-reduced-motion`.
+
+The `a11y-seo-check` skill in `.claude/skills/` runs all of this for a change.
 
 ### Firebase emulators
 

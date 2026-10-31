@@ -16,6 +16,9 @@
   font-weight: bold;
   font-size: 16px;
   color: black;
+  /* Let long names wrap on narrow screens rather than widen the page */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Styles for the cocktail rating */

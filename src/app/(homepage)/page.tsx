@@ -10,10 +10,26 @@ import {
 } from "@tabler/icons-react";
 import Header from "@/components/header";
 import styles from "@/styles/gradient.module.css";
+import home from "@/styles/home.module.css";
+import { siteUrl } from "@/routes";
+
+// Tells search engines the name of the site
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Almost Yellow",
+  url: siteUrl,
+};
 
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Built from constants above, never user input
+        // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Header noCrumbs={true} />
 
       <main id="main-content">
@@ -29,6 +45,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/games"
           >
             View our games
@@ -39,6 +56,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/decisionmaker"
           >
             How we make decisions
@@ -49,6 +67,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/recipes"
           >
             Our recipes
@@ -59,6 +78,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/cocktails"
           >
             Cocktail time!
@@ -69,6 +89,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/whiskyjournal"
           >
             Cam&apos;s whisky journal
@@ -79,6 +100,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/films"
           >
             Cam&apos;s film list
@@ -93,6 +115,7 @@ export default function Home() {
             variant="default"
             component="a"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/admin"
           >
             Admin stuff

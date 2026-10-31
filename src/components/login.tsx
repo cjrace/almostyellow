@@ -98,6 +98,8 @@ export default function LoginForm({
             required
             label="Email"
             placeholder="e.g. simply@thebest.co.uk"
+            // Lets browsers and password managers fill in the sign-in
+            autoComplete="username"
             value={form.values.email}
             onChange={(event) => {
               form.setFieldValue("email", event.currentTarget.value);
@@ -109,6 +111,7 @@ export default function LoginForm({
             required
             label="Password"
             placeholder="Enter password"
+            autoComplete="current-password"
             value={form.values.password}
             onChange={(event) => {
               form.setFieldValue("password", event.currentTarget.value);
@@ -118,7 +121,8 @@ export default function LoginForm({
           <Button type="submit" fullWidth mt="lg">
             Log in
           </Button>
-          {errorMessage && <p>{errorMessage}</p>}
+          {/* Always rendered, so screen readers announce a failed sign-in */}
+          <div role="alert">{errorMessage && <p>{errorMessage}</p>}</div>
         </form>
       </Paper>
     </Container>

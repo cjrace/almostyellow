@@ -1,5 +1,11 @@
 import Header from "@/components/header";
 import { Button, Container, Title, Text, Stack } from "@mantine/core";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Page not found",
+  robots: { index: false },
+};
 
 export default function NotFound() {
   return (

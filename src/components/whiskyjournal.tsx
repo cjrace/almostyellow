@@ -230,56 +230,54 @@ export default function WhiskyJournal() {
         </Button>
       </Group>
 
-      <Modal
+      {/* Mantine only names a dialog from its own title, so name it here */}
+      <Modal.Root
         size="auto"
         opened={modalScalesOpened}
         onClose={() => {
           setModalScalesOpened(false);
         }}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="whisky_scales"
-        withCloseButton={false}
         transitionProps={{
           transition: "fade",
           duration: 300,
           timingFunction: "linear",
         }}
-        overlayProps={{
-          backgroundOpacity: 0.75,
-          blur: 3,
-        }}
       >
-        <Container>
-          <Title order={2} mb="sm" id="whisky_scales">
-            Whisky rating scales
-          </Title>
+        <Modal.Overlay backgroundOpacity={0.75} blur={3} />
+        <Modal.Content aria-label="Whisky rating scales">
+          <Modal.Body>
+            <Container>
+              <Title order={2} mb="sm" id="whisky_scales">
+                Whisky rating scales
+              </Title>
 
-          <Title order={3} mt="lg" mb="sm">
-            Pricing scale
-          </Title>
+              <Title order={3} mt="lg" mb="sm">
+                Pricing scale
+              </Title>
 
-          <WhiskyPricingScale />
+              <WhiskyPricingScale />
 
-          <Title order={3} mt="lg" mb="sm">
-            Rating scale
-          </Title>
+              <Title order={3} mt="lg" mb="sm">
+                Rating scale
+              </Title>
 
-          <WhiskyRatingScale />
+              <WhiskyRatingScale />
 
-          <Center>
-            <Button
-              variant="subtle"
-              mt="md"
-              onClick={() => {
-                setModalScalesOpened(false);
-              }}
-            >
-              Close modal
-            </Button>
-          </Center>
-        </Container>
-      </Modal>
+              <Center>
+                <Button
+                  variant="subtle"
+                  mt="md"
+                  onClick={() => {
+                    setModalScalesOpened(false);
+                  }}
+                >
+                  Close modal
+                </Button>
+              </Center>
+            </Container>
+          </Modal.Body>
+        </Modal.Content>
+      </Modal.Root>
 
       <Accordion variant="contained" mb="md">
         <Accordion.Item value="Sort and filter">

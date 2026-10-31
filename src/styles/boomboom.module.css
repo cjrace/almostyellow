@@ -13,13 +13,13 @@
   }
 }
 
+/* One fade, never more than three flashes a second (WCAG 2.3.1) */
 @keyframes flash {
-  0%,
-  100% {
+  0% {
     opacity: 1;
   }
-  50% {
-    opacity: 0.3;
+  100% {
+    opacity: 0;
   }
 }
 
@@ -63,7 +63,14 @@
   width: 100vw;
   height: 100vh;
   background: rgba(255, 255, 255, 0.9);
-  animation: flash 0.2s infinite;
+  animation: flash 1s ease-out forwards;
   pointer-events: none;
   z-index: 9998;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explosion,
+  .flash {
+    display: none;
+  }
 }

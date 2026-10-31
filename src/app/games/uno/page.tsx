@@ -1,10 +1,11 @@
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import { Title, Text } from "@mantine/core";
 import Header from "@/components/header";
 
-export const metadata: Metadata = {
-  title: "Uno",
-};
+export const metadata = pageMetadata(
+  "Uno",
+  "Our Uno game is still under construction, so check back soon.",
+);
 
 export default function UnoPage() {
   return (

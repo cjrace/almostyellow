@@ -86,6 +86,9 @@ jobs:
         run: pnpm exec next build
       - name: Run all Playwright tests against the Firebase emulators
         run: pnpm test:e2e --no-build
+      - name: Run Lighthouse against the Firebase emulators
+        if: ${{ !cancelled() }}
+        run: pnpm test:lighthouse --no-build
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
@@ -93,4 +96,10 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          retention-days: 30
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/
           retention-days: 30
