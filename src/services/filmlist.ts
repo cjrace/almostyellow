@@ -1,7 +1,6 @@
 "use server";
 
 import { type DocumentSnapshot } from "firebase-admin/firestore";
-import { v4 as generate_uuid } from "uuid";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
 import { DocumentId } from "@/firebase/ids";
@@ -51,7 +50,7 @@ export async function createFilm(film: Film): Promise<void> {
 
   const fields = toStored(film);
   try {
-    await adminDb().collection(COLLECTION).doc(generate_uuid()).create(fields);
+    await adminDb().collection(COLLECTION).doc().create(fields);
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to create a new film entry.", { cause: error });
