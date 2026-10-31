@@ -12,14 +12,13 @@ import {
 import { useForm } from "@mantine/form";
 import { useRouter } from "next/navigation";
 import { createFilm } from "@/services/filmlist";
-import { v4 as generate_uuid } from "uuid";
 
 export const FilmAdd = () => {
   const router = useRouter();
 
   const form = useForm({
     initialValues: {
-      id: generate_uuid(),
+      id: "",
       name: "",
       release_year: 1066,
       watched: false,

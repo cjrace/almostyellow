@@ -8,6 +8,7 @@ on:
     branches: [main]
 jobs:
   checks:
+    name: Format, lint and unit tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
@@ -31,6 +32,7 @@ jobs:
   # credentials are available to the job, and the tests refuse to run if any
   # are present.
   firebase:
+    name: Firebase emulator tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
@@ -52,6 +54,7 @@ jobs:
         run: pnpm test:ci
 
   e2e:
+    name: End to end tests (Playwright)
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -81,10 +84,8 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Build application ready to test
         run: pnpm exec next build
-      - name: Run all Playwright tests against the disposable database and emulators
+      - name: Run all Playwright tests against the Firebase emulators
         run: pnpm test:e2e --no-build
-      - name: Rehearse the Postgres to Firestore import
-        run: pnpm migrate:rehearse
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

@@ -2,7 +2,7 @@
 // production database, and the passwords only exist inside the emulator. IDs
 // and timestamps are fixed so tests can assert on exact values.
 
-import { cocktailDocuments } from "../../data/cocktails";
+import { cocktailDocuments } from "./cocktails";
 
 const CREATED = new Date("2024-11-24T12:00:00Z");
 

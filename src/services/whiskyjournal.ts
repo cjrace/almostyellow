@@ -5,7 +5,6 @@ import {
   type DocumentSnapshot,
   type Timestamp,
 } from "firebase-admin/firestore";
-import { v4 as generate_uuid } from "uuid";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
 import { DocumentId } from "@/firebase/ids";
@@ -74,7 +73,7 @@ export async function createWhisky(whisky: Whisky): Promise<void> {
   try {
     await adminDb()
       .collection(COLLECTION)
-      .doc(generate_uuid())
+      .doc()
       .create({ ...fields, createdAt: FieldValue.serverTimestamp() });
   } catch (error) {
     console.error("Database Error:", error);

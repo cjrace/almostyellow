@@ -14,7 +14,6 @@ import {
   Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { v4 as generate_uuid } from "uuid";
 import { IconTaxPound } from "@tabler/icons-react";
 import {
   WhiskyPricingScale,
@@ -28,7 +27,7 @@ export const WhiskyJournalAdd = () => {
 
   const form = useForm({
     initialValues: {
-      whisky_id: generate_uuid(),
+      whisky_id: "",
       name: "",
       distillery: "",
       country_region: "",
