@@ -363,7 +363,11 @@ const ChopinLiszt = ({
             setNewItemText(e.target.value);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            if (
+              e.key === "Enter" &&
+              (e.ctrlKey || e.metaKey) &&
+              !e.nativeEvent.isComposing
+            ) {
               e.preventDefault();
               addItems();
             }
