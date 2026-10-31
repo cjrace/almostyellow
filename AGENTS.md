@@ -93,11 +93,17 @@ The site aims for WCAG 2.2 AA. Every change to a page or component is checked ag
 - Colour contrast comes from the theme in `src/styles/acalat.tsx`: `autoContrast` picks the text colour on filled components, and `acalatCssVariables` darkens Mantine's dimmed, error and link colours. Use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
 - Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
 
-The automated checks find about half of WCAG problems. For a UI change also check by hand, in the browser against `pnpm start` and the emulators:
+The automated checks find about half of WCAG problems, so whenever you run them for a change to a page or component, also check by hand in the browser. This is not optional: report the result of each check, and if one cannot be run, say which and why.
 
-1. Tab through the page. Every control can be reached and used, the order makes sense, focus is always visible and never hidden behind the header, and nothing traps focus.
-2. Look at it in both colour schemes, at 320 pixels wide and at 200% zoom. Nothing is cut off and the page never scrolls sideways.
-3. Anything that moves can be paused, or respects `prefers-reduced-motion`.
+Check the pages the change affects. A change to shared code (`src/app/layout.tsx`, `src/components/header.tsx`, `src/styles/`, the theme, or a component used on several pages) affects every page, so check them all. A change to one page or a component only it uses needs only that page, including any states the change touches, such as a dialog or a game in progress.
+
+Start the app with `pnpm serve:test`, which serves the last build against the emulators loaded with the test fixtures (in the desktop app, start `almostyellow-emulators` from `.claude/launch.json`). Then, on each affected page:
+
+1. **Keyboard:** tab through the page and use every control with Enter or Space. The order makes sense, focus is always visible, nothing traps focus, and focus is never lost to the top of the page after an action, such as when a button is disabled or replaced, or a dialog closes.
+2. **Both colour schemes:** look again after using "Toggle color scheme".
+3. **Reflow and zoom:** at 320 pixels wide and at 200% zoom, nothing is cut off, overlaps or scrolls sideways.
+4. **Announcements:** results that appear without a page load are in a `role="status"` region, and dialogs have a name.
+5. **Motion:** nothing flashes more than three times a second, and animations stop under `prefers-reduced-motion`.
 
 The `a11y-seo-check` skill in `.claude/skills/` runs all of this for a change.
 

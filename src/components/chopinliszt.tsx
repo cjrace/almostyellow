@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -177,6 +178,15 @@ const ChopinLiszt = ({
     () => true,
   );
 
+  // Ticking an item moves it between lists and deleting removes it, either of
+  // which drops keyboard focus, so put it back once the list has updated
+  const focusAfterUpdateRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (focusAfterUpdateRef.current === null) return;
+    document.getElementById(focusAfterUpdateRef.current)?.focus();
+    focusAfterUpdateRef.current = null;
+  }, [items]);
+
   // Signs the browser in to Firebase from the session, then listens to the
   // list until the page closes
   useEffect(() => {
@@ -299,6 +309,7 @@ const ChopinLiszt = ({
   // stored, so a change that is sent twice cannot undo itself
   const setChecked = (item: Item, checked: boolean) => {
     if (!uid) return;
+    focusAfterUpdateRef.current = item.id;
     const db = clientFirestore(firebaseConfig);
     updateDoc(doc(db, COLLECTION, item.id), {
       checked,
@@ -308,6 +319,14 @@ const ChopinLiszt = ({
   };
 
   const removeItem = (item: Item) => {
+    // Move to the next item down, or up at the end of the list
+    const shown = [
+      ...(items ?? []).filter((other) => !other.checked),
+      ...(items ?? []).filter((other) => other.checked),
+    ];
+    const index = shown.findIndex((other) => other.id === item.id);
+    const next = shown.filter((_, i) => i === index + 1 || i === index - 1);
+    focusAfterUpdateRef.current = next.at(-1)?.id ?? "add-items";
     const db = clientFirestore(firebaseConfig);
     deleteDoc(doc(db, COLLECTION, item.id)).catch(saveFailed);
   };
@@ -385,7 +404,9 @@ const ChopinLiszt = ({
         </ShowAfterDelay>
       )}
 
-      <Button onClick={open}>Add new item(s)</Button>
+      <Button id="add-items" onClick={open}>
+        Add new item(s)
+      </Button>
       <Space h="xl" />
 
       {uncheckedItems.map(row)}

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
 import { adminRoutes } from "../../src/routes";
@@ -45,3 +46,31 @@ for (const scheme of schemes) {
     });
   });
 }
+
+// Ticking moves an item to the other list and deleting removes it, so the
+// list puts keyboard focus back rather than losing it. The list is shared
+// with other tests, so this only touches items of its own.
+test("Keyboard focus stays in the shopping list", async ({ page }) => {
+  const first = `Focus test ${randomUUID()}`;
+  const second = `Focus test ${randomUUID()}`;
+  await signIn(page);
+  await page.goto("/admin/chopinliszt");
+  await page.getByRole("button", { name: "Add new item(s)" }).click();
+  await page
+    .getByPlaceholder("Add new items, one per line...")
+    .fill(`${first}\n${second}`);
+  await page.getByRole("button", { name: "Add items and close modal" }).click();
+
+  const box = page.getByRole("checkbox", { name: first });
+  await box.focus();
+  await page.keyboard.press("Space");
+  await expect(box).toBeChecked();
+  await expect(box).toBeFocused();
+
+  await page.getByRole("button", { name: `Delete ${first}` }).focus();
+  await page.keyboard.press("Enter");
+  await expect(box).toHaveCount(0);
+  await expect(page.locator("main *:focus")).toHaveCount(1);
+
+  await page.getByRole("button", { name: `Delete ${second}` }).click();
+});

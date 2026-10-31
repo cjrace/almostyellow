@@ -1,0 +1,13 @@
+/* Let the big homepage buttons wrap on narrow screens rather than cut their
+   text off (WCAG 1.4.10) */
+.button {
+  height: auto;
+  min-height: var(--button-height);
+  max-width: 100%;
+  padding-block: 8px;
+}
+
+.label {
+  white-space: normal;
+  text-align: center;
+}
