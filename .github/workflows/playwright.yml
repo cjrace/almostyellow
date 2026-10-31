@@ -81,10 +81,8 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Build application ready to test
         run: pnpm exec next build
-      - name: Run all Playwright tests against the disposable database and emulators
+      - name: Run all Playwright tests against the Firebase emulators
         run: pnpm test:e2e --no-build
-      - name: Rehearse the Postgres to Firestore import
-        run: pnpm migrate:rehearse
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

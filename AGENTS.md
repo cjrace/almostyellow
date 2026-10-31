@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -7,13 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
-pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests + import rehearsal (full CI suite)
-pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or database needed)
-pnpm test:e2e      # Build, then Playwright against a disposable Docker database
-pnpm migrate:rehearse  # Export the Docker test database and import it into the emulator
+pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
+pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
+pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 ```
 
-Playwright tests never use the production database. `pnpm test:e2e` (`scripts/e2e.mts`) starts Postgres from `docker-compose.test.yml`, seeded from `tests/database/`, then runs `next start` with the settings in `tests/test-env.ts`. It starts Docker Desktop first if it is not already running. Extra arguments go to Playwright, and `--no-build` reuses the last build:
+Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
 ```bash
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
@@ -39,7 +38,6 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
-- `data/cocktails.ts` — The cocktail catalogue as it was kept in the code. The tests load it into the emulator and it is what gets imported into production; change recipes in Firestore, not here
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
 - `src/styles/` — Global CSS, CSS modules, and the Mantine theme (`acalat.tsx`)
 
@@ -65,41 +63,27 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 
 The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
 
-### Database
-
-Vercel Postgres (hosted on Neon), accessed via `@vercel/postgres`. Import `sql` from `@/db`, not `@vercel/postgres` directly, so the test database proxy settings apply. The `.env` file must have credentials — see `.env.example`. Tables: `users`, `whisky_journal`, `film_list` and `chopin_liszt`. The app no longer uses any of them; they are kept until their data is moved to Firestore.
-
-Database seeding is done by creating a temporary `src/app/seed/route.ts` (git-ignored) and hitting `http://localhost:3000/seed` locally. See `src/seed.md` for the full pattern. The schema the tests use is in `tests/database/01_schema.sql`, so keep it in step with any table changes.
-
 ### UI
 
-[Mantine](https://mantine.dev/) v8 with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
+[Mantine](https://mantine.dev/) v9 with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
 
 ### Tests
 
 Playwright E2E tests in `tests/`, split into three folders:
 
 - `tests/public/` — Public pages, no auth needed
-- `tests/public-database/` — Public pages that read from the database
+- `tests/public-firestore/` — Public pages that read from Firestore
 - `tests/admin/` — Admin area (requires auth)
 
-They run against the synthetic rows in `tests/database/02_fixtures.sql` and sign in as the synthetic users in `tests/firebase/fixtures.ts`, which `scripts/e2e.mts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
+They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
 Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
 
-Vitest unit tests live in `tests/unit/` and mock the database and auth.
+Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
 
-### Moving the data from Postgres to Firestore
-
-`scripts/migrate.mts` (`pnpm migrate <command> <file>`) exports the Postgres tables to a JSON file, checks every row against the limits in `src/firebase/records.ts`, imports them with their Postgres IDs and reconciles Firestore against the export field by field. The cocktails come from `data/cocktails.ts`. The `users` table is never exported. Running an import again gives the same result, so an import that stops part way is finished by running it again. Rows that fail the checks are listed and nothing is written unless `--allow-rejected` is given, and every import writes a report next to the export.
-
-Exports hold personal data, so keep them in `migration-output/`, which git ignores. The importer uses the emulator when `FIRESTORE_EMULATOR_HOST` is set, and refuses a real project unless it is named again.
-
-`pnpm migrate:rehearse` exports the Docker test database, imports it into the emulator twice and reconciles, as `pnpm test` and CI do. The logic is tested in `tests/unit/migration.test.ts` and, against the emulator, `tests/firebase/migration.test.ts`.
-
-### Firebase emulators (migration branch)
+### Firebase emulators
 
 The Firebase work is tested against the local Auth and Firestore emulators, never a real project. Java 21 or later must be installed for the Firestore emulator.
 

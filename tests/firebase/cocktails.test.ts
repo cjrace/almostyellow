@@ -1,6 +1,6 @@
 import { beforeEach, expect, test } from "vitest";
 import { readCocktails } from "@/services/cocktails";
-import { cocktaildata, cocktailDocuments } from "../../data/cocktails";
+import { cocktaildata, cocktailDocuments } from "./cocktails";
 import { resetAndSeed } from "./seed";
 
 // The catalogue moved from the code to Firestore, so check the page gets

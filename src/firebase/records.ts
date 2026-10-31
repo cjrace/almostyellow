@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 // Limits for each kind of record, matching firestore.rules. The server
-// actions and the Postgres importer write with the Admin SDK, which skips the
-// rules, so they check records against these instead. Keep the two in step.
+// actions write with the Admin SDK, which skips the rules, so they check
+// records against these instead. Keep the two in step.
 
 const text = z.string().trim().min(1).max(255);
 

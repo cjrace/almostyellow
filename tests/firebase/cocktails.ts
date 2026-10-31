@@ -1,7 +1,5 @@
-// The cocktail catalogue, as it was kept in the code before it moved to
-// Firestore. The tests load it into the emulator, and the same records are
-// what get imported into production. Change the recipes in Firestore now,
-// not here.
+// Cocktail recipes for the tests, loaded into the emulator. The real
+// catalogue lives in Firestore, so change recipes there, not here.
 export const cocktaildata = [
   {
     name: "Stone cold margarita",

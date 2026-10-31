@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Checks that every server action that reads private data or changes data
-// calls requireAuth() before touching the database, and that the intentionally
-// public reads do not. The database and auth are mocked, so nothing here
+// calls requireAuth() before touching Firestore, and that the intentionally
+// public reads do not. Firestore and auth are mocked, so nothing here
 // needs credentials.
 
-const { requireAuth, sql, createCustomToken, collection } = vi.hoisted(() => {
+const { requireAuth, createCustomToken, collection } = vi.hoisted(() => {
   // A stand-in for the Admin SDK's Firestore, with nothing stored in it
   const document = {
     get: () => Promise.resolve({ exists: false }),
@@ -15,7 +15,6 @@ const { requireAuth, sql, createCustomToken, collection } = vi.hoisted(() => {
   };
   return {
     requireAuth: vi.fn(),
-    sql: vi.fn(),
     createCustomToken: vi.fn(),
     collection: vi.fn(() => ({
       doc: () => document,
@@ -25,16 +24,14 @@ const { requireAuth, sql, createCustomToken, collection } = vi.hoisted(() => {
 });
 
 vi.mock("@/auth", () => ({ requireAuth }));
-vi.mock("@/db", () => ({ sql }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/firebase/admin", () => ({
   adminAuth: () => ({ createCustomToken }),
   adminDb: () => ({ collection }),
 }));
 
-// Postgres or Firestore, depending on which the feature has moved to
 function databaseUsed() {
-  return sql.mock.calls.length + collection.mock.calls.length > 0;
+  return collection.mock.calls.length > 0;
 }
 
 import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
@@ -88,7 +85,7 @@ beforeEach(() => {
 
 describe("protected server actions", () => {
   it.each(protectedActions)(
-    "%s is refused without a session and never queries the database",
+    "%s is refused without a session and never queries Firestore",
     async (_, action) => {
       const refused = new Error("unauthorised");
       requireAuth.mockRejectedValue(refused);
@@ -100,10 +97,9 @@ describe("protected server actions", () => {
   );
 
   it.each(protectedActions)(
-    "%s queries the database with a session",
+    "%s queries Firestore with a session",
     async (_, action) => {
-      requireAuth.mockResolvedValue({ user: { id: "1" } });
-      sql.mockResolvedValue({ rows: [] });
+      requireAuth.mockResolvedValue({ uid: "test-user-alice" });
 
       await action();
       expect(requireAuth).toHaveBeenCalledOnce();
@@ -114,8 +110,6 @@ describe("protected server actions", () => {
 
 describe("public server actions", () => {
   it.each(publicActions)("%s does not require a session", async (_, action) => {
-    sql.mockResolvedValue({ rows: [{ id: fakeId, whisky_id: fakeId }] });
-
     await action();
     expect(requireAuth).not.toHaveBeenCalled();
     expect(databaseUsed()).toBe(true);
