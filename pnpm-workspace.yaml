@@ -1,6 +1,5 @@
 allowBuilds:
   "@firebase/util": false
-  bcrypt: true
   bufferutil: true
   protobufjs: false
   re2: false
