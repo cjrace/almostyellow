@@ -67,6 +67,11 @@ const MAX_TEXT_LENGTH = 255;
 // checks this often that the session it came from is still valid
 const SESSION_CHECK_MS = 5 * 60 * 1000;
 
+const LOAD_FAILED = "Could not load the list. Try reloading the page.";
+
+const LOAD_OFFLINE =
+  "The list needs a connection to open. Reload the page once you have signal.";
+
 const SAVE_FAILED =
   "A change could not be saved, so the list shows what was saved last. Someone may have deleted the item on another device.";
 
@@ -136,6 +141,10 @@ const ChopinLiszt = ({
   const [newItemText, setNewItemText] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The phone can report being online on a signal too weak to reach
+  // Firestore, so also go by whether the list is showing saved data or only
+  // what this page last saw
+  const [connected, setConnected] = useState(true);
   const online = useSyncExternalStore(
     subscribeToConnection,
     () => navigator.onLine,
@@ -150,6 +159,9 @@ const ChopinLiszt = ({
     const closed = new AbortController();
     const isClosed = () => closed.signal.aborted;
     let stopListening: Unsubscribe | undefined;
+    // A list opened again in the same tab is first shown from what this page
+    // last saw, which should not count as losing the connection
+    let synced = false;
 
     void (async () => {
       const token = await firestoreTokenAction();
@@ -162,6 +174,9 @@ const ChopinLiszt = ({
         // Also called when a pending change is saved, to update its label
         { includeMetadataChanges: true },
         (snapshot) => {
+          const { fromCache } = snapshot.metadata;
+          if (!fromCache) synced = true;
+          setConnected(!fromCache || !synced);
           setItems(
             snapshot.docs.map((item) => {
               const data = item.data() as StoredItem;
@@ -176,12 +191,12 @@ const ChopinLiszt = ({
         },
         (listenError) => {
           console.error("Error listening to the list:", listenError);
-          setError("Could not load the list. Try reloading the page.");
+          setError(LOAD_FAILED);
         },
       );
     })().catch((signInError: unknown) => {
       console.error("Error signing in to Firestore:", signInError);
-      setError("Could not load the list. Try reloading the page.");
+      setError(navigator.onLine ? LOAD_FAILED : LOAD_OFFLINE);
     });
 
     return () => {
@@ -202,6 +217,20 @@ const ChopinLiszt = ({
       document.removeEventListener("visibilitychange", checkWhenVisible);
     };
   }, []);
+
+  // Changes not yet saved are lost if the page closes, so ask first. Phones
+  // do not ask when the app is swiped away.
+  const unsaved = items?.some((item) => item.pending) ?? false;
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [unsaved]);
 
   const saveFailed = (saveError: unknown) => {
     console.error("Error saving a change:", saveError);
@@ -321,10 +350,10 @@ const ChopinLiszt = ({
       </Modal>
 
       {errorAlert}
-      {!online && (
+      {(!online || !connected) && (
         <Alert mb="md">
-          You&apos;re offline. Changes are kept on this device and will sync
-          when you reconnect.
+          You&apos;re offline. Changes will sync when you reconnect, as long as
+          this page stays open.
         </Alert>
       )}
 

@@ -5,11 +5,13 @@ import { getCredentials, getSecondCredentials } from "./helpers";
 // How the list behaves for the people using it, each tested below:
 //
 // - A change on one phone shows on the other without a refresh.
-// - Without signal, changes still show straight away, marked "Not synced
-//   yet", and save once the phone is back online. They are only kept while
-//   the list is open, so closing the app before they save loses them.
+// - Without signal, a message says you're offline. Changes still show
+//   straight away, marked "Not synced yet", and save once the phone is back
+//   online. They are only kept while the list is open, so closing the app
+//   before they save loses them. Leaving or reloading the page asks first,
+//   but swiping the app away on a phone does not.
 // - The list can't be opened without signal, so open it before going into
-//   the shop and keep it open.
+//   the shop and keep it open. Trying anyway says it needs a connection.
 // - If both people change the same item, the change that saves last wins.
 //   Someone who was offline usually saves last, as their change only arrives
 //   when they reconnect.
@@ -154,6 +156,48 @@ test("Changes made offline sync after reconnecting", async ({
   await expect(item(page, eggs)).toBeChecked(SYNC);
   await expect(page.getByText("Not synced yet")).toHaveCount(0);
   await expect(page.getByText("You're offline")).toBeHidden();
+});
+
+test("Leaving with changes not yet saved asks first", async ({ page }) => {
+  const rice = uniqueName("Rice");
+  await openList(page, getCredentials());
+  await addItems(page, rice);
+
+  await goOffline(page);
+  await item(page, rice).click();
+  await expect(page.getByText("Not synced yet")).toHaveCount(1);
+
+  const dialog = page.waitForEvent("dialog");
+  void page.close({ runBeforeUnload: true });
+  expect((await dialog).type()).toBe("beforeunload");
+  await (await dialog).dismiss();
+  await expect(item(page, rice)).toBeChecked();
+});
+
+test("Opening the list without signal says it needs a connection", async ({
+  page,
+}) => {
+  // The page loads, then the signal drops before it can fetch the list
+  const listPage = (url: URL) => url.pathname === "/admin/chopinliszt";
+  await page.route(listPage, async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.continue();
+      return;
+    }
+    await page.context().setOffline(true);
+    await route.abort("internetdisconnected");
+  });
+  await page.goto(
+    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
+  );
+  const { email, password } = getCredentials();
+  await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
+  await page.getByPlaceholder("Enter password").fill(password);
+  await page.getByRole("button", { name: "Log in" }).click();
+
+  await expect(
+    page.getByText("The list needs a connection to open"),
+  ).toBeVisible();
 });
 
 test("An item deleted on another device stays deleted", async ({
