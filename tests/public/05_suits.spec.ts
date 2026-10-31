@@ -131,7 +131,7 @@ test("Plays a full game of 13 turns", async ({ page }) => {
 
   // Replay keeps the players
   await page
-    .getByRole("button", { name: "Play again with the same players" })
+    .getByRole("button", { name: "Play again with same players" })
     .click();
   await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
   await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
