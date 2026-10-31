@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Ace of Spades</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<g fill="#171717" color="#171717" font-family="Arial, Helvetica, sans-serif">
+<text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">A</text><g transform="translate(14 57) scale(0.26)"><path d="M50 3 C40 22 5 40 5 62 C5 76 16 85 29 85 C38 85 44 80 47 75 C46 85 42 92 35 97 L65 97 C58 92 54 85 53 75 C56 80 62 85 71 85 C84 85 95 76 95 62 C95 40 60 22 50 3 Z"/></g>
+<g transform="rotate(180 125 175)"><text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">A</text><g transform="translate(14 57) scale(0.26)"><path d="M50 3 C40 22 5 40 5 62 C5 76 16 85 29 85 C38 85 44 80 47 75 C46 85 42 92 35 97 L65 97 C58 92 54 85 53 75 C56 80 62 85 71 85 C84 85 95 76 95 62 C95 40 60 22 50 3 Z"/></g></g>
+<g transform="translate(65 110) scale(1.2)"><path d="M50 3 C40 22 5 40 5 62 C5 76 16 85 29 85 C38 85 44 80 47 75 C46 85 42 92 35 97 L65 97 C58 92 54 85 53 75 C56 80 62 85 71 85 C84 85 95 76 95 62 C95 40 60 22 50 3 Z"/></g>
+</g>
+</svg>

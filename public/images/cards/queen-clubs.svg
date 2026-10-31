@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Queen of Clubs</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<g fill="#171717" color="#171717" font-family="Arial, Helvetica, sans-serif">
+<text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">Q</text><g transform="translate(14 57) scale(0.26)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g>
+<g transform="rotate(180 125 175)"><text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">Q</text><g transform="translate(14 57) scale(0.26)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g></g>
+<rect x="55" y="45" width="140" height="260" rx="10" fill="none" stroke="currentColor" stroke-width="3"/><text x="125" y="185" font-size="120" font-weight="700" text-anchor="middle">Q</text><g transform="translate(97 217) scale(0.56)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g>
+</g>
+</svg>

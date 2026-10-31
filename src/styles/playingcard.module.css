@@ -1,0 +1,22 @@
+/* Cards keep the 5:7 shape of the SVGs at every width */
+.card {
+  aspect-ratio: 5 / 7;
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6%;
+}
+
+.single {
+  width: min(100%, 220px);
+  margin-inline: auto;
+}
+
+/* Four cards side by side, still legible on a 375px phone */
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-sm);
+  max-width: 560px;
+  margin-inline: auto;
+}

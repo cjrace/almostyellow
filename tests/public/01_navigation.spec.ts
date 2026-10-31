@@ -74,6 +74,28 @@ test("Can navigate to the games page and through its subpages", async ({
     page.getByLabel("Back to our games list").click(),
   ]);
   await Promise.all([
+    page.waitForURL("/games/redorblack"),
+    page.getByRole("link", { name: "Red or Black" }).click(),
+  ]);
+  await expect(page).toHaveTitle("Red or Black | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("Red or Black");
+
+  await Promise.all([
+    page.waitForURL("/games"),
+    page.getByLabel("Back to our games list").click(),
+  ]);
+  await Promise.all([
+    page.waitForURL("/games/suits"),
+    page.getByRole("link", { name: "Suits" }).click(),
+  ]);
+  await expect(page).toHaveTitle("Suits | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("Suits");
+
+  await Promise.all([
+    page.waitForURL("/games"),
+    page.getByLabel("Back to our games list").click(),
+  ]);
+  await Promise.all([
     page.waitForURL("/"),
     page.getByRole("link", { name: "Home" }).click(),
   ]);
