@@ -283,29 +283,6 @@ export default function Suits() {
             </Alert>
           )}
 
-          {state.phase === "guessing" && (
-            <div ref={pickerRef}>
-              <Text id="suits_choose" fw={500} size="sm">
-                {currentPlayer(state)}, choose a suit
-              </Text>
-              <SegmentedControl
-                aria-labelledby="suits_choose"
-                fullWidth
-                mt={4}
-                color="orange"
-                // No suit matches "", so nothing shows as picked until a guess
-                value={state.chosenSuit ?? ""}
-                onChange={(suit) => {
-                  dispatch({ type: "choose", suit });
-                }}
-                data={SuitNames.map((suit) => ({
-                  value: suit,
-                  label: <SuitOption suit={suit} />,
-                }))}
-              />
-            </div>
-          )}
-
           {/* The last turn stays on show while the next player picks */}
           <Text id="suits_chosen" mih="1.5em">
             {lastTurn && (
@@ -341,6 +318,30 @@ export default function Suits() {
               </Text>
             )}
           </div>
+
+          {/* Next to the buttons, so a thumb has less far to move */}
+          {state.phase === "guessing" && (
+            <div ref={pickerRef}>
+              <Text id="suits_choose" fw={500} size="sm">
+                {currentPlayer(state)}, choose a suit
+              </Text>
+              <SegmentedControl
+                aria-labelledby="suits_choose"
+                fullWidth
+                mt={4}
+                color="orange"
+                // No suit matches "", so nothing shows as picked until a guess
+                value={state.chosenSuit ?? ""}
+                onChange={(suit) => {
+                  dispatch({ type: "choose", suit });
+                }}
+                data={SuitNames.map((suit) => ({
+                  value: suit,
+                  label: <SuitOption suit={suit} />,
+                }))}
+              />
+            </div>
+          )}
 
           <div className={layout.controls}>
             {state.phase === "guessing" && (
