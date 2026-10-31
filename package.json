@@ -15,7 +15,7 @@
     "test:firebase": "vitest run -c vitest.firebase.config.mts",
     "test:rules": "firebase emulators:exec --project demo-almostyellow --only auth,firestore \"vitest run -c vitest.firebase.config.mts tests/firebase/rules.test.ts\"",
     "test:ci": "firebase emulators:exec --project demo-almostyellow-ci --only auth,firestore \"pnpm test:firebase\"",
-    "test-only": "pnpm run lint && pnpm test:ci && node scripts/e2e.mts --no-build",
+    "test-only": "pnpm run lint && vitest run && pnpm test:ci && node scripts/e2e.mts --no-build",
     "pretty": "prettier . --write",
     "pretty-check": "prettier . --check",
     "pretty-lint": "prettier . --write && pnpm run lint",
