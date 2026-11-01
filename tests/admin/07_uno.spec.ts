@@ -95,24 +95,27 @@ test.describe("Uno durable scoring", () => {
       path: test.info().outputPath("uno-mobile.png"),
       fullPage: true,
     });
+    // The service worker caches the assets first and publishes the page
+    // shells last, so wait for every shell rather than just the first entries
+    const shells = [
+      "/games/uno-tracker",
+      "/games/uno-tracker/stats",
+      "/games/uno-tracker/history",
+    ];
+    const cachedShellPaths = () =>
+      page.evaluate(async () => {
+        const cache = await caches.open("uno-shell-v1");
+        return (await cache.keys()).map(
+          (request) => new URL(request.url).pathname,
+        );
+      });
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            async () =>
-              (await (await caches.open("uno-shell-v1")).keys()).length,
-          ),
-        SYNC,
-      )
-      .toBeGreaterThan(1);
-    const cachedPaths = await page.evaluate(async () => {
-      const cache = await caches.open("uno-shell-v1");
-      return (await cache.keys()).map(
-        (request) => new URL(request.url).pathname,
-      );
-    });
-    expect(cachedPaths).toContain("/games/uno-tracker/stats");
-    expect(cachedPaths).toContain("/games/uno-tracker/history");
+      .poll(async () => {
+        const paths = await cachedShellPaths();
+        return shells.every((path) => paths.includes(path));
+      }, SYNC)
+      .toBe(true);
+    const cachedPaths = await cachedShellPaths();
     expect(
       cachedPaths.every(
         (path) =>
