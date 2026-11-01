@@ -38,8 +38,8 @@ export function UnoHeader({ page = "tracker" }: { page?: keyof typeof pages }) {
           window.location.assign(pages[value]);
         }}
         data={[
-          { value: "tracker", label: "Tracker" },
           { value: "stats", label: "Statistics" },
+          { value: "tracker", label: "Tracker" },
           { value: "history", label: "History" },
         ]}
         fullWidth
