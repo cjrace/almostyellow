@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Paper, Text, Title } from "@mantine/core";
+import { Paper, Text, Title } from "@mantine/core";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
 import { gameDate, statistics, type Game } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
@@ -147,27 +147,6 @@ export default function UnoStatistics() {
     <div className={styles.stats}>
       <UnoHeader page="stats" />
       <UnoOfflineShell />
-      {uno.notice && (
-        <Text role="status" size="sm">
-          {uno.notice}
-        </Text>
-      )}
-      {!uno.online && (
-        <Alert>
-          Offline · showing saved statistics from{" "}
-          {uno.data.checkedAt
-            ? new Date(uno.data.checkedAt).toLocaleString("en-GB")
-            : "an earlier visit"}
-          . They may be outdated.
-        </Alert>
-      )}
-      {uno.error && <Alert color="orange">{uno.error}</Alert>}
-      {!!uno.data.events.length && (
-        <Text size="sm">
-          These records show confirmed shared scores. {uno.data.events.length}{" "}
-          saved changes on this device have not synced yet.
-        </Text>
-      )}
       {!summary ? (
         <Text>
           {uno.ready

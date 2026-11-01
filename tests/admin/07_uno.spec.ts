@@ -18,6 +18,13 @@ async function signIn(page: Page, credentials = getCredentials()) {
     page.getByRole("button", { name: "Start new game" }),
   ).toBeEnabled(SYNC);
 }
+// The segmented control hides its radio inputs, so press the visible label
+async function openTab(page: Page, name: "Tracker" | "Statistics" | "History") {
+  await page
+    .getByRole("radiogroup", { name: "Uno pages" })
+    .getByText(name, { exact: true })
+    .click();
+}
 async function start(page: Page) {
   await page.getByRole("button", { name: "Start new game" }).click();
   await expect(
@@ -248,7 +255,7 @@ test.describe("Uno durable scoring", () => {
     page,
   }) => {
     await signIn(page);
-    await page.getByLabel("History", { exact: true }).click();
+    await openTab(page, "History");
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("8");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("6");
@@ -261,11 +268,50 @@ test.describe("Uno durable scoring", () => {
       page.getByText("Played in the garden after tea."),
     ).toBeVisible();
     await expect(page.getByText("2020-06-12 · historic game")).toBeVisible();
-    await page.getByLabel("Tracker", { exact: true }).click();
+    await openTab(page, "Tracker");
     await expect(page.getByTestId("lifetime-cam")).toHaveText("8", SYNC);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("6");
   });
 
+  test("going offline and syncing never move the content", async ({
+    page,
+    context,
+  }) => {
+    test.slow();
+    await signIn(page);
+    await start(page);
+    await idle(page);
+    const layout = () =>
+      page.evaluate(() =>
+        [
+          ...document.querySelectorAll(
+            "main h2, main section, main button:not([aria-haspopup])",
+          ),
+        ].map((el) => {
+          const box = el.getBoundingClientRect();
+          return [el.tagName, box.x, box.y, box.width, box.height];
+        }),
+      );
+    // The pill may get wider as its text changes, but never taller
+    const pillHeight = () =>
+      page
+        .locator("button[aria-haspopup=dialog]")
+        .evaluate((el) => el.getBoundingClientRect().height);
+    const pill = await pillHeight();
+    const settled = await layout();
+    await context.setOffline(true);
+    await expect(page.getByRole("status")).toContainText("Offline");
+    expect(await layout()).toEqual(settled);
+    expect(await pillHeight()).toBe(pill);
+    await page.getByRole("button", { name: "Add a round for Cam" }).click();
+    await expect(page.getByRole("status")).toContainText("not yet synced");
+    expect(await layout()).toEqual(settled);
+    expect(await pillHeight()).toBe(pill);
+    await context.setOffline(false);
+    await idle(page);
+    expect(await layout()).toEqual(settled);
+    expect(await pillHeight()).toBe(pill);
+  });
   test("queued rounds are preserved when the signed-in account changes", async ({
     page,
     context,
@@ -328,7 +374,7 @@ test.describe("Uno durable scoring", () => {
     await idle(other);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("1", SYNC);
     await expect(page.getByTestId("score-laura")).toHaveText("0");
-    await page.getByLabel("History", { exact: true }).click();
+    await openTab(page, "History");
     await expect(
       page.getByText("Result amended after offline rounds synced."),
     ).toBeVisible();
@@ -459,7 +505,7 @@ test.describe("Uno durable scoring", () => {
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
     ).toBeEnabled(SYNC);
-    await page.getByLabel("History", { exact: true }).click();
+    await openTab(page, "History");
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("5");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("3");

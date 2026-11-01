@@ -1,5 +1,6 @@
 /* Only the public Uno shell and same-origin versioned assets are cached.
-   Session checks, server-action POSTs and RSC responses always use the network. */
+   Session checks, server-action POSTs and RSC responses always use the network.
+   Assets and pages try the network first; the cache is only the offline fallback. */
 const CACHE = "uno-shell-v1";
 const pages = [
   "/games/uno-tracker",
@@ -17,6 +18,25 @@ self.addEventListener("activate", (event) => {
     })(),
   );
 });
+// A weak connection falls back to the cached copy rather than hanging.
+const ASSET_TIMEOUT_MS = 4000;
+function fetchWithin(request, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("Timed out"));
+    }, ms);
+    fetch(request).then(
+      (response) => {
+        clearTimeout(timer);
+        resolve(response);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 function isAsset(url) {
   return (
     url.origin === self.location.origin &&
@@ -98,25 +118,37 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
   if (isAsset(url)) {
+    // Network first, so an edited or rebuilt file is never hidden by an older
+    // cached copy that has the same URL. The cache is the offline fallback.
     event.respondWith(
       (async () => {
         let cache;
         try {
           cache = await caches.open(CACHE);
-          const saved = await cache.match(request);
-          if (saved) return saved;
         } catch {
           await offlineUnavailable(event.clientId);
         }
-        const response = await fetch(request);
-        if (response.ok && cache) {
-          try {
-            await cache.put(request, response.clone());
-          } catch {
-            await offlineUnavailable(event.clientId);
+        try {
+          const response = await fetchWithin(request, ASSET_TIMEOUT_MS);
+          if (response.ok && cache) {
+            try {
+              await cache.put(request, response.clone());
+            } catch {
+              await offlineUnavailable(event.clientId);
+            }
           }
+          return response;
+        } catch (failure) {
+          if (cache) {
+            try {
+              const saved = await cache.match(request);
+              if (saved) return saved;
+            } catch {
+              await offlineUnavailable(event.clientId);
+            }
+          }
+          throw failure;
         }
-        return response;
       })(),
     );
   } else if (request.mode === "navigate" && pages.includes(url.pathname)) {

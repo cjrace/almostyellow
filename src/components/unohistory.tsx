@@ -130,21 +130,6 @@ export default function UnoHistory() {
     <div className={styles.stats}>
       <UnoHeader page="history" />
       <UnoOfflineShell />
-      {uno.notice && (
-        <Text role="status" size="sm">
-          {uno.notice}
-        </Text>
-      )}
-      {!uno.online && (
-        <Alert>
-          Offline · showing saved games from{" "}
-          {uno.data.checkedAt
-            ? new Date(uno.data.checkedAt).toLocaleString("en-GB")
-            : "an earlier visit"}
-          . They may be outdated.
-        </Alert>
-      )}
-      {uno.error && <Alert color="orange">{uno.error}</Alert>}
       {!summary ? (
         <Text>
           {uno.ready

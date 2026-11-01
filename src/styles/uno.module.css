@@ -67,9 +67,6 @@
 .control {
   min-height: 44px;
 }
-.status {
-  min-width: 0;
-}
 .result {
   text-align: center;
   animation: celebrate 700ms ease-out;
@@ -208,4 +205,56 @@
 .header {
   display: grid;
   gap: 0.75rem;
+}
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.25rem;
+}
+/* Fixed height and a single line, so sync and connection changes never move
+   the content below. The full text is in the dialog it opens. */
+.statusSlot {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 65%;
+}
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2rem;
+  max-width: 100%;
+  padding: 0 0.75rem;
+  border: 1px solid var(--pill-color);
+  border-radius: 999px;
+  color: var(--pill-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pill[data-tone="ok"] {
+  --pill-color: var(--mantine-color-green-text);
+}
+.pill[data-tone="busy"] {
+  --pill-color: var(--mantine-color-blue-text);
+}
+.pill[data-tone="warn"] {
+  --pill-color: var(--mantine-color-orange-text);
+}
+.pill[data-tone="error"] {
+  --pill-color: var(--mantine-color-red-text);
+}
+.dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pillText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
