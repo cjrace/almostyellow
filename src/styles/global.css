@@ -1,11 +1,16 @@
-/* Add basic margin for all pages */
+/* Spacing lives on a wrapper, not the body. Mantine's scroll lock reads the
+   body margin when a modal opens and shifts the modal sideways by it. */
 body {
-  margin: 20px;
+  margin: 0;
+}
+
+.site-frame {
+  padding: 20px;
 }
 
 @media (max-width: 768px) {
-  /* Smaller margin for smaller screens */
-  body {
-    margin: 10px;
+  /* Smaller spacing for smaller screens */
+  .site-frame {
+    padding: 10px;
   }
 }

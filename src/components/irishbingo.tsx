@@ -197,6 +197,7 @@ export default function IrishBingo() {
 
       <Grid.Col
         span={{ base: 4, sm: 6, lg: 6 }}
+        visibleFrom="sm"
         style={{ display: "flex", justifyContent: "center" }}
       >
         <Box style={{ display: "flex", alignItems: "flex-start" }}>
@@ -212,7 +213,7 @@ export default function IrishBingo() {
         </Box>
       </Grid.Col>
 
-      <Grid.Col span={{ base: 8, sm: 5, lg: 4 }}>
+      <Grid.Col span={{ base: 12, sm: 5, lg: 4 }}>
         <CalloutBox card={latestCard} />
         <Space h="xl" />
         <Progress

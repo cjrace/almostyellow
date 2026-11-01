@@ -20,7 +20,7 @@ export default function HolidaysPage() {
       <Header crumbs={crumbitems} />
 
       <main id="main-content">
-        <Container size="xs">
+        <Container size="sm">
           <Title>Our trips and holidays</Title>
           <HolidayTimeline />
           <BackToTop />
