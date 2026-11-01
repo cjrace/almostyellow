@@ -78,7 +78,6 @@ export async function startUnoGame(): Promise<UnoState> {
       startedAt: now,
       finishedAt: null,
       playedOn: null,
-      datePrecision: "day",
       notes: "",
       source: "live",
       ...result({ cam: 0, laura: 0 }),
@@ -262,7 +261,7 @@ export async function addHistoricUnoGame(input: unknown) {
     if (existing.exists) {
       if (
         existing.get("source") !== "historic" ||
-        ["cam", "laura", "playedOn", "datePrecision", "notes"].some(
+        ["cam", "laura", "playedOn", "notes"].some(
           (key) => (existing.get(key) ?? "") !== data[key as keyof typeof data],
         )
       )
@@ -275,7 +274,7 @@ export async function addHistoricUnoGame(input: unknown) {
     const now = Date.now();
     const game: Game = {
       ...data,
-      playedOn: data.playedOn || null,
+      playedOn: data.playedOn,
       status: "completed",
       source: "historic",
       startedAt: now,

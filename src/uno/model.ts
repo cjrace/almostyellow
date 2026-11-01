@@ -20,7 +20,6 @@ export interface Game extends Scores {
   startedAt: number;
   finishedAt: number | null;
   playedOn: string | null;
-  datePrecision: "day" | "month" | "year" | "unknown";
   notes: string;
   source: "live" | "historic";
   winner: Player | "draw";
@@ -78,38 +77,17 @@ export const HistoricGameSchema = z
     id: Id,
     cam: z.number().int().min(0).max(1000000),
     laura: z.number().int().min(0).max(1000000),
-    playedOn: z.string().max(10),
-    datePrecision: z.enum(["day", "month", "year", "unknown"]),
+    playedOn: z.string().refine((value) => {
+      const date = new Date(`${value}T12:00:00Z`);
+      return (
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        !Number.isNaN(date.getTime()) &&
+        date.toISOString().startsWith(value)
+      );
+    }, "Enter a valid date."),
     notes: z.string().trim().max(2000),
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    const patterns = {
-      day: /^\d{4}-\d{2}-\d{2}$/,
-      month: /^\d{4}-\d{2}$/,
-      year: /^\d{4}$/,
-      unknown: /^$/,
-    };
-    const suffix =
-      value.datePrecision === "year"
-        ? "-01-01"
-        : value.datePrecision === "month"
-          ? "-01"
-          : "";
-    const date = new Date(`${value.playedOn}${suffix}T12:00:00Z`);
-    if (
-      !patterns[value.datePrecision].test(value.playedOn) ||
-      (value.datePrecision !== "unknown" &&
-        (Number.isNaN(date.getTime()) ||
-          !date.toISOString().startsWith(value.playedOn)))
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Enter a valid date matching its precision.",
-        path: ["playedOn"],
-      });
-    }
-  });
+  .strict();
 export type HistoricGameInput = z.infer<typeof HistoricGameSchema>;
 export function result(
   scores: Scores,

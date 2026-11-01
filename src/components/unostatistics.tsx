@@ -194,7 +194,6 @@ export default function UnoStatistics() {
                     : "0"}
                   %
                 </Text>
-                <Text size="xs">Includes draws in games played.</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Draws</Text>
@@ -243,18 +242,14 @@ export default function UnoStatistics() {
                 [
                   "Longest winning streak",
                   `Cam ${String(summary.streak.cam)} · Laura ${String(summary.streak.laura)}`,
-                  "Dated games, in recorded date order. Historic entries have no recorded time and come before live games on the same date. Approximate dates may affect ordering.",
+                  "",
                 ],
-                [
-                  "Highest individual score",
-                  String(summary.highest),
-                  "Round wins in one game",
-                ],
+                ["Highest individual score", String(summary.highest), ""],
               ].map(([label, value, detail]) => (
                 <Paper withBorder p="sm" key={label}>
                   <Text size="sm">{label}</Text>
                   <Text fw={700}>{value}</Text>
-                  <Text size="xs">{detail}</Text>
+                  {detail && <Text size="xs">{detail}</Text>}
                 </Paper>
               ))}
             </div>
@@ -263,12 +258,6 @@ export default function UnoStatistics() {
             <Title order={2} id="trends">
               Trends
             </Title>
-            <Text size="sm" mb="sm">
-              Completed games in date order. Games with unknown dates are
-              excluded from trends and streaks; year-only dates are excluded
-              from monthly wins. Active-game rounds are included in all-time
-              totals above.
-            </Text>
             <div className={styles.charts}>
               <Chart
                 title="Cumulative round wins"

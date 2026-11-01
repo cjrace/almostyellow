@@ -24,7 +24,6 @@ import {
   statistics,
   type EventHistory,
   type Game,
-  type HistoricGameInput,
 } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
 import styles from "@/styles/uno.module.css";
@@ -40,8 +39,6 @@ export default function UnoHistory() {
   const [error, setError] = useState("");
   const [cam, setCam] = useState<string | number>(0);
   const [laura, setLaura] = useState<string | number>(0);
-  const [precision, setPrecision] =
-    useState<HistoricGameInput["datePrecision"]>("day");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
   const [winnerFilter, setWinnerFilter] = useState("all");
@@ -78,8 +75,7 @@ export default function UnoHistory() {
       id: entryIdRef.current,
       cam,
       laura,
-      playedOn: precision === "unknown" ? "" : date,
-      datePrecision: precision,
+      playedOn: date,
       notes,
     });
     if (!parsed.success) {
@@ -179,7 +175,7 @@ export default function UnoHistory() {
               >
                 <Text size="sm" c="dimmed">
                   Adds this game to lifetime totals and completed-game
-                  statistics. Leave the date unknown if you do not have it.
+                  statistics. Use your best guess if you are unsure of the date.
                 </Text>
                 <div className={styles.formRow}>
                   <NumberInput
@@ -187,6 +183,8 @@ export default function UnoHistory() {
                     min={0}
                     max={1000000}
                     allowDecimal={false}
+                    hideControls
+                    inputMode="numeric"
                     value={cam}
                     onChange={setCam}
                     required
@@ -196,46 +194,22 @@ export default function UnoHistory() {
                     min={0}
                     max={1000000}
                     allowDecimal={false}
+                    hideControls
+                    inputMode="numeric"
                     value={laura}
                     onChange={setLaura}
                     required
                   />
                 </div>
-                <div className={styles.formRow}>
-                  <Select
-                    label="Date precision"
-                    value={precision}
-                    onChange={(value) => {
-                      if (
-                        value === "day" ||
-                        value === "month" ||
-                        value === "year" ||
-                        value === "unknown"
-                      )
-                        setPrecision(value);
-                      setDate("");
-                    }}
-                    data={[
-                      { value: "day", label: "Exact date" },
-                      { value: "month", label: "Month only" },
-                      { value: "year", label: "Year only" },
-                      { value: "unknown", label: "Unknown" },
-                    ]}
-                    allowDeselect={false}
-                  />
-                  {precision !== "unknown" && (
-                    <TextInput
-                      label="Game date"
-                      type={precision === "day" ? "date" : "text"}
-                      placeholder={precision === "month" ? "YYYY-MM" : "YYYY"}
-                      value={date}
-                      onChange={(event) => {
-                        setDate(event.currentTarget.value);
-                      }}
-                      required
-                    />
-                  )}
-                </div>
+                <TextInput
+                  label="Game date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => {
+                    setDate(event.currentTarget.value);
+                  }}
+                  required
+                />
                 <Textarea
                   label="Notes"
                   description="For example, where you played or how you remember the date."

@@ -22,7 +22,6 @@ function game(
     status: "completed",
     startedAt: 0,
     finishedAt: 0,
-    datePrecision: playedOn ? "day" : "unknown",
     notes: "",
     source: "historic",
     version: 1,
@@ -76,7 +75,7 @@ describe("Uno statistics", () => {
   it("does not assign year-only games to January", () => {
     const stats = statistics({
       board: emptyBoard(),
-      games: [{ ...game("a", 3, 1, "2020"), datePrecision: "year" }],
+      games: [game("a", 3, 1, "2020")],
     });
     expect(stats.months).toEqual([]);
     expect(stats.cumulative).toHaveLength(1);
@@ -88,7 +87,7 @@ describe("Uno statistics", () => {
     expect(stats.highest).toBe(0);
   });
 });
-it.each(["2024-02-30", "2024-13-01", "not a date"])(
+it.each(["2024-02-30", "2024-13-01", "2024-06", "2024", "", "not a date"])(
   "rejects invalid historic date %s",
   (playedOn) => {
     expect(
@@ -97,7 +96,6 @@ it.each(["2024-02-30", "2024-13-01", "not a date"])(
         cam: 1,
         laura: 2,
         playedOn,
-        datePrecision: "day",
         notes: "",
       }).success,
     ).toBe(false);
@@ -161,11 +159,11 @@ it("places stable historic entries before live games on the same date", () => {
     ["live", "a"],
   ]);
 });
-it("keeps approximate dates deterministic and excludes undated games from trends", () => {
+it("keeps legacy approximate dates deterministic and excludes undated games from trends", () => {
   const games = [
     game("unknown", 5, 1, null),
-    { ...game("year", 1, 0, "2020"), datePrecision: "year" as const },
-    { ...game("month", 0, 1, "2020-06"), datePrecision: "month" as const },
+    game("year", 1, 0, "2020"),
+    game("month", 0, 1, "2020-06"),
     game("day", 1, 0, "2020-06-02"),
   ];
   const stats = statistics({ board: emptyBoard(), games });

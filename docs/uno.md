@@ -6,7 +6,7 @@
 
 Each won round adds one point. The smaller minus button records a separate correction. A game ends only after an authorised player confirms **Finish game**, while connected and with this device’s saved changes synced. The server checks the displayed game version; a change from another device requires a fresh confirmation. Starting the next game is a separate action.
 
-The history page lists every completed game with filters and a scoring history for each, and has an authorised **Add historic game** form for both scores, a date and free-text notes. Dates can be exact, month only, year only or unknown. Each entry increases lifetime totals once and contributes to completed-game statistics. Unknown dates are excluded from trends and streaks, and year-only dates are excluded from monthly wins. Live games on the same date are ordered by completion time. Historic entries have no recorded time: they come before live games on that date, in stable ID order. Approximate dates can affect streak ordering. Historical entries record final totals, so they have no individual round history.
+The history page lists every completed game with filters and a scoring history for each, and has an authorised **Add historic game** form for both scores, a date and free-text notes. The date is always an exact day (use a best guess if unsure). Each entry increases lifetime totals once and contributes to completed-game statistics. Live games on the same date are ordered by completion time. Historic entries have no recorded time: they come before live games on that date, in stable ID order. Historical entries record final totals, so they have no individual round history.
 
 ## Status messages
 

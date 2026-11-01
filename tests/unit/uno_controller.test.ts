@@ -36,7 +36,6 @@ const game = (cam = 0): Game => ({
   startedAt: 1,
   finishedAt: null,
   playedOn: null,
-  datePrecision: "day",
   notes: "",
   source: "live",
   version: cam + 1,
@@ -422,8 +421,7 @@ describe("per-tab coordinator", () => {
       id: GAME,
       cam: 2,
       laura: 0,
-      playedOn: "2020",
-      datePrecision: "year",
+      playedOn: "2020-01-15",
       notes: "Holiday",
     });
     expect(h.transport.history).toHaveBeenCalledOnce();

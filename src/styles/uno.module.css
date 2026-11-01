@@ -162,17 +162,26 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-/* On a phone the two score cards fill the screen below the header, so the
-   +1 buttons are large and easy to hit one-handed. */
+/* On a phone the tracker is exactly one screen tall, so it never scrolls. The
+   score and the +1 buttons share whatever height is left. */
 @media (max-width: 47.99em) {
   .tracker {
-    min-height: calc(100dvh - 60px - 2rem - 20px);
+    height: calc(100dvh - 60px - 2rem - 20px);
+    min-height: 26rem;
+  }
+  .game,
+  .scoring,
+  .player,
+  .scoreArea {
+    min-height: 0;
   }
   .score {
-    font-size: clamp(4rem, 22vw, 6.5rem);
+    font-size: clamp(3rem, min(22vw, 11dvh), 6.5rem);
   }
   .add {
-    min-height: 6.5rem;
+    flex: 1 1 auto;
+    min-height: 3.5rem;
+    max-height: 7rem;
     font-size: 2.25rem;
   }
   .correct {
@@ -181,6 +190,7 @@
 }
 @media (max-height: 500px) and (orientation: landscape) {
   .tracker {
+    height: auto;
     min-height: 0;
     gap: 0.4rem;
   }

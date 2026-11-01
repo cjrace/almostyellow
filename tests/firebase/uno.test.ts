@@ -172,30 +172,24 @@ describe("Uno scoring transactions", () => {
     await startUnoGame();
     expect(await readUnoVersion()).toBe((await readUnoState()).board.version);
   });
-  test("stores historic scores, dates and notes once, including undated entries", async () => {
+  test("stores historic scores, dates and notes once", async () => {
     const entry = {
       id: randomUUID(),
       cam: 12,
       laura: 9,
-      playedOn: "2021-07",
-      datePrecision: "month",
+      playedOn: "2021-07-15",
       notes: "Summer holiday",
     };
     await addHistoricUnoGame(entry);
     await addHistoricUnoGame(entry);
-    const unknown = {
-      ...entry,
-      id: randomUUID(),
-      playedOn: "",
-      datePrecision: "unknown",
-    };
-    await addHistoricUnoGame(unknown);
-    await addHistoricUnoGame(unknown);
+    const second = { ...entry, id: randomUUID(), playedOn: "2022-01-02" };
+    await addHistoricUnoGame(second);
+    await addHistoricUnoGame(second);
     const state = await readUnoState();
     expect(state.board).toMatchObject({ cam: 24, laura: 18 });
     expect(state.games).toHaveLength(2);
     expect(state.games.find((g) => g.id === entry.id)).toMatchObject({
-      playedOn: "2021-07",
+      playedOn: "2021-07-15",
       notes: "Summer holiday",
       source: "historic",
     });

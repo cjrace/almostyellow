@@ -521,7 +521,7 @@ test.describe("Uno durable scoring", () => {
     await page.route("**/games/uno-tracker/history", async (route) => {
       if (
         route.request().method() === "POST" &&
-        route.request().postData()?.includes("datePrecision")
+        route.request().postData()?.includes("playedOn")
       ) {
         const response = await route.fetch();
         captured();
@@ -566,7 +566,6 @@ test.describe("Uno durable scoring", () => {
           startedAt: when,
           finishedAt: when,
           playedOn: null,
-          datePrecision: "day",
           notes: "",
           source: "live",
           winner: player,
