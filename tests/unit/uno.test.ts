@@ -45,7 +45,6 @@ describe("Uno statistics", () => {
     expect(stats.wins).toEqual({ cam: 1, laura: 0 });
     expect(stats.draws).toBe(2);
     expect(stats.biggest?.id).toBe("a");
-    expect(stats.closest?.margin).toBe(0);
     expect(stats.cumulative).toHaveLength(2);
     expect(stats.cumulative.at(-1)).toMatchObject({ cam: 6, laura: 4 });
     // Whole games won, with a draw adding to neither side
@@ -75,6 +74,7 @@ describe("Uno statistics", () => {
     expect(after.wins).toEqual({ cam: 2, laura: 0 });
     expect(after.streak.cam).toBe(2);
     expect(after.highest).toBe(5);
+    expect(after.highestBy.length).toBeGreaterThan(0);
     expect(after.months[0].cam).toBe(2);
   });
   it("does not assign year-only games to January", () => {

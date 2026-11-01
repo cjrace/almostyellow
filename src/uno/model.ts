@@ -138,6 +138,7 @@ export function statistics(state: UnoState) {
     previous = g.winner;
     if (g.winner !== "draw") streak[g.winner] = Math.max(streak[g.winner], run);
   }
+  const highest = games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0);
   const pick = (compare: (a: Game, b: Game) => number) =>
     [...games].sort(compare).at(0) ?? null;
   const months = new Map<string, Scores>();
@@ -173,8 +174,11 @@ export function statistics(state: UnoState) {
     biggest: pick((a, b) => b.margin - a.margin),
     longest: pick((a, b) => b.rounds - a.rounds),
     shortest: pick((a, b) => a.rounds - b.rounds),
-    closest: pick((a, b) => a.margin - b.margin),
-    highest: games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0),
+    highest,
+    // Whoever reached it, or both if they share the record
+    highestBy: highest
+      ? players.filter((p) => games.some((g) => g[p] === highest))
+      : [],
     cumulative,
     gamesWon,
     months: [...months].map(([date, scores]) => ({

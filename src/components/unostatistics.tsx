@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Paper, SegmentedControl, Text, Title } from "@mantine/core";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
-import { gameDate, statistics, type Game } from "@/uno/model";
+import { gameDate, names, statistics, type Game } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
 import styles from "@/styles/uno.module.css";
 
@@ -162,6 +162,10 @@ function Chart({
     </Paper>
   );
 }
+const leaderStyle = (player: "cam" | "laura") => ({
+  fontWeight: 700,
+  color: `var(--mantine-color-${player === "cam" ? "orange" : "yellow"}-text)`,
+});
 // A card value for both players: the leader is bold and in their colour, and
 // a draw leaves both plain
 function Pair({
@@ -178,12 +182,7 @@ function Pair({
   const winner =
     lead[0] === lead[1] ? null : lead[0] > lead[1] ? "cam" : "laura";
   const style = (player: "cam" | "laura") =>
-    winner === player
-      ? {
-          fontWeight: 700,
-          color: `var(--mantine-color-${player === "cam" ? "orange" : "yellow"}-text)`,
-        }
-      : undefined;
+    winner === player ? leaderStyle(player) : undefined;
   return (
     <Text>
       <span style={style("cam")}>
@@ -289,13 +288,6 @@ export default function UnoStatistics() {
                     : "—",
                   gameDescription(summary.shortest),
                 ],
-                [
-                  "Closest game",
-                  summary.closest
-                    ? `${String(summary.closest.margin)} points`
-                    : "—",
-                  gameDescription(summary.closest),
-                ],
               ].map(([label, value, detail]) => (
                 <Paper withBorder p="sm" key={label}>
                   <Text size="sm">{label}</Text>
@@ -309,7 +301,16 @@ export default function UnoStatistics() {
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Highest individual score</Text>
-                <Text fw={700}>{summary.highest}</Text>
+                {summary.highestBy.length === 1 ? (
+                  <Text style={leaderStyle(summary.highestBy[0])}>
+                    {names[summary.highestBy[0]]} {summary.highest}
+                  </Text>
+                ) : (
+                  <Text fw={700}>
+                    {summary.highestBy.map((p) => names[p]).join(" & ")}{" "}
+                    {summary.highest}
+                  </Text>
+                )}
               </Paper>
             </div>
           </section>
