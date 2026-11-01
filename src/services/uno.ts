@@ -294,3 +294,79 @@ export async function addHistoricUnoGame(input: unknown) {
   });
   return readUnoState();
 }
+
+// Round wins from historic games are part of the lifetime totals, so changing
+// or removing one adjusts the scoreboard in the same transaction.
+export async function updateHistoricUnoGame(input: unknown) {
+  await requireAuth();
+  const data = HistoricGameSchema.parse(input);
+  await adminDb().runTransaction(async (tx) => {
+    const [existing, boardSnapshot] = await Promise.all([
+      tx.get(gameRef(data.id)),
+      tx.get(boardRef()),
+    ]);
+    if (!existing.exists || existing.get("source") !== "historic")
+      throw new Error("This historic game could not be found.");
+    const board = boardSnapshot.exists
+      ? (boardSnapshot.data() as Board)
+      : emptyBoard();
+    const game = existing.data() as Game;
+    const totals = {
+      cam: board.cam - game.cam + data.cam,
+      laura: board.laura - game.laura + data.laura,
+    };
+    if (totals.cam < 0 || totals.laura < 0)
+      throw new Error("These scores would make a lifetime total negative.");
+    const now = Date.now();
+    tx.update(gameRef(data.id), {
+      cam: data.cam,
+      laura: data.laura,
+      playedOn: data.playedOn,
+      notes: data.notes,
+      ...result(data),
+      version: game.version + 1,
+    });
+    tx.set(boardRef(), {
+      ...board,
+      ...totals,
+      version: board.version + 1,
+      updatedAt: now,
+    });
+  });
+  return readUnoState();
+}
+
+export async function deleteHistoricUnoGame(id: string) {
+  await requireAuth();
+  Id.parse(id);
+  await adminDb().runTransaction(async (tx) => {
+    const [existing, boardSnapshot] = await Promise.all([
+      tx.get(gameRef(id)),
+      tx.get(boardRef()),
+    ]);
+    // Deleting twice is harmless, but a live game is never removed this way.
+    if (!existing.exists) return;
+    if (existing.get("source") !== "historic")
+      throw new Error("Only historic games can be deleted.");
+    const board = boardSnapshot.exists
+      ? (boardSnapshot.data() as Board)
+      : emptyBoard();
+    const game = existing.data() as Game;
+    const totals = {
+      cam: board.cam - game.cam,
+      laura: board.laura - game.laura,
+    };
+    if (totals.cam < 0 || totals.laura < 0)
+      throw new Error(
+        "Deleting this game would make a lifetime total negative.",
+      );
+    tx.delete(gameRef(id));
+    tx.set(boardRef(), {
+      ...board,
+      ...totals,
+      version: board.version + 1,
+      updatedAt: Date.now(),
+    });
+  });
+  return readUnoState();
+}

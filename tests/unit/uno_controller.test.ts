@@ -111,6 +111,8 @@ function setup(data = local()) {
       }),
     ),
     history: vi.fn(() => Promise.resolve(state(3, 2))),
+    updateHistory: vi.fn(() => Promise.resolve(state(3, 2))),
+    deleteHistory: vi.fn(() => Promise.resolve(state(3, 2))),
     open: vi.fn(() => Promise.resolve(LEASE)),
     sync: vi.fn((events: Parameters<UnoTransport["sync"]>[0]) =>
       Promise.resolve({
@@ -430,6 +432,37 @@ describe("per-tab coordinator", () => {
     expect(h.controller.getSnapshot().notice).toBe(
       "Historic game saved. Totals will refresh after pending changes sync.",
     );
+    h.unsubscribe();
+  });
+  it("edits and deletes historic games only when online and signed in", async () => {
+    const h = setup();
+    await h.ready();
+    const entry = {
+      id: GAME,
+      cam: 2,
+      laura: 1,
+      playedOn: "2020-01-15",
+      notes: "",
+    };
+    h.online(false);
+    await expect(h.controller.editHistory(entry)).rejects.toThrow(
+      "Reconnect to change a historic game.",
+    );
+    await expect(h.controller.deleteHistory(GAME)).rejects.toThrow(
+      "Reconnect to delete a historic game.",
+    );
+    h.online();
+    h.transport.account.mockResolvedValue(null);
+    await expect(h.controller.deleteHistory(GAME)).rejects.toThrow(
+      "Sign in to delete a historic game.",
+    );
+    expect(h.transport.updateHistory).not.toHaveBeenCalled();
+    expect(h.transport.deleteHistory).not.toHaveBeenCalled();
+    h.transport.account.mockResolvedValue("alice");
+    await h.controller.editHistory(entry);
+    await h.controller.deleteHistory(GAME);
+    expect(h.transport.updateHistory).toHaveBeenCalledWith(entry);
+    expect(h.transport.deleteHistory).toHaveBeenCalledWith(GAME);
     h.unsubscribe();
   });
   it("does not replay another account's events or change their IDs", async () => {

@@ -273,6 +273,43 @@ test.describe("Uno durable scoring", () => {
     await expect(page.getByTestId("lifetime-laura")).toHaveText("6");
   });
 
+  test("a historic game can be edited and deleted after confirming", async ({
+    page,
+  }) => {
+    await signIn(page);
+    await openTab(page, "History");
+    await page.getByRole("button", { name: "Add historic game" }).click();
+    await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("8");
+    await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("6");
+    await page.getByLabel("Game date").fill("2020-06-12");
+    await page.getByRole("button", { name: "Save historic game" }).click();
+    await expect(page.getByText("2020-06-12 · historic game")).toBeVisible();
+    await page
+      .getByRole("button", { name: "Edit historic game from 2020-06-12" })
+      .click();
+    await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("9");
+    await page.getByLabel("Game date").fill("2020-06-13");
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByText("2020-06-13 · historic game")).toBeVisible();
+    await expect(page.getByText("2020-06-12 · historic game")).toBeHidden();
+    await openTab(page, "Tracker");
+    await expect(page.getByTestId("lifetime-cam")).toHaveText("9", SYNC);
+    await openTab(page, "History");
+    await page
+      .getByRole("button", { name: "Delete historic game from 2020-06-13" })
+      .click();
+    const dialog = page.getByRole("dialog", { name: "Delete historic game?" });
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.getByText("2020-06-13 · historic game")).toBeVisible();
+    await page
+      .getByRole("button", { name: "Delete historic game from 2020-06-13" })
+      .click();
+    await dialog.getByRole("button", { name: "Delete game" }).click();
+    await expect(page.getByText("2020-06-13 · historic game")).toBeHidden();
+    await openTab(page, "Tracker");
+    await expect(page.getByTestId("lifetime-cam")).toHaveText("0", SYNC);
+  });
+
   test("going offline and syncing never move the content", async ({
     page,
     context,

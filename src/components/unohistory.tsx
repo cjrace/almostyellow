@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  ActionIcon,
   Alert,
   Badge,
   Button,
+  Group,
   Modal,
   NumberInput,
   Paper,
@@ -14,6 +16,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 import { readUnoHistory } from "@/services/uno";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
 import {
@@ -35,6 +38,12 @@ function gameDescription(game: Game) {
 export default function UnoHistory() {
   const uno = useUno();
   const [formOpen, setFormOpen] = useState(false);
+  // The game being edited, or null when the form adds a new one
+  const [editing, setEditing] = useState<Game | null>(null);
+  const [deleting, setDeleting] = useState<Game | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const formRef = useRef<HTMLElement>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [cam, setCam] = useState<string | number>(0);
@@ -67,12 +76,52 @@ export default function UnoHistory() {
           (gameDate(b) ?? "").localeCompare(gameDate(a) ?? "") ||
           compareGames(a, b),
       ) ?? [];
+  function closeForm() {
+    setFormOpen(false);
+    setEditing(null);
+    setError("");
+    setCam(0);
+    setLaura(0);
+    setNotes("");
+    setDate("");
+    entryIdRef.current = null;
+  }
+  function openEdit(game: Game) {
+    setEditing(game);
+    setCam(game.cam);
+    setLaura(game.laura);
+    setDate(game.playedOn ?? "");
+    setNotes(game.notes);
+    setError("");
+    setFormOpen(true);
+    // The form sits above the list, so bring it into view
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ block: "center" });
+    });
+  }
+  async function confirmDelete() {
+    if (!deleting) return;
+    setDeleteBusy(true);
+    setDeleteError("");
+    try {
+      await uno.deleteHistory(deleting.id);
+      setDeleting(null);
+    } catch (cause) {
+      setDeleteError(
+        cause instanceof Error
+          ? cause.message
+          : "Could not delete this game. Try again.",
+      );
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
   async function saveHistory(event: React.SyntheticEvent) {
     event.preventDefault();
     setError("");
     entryIdRef.current ??= crypto.randomUUID();
     const parsed = HistoricGameSchema.safeParse({
-      id: entryIdRef.current,
+      id: editing?.id ?? entryIdRef.current,
       cam,
       laura,
       playedOn: date,
@@ -84,13 +133,9 @@ export default function UnoHistory() {
     }
     setSaving(true);
     try {
-      await uno.addHistory(parsed.data);
-      setFormOpen(false);
-      setCam(0);
-      setLaura(0);
-      setNotes("");
-      setDate("");
-      entryIdRef.current = null;
+      if (editing) await uno.editHistory(parsed.data);
+      else await uno.addHistory(parsed.data);
+      closeForm();
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -159,13 +204,14 @@ export default function UnoHistory() {
           {formOpen && (
             <Paper
               component="section"
+              ref={formRef}
               aria-labelledby="add-historic"
               withBorder
               p="sm"
               mb="md"
             >
               <Title order={3} id="add-historic" size="h4" mb="xs">
-                Add a historic game
+                {editing ? "Edit historic game" : "Add a historic game"}
               </Title>
               <form
                 onSubmit={(event) => {
@@ -174,8 +220,9 @@ export default function UnoHistory() {
                 className={styles.form}
               >
                 <Text size="sm" c="dimmed">
-                  Adds this game to lifetime totals and completed-game
-                  statistics. Use your best guess if you are unsure of the date.
+                  {editing
+                    ? "Changes the lifetime totals and statistics to match."
+                    : "Adds this game to lifetime totals and completed-game statistics. Use your best guess if you are unsure of the date."}
                 </Text>
                 <div className={styles.formRow}>
                   <NumberInput
@@ -228,15 +275,12 @@ export default function UnoHistory() {
                   <Button
                     variant="default"
                     disabled={saving}
-                    onClick={() => {
-                      setFormOpen(false);
-                      setError("");
-                    }}
+                    onClick={closeForm}
                   >
                     Cancel
                   </Button>
                   <Button type="submit" loading={saving} disabled={!uno.online}>
-                    Save historic game
+                    {editing ? "Save changes" : "Save historic game"}
                   </Button>
                 </div>
               </form>
@@ -292,6 +336,32 @@ export default function UnoHistory() {
                   >
                     {g.winner === "draw" ? "Draw" : `${names[g.winner]} won`}
                   </Badge>
+                  {g.source === "historic" && uno.data.accountId && (
+                    <Group gap={4} wrap="nowrap">
+                      <ActionIcon
+                        variant="subtle"
+                        aria-label={`Edit historic game from ${gameDate(g) ?? "unknown date"}`}
+                        disabled={!uno.online || !uno.verified}
+                        onClick={() => {
+                          openEdit(g);
+                        }}
+                      >
+                        <IconPencil size={18} />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label={`Delete historic game from ${gameDate(g) ?? "unknown date"}`}
+                        disabled={!uno.online || !uno.verified}
+                        onClick={() => {
+                          setDeleteError("");
+                          setDeleting(g);
+                        }}
+                      >
+                        <IconTrash size={18} />
+                      </ActionIcon>
+                    </Group>
+                  )}
                 </div>
                 <Text className={styles.entryScore}>
                   Cam {g.cam} · Laura {g.laura}
@@ -328,6 +398,51 @@ export default function UnoHistory() {
           </div>
         </section>
       )}
+      <Modal
+        opened={!!deleting}
+        onClose={() => {
+          if (!deleteBusy) setDeleting(null);
+        }}
+        title="Delete historic game?"
+        closeButtonProps={{ "aria-label": "Close delete confirmation" }}
+        centered
+      >
+        {deleting && (
+          <>
+            <Text fw={700}>{gameDescription(deleting)}</Text>
+            <Text size="sm" mt="xs">
+              This removes the game from the history and statistics, and takes
+              its round wins off the lifetime totals. It cannot be undone.
+            </Text>
+            {deleteError && (
+              <Alert color="orange" role="alert" mt="sm">
+                {deleteError}
+              </Alert>
+            )}
+            <Group mt="md" justify="flex-end">
+              <Button
+                variant="default"
+                disabled={deleteBusy}
+                onClick={() => {
+                  setDeleting(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                color="red"
+                loading={deleteBusy}
+                disabled={!uno.online}
+                onClick={() => {
+                  void confirmDelete();
+                }}
+              >
+                Delete game
+              </Button>
+            </Group>
+          </>
+        )}
+      </Modal>
       <Modal
         opened={!!selected}
         onClose={() => {

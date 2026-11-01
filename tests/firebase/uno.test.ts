@@ -16,6 +16,8 @@ const {
   readUnoVersion,
   readUnoHistory,
   addHistoricUnoGame,
+  deleteHistoricUnoGame,
+  updateHistoricUnoGame,
 } = await import("@/services/uno");
 beforeEach(async () => {
   requireAuth.mockResolvedValue({ uid: users.alice.uid });
@@ -197,5 +199,58 @@ describe("Uno scoring transactions", () => {
     expect((await adminDb().doc(`unoGames/${entry.id}`).get()).get("cam")).toBe(
       12,
     );
+  });
+  test("edits and deletes historic games and keeps the totals in step", async () => {
+    const entry = {
+      id: randomUUID(),
+      cam: 12,
+      laura: 9,
+      playedOn: "2021-07-15",
+      notes: "",
+    };
+    const other = { ...entry, id: randomUUID(), cam: 3, laura: 4 };
+    await addHistoricUnoGame(entry);
+    await addHistoricUnoGame(other);
+    await updateHistoricUnoGame({
+      ...entry,
+      cam: 10,
+      laura: 11,
+      playedOn: "2021-07-16",
+      notes: "Corrected",
+    });
+    let state = await readUnoState();
+    expect(state.board).toMatchObject({ cam: 13, laura: 15 });
+    expect(state.games.find((g) => g.id === entry.id)).toMatchObject({
+      cam: 10,
+      laura: 11,
+      winner: "laura",
+      margin: 1,
+      playedOn: "2021-07-16",
+      notes: "Corrected",
+    });
+    const version = state.board.version;
+    state = await deleteHistoricUnoGame(entry.id);
+    expect(state.board).toMatchObject({ cam: 3, laura: 4 });
+    expect(state.board.version).toBe(version + 1);
+    expect(state.games.map((g) => g.id)).toEqual([other.id]);
+    // Deleting again changes nothing
+    state = await deleteHistoricUnoGame(entry.id);
+    expect(state.board.version).toBe(version + 1);
+    await expect(updateHistoricUnoGame(entry)).rejects.toThrow();
+  });
+  test("only historic games can be edited or deleted", async () => {
+    await startUnoGame();
+    const [live] = (await readUnoState()).games;
+    await expect(deleteHistoricUnoGame(live.id)).rejects.toThrow();
+    await expect(
+      updateHistoricUnoGame({
+        id: live.id,
+        cam: 1,
+        laura: 0,
+        playedOn: "2021-07-15",
+        notes: "",
+      }),
+    ).rejects.toThrow();
+    expect((await readUnoState()).games).toHaveLength(1);
   });
 });

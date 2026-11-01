@@ -20,6 +20,8 @@ export interface UnoTransport {
     version: number,
   ) => Promise<{ finished: boolean; state: UnoState }>;
   history: (input: HistoricGameInput) => Promise<UnoState>;
+  updateHistory: (input: HistoricGameInput) => Promise<UnoState>;
+  deleteHistory: (id: string) => Promise<UnoState>;
   open: (id: string) => Promise<Lease>;
   sync: (events: ScoreEvent[]) => Promise<{
     accepted: string[];
@@ -355,14 +357,12 @@ export function createUnoController(
     void refresh();
     return finished;
   }
-  async function addHistory(input: HistoricGameInput) {
+  async function changeHistory(action: string, run: () => Promise<UnoState>) {
     const state = await runtime.lock(async () => {
-      if (!runtime.online())
-        throw new Error("Reconnect to add a historic game.");
-      if (!(await account()))
-        throw new Error("Sign in to add a historic game.");
+      if (!runtime.online()) throw new Error(`Reconnect to ${action}.`);
+      if (!(await account())) throw new Error(`Sign in to ${action}.`);
       const before = await storage.read();
-      const result = await transport.history(input);
+      const result = await run();
       const local = await apply({
         state: result,
         pendingAtRequest: before.events.map((event) => event.id),
@@ -383,6 +383,14 @@ export function createUnoController(
     void refresh();
     return state;
   }
+  const addHistory = (input: HistoricGameInput) =>
+    changeHistory("add a historic game", () => transport.history(input));
+  const editHistory = (input: HistoricGameInput) =>
+    changeHistory("change a historic game", () =>
+      transport.updateHistory(input),
+    );
+  const deleteHistory = (id: string) =>
+    changeHistory("delete a historic game", () => transport.deleteHistory(id));
   async function score(player: Player, delta: 1 | -1) {
     const { game, canScore } = selectUno(snapshot);
     const { lease: permission, accountId } = snapshot.data;
@@ -445,6 +453,8 @@ export function createUnoController(
     start,
     finish,
     addHistory,
+    editHistory,
+    deleteHistory,
     score,
     retry,
     discard,
