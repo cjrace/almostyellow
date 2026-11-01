@@ -1,11 +1,13 @@
 import {
   addHistoricUnoGame,
+  deleteUnoGame,
   finishUnoGame,
   openUnoScoring,
   readUnoState,
   readUnoVersion,
   startUnoGame,
   syncUnoEvents,
+  updateHistoricUnoGame,
 } from "@/services/uno";
 import { changeLocal, saveEvent } from "./storage";
 import { createUnoController } from "./controller";
@@ -31,6 +33,8 @@ export const unoController = createUnoController(
     start: startUnoGame,
     finish: finishUnoGame,
     history: addHistoricUnoGame,
+    updateHistory: updateHistoricUnoGame,
+    deleteGame: deleteUnoGame,
     open: openUnoScoring,
     sync: syncUnoEvents,
   },

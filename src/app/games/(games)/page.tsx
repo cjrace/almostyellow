@@ -54,7 +54,7 @@ export default function Games() {
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Uno tracker"
-            description="Keep score of our Uno games, with lifetime wins, records and trends."
+            description="The whims of the Uno gods, faithfully recorded: lifetime wins, records and trends."
             link="/games/uno-tracker"
             linktext="Uno tracker"
           />

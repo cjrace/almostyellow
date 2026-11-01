@@ -16,6 +16,8 @@ const {
   readUnoVersion,
   readUnoHistory,
   addHistoricUnoGame,
+  deleteUnoGame,
+  updateHistoricUnoGame,
 } = await import("@/services/uno");
 beforeEach(async () => {
   requireAuth.mockResolvedValue({ uid: users.alice.uid });
@@ -172,30 +174,24 @@ describe("Uno scoring transactions", () => {
     await startUnoGame();
     expect(await readUnoVersion()).toBe((await readUnoState()).board.version);
   });
-  test("stores historic scores, dates and notes once, including undated entries", async () => {
+  test("stores historic scores, dates and notes once", async () => {
     const entry = {
       id: randomUUID(),
       cam: 12,
       laura: 9,
-      playedOn: "2021-07",
-      datePrecision: "month",
+      playedOn: "2021-07-15",
       notes: "Summer holiday",
     };
     await addHistoricUnoGame(entry);
     await addHistoricUnoGame(entry);
-    const unknown = {
-      ...entry,
-      id: randomUUID(),
-      playedOn: "",
-      datePrecision: "unknown",
-    };
-    await addHistoricUnoGame(unknown);
-    await addHistoricUnoGame(unknown);
+    const second = { ...entry, id: randomUUID(), playedOn: "2022-01-02" };
+    await addHistoricUnoGame(second);
+    await addHistoricUnoGame(second);
     const state = await readUnoState();
     expect(state.board).toMatchObject({ cam: 24, laura: 18 });
     expect(state.games).toHaveLength(2);
     expect(state.games.find((g) => g.id === entry.id)).toMatchObject({
-      playedOn: "2021-07",
+      playedOn: "2021-07-15",
       notes: "Summer holiday",
       source: "historic",
     });
@@ -203,5 +199,104 @@ describe("Uno scoring transactions", () => {
     expect((await adminDb().doc(`unoGames/${entry.id}`).get()).get("cam")).toBe(
       12,
     );
+  });
+  test("edits and deletes historic games and keeps the totals in step", async () => {
+    const entry = {
+      id: randomUUID(),
+      cam: 12,
+      laura: 9,
+      playedOn: "2021-07-15",
+      notes: "",
+    };
+    const other = { ...entry, id: randomUUID(), cam: 3, laura: 4 };
+    await addHistoricUnoGame(entry);
+    await addHistoricUnoGame(other);
+    await updateHistoricUnoGame({
+      ...entry,
+      cam: 10,
+      laura: 11,
+      playedOn: "2021-07-16",
+      notes: "Corrected",
+    });
+    let state = await readUnoState();
+    expect(state.board).toMatchObject({ cam: 13, laura: 15 });
+    expect(state.games.find((g) => g.id === entry.id)).toMatchObject({
+      cam: 10,
+      laura: 11,
+      winner: "laura",
+      margin: 1,
+      playedOn: "2021-07-16",
+      notes: "Corrected",
+    });
+    const version = state.board.version;
+    state = await deleteUnoGame(entry.id);
+    expect(state.board).toMatchObject({ cam: 3, laura: 4 });
+    expect(state.board.version).toBe(version + 1);
+    expect(state.games.map((g) => g.id)).toEqual([other.id]);
+    // Deleting again changes nothing
+    state = await deleteUnoGame(entry.id);
+    expect(state.board.version).toBe(version + 1);
+    await expect(updateHistoricUnoGame(entry)).rejects.toThrow();
+  });
+  test("only historic games can be edited, and only finished games deleted", async () => {
+    await startUnoGame();
+    const [live] = (await readUnoState()).games;
+    await expect(deleteUnoGame(live.id)).rejects.toThrow("Finish this game");
+    await expect(
+      updateHistoricUnoGame({
+        id: live.id,
+        cam: 1,
+        laura: 0,
+        playedOn: "2021-07-15",
+        notes: "",
+      }),
+    ).rejects.toThrow();
+    expect((await readUnoState()).games).toHaveLength(1);
+  });
+  test("deleting a finished live game removes its rounds and points at the previous game", async () => {
+    const playGame = async (rounds: number) => {
+      const { gameId, event } = await setup();
+      await syncUnoEvents(Array.from({ length: rounds }, () => event()));
+      const { games } = await readUnoState();
+      const [game] = games.filter((g) => g.id === gameId);
+      await finishUnoGame(gameId, game.version);
+      return game;
+    };
+    const first = await playGame(2);
+    const second = await playGame(3);
+    let state = await readUnoState();
+    expect(state.board).toMatchObject({
+      cam: 5,
+      lastFinishedGameId: second.id,
+    });
+    state = await deleteUnoGame(second.id);
+    expect(state.board).toMatchObject({
+      cam: 2,
+      laura: 0,
+      lastFinishedGameId: first.id,
+    });
+    expect(state.games.map((g) => g.id)).toEqual([first.id]);
+    expect(
+      (await adminDb().collection(`unoGames/${second.id}/events`).get()).size,
+    ).toBe(0);
+    expect(
+      (
+        await adminDb()
+          .collection("unoLeases")
+          .where("gameId", "==", second.id)
+          .get()
+      ).size,
+    ).toBe(0);
+  });
+  test("adds the lifetime totals up from the games, whatever the scoreboard says", async () => {
+    await addHistoricUnoGame({
+      id: randomUUID(),
+      cam: 12,
+      laura: 9,
+      playedOn: "2021-07-15",
+      notes: "",
+    });
+    await adminDb().doc("uno/scoreboard").update({ cam: 99, laura: 98 });
+    expect((await readUnoState()).board).toMatchObject({ cam: 12, laura: 9 });
   });
 });

@@ -19,7 +19,8 @@ function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   if (!callbackUrl) return undefined;
   if (
     callbackUrl === "/games/uno-tracker" ||
-    callbackUrl === "/games/uno-tracker/stats"
+    callbackUrl === "/games/uno-tracker/stats" ||
+    callbackUrl === "/games/uno-tracker/history"
   )
     return callbackUrl;
 

@@ -20,7 +20,6 @@ export interface Game extends Scores {
   startedAt: number;
   finishedAt: number | null;
   playedOn: string | null;
-  datePrecision: "day" | "month" | "year" | "unknown";
   notes: string;
   source: "live" | "historic";
   winner: Player | "draw";
@@ -78,38 +77,17 @@ export const HistoricGameSchema = z
     id: Id,
     cam: z.number().int().min(0).max(1000000),
     laura: z.number().int().min(0).max(1000000),
-    playedOn: z.string().max(10),
-    datePrecision: z.enum(["day", "month", "year", "unknown"]),
+    playedOn: z.string().refine((value) => {
+      const date = new Date(`${value}T12:00:00Z`);
+      return (
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        !Number.isNaN(date.getTime()) &&
+        date.toISOString().startsWith(value)
+      );
+    }, "Enter a valid date."),
     notes: z.string().trim().max(2000),
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    const patterns = {
-      day: /^\d{4}-\d{2}-\d{2}$/,
-      month: /^\d{4}-\d{2}$/,
-      year: /^\d{4}$/,
-      unknown: /^$/,
-    };
-    const suffix =
-      value.datePrecision === "year"
-        ? "-01-01"
-        : value.datePrecision === "month"
-          ? "-01"
-          : "";
-    const date = new Date(`${value.playedOn}${suffix}T12:00:00Z`);
-    if (
-      !patterns[value.datePrecision].test(value.playedOn) ||
-      (value.datePrecision !== "unknown" &&
-        (Number.isNaN(date.getTime()) ||
-          !date.toISOString().startsWith(value.playedOn)))
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Enter a valid date matching its precision.",
-        path: ["playedOn"],
-      });
-    }
-  });
+  .strict();
 export type HistoricGameInput = z.infer<typeof HistoricGameSchema>;
 export function result(
   scores: Scores,
@@ -160,24 +138,45 @@ export function statistics(state: UnoState) {
     previous = g.winner;
     if (g.winner !== "draw") streak[g.winner] = Math.max(streak[g.winner], run);
   }
+  const highest = games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0);
   const pick = (compare: (a: Game, b: Game) => number) =>
     [...games].sort(compare).at(0) ?? null;
-  const months = new Map<string, Scores>();
+  // The day with the most rounds across all the games played on it, the
+  // earliest such day if several tie
+  const days = new Map<
+    string,
+    { date: string; rounds: number; games: number }
+  >();
+  for (const g of dated) {
+    const date = gameDate(g) ?? "";
+    const day = days.get(date) ?? { date, rounds: 0, games: 0 };
+    days.set(date, {
+      date,
+      rounds: day.rounds + g.rounds,
+      games: day.games + 1,
+    });
+  }
+  const busiest =
+    [...days.values()]
+      .sort((a, b) => b.rounds - a.rounds || a.date.localeCompare(b.date))
+      .at(0) ?? null;
+  const years = new Map<string, Scores>();
   const cumulative: { id: string; date: string; cam: number; laura: number }[] =
     [];
+  const gamesWon: typeof cumulative = [];
+  const gameTotals = { cam: 0, laura: 0 };
   const totals = { ...state.board.startingTotals };
   for (const g of dated) {
     totals.cam += g.cam;
     totals.laura += g.laura;
     const date = gameDate(g) ?? "";
     cumulative.push({ id: g.id, date, ...totals });
-    // A year-only date must not invent a month for the monthly chart.
-    if (date.length >= 7) {
-      const month = date.slice(0, 7);
-      const count = months.get(month) ?? { cam: 0, laura: 0 };
-      if (g.winner !== "draw") count[g.winner]++;
-      months.set(month, count);
-    }
+    if (g.winner !== "draw") gameTotals[g.winner]++;
+    gamesWon.push({ id: g.id, date, ...gameTotals });
+    const year = date.slice(0, 4);
+    const count = years.get(year) ?? { cam: 0, laura: 0 };
+    if (g.winner !== "draw") count[g.winner]++;
+    years.set(year, count);
   }
   return {
     games,
@@ -191,10 +190,15 @@ export function statistics(state: UnoState) {
     biggest: pick((a, b) => b.margin - a.margin),
     longest: pick((a, b) => b.rounds - a.rounds),
     shortest: pick((a, b) => a.rounds - b.rounds),
-    closest: pick((a, b) => a.margin - b.margin),
-    highest: games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0),
+    busiest,
+    highest,
+    // Whoever reached it, or both if they share the record
+    highestBy: highest
+      ? players.filter((p) => games.some((g) => g[p] === highest))
+      : [],
     cumulative,
-    months: [...months].map(([date, scores]) => ({
+    gamesWon,
+    years: [...years].map(([date, scores]) => ({
       id: date,
       date,
       ...scores,

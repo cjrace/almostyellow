@@ -27,9 +27,26 @@ export async function readUnoState(): Promise<UnoState> {
     async (tx) => {
       const board = await tx.get(boardRef());
       const games = await tx.get(adminDb().collection("unoGames"));
-      return {
+      const state = {
         board: board.exists ? (board.data() as Board) : emptyBoard(),
         games: games.docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Game),
+      };
+      // The lifetime totals are added up from the games on every read, so a
+      // game changed or removed outside the app cannot leave them wrong.
+      const { startingTotals } = state.board;
+      return {
+        ...state,
+        board: {
+          ...state.board,
+          cam: games.docs.reduce(
+            (n, g) => n + (g.get("cam") as number),
+            startingTotals.cam,
+          ),
+          laura: games.docs.reduce(
+            (n, g) => n + (g.get("laura") as number),
+            startingTotals.laura,
+          ),
+        },
       };
     },
     { readOnly: true },
@@ -78,7 +95,6 @@ export async function startUnoGame(): Promise<UnoState> {
       startedAt: now,
       finishedAt: null,
       playedOn: null,
-      datePrecision: "day",
       notes: "",
       source: "live",
       ...result({ cam: 0, laura: 0 }),
@@ -262,7 +278,7 @@ export async function addHistoricUnoGame(input: unknown) {
     if (existing.exists) {
       if (
         existing.get("source") !== "historic" ||
-        ["cam", "laura", "playedOn", "datePrecision", "notes"].some(
+        ["cam", "laura", "playedOn", "notes"].some(
           (key) => (existing.get(key) ?? "") !== data[key as keyof typeof data],
         )
       )
@@ -275,7 +291,7 @@ export async function addHistoricUnoGame(input: unknown) {
     const now = Date.now();
     const game: Game = {
       ...data,
-      playedOn: data.playedOn || null,
+      playedOn: data.playedOn,
       status: "completed",
       source: "historic",
       startedAt: now,
@@ -291,6 +307,105 @@ export async function addHistoricUnoGame(input: unknown) {
       laura: board.laura + data.laura,
       version: board.version + 1,
       updatedAt: now,
+    });
+  });
+  return readUnoState();
+}
+
+// Round wins from historic games are part of the lifetime totals, so changing
+// or removing one adjusts the scoreboard in the same transaction.
+export async function updateHistoricUnoGame(input: unknown) {
+  await requireAuth();
+  const data = HistoricGameSchema.parse(input);
+  await adminDb().runTransaction(async (tx) => {
+    const [existing, boardSnapshot] = await Promise.all([
+      tx.get(gameRef(data.id)),
+      tx.get(boardRef()),
+    ]);
+    if (!existing.exists || existing.get("source") !== "historic")
+      throw new Error("This historic game could not be found.");
+    const board = boardSnapshot.exists
+      ? (boardSnapshot.data() as Board)
+      : emptyBoard();
+    const game = existing.data() as Game;
+    const totals = {
+      cam: board.cam - game.cam + data.cam,
+      laura: board.laura - game.laura + data.laura,
+    };
+    if (totals.cam < 0 || totals.laura < 0)
+      throw new Error("These scores would make a lifetime total negative.");
+    const now = Date.now();
+    tx.update(gameRef(data.id), {
+      cam: data.cam,
+      laura: data.laura,
+      playedOn: data.playedOn,
+      notes: data.notes,
+      ...result(data),
+      version: game.version + 1,
+    });
+    tx.set(boardRef(), {
+      ...board,
+      ...totals,
+      version: board.version + 1,
+      updatedAt: now,
+    });
+  });
+  return readUnoState();
+}
+
+// A finished live game goes with its rounds and scoring leases. It can be
+// entered again as a historic game if it was removed by mistake.
+export async function deleteUnoGame(id: string) {
+  await requireAuth();
+  Id.parse(id);
+  await adminDb().runTransaction(async (tx) => {
+    // All reads come before any write.
+    const [existing, boardSnapshot, games, events, leases] = await Promise.all([
+      tx.get(gameRef(id)),
+      tx.get(boardRef()),
+      tx.get(adminDb().collection("unoGames")),
+      tx.get(gameRef(id).collection("events")),
+      tx.get(adminDb().collection("unoLeases").where("gameId", "==", id)),
+    ]);
+    // Deleting twice is harmless
+    if (!existing.exists) return;
+    const game = existing.data() as Game;
+    if (game.status !== "completed")
+      throw new Error("Finish this game before deleting it.");
+    // A transaction can write at most 500 documents
+    if (events.size + leases.size > 450)
+      throw new Error("This game has too many rounds to delete safely.");
+    const board = boardSnapshot.exists
+      ? (boardSnapshot.data() as Board)
+      : emptyBoard();
+    const totals = {
+      cam: board.cam - game.cam,
+      laura: board.laura - game.laura,
+    };
+    if (totals.cam < 0 || totals.laura < 0)
+      throw new Error(
+        "Deleting this game would make a lifetime total negative.",
+      );
+    const lastFinished =
+      board.lastFinishedGameId === id
+        ? (games.docs
+            .map((doc) => ({ ...doc.data(), id: doc.id }) as Game)
+            .filter(
+              (g) =>
+                g.id !== id && g.source === "live" && g.status === "completed",
+            )
+            .sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0))
+            .at(0)?.id ?? null)
+        : board.lastFinishedGameId;
+    for (const doc of events.docs) tx.delete(doc.ref);
+    for (const doc of leases.docs) tx.delete(doc.ref);
+    tx.delete(gameRef(id));
+    tx.set(boardRef(), {
+      ...board,
+      ...totals,
+      lastFinishedGameId: lastFinished,
+      version: board.version + 1,
+      updatedAt: Date.now(),
     });
   });
   return readUnoState();

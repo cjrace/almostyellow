@@ -11,29 +11,36 @@ import {
   SegmentedControl,
   Text,
   Title,
+  VisuallyHidden,
 } from "@mantine/core";
 import { names, players, result, type Game } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
 import { unoController } from "@/uno/browser";
+import { UnoStatus } from "@/components/unostatus";
 import styles from "@/styles/uno.module.css";
 
-export function UnoHeader({ stats = false }: { stats?: boolean }) {
+const pages = {
+  tracker: "/games/uno-tracker",
+  stats: "/games/uno-tracker/stats",
+  history: "/games/uno-tracker/history",
+};
+export function UnoHeader({ page = "tracker" }: { page?: keyof typeof pages }) {
   return (
     <header className={styles.header}>
-      <Title>Uno tracker</Title>
+      <div className={styles.titleRow}>
+        <Title size="h2">Uno tracker</Title>
+        <UnoStatus />
+      </div>
       <SegmentedControl
         aria-label="Uno pages"
-        value={stats ? "stats" : "tracker"}
+        value={page}
         onChange={(value) => {
-          window.location.assign(
-            value === "stats"
-              ? "/games/uno-tracker/stats"
-              : "/games/uno-tracker",
-          );
+          window.location.assign(pages[value]);
         }}
         data={[
-          { value: "tracker", label: "Tracker" },
           { value: "stats", label: "Statistics" },
+          { value: "tracker", label: "Tracker" },
+          { value: "history", label: "History" },
         ]}
         fullWidth
         size="md"
@@ -89,15 +96,7 @@ export default function UnoTracker() {
   const [message, setMessage] = useState("");
   const { game, data } = uno;
   const pending = data.events.length;
-  const attention = data.events.filter((e) => e.status === "attention");
   const outcome = game ? result(game) : null;
-  const status = uno.syncing
-    ? `Syncing ${String(pending)} saved changes…`
-    : pending
-      ? `${uno.online ? "On this device" : "Offline"} · ${String(pending)} saved ${pending === 1 ? "change" : "changes"}${attention.length ? " need attention" : ", not yet synced"}`
-      : !uno.online
-        ? "Offline · showing saved scores"
-        : uno.notice || "All scores saved";
   async function act(action: () => Promise<unknown>) {
     setBusy(true);
     setMessage("");
@@ -117,33 +116,36 @@ export default function UnoTracker() {
     <div className={styles.tracker}>
       <UnoHeader />
       <UnoOfflineShell />
-      <div className={styles.players} aria-label="Lifetime round wins">
+      <Paper
+        withBorder
+        px="sm"
+        py="xs"
+        role="group"
+        aria-label="Lifetime round wins"
+        className={styles.lifetimes}
+      >
+        <Text size="sm" c="dimmed">
+          All time
+        </Text>
         {players.map((player) => (
-          <Paper withBorder p="sm" key={player}>
-            <Text size="sm">{names[player]} · all time</Text>
+          <Text component="span" key={player}>
+            {names[player]}{" "}
             <Text
+              component="span"
               className={styles.lifetime}
               data-testid={`lifetime-${player}`}
             >
               {uno.totals[player]}
             </Text>
-          </Paper>
+          </Text>
         ))}
-      </div>
-      <section aria-labelledby="current-game">
+      </Paper>
+      <section aria-labelledby="current-game" className={styles.game}>
         <Title order={2} id="current-game" size="h3">
           {game?.status === "completed"
             ? "Last completed game"
             : "Current game"}
         </Title>
-        <Text role="status" size="sm" className={styles.status}>
-          {uno.ready ? status : "Loading saved scores…"}
-        </Text>
-        {!!pending && (
-          <Text size="xs">
-            Totals include provisional changes saved on this device.
-          </Text>
-        )}
         {!uno.ready ? (
           <Text>Opening device storage…</Text>
         ) : !game ? (
@@ -152,7 +154,7 @@ export default function UnoTracker() {
           </Text>
         ) : (
           <>
-            <div className={styles.players}>
+            <div className={`${styles.players} ${styles.scoring}`}>
               {players.map((player) => (
                 <Paper
                   component="section"
@@ -165,12 +167,14 @@ export default function UnoTracker() {
                   <Title order={3} size="h3">
                     {names[player]}
                   </Title>
-                  <Text
-                    className={styles.score}
-                    data-testid={`score-${player}`}
-                  >
-                    {game[player]}
-                  </Text>
+                  <div className={styles.scoreArea}>
+                    <Text
+                      className={styles.score}
+                      data-testid={`score-${player}`}
+                    >
+                      {game[player]}
+                    </Text>
+                  </div>
                   {game.status === "active" && (
                     <>
                       <Button
@@ -209,7 +213,13 @@ export default function UnoTracker() {
                     : `${names[outcome?.winner ?? "cam"]} wins!`}
                 </Text>
                 <Text size="sm">
-                  {outcome?.rounds} rounds · {outcome?.margin} point margin
+                  <span className={styles.nowrap}>
+                    {outcome?.rounds} rounds
+                  </span>
+                  {" · "}
+                  <span className={styles.nowrap}>
+                    {outcome?.margin} point margin
+                  </span>
                 </Text>
                 {game.amended && (
                   <Text size="sm">
@@ -235,22 +245,20 @@ export default function UnoTracker() {
                   uno.syncing ||
                   busy
                 }
+                aria-describedby="finish-hint"
                 onClick={() => {
                   setConfirmation({ ...game });
                 }}
               >
                 Finish game
               </Button>
-              {!uno.online && (
-                <Text size="sm">
-                  Reconnect to finish this game. You can keep scoring offline.
-                </Text>
-              )}
-              {!!pending && uno.online && (
-                <Text size="sm">
-                  All saved changes must sync before finishing.
-                </Text>
-              )}
+              <VisuallyHidden id="finish-hint">
+                {!uno.online
+                  ? "Reconnect to finish this game. You can keep scoring offline."
+                  : pending
+                    ? "All saved changes must sync before finishing."
+                    : ""}
+              </VisuallyHidden>
             </>
           ) : (
             <Button
@@ -276,40 +284,11 @@ export default function UnoTracker() {
           )
         )}
       </section>
-      {(uno.error || message) && (
-        <Alert color="orange" title="Scores need attention" role="alert">
-          {message || uno.error}
+      {message && (
+        <Alert color="orange" title="That did not work" role="alert">
+          {message}
         </Alert>
       )}
-      {attention.map((event) => (
-        <Paper withBorder p="sm" key={event.id}>
-          <Text>
-            {names[event.player]} {event.delta > 0 ? "+1" : "−1"} · game{" "}
-            {event.gameId.slice(0, 8)}
-          </Text>
-          <Text size="sm">{event.error}</Text>
-          <Group mt="xs">
-            <Button
-              variant="light"
-              disabled={!uno.online || busy}
-              onClick={() => {
-                void act(() => uno.retry(event.id));
-              }}
-            >
-              Retry change
-            </Button>
-            <Button
-              variant="subtle"
-              color="red"
-              onClick={() => {
-                void act(() => uno.discard(event.id));
-              }}
-            >
-              Discard change…
-            </Button>
-          </Group>
-        </Paper>
-      ))}
       <Modal
         opened={!!confirmation}
         onClose={() => {
@@ -322,13 +301,20 @@ export default function UnoTracker() {
         {confirmation && (
           <>
             <Text>
-              Cam {confirmation.cam} · Laura {confirmation.laura}
+              <span className={styles.nowrap}>Cam {confirmation.cam}</span>
+              {" · "}
+              <span className={styles.nowrap}>Laura {confirmation.laura}</span>
             </Text>
             <Text>
-              {confirmation.cam + confirmation.laura} rounds ·{" "}
-              {result(confirmation).winner === "draw"
-                ? "Draw"
-                : `${names[result(confirmation).winner as "cam" | "laura"]} winning`}
+              <span className={styles.nowrap}>
+                {confirmation.cam + confirmation.laura} rounds
+              </span>
+              {" · "}
+              <span className={styles.nowrap}>
+                {result(confirmation).winner === "draw"
+                  ? "Draw"
+                  : `${names[result(confirmation).winner as "cam" | "laura"]} winning`}
+              </span>
             </Text>
             <Text size="sm" mt="sm">
               Previously offline rounds can still arrive and amend this result.
