@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Paper, SegmentedControl, Text, Title } from "@mantine/core";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
-import { gameDate, names, statistics, type Game } from "@/uno/model";
+import { gameDate, names, statistics } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
 import styles from "@/styles/uno.module.css";
 
@@ -197,12 +197,6 @@ function Pair({
     </Text>
   );
 }
-function gameDescription(game: Game | null) {
-  return game
-    ? `${gameDate(game) ?? "Unknown date"}: Cam ${String(game.cam)}, Laura ${String(game.laura)}`
-    : "No completed games yet";
-}
-
 export default function UnoStatistics() {
   const uno = useUno();
   const summary = uno.state ? statistics(uno.state) : null;
@@ -270,17 +264,9 @@ export default function UnoStatistics() {
                 <Text size="sm">Busiest day</Text>
                 <Text fw={700}>
                   {summary.busiest
-                    ? `${String(summary.busiest.rounds)} rounds`
+                    ? `${String(summary.busiest.rounds)} rounds · ${summary.busiest.date}`
                     : "—"}
                 </Text>
-                {summary.busiest && (
-                  <Text size="xs">
-                    {summary.busiest.date}:{" "}
-                    {summary.busiest.games === 1
-                      ? "1 game"
-                      : `${String(summary.busiest.games)} games`}
-                  </Text>
-                )}
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Longest game</Text>
@@ -289,7 +275,6 @@ export default function UnoStatistics() {
                     ? `${String(summary.longest.rounds)} rounds`
                     : "—"}
                 </Text>
-                <Text size="xs">{gameDescription(summary.longest)}</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Shortest game</Text>
@@ -298,7 +283,6 @@ export default function UnoStatistics() {
                     ? `${String(summary.shortest.rounds)} rounds`
                     : "—"}
                 </Text>
-                <Text size="xs">{gameDescription(summary.shortest)}</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Biggest winning margin</Text>
@@ -310,7 +294,6 @@ export default function UnoStatistics() {
                 ) : (
                   <Text fw={700}>—</Text>
                 )}
-                <Text size="xs">{gameDescription(summary.biggest)}</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Longest winning streak</Text>
