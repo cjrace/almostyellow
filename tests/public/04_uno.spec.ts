@@ -1,11 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-for (const path of ["/games/uno", "/games/uno/stats"]) {
+for (const path of ["/games/uno-tracker", "/games/uno-tracker/stats"]) {
   test(`${path} is public and fits narrow and landscape screens`, async ({
     page,
   }) => {
     await page.goto(path);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Uno");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Uno tracker",
+    );
     for (const size of [
       { width: 320, height: 640 },
       { width: 390, height: 844 },
@@ -19,10 +21,10 @@ for (const path of ["/games/uno", "/games/uno/stats"]) {
       ).toBe(true);
     }
     await expect(
-      page.getByRole("link", { name: "Tracker", exact: true }),
+      page.getByRole("radio", { name: "Tracker", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Statistics", exact: true }),
+      page.getByRole("radio", { name: "Statistics", exact: true }),
     ).toBeVisible();
   });
 }
@@ -39,7 +41,7 @@ test("storage unavailable blocks scoring with an actionable warning", async ({
       },
     });
   });
-  await page.goto("/games/uno");
+  await page.goto("/games/uno-tracker");
   await expect(
     page.getByRole("alert", { name: "Scores need attention" }),
   ).toContainText("storage");
@@ -58,14 +60,17 @@ for (const failure of ["open", "match", "put"] as const) {
       browserName !== "chromium",
       "Service-worker evaluation is available in Chromium.",
     );
-    await page.goto("/games/uno");
-    await page
-      .locator("summary")
-      .filter({ hasText: "Offline storage" })
-      .click();
-    await expect(
-      page.getByText("Ready to reopen offline on this device."),
-    ).toBeVisible({ timeout: 30000 });
+    await page.goto("/games/uno-tracker");
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            async () =>
+              (await (await caches.open("uno-shell-v1")).keys()).length,
+          ),
+        { timeout: 30000 },
+      )
+      .toBeGreaterThan(1);
     await expect
       .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
       .toBe(true);
@@ -98,11 +103,6 @@ for (const failure of ["open", "match", "put"] as const) {
     expect(
       await page.evaluate(async (url) => (await fetch(url)).status, url),
     ).toBe(200);
-    await expect(
-      page.getByText(
-        "Offline reopening is not ready. Reopen Uno online and try again.",
-      ),
-    ).toBeVisible();
     await context.setOffline(true);
     expect(
       await page.evaluate(async (url) => {

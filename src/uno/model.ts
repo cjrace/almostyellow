@@ -43,6 +43,8 @@ export const emptyBoard = (): Board => ({
   updatedAt: 0,
 });
 export const Id = z.uuid();
+// How long after a game finishes a device may still replay rounds into it.
+export const LEASE_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
 export const ScoreEventSchema = z
   .object({
     id: Id,

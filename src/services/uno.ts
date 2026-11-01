@@ -8,6 +8,7 @@ import {
   emptyBoard,
   HistoricGameSchema,
   Id,
+  LEASE_GRACE_MS,
   result,
   ScoreEventSchema,
   type Board,
@@ -33,6 +34,13 @@ export async function readUnoState(): Promise<UnoState> {
     },
     { readOnly: true },
   );
+}
+
+// A cheap check for whether readUnoState would return anything new: the
+// scoreboard version changes with every award, start, finish and historic game.
+export async function readUnoVersion(): Promise<number> {
+  const board = await boardRef().get();
+  return board.exists ? (board.get("version") as number) : 0;
 }
 
 export async function readUnoHistory(gameId: string): Promise<EventHistory[]> {
@@ -149,6 +157,11 @@ export async function syncUnoEvents(input: unknown) {
         const board = boardSnapshot.data() as Board;
         if (game.source !== "live")
           return "Historic games cannot receive live rounds.";
+        if (
+          game.finishedAt !== null &&
+          Date.now() > game.finishedAt + LEASE_GRACE_MS
+        )
+          return "This game finished more than 7 days ago, so late rounds can no longer be added.";
         const next = {
           cam: game.cam,
           laura: game.laura,
@@ -195,10 +208,20 @@ export async function finishUnoGame(gameId: string, expectedVersion: number) {
   Id.parse(gameId);
   z.number().int().nonnegative().parse(expectedVersion);
   const finished = await adminDb().runTransaction(async (tx) => {
-    const [gameSnapshot, boardSnapshot] = await Promise.all([
-      tx.get(gameRef(gameId)),
-      tx.get(boardRef()),
-    ]);
+    const now = Date.now();
+    // All reads come before any write.
+    const [gameSnapshot, boardSnapshot, gameLeases, expiredLeases] =
+      await Promise.all([
+        tx.get(gameRef(gameId)),
+        tx.get(boardRef()),
+        tx.get(adminDb().collection("unoLeases").where("gameId", "==", gameId)),
+        tx.get(
+          adminDb()
+            .collection("unoLeases")
+            .where("expiresAt", "<", now)
+            .limit(100),
+        ),
+      ]);
     if (!gameSnapshot.exists || !boardSnapshot.exists)
       throw new Error("Game not found.");
     const game = gameSnapshot.data() as Game;
@@ -206,7 +229,6 @@ export async function finishUnoGame(gameId: string, expectedVersion: number) {
     if (game.status === "completed") return true;
     if (board.activeGameId !== gameId || game.version !== expectedVersion)
       return false;
-    const now = Date.now();
     tx.update(gameRef(gameId), {
       status: "completed",
       finishedAt: now,
@@ -219,6 +241,11 @@ export async function finishUnoGame(gameId: string, expectedVersion: number) {
       version: board.version + 1,
       updatedAt: now,
     });
+    // This game's leases stop working after the grace period, and any that
+    // already have are deleted.
+    for (const lease of gameLeases.docs)
+      tx.update(lease.ref, { expiresAt: now + LEASE_GRACE_MS });
+    for (const lease of expiredLeases.docs) tx.delete(lease.ref);
     return true;
   });
   return { finished, state: await readUnoState() };

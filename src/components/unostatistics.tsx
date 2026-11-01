@@ -15,7 +15,7 @@ import {
   Title,
 } from "@mantine/core";
 import { readUnoHistory } from "@/services/uno";
-import { UnoNavigation, UnoOfflineShell } from "@/components/unotracker";
+import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
 import {
   compareGames,
   gameDate,
@@ -258,8 +258,7 @@ export default function UnoStatistics() {
   }
   return (
     <div className={styles.stats}>
-      <Title>Uno statistics</Title>
-      <UnoNavigation stats />
+      <UnoHeader stats />
       <UnoOfflineShell />
       {uno.notice && (
         <Text role="status" size="sm">
