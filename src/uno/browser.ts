@@ -1,6 +1,6 @@
 import {
   addHistoricUnoGame,
-  deleteHistoricUnoGame,
+  deleteUnoGame,
   finishUnoGame,
   openUnoScoring,
   readUnoState,
@@ -34,7 +34,7 @@ export const unoController = createUnoController(
     finish: finishUnoGame,
     history: addHistoricUnoGame,
     updateHistory: updateHistoricUnoGame,
-    deleteHistory: deleteHistoricUnoGame,
+    deleteGame: deleteUnoGame,
     open: openUnoScoring,
     sync: syncUnoEvents,
   },

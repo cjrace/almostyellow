@@ -145,7 +145,7 @@ describe("Uno authentication", () => {
     ["finishUnoGame", () => uno.finishUnoGame(fakeId, 1)],
     ["addHistoricUnoGame", () => uno.addHistoricUnoGame({})],
     ["updateHistoricUnoGame", () => uno.updateHistoricUnoGame({})],
-    ["deleteHistoricUnoGame", () => uno.deleteHistoricUnoGame(fakeId)],
+    ["deleteUnoGame", () => uno.deleteUnoGame(fakeId)],
   ] as const)("%s requires an authorised session", async (_name, action) => {
     const refused = new Error("unauthorised");
     requireAuth.mockRejectedValue(refused);

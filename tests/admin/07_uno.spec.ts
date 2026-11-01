@@ -298,7 +298,7 @@ test.describe("Uno durable scoring", () => {
     await page
       .getByRole("button", { name: "Delete historic game from 2020-06-13" })
       .click();
-    const dialog = page.getByRole("dialog", { name: "Delete historic game?" });
+    const dialog = page.getByRole("dialog", { name: "Delete game?" });
     await dialog.getByRole("button", { name: "Cancel" }).click();
     await expect(page.getByText("2020-06-13 · historic game")).toBeVisible();
     await page

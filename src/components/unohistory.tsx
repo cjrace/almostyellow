@@ -104,7 +104,7 @@ export default function UnoHistory() {
     setDeleteBusy(true);
     setDeleteError("");
     try {
-      await uno.deleteHistory(deleting.id);
+      await uno.deleteGame(deleting.id);
       setDeleting(null);
     } catch (cause) {
       setDeleteError(
@@ -336,22 +336,24 @@ export default function UnoHistory() {
                   >
                     {g.winner === "draw" ? "Draw" : `${names[g.winner]} won`}
                   </Badge>
-                  {g.source === "historic" && uno.data.accountId && (
+                  {uno.data.accountId && (
                     <Group gap={4} wrap="nowrap">
-                      <ActionIcon
-                        variant="subtle"
-                        aria-label={`Edit historic game from ${gameDate(g) ?? "unknown date"}`}
-                        disabled={!uno.online || !uno.verified}
-                        onClick={() => {
-                          openEdit(g);
-                        }}
-                      >
-                        <IconPencil size={18} />
-                      </ActionIcon>
+                      {g.source === "historic" && (
+                        <ActionIcon
+                          variant="subtle"
+                          aria-label={`Edit historic game from ${gameDate(g) ?? "unknown date"}`}
+                          disabled={!uno.online || !uno.verified}
+                          onClick={() => {
+                            openEdit(g);
+                          }}
+                        >
+                          <IconPencil size={18} />
+                        </ActionIcon>
+                      )}
                       <ActionIcon
                         variant="subtle"
                         color="red"
-                        aria-label={`Delete historic game from ${gameDate(g) ?? "unknown date"}`}
+                        aria-label={`Delete ${g.source === "historic" ? "historic " : ""}game from ${gameDate(g) ?? "unknown date"}`}
                         disabled={!uno.online || !uno.verified}
                         onClick={() => {
                           setDeleteError("");
@@ -403,7 +405,7 @@ export default function UnoHistory() {
         onClose={() => {
           if (!deleteBusy) setDeleting(null);
         }}
-        title="Delete historic game?"
+        title="Delete game?"
         closeButtonProps={{ "aria-label": "Close delete confirmation" }}
         centered
       >
@@ -412,7 +414,11 @@ export default function UnoHistory() {
             <Text fw={700}>{gameDescription(deleting)}</Text>
             <Text size="sm" mt="xs">
               This removes the game from the history and statistics, and takes
-              its round wins off the lifetime totals. It cannot be undone.
+              its round wins off the lifetime totals.
+              {deleting.source === "live"
+                ? " Its scoring history is deleted too."
+                : ""}{" "}
+              It cannot be undone, but you can add it again as a historic game.
             </Text>
             {deleteError && (
               <Alert color="orange" role="alert" mt="sm">

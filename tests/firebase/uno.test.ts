@@ -16,7 +16,7 @@ const {
   readUnoVersion,
   readUnoHistory,
   addHistoricUnoGame,
-  deleteHistoricUnoGame,
+  deleteUnoGame,
   updateHistoricUnoGame,
 } = await import("@/services/uno");
 beforeEach(async () => {
@@ -229,19 +229,19 @@ describe("Uno scoring transactions", () => {
       notes: "Corrected",
     });
     const version = state.board.version;
-    state = await deleteHistoricUnoGame(entry.id);
+    state = await deleteUnoGame(entry.id);
     expect(state.board).toMatchObject({ cam: 3, laura: 4 });
     expect(state.board.version).toBe(version + 1);
     expect(state.games.map((g) => g.id)).toEqual([other.id]);
     // Deleting again changes nothing
-    state = await deleteHistoricUnoGame(entry.id);
+    state = await deleteUnoGame(entry.id);
     expect(state.board.version).toBe(version + 1);
     await expect(updateHistoricUnoGame(entry)).rejects.toThrow();
   });
-  test("only historic games can be edited or deleted", async () => {
+  test("only historic games can be edited, and only finished games deleted", async () => {
     await startUnoGame();
     const [live] = (await readUnoState()).games;
-    await expect(deleteHistoricUnoGame(live.id)).rejects.toThrow();
+    await expect(deleteUnoGame(live.id)).rejects.toThrow("Finish this game");
     await expect(
       updateHistoricUnoGame({
         id: live.id,
@@ -252,5 +252,40 @@ describe("Uno scoring transactions", () => {
       }),
     ).rejects.toThrow();
     expect((await readUnoState()).games).toHaveLength(1);
+  });
+  test("deleting a finished live game removes its rounds and points at the previous game", async () => {
+    const playGame = async (rounds: number) => {
+      const { gameId, event } = await setup();
+      await syncUnoEvents(Array.from({ length: rounds }, () => event()));
+      const { games } = await readUnoState();
+      const [game] = games.filter((g) => g.id === gameId);
+      await finishUnoGame(gameId, game.version);
+      return game;
+    };
+    const first = await playGame(2);
+    const second = await playGame(3);
+    let state = await readUnoState();
+    expect(state.board).toMatchObject({
+      cam: 5,
+      lastFinishedGameId: second.id,
+    });
+    state = await deleteUnoGame(second.id);
+    expect(state.board).toMatchObject({
+      cam: 2,
+      laura: 0,
+      lastFinishedGameId: first.id,
+    });
+    expect(state.games.map((g) => g.id)).toEqual([first.id]);
+    expect(
+      (await adminDb().collection(`unoGames/${second.id}/events`).get()).size,
+    ).toBe(0);
+    expect(
+      (
+        await adminDb()
+          .collection("unoLeases")
+          .where("gameId", "==", second.id)
+          .get()
+      ).size,
+    ).toBe(0);
   });
 });

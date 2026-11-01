@@ -336,22 +336,31 @@ export async function updateHistoricUnoGame(input: unknown) {
   return readUnoState();
 }
 
-export async function deleteHistoricUnoGame(id: string) {
+// A finished live game goes with its rounds and scoring leases. It can be
+// entered again as a historic game if it was removed by mistake.
+export async function deleteUnoGame(id: string) {
   await requireAuth();
   Id.parse(id);
   await adminDb().runTransaction(async (tx) => {
-    const [existing, boardSnapshot] = await Promise.all([
+    // All reads come before any write.
+    const [existing, boardSnapshot, games, events, leases] = await Promise.all([
       tx.get(gameRef(id)),
       tx.get(boardRef()),
+      tx.get(adminDb().collection("unoGames")),
+      tx.get(gameRef(id).collection("events")),
+      tx.get(adminDb().collection("unoLeases").where("gameId", "==", id)),
     ]);
-    // Deleting twice is harmless, but a live game is never removed this way.
+    // Deleting twice is harmless
     if (!existing.exists) return;
-    if (existing.get("source") !== "historic")
-      throw new Error("Only historic games can be deleted.");
+    const game = existing.data() as Game;
+    if (game.status !== "completed")
+      throw new Error("Finish this game before deleting it.");
+    // A transaction can write at most 500 documents
+    if (events.size + leases.size > 450)
+      throw new Error("This game has too many rounds to delete safely.");
     const board = boardSnapshot.exists
       ? (boardSnapshot.data() as Board)
       : emptyBoard();
-    const game = existing.data() as Game;
     const totals = {
       cam: board.cam - game.cam,
       laura: board.laura - game.laura,
@@ -360,10 +369,24 @@ export async function deleteHistoricUnoGame(id: string) {
       throw new Error(
         "Deleting this game would make a lifetime total negative.",
       );
+    const lastFinished =
+      board.lastFinishedGameId === id
+        ? (games.docs
+            .map((doc) => ({ ...doc.data(), id: doc.id }) as Game)
+            .filter(
+              (g) =>
+                g.id !== id && g.source === "live" && g.status === "completed",
+            )
+            .sort((a, b) => (b.finishedAt ?? 0) - (a.finishedAt ?? 0))
+            .at(0)?.id ?? null)
+        : board.lastFinishedGameId;
+    for (const doc of events.docs) tx.delete(doc.ref);
+    for (const doc of leases.docs) tx.delete(doc.ref);
     tx.delete(gameRef(id));
     tx.set(boardRef(), {
       ...board,
       ...totals,
+      lastFinishedGameId: lastFinished,
       version: board.version + 1,
       updatedAt: Date.now(),
     });

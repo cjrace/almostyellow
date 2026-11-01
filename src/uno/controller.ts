@@ -21,7 +21,7 @@ export interface UnoTransport {
   ) => Promise<{ finished: boolean; state: UnoState }>;
   history: (input: HistoricGameInput) => Promise<UnoState>;
   updateHistory: (input: HistoricGameInput) => Promise<UnoState>;
-  deleteHistory: (id: string) => Promise<UnoState>;
+  deleteGame: (id: string) => Promise<UnoState>;
   open: (id: string) => Promise<Lease>;
   sync: (events: ScoreEvent[]) => Promise<{
     accepted: string[];
@@ -389,8 +389,8 @@ export function createUnoController(
     changeHistory("change a historic game", () =>
       transport.updateHistory(input),
     );
-  const deleteHistory = (id: string) =>
-    changeHistory("delete a historic game", () => transport.deleteHistory(id));
+  const deleteGame = (id: string) =>
+    changeHistory("delete a game", () => transport.deleteGame(id));
   async function score(player: Player, delta: 1 | -1) {
     const { game, canScore } = selectUno(snapshot);
     const { lease: permission, accountId } = snapshot.data;
@@ -454,7 +454,7 @@ export function createUnoController(
     finish,
     addHistory,
     editHistory,
-    deleteHistory,
+    deleteGame,
     score,
     retry,
     discard,
