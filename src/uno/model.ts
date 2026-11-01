@@ -141,6 +141,25 @@ export function statistics(state: UnoState) {
   const highest = games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0);
   const pick = (compare: (a: Game, b: Game) => number) =>
     [...games].sort(compare).at(0) ?? null;
+  // The day with the most rounds across all the games played on it, the
+  // earliest such day if several tie
+  const days = new Map<
+    string,
+    { date: string; rounds: number; games: number }
+  >();
+  for (const g of dated) {
+    const date = gameDate(g) ?? "";
+    const day = days.get(date) ?? { date, rounds: 0, games: 0 };
+    days.set(date, {
+      date,
+      rounds: day.rounds + g.rounds,
+      games: day.games + 1,
+    });
+  }
+  const busiest =
+    [...days.values()]
+      .sort((a, b) => b.rounds - a.rounds || a.date.localeCompare(b.date))
+      .at(0) ?? null;
   const months = new Map<string, Scores>();
   const cumulative: { id: string; date: string; cam: number; laura: number }[] =
     [];
@@ -174,6 +193,7 @@ export function statistics(state: UnoState) {
     biggest: pick((a, b) => b.margin - a.margin),
     longest: pick((a, b) => b.rounds - a.rounds),
     shortest: pick((a, b) => a.rounds - b.rounds),
+    busiest,
     highest,
     // Whoever reached it, or both if they share the record
     highestBy: highest

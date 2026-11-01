@@ -45,6 +45,8 @@ describe("Uno statistics", () => {
     expect(stats.wins).toEqual({ cam: 1, laura: 0 });
     expect(stats.draws).toBe(2);
     expect(stats.biggest?.id).toBe("a");
+    // Rounds are totalled per day, not per game
+    expect(stats.busiest).toEqual({ date: "2024-01-01", rounds: 6, games: 1 });
     expect(stats.cumulative).toHaveLength(2);
     expect(stats.cumulative.at(-1)).toMatchObject({ cam: 6, laura: 4 });
     // Whole games won, with a draw adding to neither side

@@ -266,35 +266,52 @@ export default function UnoStatistics() {
               Records
             </Title>
             <div className={styles.summary}>
-              {[
-                [
-                  "Biggest winning margin",
-                  summary.biggest
-                    ? `${String(summary.biggest.margin)} points`
-                    : "—",
-                  gameDescription(summary.biggest),
-                ],
-                [
-                  "Longest game",
-                  summary.longest
+              <Paper withBorder p="sm">
+                <Text size="sm">Busiest day</Text>
+                <Text fw={700}>
+                  {summary.busiest
+                    ? `${String(summary.busiest.rounds)} rounds`
+                    : "—"}
+                </Text>
+                {summary.busiest && (
+                  <Text size="xs">
+                    {summary.busiest.date}:{" "}
+                    {summary.busiest.games === 1
+                      ? "1 game"
+                      : `${String(summary.busiest.games)} games`}
+                  </Text>
+                )}
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Longest game</Text>
+                <Text fw={700}>
+                  {summary.longest
                     ? `${String(summary.longest.rounds)} rounds`
-                    : "—",
-                  gameDescription(summary.longest),
-                ],
-                [
-                  "Shortest game",
-                  summary.shortest
+                    : "—"}
+                </Text>
+                <Text size="xs">{gameDescription(summary.longest)}</Text>
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Shortest game</Text>
+                <Text fw={700}>
+                  {summary.shortest
                     ? `${String(summary.shortest.rounds)} rounds`
-                    : "—",
-                  gameDescription(summary.shortest),
-                ],
-              ].map(([label, value, detail]) => (
-                <Paper withBorder p="sm" key={label}>
-                  <Text size="sm">{label}</Text>
-                  <Text fw={700}>{value}</Text>
-                  {detail && <Text size="xs">{detail}</Text>}
-                </Paper>
-              ))}
+                    : "—"}
+                </Text>
+                <Text size="xs">{gameDescription(summary.shortest)}</Text>
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Biggest winning margin</Text>
+                {summary.biggest && summary.biggest.winner !== "draw" ? (
+                  <Text style={leaderStyle(summary.biggest.winner)}>
+                    {names[summary.biggest.winner]} by {summary.biggest.margin}{" "}
+                    points
+                  </Text>
+                ) : (
+                  <Text fw={700}>—</Text>
+                )}
+                <Text size="xs">{gameDescription(summary.biggest)}</Text>
+              </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Longest winning streak</Text>
                 <Pair cam={summary.streak.cam} laura={summary.streak.laura} />
