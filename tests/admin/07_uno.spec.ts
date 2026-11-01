@@ -424,7 +424,13 @@ test.describe("Uno durable scoring", () => {
       other.getByRole("button", { name: "Add a round for Cam" }),
     ).toBeEnabled(SYNC);
     await other.getByRole("button", { name: "Add a round for Cam" }).click();
-    await idle(other);
+    // Both tabs share one queue, and the status can read "saved" before the
+    // click has been queued, so wait for the round to be queued and then for
+    // it to reach the server
+    await expect(other.getByTestId("score-cam")).toHaveText("1", SYNC);
+    await expect
+      .poll(async () => (await local(other)).events.length, SYNC)
+      .toBe(0);
     await expect(page.getByTestId("score-cam")).toHaveText("1", SYNC);
     await context.setOffline(true);
     await page.getByRole("button", { name: "Add a round for Cam" }).click();
