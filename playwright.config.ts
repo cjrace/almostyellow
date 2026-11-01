@@ -2,13 +2,20 @@ import { defineConfig, devices } from "@playwright/test";
 /* Point at the Firebase emulators, never production */
 import "./tests/test-env";
 
+/* Unit and Firebase emulator tests are run by Vitest */
+const vitestTests = ["unit/**", "firebase/**"];
+/* The Uno scoring tests change one shared scoreboard, so only one project runs
+   them. A project's testIgnore replaces the top-level one, hence vitestTests. */
+const sharedScoreboard = [...vitestTests, "**/admin/07_uno.spec.ts"];
+/* Service-worker evaluation is only available in Chromium */
+const serviceWorker = [...sharedScoreboard, "**/public/04_uno_offline.spec.ts"];
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",
-  /* Unit and Firebase emulator tests are run by Vitest */
-  testIgnore: ["unit/**", "firebase/**"],
+  testIgnore: vitestTests,
   /* Loads the synthetic users into the Firebase emulators */
   globalSetup: "./tests/global-setup.ts",
   /* Run tests in files in parallel */
@@ -24,7 +31,11 @@ export default defineConfig({
   /* Never serve the report at the end of a run: it waits for Ctrl+C, which
      keeps the emulators running and blocks the next run.
      Open it with "pnpm exec playwright show-report". */
-  reporter: [["html", { open: "never" }]],
+  reporter: [
+    ["dot"],
+    ["html", { open: "never" }],
+    ["./tests/reporters/summary.ts"],
+  ],
   /* Give Firefox extra slack on assertions; default 5s races with App Router renders. */
   expect: {
     timeout: 10_000,
@@ -46,6 +57,7 @@ export default defineConfig({
       use: {
         ...devices["Pixel 8"],
       },
+      testIgnore: sharedScoreboard,
     },
     {
       name: "Google Chrome",
@@ -59,6 +71,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Firefox"],
       },
+      testIgnore: serviceWorker,
     },
     /* TODO: Fix these - seems to work on Laura's phone in real life but the tests are having none of it
     {
@@ -82,5 +95,8 @@ export default defineConfig({
     command: "next start",
     url: "http://localhost:3000/",
     reuseExistingServer: false,
+    // 03_server_actions posts an unknown Server Action ID on purpose, which the
+    // server logs as an error on every run
+    stderr: "ignore",
   },
 });

@@ -57,13 +57,10 @@ async function local(page: Page): Promise<LocalData> {
 }
 
 test.describe("Uno durable scoring", () => {
-  // One shared scoreboard; run its mutation scenarios sequentially in one project.
+  // One shared scoreboard, so playwright.config.ts runs this file in desktop
+  // Chrome only and its scenarios run one after another.
   test.describe.configure({ mode: "default" });
-  test.beforeEach(async ({ browserName }, info) => {
-    test.skip(
-      browserName !== "chromium" || info.project.name !== "Google Chrome",
-      "Shared scoreboard mutations run once in desktop Chrome; layouts run in all projects.",
-    );
+  test.beforeEach(async () => {
     const { projectId } = assertEmulatorEnvironment();
     const db = getFirestore(getApps()[0] ?? initializeApp({ projectId }));
     for (const name of ["uno", "unoGames", "unoLeases"])
