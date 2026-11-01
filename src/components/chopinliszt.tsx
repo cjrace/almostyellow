@@ -358,6 +358,7 @@ const ChopinLiszt = ({
         <Textarea
           data-autofocus
           placeholder="Add new items, one per line..."
+          description="Press Ctrl+Enter (Cmd+Enter on Mac) to add"
           value={newItemText}
           onChange={(e) => {
             setNewItemText(e.target.value);
