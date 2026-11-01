@@ -128,15 +128,6 @@ function Chart({
                   strokeWidth="3"
                   fill="none"
                 />
-                {points.map((p, i) => (
-                  <circle
-                    key={p.id}
-                    cx={x(i)}
-                    cy={y(value(p))}
-                    r="3"
-                    fill={line.color}
-                  />
-                ))}
                 <text
                   x="414"
                   y={(line.key === "cam" ? camLabel : lauraLabel) + 4}
