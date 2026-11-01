@@ -62,10 +62,7 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider defaultColorScheme="dark" theme={acalat}>
-          <AppShell
-            header={{ height: { base: 60, md: 70, lg: 80 } }}
-            padding="md"
-          >
+          <AppShell className="site-frame">
             <Anchor href="#main-content" className={skip.skiplink}>
               Skip to main content
             </Anchor>
