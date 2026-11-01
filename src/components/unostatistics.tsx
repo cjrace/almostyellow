@@ -61,7 +61,7 @@ function Chart({
               points={points
                 .map((p, i) => `${String(x(i))},${String(y(p.cam))}`)
                 .join(" ")}
-              stroke="var(--mantine-color-orange-6)"
+              stroke="var(--mantine-color-orange-filled)"
               strokeWidth="3"
               fill="none"
             />
@@ -70,7 +70,7 @@ function Chart({
                 points={points
                   .map((p, i) => `${String(x(i))},${String(y(p.laura))}`)
                   .join(" ")}
-                stroke="var(--mantine-color-blue-4)"
+                stroke="var(--mantine-color-yellow-filled)"
                 strokeWidth="3"
                 strokeDasharray="7 4"
                 fill="none"
@@ -82,14 +82,14 @@ function Chart({
                   cx={x(i)}
                   cy={y(point.cam)}
                   r="3"
-                  fill="var(--mantine-color-orange-6)"
+                  fill="var(--mantine-color-orange-filled)"
                 />
                 {!oneSeries && (
                   <circle
                     cx={x(i)}
                     cy={y(point.laura)}
                     r="3"
-                    fill="var(--mantine-color-blue-4)"
+                    fill="var(--mantine-color-yellow-filled)"
                   />
                 )}
               </g>
