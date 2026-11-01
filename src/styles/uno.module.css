@@ -112,6 +112,27 @@
   overflow: auto;
   margin-top: 0.5rem;
 }
+.chartTable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.chartTable th,
+.chartTable td {
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+}
+.chartTable th:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+.chartTable thead th {
+  position: sticky;
+  top: 0;
+  background: var(--mantine-color-body);
+  font-size: var(--mantine-font-size-sm);
+}
 .chart {
   width: 100%;
   height: auto;

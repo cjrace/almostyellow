@@ -72,8 +72,7 @@ function Chart({
         // Focusable so keyboard users can scroll a long table
         // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
         <div className={styles.chartTable} tabIndex={0}>
-          <table>
-            <caption>{title}</caption>
+          <table aria-label={title}>
             <thead>
               <tr>
                 <th scope="col">Date</th>
