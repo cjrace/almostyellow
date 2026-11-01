@@ -240,14 +240,6 @@ export default function UnoStatistics() {
                 />
               </Paper>
               <Paper withBorder p="sm">
-                <Text size="sm">Games played</Text>
-                <Text fw={700}>{summary.games.length}</Text>
-              </Paper>
-              <Paper withBorder p="sm">
-                <Text size="sm">Games won</Text>
-                <Pair cam={summary.wins.cam} laura={summary.wins.laura} />
-              </Paper>
-              <Paper withBorder p="sm">
                 <Text size="sm">Game win percentage</Text>
                 <Pair
                   cam={percentage(summary.wins.cam)}
@@ -255,6 +247,14 @@ export default function UnoStatistics() {
                   suffix="%"
                   lead={[summary.wins.cam, summary.wins.laura]}
                 />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Games won</Text>
+                <Pair cam={summary.wins.cam} laura={summary.wins.laura} />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Games played</Text>
+                <Text fw={700}>{summary.games.length}</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Draws</Text>
