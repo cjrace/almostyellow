@@ -3,7 +3,7 @@
    a thumb */
 
 /* Wraps the header and main, so the game can take whatever height is left.
-   Takes off the body margins set in global.css */
+   Takes off the .site-frame padding set in global.css */
 .screen {
   display: flex;
   flex-direction: column;

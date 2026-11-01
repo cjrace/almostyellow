@@ -58,10 +58,7 @@
 
 .flash {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background: rgba(255, 255, 255, 0.9);
   animation: flash 0.2s infinite;
   pointer-events: none;

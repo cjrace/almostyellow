@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Grid,
   Button,
   Modal,
   Box,
@@ -10,7 +9,6 @@ import {
   Space,
   TextInput,
   NumberInput,
-  SimpleGrid,
   Group,
   ActionIcon,
   SegmentedControl,
@@ -39,6 +37,7 @@ import {
   PiShootingStar,
 } from "react-icons/pi";
 import playConfetti from "@/components/playconfetti";
+import layout from "@/styles/snakesandladders.module.css";
 
 interface IconSelectionProps {
   selectedIcon: string;
@@ -160,7 +159,6 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentPlayer }) => (
         // eslint-disable-next-line @eslint-react/no-array-index-key
         key={index}
         mb="sm"
-        w="60%"
         style={{
           border: currentPlayer === index ? "2px solid orange" : "none",
           borderRadius: "8px",
@@ -358,8 +356,8 @@ const SnakesAndLadders = () => {
   };
 
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2 }}>
-      <Box>
+    <div className={gameInitialized ? layout.playing : layout.setup}>
+      <Box className={layout.controls}>
         {!gameInitialized && (
           <>
             {/* Form to set up the players */}
@@ -371,53 +369,55 @@ const SnakesAndLadders = () => {
               label="Number of Players"
               min={2}
               max={10}
-              w="49%"
+              maw="12rem"
             />
 
             <Space h="xl" />
 
-            {Array.from({ length: numPlayers }, (_, seat) => seat).map(
-              (seat) => (
-                <Box key={seat} style={{ paddingLeft: "20px" }}>
-                  <Stack mb="sm" gap="xs">
-                    <TextInput
-                      label={`Name of player ${(seat + 1).toString()}:`}
-                      labelProps={{
-                        style: {
-                          margin: "0 0 0.75em 0",
-                        },
-                      }}
-                      value={players[seat]?.name || ""}
-                      onChange={(event) => {
-                        handlePlayerSetup(
-                          seat,
-                          event.currentTarget.value,
-                          players[seat]?.icon || "cat",
-                        );
-                      }}
-                    />
-                    <Text size="xs" c="dimmed">
-                      Choose your avatar
-                    </Text>
-                    <Group>
-                      <IconSelection
-                        selectedIcon={players[seat]?.icon || "cat"}
-                        onChange={(icon) => {
+            <div className={layout.players}>
+              {Array.from({ length: numPlayers }, (_, seat) => seat).map(
+                (seat) => (
+                  <Box key={seat}>
+                    <Stack mb="sm" gap="xs">
+                      <TextInput
+                        label={`Name of player ${(seat + 1).toString()}:`}
+                        labelProps={{
+                          style: {
+                            margin: "0 0 0.75em 0",
+                          },
+                        }}
+                        value={players[seat]?.name || ""}
+                        onChange={(event) => {
                           handlePlayerSetup(
                             seat,
-                            players[seat]?.name ||
-                              `Player ${(seat + 1).toString()}`,
-                            icon,
+                            event.currentTarget.value,
+                            players[seat]?.icon || "cat",
                           );
                         }}
                       />
-                    </Group>
-                  </Stack>
-                </Box>
-              ),
-            )}
+                      <Text size="xs" c="dimmed">
+                        Choose your avatar
+                      </Text>
+                      <Group>
+                        <IconSelection
+                          selectedIcon={players[seat]?.icon || "cat"}
+                          onChange={(icon) => {
+                            handlePlayerSetup(
+                              seat,
+                              players[seat]?.name ||
+                                `Player ${(seat + 1).toString()}`,
+                              icon,
+                            );
+                          }}
+                        />
+                      </Group>
+                    </Stack>
+                  </Box>
+                ),
+              )}
+            </div>
 
-            <Button onClick={initializePlayers} mt="sm">
+            <Button onClick={initializePlayers} mt="md">
               Start game!
             </Button>
           </>
@@ -438,7 +438,6 @@ const SnakesAndLadders = () => {
             <Button
               onClick={rollDice}
               mt="md"
-              w="50%"
               disabled={!!winner || playerPositions.length === 0 || isRolling}
             >
               {isRolling
@@ -448,14 +447,14 @@ const SnakesAndLadders = () => {
 
             <Space h="md" />
 
-            <Button onClick={restartGame} w="50%" mt="md">
+            <Button onClick={restartGame} mt="md">
               Restart Game
             </Button>
           </Box>
         )}
       </Box>
 
-      <Box>
+      <Box className={layout.boardArea}>
         {gameInitialized && (
           <>
             <SegmentedControl
@@ -471,28 +470,17 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            <Grid columns={10} gap={0}>
+            <div className={layout.board}>
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
                 const pos = index + 1;
                 const playerAtPos = playerPositions.findIndex(
                   (playerPos) => playerPos === pos,
                 );
                 return (
-                  <Grid.Col
-                    span={1}
-                    key={pos}
-                    style={{
-                      border: "1px solid #ddd",
-                      height: "50px",
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <div key={pos} className={layout.cell}>
                     {playerAtPos !== -1 &&
                       (viewMode === "names" ? (
-                        <Text>{players[playerAtPos]?.name}</Text>
+                        <span>{players[playerAtPos]?.name}</span>
                       ) : (
                         icons.find(
                           (icon) => icon.id === players[playerAtPos]?.icon,
@@ -500,10 +488,10 @@ const SnakesAndLadders = () => {
                       ))}
                     {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
                     {pos === 100 && <IconTrophy size={24} color="gold" />}
-                  </Grid.Col>
+                  </div>
                 );
               })}
-            </Grid>
+            </div>
 
             <Modal
               opened={!!popupMessage}
@@ -520,7 +508,7 @@ const SnakesAndLadders = () => {
           </>
         )}
       </Box>
-    </SimpleGrid>
+    </div>
   );
 };
 
