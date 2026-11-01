@@ -17,6 +17,7 @@ import {
   Text,
   Divider,
   Alert,
+  Kbd,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
@@ -358,9 +359,26 @@ const ChopinLiszt = ({
         <Textarea
           data-autofocus
           placeholder="Add new items, one per line..."
+          description={
+            <Text component="span" size="xs" visibleFrom="sm">
+              Press <Kbd size="xs">Ctrl</Kbd> + <Kbd size="xs">Enter</Kbd> to
+              add
+            </Text>
+          }
+          aria-keyshortcuts="Control+Enter Meta+Enter"
           value={newItemText}
           onChange={(e) => {
             setNewItemText(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              (e.ctrlKey || e.metaKey) &&
+              !e.nativeEvent.isComposing
+            ) {
+              e.preventDefault();
+              addItems();
+            }
           }}
           error={inputError}
           autosize
