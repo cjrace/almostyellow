@@ -1,6 +1,7 @@
 "use client";
 
-import { Paper, Text, Title } from "@mantine/core";
+import { useState } from "react";
+import { Paper, SegmentedControl, Text, Title } from "@mantine/core";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
 import { gameDate, statistics, type Game } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
@@ -12,6 +13,9 @@ interface Point {
   cam: number;
   laura: number;
 }
+const camColor = "var(--mantine-color-orange-filled)";
+const lauraColor = "var(--mantine-color-yellow-filled)";
+
 function Chart({
   title,
   points,
@@ -21,115 +25,144 @@ function Chart({
   points: Point[];
   oneSeries?: boolean;
 }) {
+  const [view, setView] = useState("chart");
   const maximum = Math.max(1, ...points.flatMap((p) => [p.cam, p.laura]));
-  const x = (i: number) => 35 + (i / Math.max(1, points.length - 1)) * 430;
+  const x = (i: number) => 35 + (i / Math.max(1, points.length - 1)) * 370;
   const y = (n: number) => 160 - (n / maximum) * 130;
+  const last = points[points.length - 1] as Point | undefined;
+  // Each line is named at its right-hand end, nudged apart if they would touch
+  let camLabel = last ? y(last.cam) : 0;
+  let lauraLabel = last ? y(last.laura) : 0;
+  if (!oneSeries && Math.abs(camLabel - lauraLabel) < 14) {
+    const gap = (14 - Math.abs(camLabel - lauraLabel)) / 2;
+    if (camLabel <= lauraLabel) {
+      camLabel -= gap;
+      lauraLabel += gap;
+    } else {
+      camLabel += gap;
+      lauraLabel -= gap;
+    }
+  }
+  const series = [
+    { key: "cam", name: oneSeries ? "Rounds" : "Cam", color: camColor },
+    ...(oneSeries ? [] : [{ key: "laura", name: "Laura", color: lauraColor }]),
+  ];
   return (
     <Paper withBorder p="sm">
-      <Title order={3} size="h4">
-        {title}
-      </Title>
-      <Text size="xs">
-        {oneSeries ? "Total rounds" : "Cam: solid line · Laura: dashed line"}
-      </Text>
+      <div className={styles.chartHead}>
+        <Title order={3} size="h4">
+          {title}
+        </Title>
+        {!!points.length && (
+          <SegmentedControl
+            size="xs"
+            aria-label={`${title} view`}
+            value={view}
+            onChange={setView}
+            data={[
+              { value: "chart", label: "Chart" },
+              { value: "table", label: "Table" },
+            ]}
+          />
+        )}
+      </div>
       {!points.length ? (
         <Text size="sm">No dated completed games yet.</Text>
-      ) : (
-        <>
-          <svg
-            className={styles.chart}
-            viewBox="0 0 500 205"
-            role="img"
-            aria-label={`${title}. ${oneSeries ? "Total rounds" : "Cam: solid line. Laura: dashed line"}. Values in the data table below.`}
-          >
-            <title>{title}</title>
-            <line
-              x1="35"
-              y1="160"
-              x2="465"
-              y2="160"
-              stroke="currentColor"
-              opacity="0.4"
-            />
-            <text x="5" y="35" fill="currentColor" fontSize="12">
-              {maximum}
-            </text>
-            <text x="15" y="165" fill="currentColor" fontSize="12">
-              0
-            </text>
-            <polyline
-              points={points
-                .map((p, i) => `${String(x(i))},${String(y(p.cam))}`)
-                .join(" ")}
-              stroke="var(--mantine-color-orange-filled)"
-              strokeWidth="3"
-              fill="none"
-            />
-            {!oneSeries && (
-              <polyline
-                points={points
-                  .map((p, i) => `${String(x(i))},${String(y(p.laura))}`)
-                  .join(" ")}
-                stroke="var(--mantine-color-yellow-filled)"
-                strokeWidth="3"
-                strokeDasharray="7 4"
-                fill="none"
-              />
-            )}
-            {points.map((point, i) => (
-              <g key={point.id}>
-                <circle
-                  cx={x(i)}
-                  cy={y(point.cam)}
-                  r="3"
-                  fill="var(--mantine-color-orange-filled)"
-                />
-                {!oneSeries && (
-                  <circle
-                    cx={x(i)}
-                    cy={y(point.laura)}
-                    r="3"
-                    fill="var(--mantine-color-yellow-filled)"
-                  />
-                )}
-              </g>
-            ))}
-            <text x="35" y="190" fill="currentColor" fontSize="12">
-              {points[0].date}
-            </text>
-            <text
-              x="465"
-              y="190"
-              textAnchor="end"
-              fill="currentColor"
-              fontSize="12"
-            >
-              {points[points.length - 1].date}
-            </text>
-          </svg>
-          <details>
-            <summary>Chart values</summary>
-            <table>
-              <caption>{title}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">{oneSeries ? "Rounds" : "Cam"}</th>
-                  {!oneSeries && <th scope="col">Laura</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {points.map((p) => (
-                  <tr key={p.id}>
-                    <th scope="row">{p.date}</th>
-                    <td>{p.cam}</td>
-                    {!oneSeries && <td>{p.laura}</td>}
-                  </tr>
+      ) : view === "table" ? (
+        // Focusable so keyboard users can scroll a long table
+        // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
+        <div className={styles.chartTable} tabIndex={0}>
+          <table>
+            <caption>{title}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                {series.map((line) => (
+                  <th scope="col" key={line.key}>
+                    {line.name}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </details>
-        </>
+              </tr>
+            </thead>
+            <tbody>
+              {points.map((p) => (
+                <tr key={p.id}>
+                  <th scope="row">{p.date}</th>
+                  <td>{p.cam}</td>
+                  {!oneSeries && <td>{p.laura}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <svg
+          className={styles.chart}
+          viewBox="0 0 500 205"
+          role="img"
+          aria-label={`${title}. Use the Table view to read the values.`}
+        >
+          <title>{title}</title>
+          <line
+            x1="35"
+            y1="160"
+            x2="405"
+            y2="160"
+            stroke="currentColor"
+            opacity="0.4"
+          />
+          <text x="5" y="35" fill="currentColor" fontSize="12">
+            {maximum}
+          </text>
+          <text x="15" y="165" fill="currentColor" fontSize="12">
+            0
+          </text>
+          {series.map((line) => {
+            const value = (p: Point) => (line.key === "cam" ? p.cam : p.laura);
+            return (
+              <g key={line.key}>
+                <polyline
+                  points={points
+                    .map((p, i) => `${String(x(i))},${String(y(value(p)))}`)
+                    .join(" ")}
+                  stroke={line.color}
+                  strokeWidth="3"
+                  fill="none"
+                />
+                {points.map((p, i) => (
+                  <circle
+                    key={p.id}
+                    cx={x(i)}
+                    cy={y(value(p))}
+                    r="3"
+                    fill={line.color}
+                  />
+                ))}
+                <text
+                  x="414"
+                  y={(line.key === "cam" ? camLabel : lauraLabel) + 4}
+                  fill="currentColor"
+                  fontSize="13"
+                  fontWeight="700"
+                >
+                  {line.name}
+                </text>
+              </g>
+            );
+          })}
+          <text x="35" y="190" fill="currentColor" fontSize="12">
+            {points[0].date}
+          </text>
+          <text
+            x="405"
+            y="190"
+            textAnchor="end"
+            fill="currentColor"
+            fontSize="12"
+          >
+            {points[points.length - 1].date}
+          </text>
+        </svg>
       )}
     </Paper>
   );

@@ -1,6 +1,7 @@
-/* All three pages share one width so switching tabs never resizes the content */
+/* All three pages fill the width, so switching tabs never resizes the content.
+   The scoring area stays centred at a readable width. */
 .tracker {
-  max-width: 60rem;
+  width: 100%;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
@@ -85,7 +86,7 @@
   }
 }
 .stats {
-  max-width: 60rem;
+  width: 100%;
   display: grid;
   gap: 1rem;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -99,6 +100,17 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+}
+.chartHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.chartTable {
+  max-height: 16rem;
+  overflow: auto;
+  margin-top: 0.5rem;
 }
 .chart {
   width: 100%;
