@@ -1,12 +1,12 @@
 # Uno tracker
 
-`/games/uno-tracker` is a public, mobile-first tracker (the Tracker and Statistics pages share a segmented control) for Cam and Laura. Anyone can view scores and `/games/uno-tracker/stats`; only an account on the existing Firebase allowlist can start games, score, finish games or add historic games.
+`/games/uno-tracker` is a public, mobile-first tracker (the Tracker, Statistics and History pages share a segmented control) for Cam and Laura. Anyone can view scores, `/games/uno-tracker/stats` and `/games/uno-tracker/history`; only an account on the existing Firebase allowlist can start games, score, finish games or add historic games.
 
 ## Playing and finishing
 
 Each won round adds one point. The smaller minus button records a separate correction. A game ends only after an authorised player confirms **Finish game**, while connected and with this device’s saved changes synced. The server checks the displayed game version; a change from another device requires a fresh confirmation. Starting the next game is a separate action.
 
-The statistics page has an authorised **Add historic game** form for both scores, a date and free-text notes. Dates can be exact, month only, year only or unknown. Each entry increases lifetime totals once and contributes to completed-game statistics. Unknown dates are excluded from trends and streaks, and year-only dates are excluded from monthly wins. Live games on the same date are ordered by completion time. Historic entries have no recorded time: they come before live games on that date, in stable ID order. Approximate dates can affect streak ordering. Historical entries record final totals, so they have no individual round history.
+The history page lists every completed game with filters and a scoring history for each, and has an authorised **Add historic game** form for both scores, a date and free-text notes. Dates can be exact, month only, year only or unknown. Each entry increases lifetime totals once and contributes to completed-game statistics. Unknown dates are excluded from trends and streaks, and year-only dates are excluded from monthly wins. Live games on the same date are ordered by completion time. Historic entries have no recorded time: they come before live games on that date, in stable ID order. Approximate dates can affect streak ordering. Historical entries record final totals, so they have no individual round history.
 
 ## Offline use
 
@@ -18,7 +18,7 @@ Pending changes replay in ordered batches of up to 25 on page load, reconnection
 
 If an account changes, another account’s pending events remain stored and do not sync under the new account. A rejected correction stays visible for explicit retry or confirmed discard. Storage failures show a warning and do not confirm an award. Browser data deletion, private browsing and storage eviction can still remove unsynced data. No background-sync support is needed: if the app is closed, reopening it resumes replay.
 
-Historic-game entry remains available while changes await sync. If a returned snapshot could already include unacknowledged events, it is deferred until reconciliation, and the statistics page confirms that the entry was saved. Cache-storage failures leave successful online asset requests usable and mark offline reopening as unavailable.
+Historic-game entry remains available while changes await sync. If a returned snapshot could already include unacknowledged events, it is deferred until reconciliation, and the history page confirms that the entry was saved. Cache-storage failures leave successful online asset requests usable and mark offline reopening as unavailable.
 
 ## Late rounds and security
 

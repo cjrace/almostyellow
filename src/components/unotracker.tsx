@@ -17,23 +17,25 @@ import { useUno } from "@/uno/useUno";
 import { unoController } from "@/uno/browser";
 import styles from "@/styles/uno.module.css";
 
-export function UnoHeader({ stats = false }: { stats?: boolean }) {
+const pages = {
+  tracker: "/games/uno-tracker",
+  stats: "/games/uno-tracker/stats",
+  history: "/games/uno-tracker/history",
+};
+export function UnoHeader({ page = "tracker" }: { page?: keyof typeof pages }) {
   return (
     <header className={styles.header}>
-      <Title>Uno tracker</Title>
+      <Title size="h2">Uno tracker</Title>
       <SegmentedControl
         aria-label="Uno pages"
-        value={stats ? "stats" : "tracker"}
+        value={page}
         onChange={(value) => {
-          window.location.assign(
-            value === "stats"
-              ? "/games/uno-tracker/stats"
-              : "/games/uno-tracker",
-          );
+          window.location.assign(pages[value]);
         }}
         data={[
           { value: "tracker", label: "Tracker" },
           { value: "stats", label: "Statistics" },
+          { value: "history", label: "History" },
         ]}
         fullWidth
         size="md"
@@ -117,28 +119,41 @@ export default function UnoTracker() {
     <div className={styles.tracker}>
       <UnoHeader />
       <UnoOfflineShell />
-      <div className={styles.players} aria-label="Lifetime round wins">
+      <Paper
+        withBorder
+        px="sm"
+        py="xs"
+        role="group"
+        aria-label="Lifetime round wins"
+        className={styles.lifetimes}
+      >
+        <Text size="sm" c="dimmed">
+          All time
+        </Text>
         {players.map((player) => (
-          <Paper withBorder p="sm" key={player}>
-            <Text size="sm">{names[player]} · all time</Text>
+          <Text component="span" key={player}>
+            {names[player]}{" "}
             <Text
+              component="span"
               className={styles.lifetime}
               data-testid={`lifetime-${player}`}
             >
               {uno.totals[player]}
             </Text>
-          </Paper>
+          </Text>
         ))}
-      </div>
-      <section aria-labelledby="current-game">
-        <Title order={2} id="current-game" size="h3">
-          {game?.status === "completed"
-            ? "Last completed game"
-            : "Current game"}
-        </Title>
-        <Text role="status" size="sm" className={styles.status}>
-          {uno.ready ? status : "Loading saved scores…"}
-        </Text>
+      </Paper>
+      <section aria-labelledby="current-game" className={styles.game}>
+        <Group justify="space-between" align="baseline" wrap="nowrap">
+          <Title order={2} id="current-game" size="h3">
+            {game?.status === "completed"
+              ? "Last completed game"
+              : "Current game"}
+          </Title>
+          <Text role="status" size="xs" ta="right" className={styles.status}>
+            {uno.ready ? status : "Loading saved scores…"}
+          </Text>
+        </Group>
         {!!pending && (
           <Text size="xs">
             Totals include provisional changes saved on this device.
@@ -152,7 +167,7 @@ export default function UnoTracker() {
           </Text>
         ) : (
           <>
-            <div className={styles.players}>
+            <div className={`${styles.players} ${styles.scoring}`}>
               {players.map((player) => (
                 <Paper
                   component="section"
@@ -165,12 +180,14 @@ export default function UnoTracker() {
                   <Title order={3} size="h3">
                     {names[player]}
                   </Title>
-                  <Text
-                    className={styles.score}
-                    data-testid={`score-${player}`}
-                  >
-                    {game[player]}
-                  </Text>
+                  <div className={styles.scoreArea}>
+                    <Text
+                      className={styles.score}
+                      data-testid={`score-${player}`}
+                    >
+                      {game[player]}
+                    </Text>
+                  </div>
                   {game.status === "active" && (
                     <>
                       <Button

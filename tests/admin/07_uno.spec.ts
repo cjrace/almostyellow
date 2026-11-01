@@ -108,11 +108,13 @@ test.describe("Uno durable scoring", () => {
       );
     });
     expect(cachedPaths).toContain("/games/uno-tracker/stats");
+    expect(cachedPaths).toContain("/games/uno-tracker/history");
     expect(
       cachedPaths.every(
         (path) =>
           path === "/games/uno-tracker" ||
           path === "/games/uno-tracker/stats" ||
+          path === "/games/uno-tracker/history" ||
           path.startsWith("/_next/static/"),
       ),
     ).toBe(true);
@@ -246,7 +248,7 @@ test.describe("Uno durable scoring", () => {
     page,
   }) => {
     await signIn(page);
-    await page.getByLabel("Statistics", { exact: true }).click();
+    await page.getByLabel("History", { exact: true }).click();
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("8");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("6");
@@ -326,7 +328,7 @@ test.describe("Uno durable scoring", () => {
     await idle(other);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("1", SYNC);
     await expect(page.getByTestId("score-laura")).toHaveText("0");
-    await page.getByLabel("Statistics", { exact: true }).click();
+    await page.getByLabel("History", { exact: true }).click();
     await expect(
       page.getByText("Result amended after offline rounds synced."),
     ).toBeVisible();
@@ -457,7 +459,7 @@ test.describe("Uno durable scoring", () => {
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
     ).toBeEnabled(SYNC);
-    await page.getByLabel("Statistics", { exact: true }).click();
+    await page.getByLabel("History", { exact: true }).click();
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("5");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("3");
@@ -470,7 +472,7 @@ test.describe("Uno durable scoring", () => {
     const received = new Promise<void>((resolve) => {
       captured = resolve;
     });
-    await page.route("**/games/uno-tracker/stats", async (route) => {
+    await page.route("**/games/uno-tracker/history", async (route) => {
       if (
         route.request().method() === "POST" &&
         route.request().postData()?.includes("datePrecision")
@@ -540,7 +542,7 @@ test.describe("Uno durable scoring", () => {
         version: 1,
         updatedAt: Date.now(),
       });
-      await page.goto("/games/uno-tracker/stats");
+      await page.goto("/games/uno-tracker/history");
       await expect(
         page.getByRole("button", { name: "Scoring history" }),
       ).toHaveCount(2);
@@ -560,7 +562,7 @@ test.describe("Uno durable scoring", () => {
       const receivedSecond = new Promise<void>((resolve) => {
         capturedSecond = resolve;
       });
-      await page.route("**/games/uno-tracker/stats", async (route) => {
+      await page.route("**/games/uno-tracker/history", async (route) => {
         const body = route.request().postData();
         if (route.request().method() === "POST" && body?.includes(ids[0])) {
           const response = await route.fetch();

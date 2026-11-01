@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-for (const path of ["/games/uno-tracker", "/games/uno-tracker/stats"]) {
+for (const path of [
+  "/games/uno-tracker",
+  "/games/uno-tracker/stats",
+  "/games/uno-tracker/history",
+]) {
   test(`${path} is public and fits narrow and landscape screens`, async ({
     page,
   }) => {
@@ -25,6 +29,9 @@ for (const path of ["/games/uno-tracker", "/games/uno-tracker/stats"]) {
     ).toBeVisible();
     await expect(
       page.getByRole("radio", { name: "Statistics", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: "History", exact: true }),
     ).toBeVisible();
   });
 }
