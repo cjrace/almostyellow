@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import { films } from "../firebase/fixtures";
+import { waitForHydration } from "../hydration";
 
 test("Films Page Test", async ({ page }) => {
   await page.goto("/");
@@ -56,6 +57,7 @@ test("Can copy film names to clipboard", async ({ page, context }) => {
 
 test("Download CSV and check contents", async ({ page }) => {
   await page.goto("/films");
+  await waitForHydration(page);
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Download CSV" }).click(),

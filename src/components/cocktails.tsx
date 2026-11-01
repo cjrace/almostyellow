@@ -89,7 +89,8 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
         />
       </Group>
 
-      <Text m="xs">
+      {/* Read out as the search or filters change the results */}
+      <Text m="xs" role="status">
         Showing {searchedCocktails.length} of {cocktails.length} cocktails
       </Text>
 

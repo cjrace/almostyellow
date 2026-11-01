@@ -3,6 +3,8 @@ import Header from "@/components/header";
 import { Container, Group, Title, Button } from "@mantine/core";
 import FilmList from "@/components/filmlist";
 import { IconPlus } from "@tabler/icons-react";
+import { connection } from "next/server";
+import { readFilmList } from "@/services/filmlist";
 
 export const metadata = pageMetadata(
   "Films",
@@ -14,7 +16,11 @@ const crumbitems = [
   { title: "Films", href: "" },
 ];
 
-export default function FilmsPage() {
+export default async function FilmsPage() {
+  // Read the list on each request, so changes show without a rebuild
+  await connection();
+  const films = await readFilmList();
+
   return (
     <>
       <Header crumbs={crumbitems} />
@@ -33,7 +39,7 @@ export default function FilmsPage() {
             </Button>
           </Group>
 
-          <FilmList />
+          <FilmList films={films} />
         </Container>
       </main>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Select,
   Button,
@@ -23,7 +23,6 @@ import {
 } from "@tabler/icons-react";
 import { WhiskyCard } from "@/components/whiskycard";
 import BackToTop from "@/components/backtotop";
-import { readWhiskyJournal } from "@/services/whiskyjournal";
 import { WhiskyPricingScale, WhiskyRatingScale } from "./whiskyscoringscales";
 
 export interface Whisky {
@@ -40,27 +39,8 @@ export interface Whisky {
   notes: string;
 }
 
-export default function WhiskyJournal() {
-  const [whiskies, setWhiskies] = useState<Whisky[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchWhiskies = async () => {
-      try {
-        console.log("Requesting new data");
-        const data = await readWhiskyJournal();
-        console.log("Data fetch successful");
-        setWhiskies(data);
-      } catch (error) {
-        console.error("Error fetching whiskies:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchWhiskies();
-  }, []);
-
+// The page reads the journal on the server, so it arrives with the HTML
+export default function WhiskyJournal({ whiskies }: { whiskies: Whisky[] }) {
   const whiskyData = whiskies;
 
   const [grainFilter, setGrainFilter] = useState<string | null>(null);
@@ -150,10 +130,6 @@ export default function WhiskyJournal() {
   ];
 
   const [modalScalesOpened, setModalScalesOpened] = useState(false);
-
-  if (loading) {
-    return <Text>Fetching journal...</Text>;
-  }
 
   const exportToCSV = () => {
     const headers = [
@@ -379,7 +355,8 @@ export default function WhiskyJournal() {
         </Button>
       </Group>
 
-      <Text m="sm">
+      {/* Read out as the search or filters change the results */}
+      <Text m="sm" role="status">
         Showing {searchedWhiskyData.length} of {whiskyData.length} whiskies
       </Text>
 

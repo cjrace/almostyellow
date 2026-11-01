@@ -1,12 +1,14 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import { whiskies } from "../firebase/fixtures";
+import { waitForHydration } from "../hydration";
 
 test("Whisky Journal Page Test", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Cam's whisky journal" }).click();
 
   await expect(page).toHaveTitle("Whisky Journal | Almost Yellow");
+  await waitForHydration(page);
 
   // Check the seeded whisky entries are loaded
   await expect(page.locator("#main-content")).toContainText(
@@ -36,6 +38,7 @@ test("Whisky Journal Page Test", async ({ page }) => {
 test("Can search whiskies by name", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Cam's whisky journal" }).click();
+  await waitForHydration(page);
   await page.fill('input[placeholder="Search whisky names..."]', "Talisker");
 
   await expect(page.locator("#main-content")).toContainText(
@@ -53,6 +56,7 @@ test("Can search whiskies by name", async ({ page }) => {
 
 test("Download CSV and check contents", async ({ page }) => {
   await page.goto("/whiskyjournal");
+  await waitForHydration(page);
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Download CSV" }).click(),
