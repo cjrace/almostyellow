@@ -44,7 +44,12 @@ function Chart({
     }
   }
   const series = [
-    { key: "cam", name: oneSeries ? "Rounds" : "Cam", color: camColor },
+    {
+      key: "cam",
+      name: oneSeries ? "Rounds" : "Cam",
+      // A single neutral line follows the text colour, light on dark and black on light
+      color: oneSeries ? "var(--mantine-color-text)" : camColor,
+    },
     ...(oneSeries ? [] : [{ key: "laura", name: "Laura", color: lauraColor }]),
   ];
   return (
