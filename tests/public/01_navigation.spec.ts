@@ -41,11 +41,11 @@ test("Can navigate to the games page and through its subpages", async ({
     page.getByLabel("Back to our games list").click(),
   ]);
   await Promise.all([
-    page.waitForURL("/games/uno"),
-    page.getByRole("link", { name: "Uno" }).click(),
+    page.waitForURL("/games/uno-tracker"),
+    page.getByRole("link", { name: "Uno tracker" }).click(),
   ]);
-  await expect(page).toHaveTitle("Uno | Almost Yellow");
-  await expect(page.locator("h1")).toContainText("Uno");
+  await expect(page).toHaveTitle("Uno tracker | Almost Yellow");
+  await expect(page.locator("h1")).toContainText("Uno tracker");
 
   await Promise.all([
     page.waitForURL("/games"),

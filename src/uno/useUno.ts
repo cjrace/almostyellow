@@ -18,6 +18,8 @@ export function useUno() {
     start: unoController.start,
     finish: unoController.finish,
     addHistory: unoController.addHistory,
+    editHistory: unoController.editHistory,
+    deleteGame: unoController.deleteGame,
     retry: unoController.retry,
     discard: unoController.discard,
     enablePersistence: unoController.enablePersistence,

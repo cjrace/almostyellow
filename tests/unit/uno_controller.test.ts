@@ -36,7 +36,6 @@ const game = (cam = 0): Game => ({
   startedAt: 1,
   finishedAt: null,
   playedOn: null,
-  datePrecision: "day",
   notes: "",
   source: "live",
   version: cam + 1,
@@ -99,6 +98,7 @@ function setup(data = local()) {
   const transport = {
     account: vi.fn(() => Promise.resolve("alice" as string | null)),
     read: vi.fn(() => Promise.resolve(state())),
+    version: vi.fn(() => Promise.resolve(state().board.version)),
     start: vi.fn(() => Promise.resolve(state(2))),
     finish: vi.fn<UnoTransport["finish"]>(() =>
       Promise.resolve({
@@ -111,6 +111,8 @@ function setup(data = local()) {
       }),
     ),
     history: vi.fn(() => Promise.resolve(state(3, 2))),
+    updateHistory: vi.fn(() => Promise.resolve(state(3, 2))),
+    deleteGame: vi.fn(() => Promise.resolve(state(3, 2))),
     open: vi.fn(() => Promise.resolve(LEASE)),
     sync: vi.fn((events: Parameters<UnoTransport["sync"]>[0]) =>
       Promise.resolve({
@@ -315,6 +317,7 @@ describe("per-tab coordinator", () => {
   it("records durably while the network lock is occupied and replays exactly once", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     const response = deferred<UnoState>();
     h.transport.read.mockReturnValueOnce(response.promise);
     h.online();
@@ -332,9 +335,22 @@ describe("per-tab coordinator", () => {
     expect(selectUno(h.controller.getSnapshot()).totals.cam).toBe(1);
     h.unsubscribe();
   });
+  it("skips the full read while the shared scoreboard version is unchanged", async () => {
+    const h = setup();
+    await h.ready();
+    h.online();
+    await h.controller.refresh();
+    expect(h.transport.version).toHaveBeenCalled();
+    expect(h.transport.read).not.toHaveBeenCalled();
+    h.transport.version.mockResolvedValue(2);
+    await h.controller.refresh();
+    expect(h.transport.read).toHaveBeenCalledOnce();
+    h.unsubscribe();
+  });
   it("coalesces repeated triggers into one follow-up refresh", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     const response = deferred<UnoState>();
     h.transport.read.mockReturnValueOnce(response.promise);
     h.online();
@@ -353,6 +369,7 @@ describe("per-tab coordinator", () => {
   it("releases a failed request's lock, backs off and retries on reconnection", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     h.transport.read.mockRejectedValueOnce(new Error("Connection lost"));
     h.online();
     await h.controller.refresh();
@@ -406,8 +423,7 @@ describe("per-tab coordinator", () => {
       id: GAME,
       cam: 2,
       laura: 0,
-      playedOn: "2020",
-      datePrecision: "year",
+      playedOn: "2020-01-15",
       notes: "Holiday",
     });
     expect(h.transport.history).toHaveBeenCalledOnce();
@@ -416,6 +432,37 @@ describe("per-tab coordinator", () => {
     expect(h.controller.getSnapshot().notice).toBe(
       "Historic game saved. Totals will refresh after pending changes sync.",
     );
+    h.unsubscribe();
+  });
+  it("edits and deletes historic games only when online and signed in", async () => {
+    const h = setup();
+    await h.ready();
+    const entry = {
+      id: GAME,
+      cam: 2,
+      laura: 1,
+      playedOn: "2020-01-15",
+      notes: "",
+    };
+    h.online(false);
+    await expect(h.controller.editHistory(entry)).rejects.toThrow(
+      "Reconnect to change a historic game.",
+    );
+    await expect(h.controller.deleteGame(GAME)).rejects.toThrow(
+      "Reconnect to delete a game.",
+    );
+    h.online();
+    h.transport.account.mockResolvedValue(null);
+    await expect(h.controller.deleteGame(GAME)).rejects.toThrow(
+      "Sign in to delete a game.",
+    );
+    expect(h.transport.updateHistory).not.toHaveBeenCalled();
+    expect(h.transport.deleteGame).not.toHaveBeenCalled();
+    h.transport.account.mockResolvedValue("alice");
+    await h.controller.editHistory(entry);
+    await h.controller.deleteGame(GAME);
+    expect(h.transport.updateHistory).toHaveBeenCalledWith(entry);
+    expect(h.transport.deleteGame).toHaveBeenCalledWith(GAME);
     h.unsubscribe();
   });
   it("does not replay another account's events or change their IDs", async () => {

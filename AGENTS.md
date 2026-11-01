@@ -65,7 +65,7 @@ The shopping list reads and writes the `shoppingItems` collection straight from 
 
 ### Uno (Firestore)
 
-The Uno score tracker (`/games/uno` and `/games/uno/stats`) can be read by anyone, but only authorised users can score. Its logic is in `src/uno/` (model, controller and browser storage), and `src/services/uno.ts` holds the server actions. They use the `uno`, `unoGames` and `unoLeases` collections, which the Security Rules deny to browsers entirely. A service worker, `public/games/uno/sw.js`, caches the two pages for offline use. See `docs/uno.md` for how it works.
+The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/games/uno-tracker/history`) can be read by anyone, but only authorised users can score. Its logic is in `src/uno/` (model, controller and browser storage), and `src/services/uno.ts` holds the server actions. They use the `uno`, `unoGames` and `unoLeases` collections, which the Security Rules deny to browsers entirely. A service worker, `public/games/uno-tracker/sw.js`, caches the three pages for offline use. See `docs/uno.md` for how it works.
 
 ### UI
 

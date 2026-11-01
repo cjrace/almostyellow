@@ -1,10 +1,13 @@
 import {
   addHistoricUnoGame,
+  deleteUnoGame,
   finishUnoGame,
   openUnoScoring,
   readUnoState,
+  readUnoVersion,
   startUnoGame,
   syncUnoEvents,
+  updateHistoricUnoGame,
 } from "@/services/uno";
 import { changeLocal, saveEvent } from "./storage";
 import { createUnoController } from "./controller";
@@ -16,7 +19,9 @@ export const unoController = createUnoController(
   { read: () => changeLocal(), change: changeLocal, save: saveEvent },
   {
     account: async () => {
-      const response = await fetch("/games/uno/session", { cache: "no-store" });
+      const response = await fetch("/games/uno-tracker/session", {
+        cache: "no-store",
+      });
       if (!response.ok)
         throw new Error(
           "Could not check your session. Saved rounds will retry automatically.",
@@ -24,9 +29,12 @@ export const unoController = createUnoController(
       return ((await response.json()) as { uid: string | null }).uid;
     },
     read: readUnoState,
+    version: readUnoVersion,
     start: startUnoGame,
     finish: finishUnoGame,
     history: addHistoricUnoGame,
+    updateHistory: updateHistoricUnoGame,
+    deleteGame: deleteUnoGame,
     open: openUnoScoring,
     sync: syncUnoEvents,
   },

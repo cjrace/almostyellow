@@ -1,31 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  Alert,
-  Button,
-  Group,
-  Modal,
-  NumberInput,
-  Paper,
-  Select,
-  Text,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
-import { readUnoHistory } from "@/services/uno";
-import { UnoNavigation, UnoOfflineShell } from "@/components/unotracker";
-import {
-  compareGames,
-  gameDate,
-  HistoricGameSchema,
-  names,
-  statistics,
-  type EventHistory,
-  type Game,
-  type HistoricGameInput,
-} from "@/uno/model";
+import { useState } from "react";
+import { Paper, SegmentedControl, Text, Title } from "@mantine/core";
+import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
+import { gameDate, names, statistics } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
 import styles from "@/styles/uno.module.css";
 
@@ -35,253 +13,279 @@ interface Point {
   cam: number;
   laura: number;
 }
+const camColor = "var(--mantine-color-orange-filled)";
+const lauraColor = "var(--mantine-color-yellow-filled)";
+
 function Chart({
   title,
   points,
   oneSeries = false,
+  bars = false,
+  period = "Date",
 }: {
   title: string;
   points: Point[];
   oneSeries?: boolean;
+  // Clustered bars, with Cam and Laura side by side for each point
+  bars?: boolean;
+  period?: string;
 }) {
+  const [view, setView] = useState("chart");
   const maximum = Math.max(1, ...points.flatMap((p) => [p.cam, p.laura]));
-  const x = (i: number) => 35 + (i / Math.max(1, points.length - 1)) * 430;
+  const x = (i: number) => 35 + (i / Math.max(1, points.length - 1)) * 370;
   const y = (n: number) => 160 - (n / maximum) * 130;
+  const last = points[points.length - 1] as Point | undefined;
+  // Each line is named at its right-hand end, nudged apart if they would touch
+  let camLabel = last ? y(last.cam) : 0;
+  let lauraLabel = last ? y(last.laura) : 0;
+  if (!oneSeries && Math.abs(camLabel - lauraLabel) < 14) {
+    const gap = (14 - Math.abs(camLabel - lauraLabel)) / 2;
+    if (camLabel <= lauraLabel) {
+      camLabel -= gap;
+      lauraLabel += gap;
+    } else {
+      camLabel += gap;
+      lauraLabel -= gap;
+    }
+  }
+  const series = [
+    {
+      key: "cam",
+      name: oneSeries ? "Rounds" : "Cam",
+      // A single neutral line follows the text colour, light on dark and black on light
+      color: oneSeries ? "var(--mantine-color-text)" : camColor,
+    },
+    ...(oneSeries ? [] : [{ key: "laura", name: "Laura", color: lauraColor }]),
+  ];
   return (
     <Paper withBorder p="sm">
-      <Title order={3} size="h4">
-        {title}
-      </Title>
-      <Text size="xs">
-        {oneSeries ? "Total rounds" : "Cam: solid line · Laura: dashed line"}
-      </Text>
+      <div className={styles.chartHead}>
+        <Title order={3} size="h4">
+          {title}
+        </Title>
+        {!!points.length && (
+          <SegmentedControl
+            size="xs"
+            aria-label={`${title} view`}
+            value={view}
+            onChange={setView}
+            data={[
+              { value: "chart", label: "Chart" },
+              { value: "table", label: "Table" },
+            ]}
+          />
+        )}
+      </div>
       {!points.length ? (
         <Text size="sm">No dated completed games yet.</Text>
-      ) : (
-        <>
-          <svg
-            className={styles.chart}
-            viewBox="0 0 500 205"
-            role="img"
-            aria-label={`${title}. ${oneSeries ? "Total rounds" : "Cam: solid line. Laura: dashed line"}. Values in the data table below.`}
-          >
-            <title>{title}</title>
-            <line
-              x1="35"
-              y1="160"
-              x2="465"
-              y2="160"
-              stroke="currentColor"
-              opacity="0.4"
-            />
-            <text x="5" y="35" fill="currentColor" fontSize="12">
-              {maximum}
-            </text>
-            <text x="15" y="165" fill="currentColor" fontSize="12">
-              0
-            </text>
-            <polyline
-              points={points
-                .map((p, i) => `${String(x(i))},${String(y(p.cam))}`)
-                .join(" ")}
-              stroke="var(--mantine-color-orange-6)"
-              strokeWidth="3"
-              fill="none"
-            />
-            {!oneSeries && (
-              <polyline
-                points={points
-                  .map((p, i) => `${String(x(i))},${String(y(p.laura))}`)
-                  .join(" ")}
-                stroke="var(--mantine-color-blue-4)"
-                strokeWidth="3"
-                strokeDasharray="7 4"
-                fill="none"
-              />
-            )}
-            {points.map((point, i) => (
-              <g key={point.id}>
-                <circle
-                  cx={x(i)}
-                  cy={y(point.cam)}
-                  r="3"
-                  fill="var(--mantine-color-orange-6)"
-                />
-                {!oneSeries && (
-                  <circle
-                    cx={x(i)}
-                    cy={y(point.laura)}
-                    r="3"
-                    fill="var(--mantine-color-blue-4)"
-                  />
-                )}
-              </g>
-            ))}
-            <text x="35" y="190" fill="currentColor" fontSize="12">
-              {points[0].date}
-            </text>
-            <text
-              x="465"
-              y="190"
-              textAnchor="end"
-              fill="currentColor"
-              fontSize="12"
-            >
-              {points[points.length - 1].date}
-            </text>
-          </svg>
-          <details>
-            <summary>Chart values</summary>
-            <table>
-              <caption>{title}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">{oneSeries ? "Rounds" : "Cam"}</th>
-                  {!oneSeries && <th scope="col">Laura</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {points.map((p) => (
-                  <tr key={p.id}>
-                    <th scope="row">{p.date}</th>
-                    <td>{p.cam}</td>
-                    {!oneSeries && <td>{p.laura}</td>}
-                  </tr>
+      ) : view === "table" ? (
+        // Focusable so keyboard users can scroll a long table
+        // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
+        <div className={styles.chartTable} tabIndex={0}>
+          <table aria-label={title}>
+            <thead>
+              <tr>
+                <th scope="col">{period}</th>
+                {series.map((line) => (
+                  <th scope="col" key={line.key}>
+                    {line.name}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-          </details>
-        </>
+              </tr>
+            </thead>
+            <tbody>
+              {points.map((p) => (
+                <tr key={p.id}>
+                  <th scope="row">{p.date}</th>
+                  <td>{p.cam}</td>
+                  {!oneSeries && <td>{p.laura}</td>}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <svg
+          className={styles.chart}
+          viewBox="0 0 500 205"
+          role="img"
+          aria-label={`${title}. Use the Table view to read the values.`}
+        >
+          <title>{title}</title>
+          <line
+            x1="35"
+            y1="160"
+            x2="405"
+            y2="160"
+            stroke="currentColor"
+            opacity="0.4"
+          />
+          <text x="5" y="35" fill="currentColor" fontSize="12">
+            {maximum}
+          </text>
+          <text x="15" y="165" fill="currentColor" fontSize="12">
+            0
+          </text>
+          {bars
+            ? points.map((p, i) => {
+                // Each point gets an equal slot, with its two bars side by side
+                const slot = 370 / points.length;
+                const centre = 35 + slot * (i + 0.5);
+                const width = Math.min(40, slot * 0.35);
+                return (
+                  <g key={p.id}>
+                    {series.map((bar, j) => {
+                      const n = bar.key === "cam" ? p.cam : p.laura;
+                      const left = j === 0 ? centre - width - 1 : centre + 1;
+                      return (
+                        <g key={bar.key}>
+                          <rect
+                            x={left}
+                            y={y(n)}
+                            width={width}
+                            height={160 - y(n)}
+                            fill={bar.color}
+                          />
+                          <text
+                            x={left + width / 2}
+                            y={y(n) - 4}
+                            textAnchor="middle"
+                            fill="currentColor"
+                            fontSize="11"
+                          >
+                            {n}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    <text
+                      x={centre}
+                      y="178"
+                      textAnchor="middle"
+                      fill="currentColor"
+                      fontSize="12"
+                    >
+                      {p.date}
+                    </text>
+                  </g>
+                );
+              })
+            : series.map((line) => {
+                const value = (p: Point) =>
+                  line.key === "cam" ? p.cam : p.laura;
+                return (
+                  <polyline
+                    key={line.key}
+                    points={points
+                      .map((p, i) => `${String(x(i))},${String(y(value(p)))}`)
+                      .join(" ")}
+                    stroke={line.color}
+                    strokeWidth="3"
+                    fill="none"
+                  />
+                );
+              })}
+          {/* Bars get a key with colour swatches; lines are named at their ends */}
+          {series.map((line, j) =>
+            bars ? (
+              <g key={line.key}>
+                <rect
+                  x="414"
+                  y={30 + j * 20}
+                  width="12"
+                  height="12"
+                  fill={line.color}
+                />
+                <text
+                  x="431"
+                  y={41 + j * 20}
+                  fill="currentColor"
+                  fontSize="13"
+                  fontWeight="700"
+                >
+                  {line.name}
+                </text>
+              </g>
+            ) : (
+              <text
+                key={line.key}
+                x="414"
+                y={(line.key === "cam" ? camLabel : lauraLabel) + 4}
+                fill="currentColor"
+                fontSize="13"
+                fontWeight="700"
+              >
+                {line.name}
+              </text>
+            ),
+          )}
+          {!bars && (
+            <>
+              <text x="35" y="190" fill="currentColor" fontSize="12">
+                {points[0].date}
+              </text>
+              <text
+                x="405"
+                y="190"
+                textAnchor="end"
+                fill="currentColor"
+                fontSize="12"
+              >
+                {points[points.length - 1].date}
+              </text>
+            </>
+          )}
+        </svg>
       )}
     </Paper>
   );
 }
-function gameDescription(game: Game | null) {
-  return game
-    ? `${gameDate(game) ?? "Unknown date"}: Cam ${String(game.cam)}, Laura ${String(game.laura)}`
-    : "No completed games yet";
+const leaderStyle = (player: "cam" | "laura") => ({
+  fontWeight: 700,
+  color: `var(--mantine-color-${player === "cam" ? "orange" : "yellow"}-text)`,
+});
+// A card value for both players: the leader is bold and in their colour, and
+// a draw leaves both plain
+function Pair({
+  cam,
+  laura,
+  suffix = "",
+  lead = [Number(cam), Number(laura)],
+}: {
+  cam: string | number;
+  laura: string | number;
+  suffix?: string;
+  lead?: [number, number];
+}) {
+  const winner =
+    lead[0] === lead[1] ? null : lead[0] > lead[1] ? "cam" : "laura";
+  const style = (player: "cam" | "laura") =>
+    winner === player ? leaderStyle(player) : undefined;
+  return (
+    <Text>
+      <span className={styles.nowrap} style={style("cam")}>
+        Cam {cam}
+        {suffix}
+      </span>
+      {" · "}
+      <span className={styles.nowrap} style={style("laura")}>
+        Laura {laura}
+        {suffix}
+      </span>
+    </Text>
+  );
 }
-
 export default function UnoStatistics() {
   const uno = useUno();
-  const [formOpen, setFormOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [cam, setCam] = useState<string | number>(0);
-  const [laura, setLaura] = useState<string | number>(0);
-  const [precision, setPrecision] =
-    useState<HistoricGameInput["datePrecision"]>("day");
-  const [date, setDate] = useState("");
-  const [notes, setNotes] = useState("");
-  const [winnerFilter, setWinnerFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("");
-  const [selected, setSelected] = useState<Game | null>(null);
-  const [events, setEvents] = useState<EventHistory[] | null>(null);
-  const [historyError, setHistoryError] = useState("");
-  const entryIdRef = useRef<string | null>(null);
-  const historyRequestRef = useRef(0);
-  useEffect(
-    () => () => {
-      historyRequestRef.current++;
-    },
-    [],
-  );
   const summary = uno.state ? statistics(uno.state) : null;
-  const games =
-    summary?.games
-      .filter(
-        (g) =>
-          (winnerFilter === "all" || g.winner === winnerFilter) &&
-          (!dateFilter || gameDate(g)?.startsWith(dateFilter)),
-      )
-      .sort(
-        (a, b) =>
-          (gameDate(b) ?? "").localeCompare(gameDate(a) ?? "") ||
-          compareGames(a, b),
-      ) ?? [];
-  async function saveHistory(event: React.SyntheticEvent) {
-    event.preventDefault();
-    setError("");
-    entryIdRef.current ??= crypto.randomUUID();
-    const parsed = HistoricGameSchema.safeParse({
-      id: entryIdRef.current,
-      cam,
-      laura,
-      playedOn: precision === "unknown" ? "" : date,
-      datePrecision: precision,
-      notes,
-    });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
-      return;
-    }
-    setSaving(true);
-    try {
-      await uno.addHistory(parsed.data);
-      setFormOpen(false);
-      setCam(0);
-      setLaura(0);
-      setNotes("");
-      setDate("");
-      entryIdRef.current = null;
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Could not save this game. Try again.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-  async function openHistory(game: Game) {
-    const request = ++historyRequestRef.current;
-    setSelected(game);
-    setEvents(null);
-    setHistoryError("");
-    if (!uno.online) {
-      setHistoryError(
-        "Reconnect to inspect the scoring history. Saved game totals are shown above.",
-      );
-      return;
-    }
-    try {
-      const history = await readUnoHistory(game.id);
-      if (request === historyRequestRef.current) setEvents(history);
-    } catch {
-      if (request !== historyRequestRef.current) return;
-      setHistoryError(
-        "Could not load scoring history. Close this window and try again.",
-      );
-    }
-  }
+  const percentage = (wins: number) =>
+    summary?.games.length
+      ? ((100 * wins) / summary.games.length).toFixed(0)
+      : "0";
   return (
     <div className={styles.stats}>
-      <Title>Uno statistics</Title>
-      <UnoNavigation stats />
+      <UnoHeader page="stats" />
       <UnoOfflineShell />
-      {uno.notice && (
-        <Text role="status" size="sm">
-          {uno.notice}
-        </Text>
-      )}
-      {!uno.online && (
-        <Alert>
-          Offline · showing saved statistics from{" "}
-          {uno.data.checkedAt
-            ? new Date(uno.data.checkedAt).toLocaleString("en-GB")
-            : "an earlier visit"}
-          . They may be outdated.
-        </Alert>
-      )}
-      {uno.error && <Alert color="orange">{uno.error}</Alert>}
-      {!!uno.data.events.length && (
-        <Text size="sm">
-          These records show confirmed shared scores. {uno.data.events.length}{" "}
-          saved changes on this device have not synced yet.
-        </Text>
-      )}
       {!summary ? (
         <Text>
           {uno.ready
@@ -297,39 +301,27 @@ export default function UnoStatistics() {
             <div className={styles.summary}>
               <Paper withBorder p="sm">
                 <Text size="sm">All-time round wins</Text>
-                <Text fw={700}>
-                  Cam {uno.state?.board.cam} · Laura {uno.state?.board.laura}
-                </Text>
+                <Pair
+                  cam={uno.state?.board.cam ?? 0}
+                  laura={uno.state?.board.laura ?? 0}
+                />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Game win percentage</Text>
+                <Pair
+                  cam={percentage(summary.wins.cam)}
+                  laura={percentage(summary.wins.laura)}
+                  suffix="%"
+                  lead={[summary.wins.cam, summary.wins.laura]}
+                />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Games won</Text>
+                <Pair cam={summary.wins.cam} laura={summary.wins.laura} />
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Games played</Text>
                 <Text fw={700}>{summary.games.length}</Text>
-              </Paper>
-              <Paper withBorder p="sm">
-                <Text size="sm">Games won</Text>
-                <Text fw={700}>
-                  Cam {summary.wins.cam} · Laura {summary.wins.laura}
-                </Text>
-              </Paper>
-              <Paper withBorder p="sm">
-                <Text size="sm">Game win percentage</Text>
-                <Text fw={700}>
-                  Cam{" "}
-                  {summary.games.length
-                    ? ((100 * summary.wins.cam) / summary.games.length).toFixed(
-                        1,
-                      )
-                    : "0"}
-                  % · Laura{" "}
-                  {summary.games.length
-                    ? (
-                        (100 * summary.wins.laura) /
-                        summary.games.length
-                      ).toFixed(1)
-                    : "0"}
-                  %
-                </Text>
-                <Text size="xs">Includes draws in games played.</Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Draws</Text>
@@ -346,70 +338,91 @@ export default function UnoStatistics() {
               Records
             </Title>
             <div className={styles.summary}>
-              {[
-                [
-                  "Biggest winning margin",
-                  summary.biggest
-                    ? `${String(summary.biggest.margin)} points`
-                    : "—",
-                  gameDescription(summary.biggest),
-                ],
-                [
-                  "Longest game",
-                  summary.longest
+              <Paper withBorder p="sm">
+                <Text size="sm">Busiest day</Text>
+                <Text fw={700}>
+                  {summary.busiest ? (
+                    <>
+                      <span className={styles.nowrap}>
+                        {summary.busiest.rounds} rounds
+                      </span>
+                      {" · "}
+                      <span className={styles.nowrap}>
+                        {summary.busiest.date}
+                      </span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </Text>
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Longest game</Text>
+                <Text fw={700} className={styles.nowrap}>
+                  {summary.longest
                     ? `${String(summary.longest.rounds)} rounds`
-                    : "—",
-                  gameDescription(summary.longest),
-                ],
-                [
-                  "Shortest game",
-                  summary.shortest
+                    : "—"}
+                </Text>
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Shortest game</Text>
+                <Text fw={700} className={styles.nowrap}>
+                  {summary.shortest
                     ? `${String(summary.shortest.rounds)} rounds`
-                    : "—",
-                  gameDescription(summary.shortest),
-                ],
-                [
-                  "Closest game",
-                  summary.closest
-                    ? `${String(summary.closest.margin)} points`
-                    : "—",
-                  gameDescription(summary.closest),
-                ],
-                [
-                  "Longest winning streak",
-                  `Cam ${String(summary.streak.cam)} · Laura ${String(summary.streak.laura)}`,
-                  "Dated games, in recorded date order. Historic entries have no recorded time and come before live games on the same date. Approximate dates may affect ordering.",
-                ],
-                [
-                  "Highest individual score",
-                  String(summary.highest),
-                  "Round wins in one game",
-                ],
-              ].map(([label, value, detail]) => (
-                <Paper withBorder p="sm" key={label}>
-                  <Text size="sm">{label}</Text>
-                  <Text fw={700}>{value}</Text>
-                  <Text size="xs">{detail}</Text>
-                </Paper>
-              ))}
+                    : "—"}
+                </Text>
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Biggest winning margin</Text>
+                {summary.biggest && summary.biggest.winner !== "draw" ? (
+                  <Text style={leaderStyle(summary.biggest.winner)}>
+                    {names[summary.biggest.winner]}{" "}
+                    <span className={styles.nowrap}>
+                      by {summary.biggest.margin} points
+                    </span>
+                  </Text>
+                ) : (
+                  <Text fw={700}>—</Text>
+                )}
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Longest winning streak</Text>
+                <Pair cam={summary.streak.cam} laura={summary.streak.laura} />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Highest individual score</Text>
+                {summary.highestBy.length === 1 ? (
+                  <Text
+                    className={styles.nowrap}
+                    style={leaderStyle(summary.highestBy[0])}
+                  >
+                    {names[summary.highestBy[0]]} {summary.highest}
+                  </Text>
+                ) : (
+                  <Text fw={700}>
+                    {summary.highestBy.map((p) => names[p]).join(" & ")}{" "}
+                    <span className={styles.nowrap}>{summary.highest}</span>
+                  </Text>
+                )}
+              </Paper>
             </div>
           </section>
           <section aria-labelledby="trends">
             <Title order={2} id="trends">
               Trends
             </Title>
-            <Text size="sm" mb="sm">
-              Completed games in date order. Games with unknown dates are
-              excluded from trends and streaks; year-only dates are excluded
-              from monthly wins. Active-game rounds are included in all-time
-              totals above.
-            </Text>
             <div className={styles.charts}>
               <Chart
                 title="Cumulative round wins"
                 points={summary.cumulative}
               />
-              <Chart title="Games won by month" points={summary.months} />
+              <Chart title="Cumulative games won" points={summary.gamesWon} />
+              <Chart
+                title="Games won by year"
+                points={summary.years}
+                bars
+                period="Year"
+              />
               <Chart
                 title="Game length over time"
                 points={summary.dated.map((g) => ({
@@ -422,216 +435,8 @@ export default function UnoStatistics() {
               />
             </div>
           </section>
-          <section aria-labelledby="history">
-            <Group justify="space-between">
-              <Title order={2} id="history">
-                Game history
-              </Title>
-              {uno.data.accountId && (
-                <Button
-                  disabled={!uno.online || !uno.verified}
-                  onClick={() => {
-                    setFormOpen(true);
-                  }}
-                >
-                  Add historic game
-                </Button>
-              )}
-            </Group>
-            <Group my="md" align="end">
-              <Select
-                label="Winner"
-                value={winnerFilter}
-                onChange={(value) => {
-                  setWinnerFilter(value ?? "all");
-                }}
-                data={[
-                  { value: "all", label: "All games" },
-                  { value: "cam", label: "Cam" },
-                  { value: "laura", label: "Laura" },
-                  { value: "draw", label: "Draws" },
-                ]}
-              />
-              <TextInput
-                label="Date starts with"
-                placeholder="e.g. 2024 or 2024-06"
-                value={dateFilter}
-                onChange={(event) => {
-                  setDateFilter(event.currentTarget.value);
-                }}
-              />
-            </Group>
-            <div className={styles.history}>
-              {games.map((g) => (
-                <Paper withBorder p="sm" key={g.id} className={styles.entry}>
-                  <Text fw={700}>
-                    {gameDate(g) ?? "Unknown date"}
-                    {g.source === "historic" ? " · historic game" : ""}
-                  </Text>
-                  <Text>
-                    Cam {g.cam} · Laura {g.laura} ·{" "}
-                    {g.winner === "draw" ? "Draw" : `${names[g.winner]} won`}
-                  </Text>
-                  <Text size="sm">
-                    {g.rounds} rounds · {g.margin} point margin
-                  </Text>
-                  {g.notes && (
-                    <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-                      {g.notes}
-                    </Text>
-                  )}
-                  {g.amended && (
-                    <Text size="sm" c="orange">
-                      Result amended after offline rounds synced.
-                    </Text>
-                  )}
-                  <Button
-                    variant="subtle"
-                    mt="xs"
-                    onClick={() => {
-                      void openHistory(g);
-                    }}
-                  >
-                    Scoring history
-                  </Button>
-                </Paper>
-              ))}
-              {!games.length && (
-                <Text>No completed games match these filters.</Text>
-              )}
-            </div>
-          </section>
         </>
       )}
-      <Modal
-        opened={formOpen}
-        onClose={() => {
-          if (!saving) setFormOpen(false);
-        }}
-        title="Add a historic game"
-        closeButtonProps={{ "aria-label": "Close historic game form" }}
-        centered
-      >
-        <form
-          onSubmit={(event) => {
-            void saveHistory(event);
-          }}
-          className={styles.form}
-        >
-          <Text size="sm">
-            Adds this game to lifetime totals and completed-game statistics.
-            Leave the date unknown if you do not have it.
-          </Text>
-          <NumberInput
-            label="Cam’s round wins"
-            min={0}
-            max={1000000}
-            allowDecimal={false}
-            value={cam}
-            onChange={setCam}
-            required
-          />
-          <NumberInput
-            label="Laura’s round wins"
-            min={0}
-            max={1000000}
-            allowDecimal={false}
-            value={laura}
-            onChange={setLaura}
-            required
-          />
-          <Select
-            label="Date precision"
-            value={precision}
-            onChange={(value) => {
-              if (
-                value === "day" ||
-                value === "month" ||
-                value === "year" ||
-                value === "unknown"
-              )
-                setPrecision(value);
-              setDate("");
-            }}
-            data={[
-              { value: "day", label: "Exact date" },
-              { value: "month", label: "Month only" },
-              { value: "year", label: "Year only" },
-              { value: "unknown", label: "Unknown" },
-            ]}
-            allowDeselect={false}
-          />
-          {precision !== "unknown" && (
-            <TextInput
-              label="Game date"
-              type={precision === "day" ? "date" : "text"}
-              placeholder={precision === "month" ? "YYYY-MM" : "YYYY"}
-              value={date}
-              onChange={(event) => {
-                setDate(event.currentTarget.value);
-              }}
-              required
-            />
-          )}
-          <Textarea
-            label="Notes"
-            description="For example, where you played or how you remember the date."
-            maxLength={2000}
-            value={notes}
-            onChange={(event) => {
-              setNotes(event.currentTarget.value);
-            }}
-          />
-          {error && (
-            <Alert color="orange" role="alert">
-              {error}
-            </Alert>
-          )}
-          <Button type="submit" loading={saving} disabled={!uno.online}>
-            Save historic game
-          </Button>
-        </form>
-      </Modal>
-      <Modal
-        opened={!!selected}
-        onClose={() => {
-          historyRequestRef.current++;
-          setSelected(null);
-        }}
-        title="Scoring history"
-        closeButtonProps={{ "aria-label": "Close scoring history" }}
-        centered
-      >
-        {selected && (
-          <>
-            <Text fw={700}>{gameDescription(selected)}</Text>
-            {selected.notes && <Text>{selected.notes}</Text>}
-            {historyError ? (
-              <Alert color="orange">{historyError}</Alert>
-            ) : events === null ? (
-              <Text>Loading rounds…</Text>
-            ) : !events.length ? (
-              <Text>
-                {selected.source === "historic"
-                  ? "Historic totals were entered together; individual rounds were not recorded."
-                  : "No rounds recorded."}
-              </Text>
-            ) : (
-              <ol>
-                {events.map((e) => (
-                  <li key={e.id}>
-                    {names[e.player]} {e.delta > 0 ? "+1" : "−1"} ·{" "}
-                    {new Date(e.createdAt).toLocaleString("en-GB")}
-                    <Text size="xs">
-                      Synced {new Date(e.receivedAt).toLocaleString("en-GB")}
-                    </Text>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </>
-        )}
-      </Modal>
     </div>
   );
 }

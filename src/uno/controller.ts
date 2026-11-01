@@ -13,12 +13,15 @@ import { reconcile, validLease, type Reconciliation } from "./reconcile";
 export interface UnoTransport {
   account: () => Promise<string | null>;
   read: () => Promise<UnoState>;
+  version: () => Promise<number>;
   start: () => Promise<UnoState>;
   finish: (
     id: string,
     version: number,
   ) => Promise<{ finished: boolean; state: UnoState }>;
   history: (input: HistoricGameInput) => Promise<UnoState>;
+  updateHistory: (input: HistoricGameInput) => Promise<UnoState>;
+  deleteGame: (id: string) => Promise<UnoState>;
   open: (id: string) => Promise<Lease>;
   sync: (events: ScoreEvent[]) => Promise<{
     accepted: string[];
@@ -219,11 +222,15 @@ export function createUnoController(
     const uid = await account();
     if (!(await replay(uid))) return;
     const before = await storage.read();
-    const state = await transport.read();
-    await apply({
-      state,
-      pendingAtRequest: before.events.map((event) => event.id),
-    });
+    // The full read is only worth it when the shared scoreboard has moved on.
+    const known = before.state?.board.version;
+    if (known === undefined || (await transport.version()) !== known) {
+      const state = await transport.read();
+      await apply({
+        state,
+        pendingAtRequest: before.events.map((event) => event.id),
+      });
+    }
     await lease(uid);
     failures = 0;
     retryAt = 0;
@@ -350,14 +357,12 @@ export function createUnoController(
     void refresh();
     return finished;
   }
-  async function addHistory(input: HistoricGameInput) {
+  async function changeHistory(action: string, run: () => Promise<UnoState>) {
     const state = await runtime.lock(async () => {
-      if (!runtime.online())
-        throw new Error("Reconnect to add a historic game.");
-      if (!(await account()))
-        throw new Error("Sign in to add a historic game.");
+      if (!runtime.online()) throw new Error(`Reconnect to ${action}.`);
+      if (!(await account())) throw new Error(`Sign in to ${action}.`);
       const before = await storage.read();
-      const result = await transport.history(input);
+      const result = await run();
       const local = await apply({
         state: result,
         pendingAtRequest: before.events.map((event) => event.id),
@@ -378,6 +383,14 @@ export function createUnoController(
     void refresh();
     return state;
   }
+  const addHistory = (input: HistoricGameInput) =>
+    changeHistory("add a historic game", () => transport.history(input));
+  const editHistory = (input: HistoricGameInput) =>
+    changeHistory("change a historic game", () =>
+      transport.updateHistory(input),
+    );
+  const deleteGame = (id: string) =>
+    changeHistory("delete a game", () => transport.deleteGame(id));
   async function score(player: Player, delta: 1 | -1) {
     const { game, canScore } = selectUno(snapshot);
     const { lease: permission, accountId } = snapshot.data;
@@ -440,6 +453,8 @@ export function createUnoController(
     start,
     finish,
     addHistory,
+    editHistory,
+    deleteGame,
     score,
     retry,
     discard,

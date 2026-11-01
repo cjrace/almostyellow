@@ -7,14 +7,17 @@ for (const failure of ["open", "match", "put"] as const) {
     page,
     context,
   }) => {
-    await page.goto("/games/uno");
-    await page
-      .locator("summary")
-      .filter({ hasText: "Offline storage" })
-      .click();
-    await expect(
-      page.getByText("Ready to reopen offline on this device."),
-    ).toBeVisible({ timeout: 30000 });
+    await page.goto("/games/uno-tracker");
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            async () =>
+              (await (await caches.open("uno-shell-v1")).keys()).length,
+          ),
+        { timeout: 30000 },
+      )
+      .toBeGreaterThan(1);
     await expect
       .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
       .toBe(true);
@@ -47,11 +50,6 @@ for (const failure of ["open", "match", "put"] as const) {
     expect(
       await page.evaluate(async (url) => (await fetch(url)).status, url),
     ).toBe(200);
-    await expect(
-      page.getByText(
-        "Offline reopening is not ready. Reopen Uno online and try again.",
-      ),
-    ).toBeVisible();
     await context.setOffline(true);
     expect(
       await page.evaluate(async (url) => {
