@@ -127,6 +127,12 @@ service cloud.firestore {
       allow delete: if isAuthorized();
     }
 
+    // Uno uses authenticated server actions only, including its public reads.
+    // Scoring leases and event account identifiers stay private to the server.
+    match /uno/{id} { allow read, write: if false; }
+    match /unoGames/{id}/{document=**} { allow read, write: if false; }
+    match /unoLeases/{id} { allow read, write: if false; }
+
     // The allowlist is managed with the Admin SDK only, which bypasses rules
     match /authorisedUsers/{uid} {
       allow read, write: if false;

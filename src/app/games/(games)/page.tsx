@@ -53,10 +53,10 @@ export default function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Uno"
-            description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
-            link="/games/uno"
-            linktext="Uno"
+            title="Uno tracker"
+            description="The whims of the Uno gods, faithfully recorded: lifetime wins, records and trends."
+            link="/games/uno-tracker"
+            linktext="Uno tracker"
           />
 
           <GamesCard

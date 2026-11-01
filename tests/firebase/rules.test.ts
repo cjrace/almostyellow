@@ -346,3 +346,18 @@ describe("timestamps", () => {
     },
   );
 });
+
+// Even an authorised browser must use the validated Uno server actions.
+test("Uno documents, events and device leases refuse direct browser access", async () => {
+  for (const path of [
+    "uno/scoreboard",
+    "unoGames/test-game",
+    "unoGames/test-game/events/test-event",
+    "unoLeases/test-lease",
+  ]) {
+    for (const db of [anonymous(), signedInAs(users.alice.uid)]) {
+      await assertFails(setDoc(doc(db, path), { cam: 99 }));
+      await assertFails(getDoc(doc(db, path)));
+    }
+  }
+});
