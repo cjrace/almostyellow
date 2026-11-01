@@ -22,38 +22,12 @@ import {
   Container,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
+import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
 
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
-  <Box
-    style={{
-      border: "2px solid #ccc",
-      borderRadius: "15px",
-      padding: "1px",
-      textAlign: "center",
-      position: "relative",
-      width: "100%",
-      background: "none",
-    }}
-  >
-    <div
-      id="calling_card"
-      style={{
-        content: '""',
-        position: "absolute",
-        top: "70px",
-        left: "-10px",
-        width: "0",
-        height: "0",
-        borderTop: "10px solid transparent",
-        borderBottom: "10px solid transparent",
-        borderRight: "10px solid #ccc",
-      }}
-    ></div>
-
-    <Title mt="md" order={2}>
-      Calling..
-    </Title>
+  <Box ta="center">
+    <Title order={2}>Calling..</Title>
     {card ? (
       <Text my="md" id="latest_card">
         {getCardName(card.suit, card.rank)}
@@ -63,10 +37,14 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
         No cards drawn yet
       </Text>
     )}
+    <Box w="min(100%, 160px)" mx="auto" id="calling_card">
+      <PlayingCard card={card} decorative />
+    </Box>
   </Box>
 );
 
 export default function IrishBingo() {
+  usePreloadCards();
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
@@ -299,7 +277,8 @@ export default function IrishBingo() {
         <Space h="md" />
 
         <Button
-          variant="default"
+          // Once the deck runs out, shuffling is the next thing to do
+          variant={mainDeck.length === 0 ? "filled" : "default"}
           onClick={newDeck}
           fullWidth
           disabled={drawnCards.length > 0 ? false : true}

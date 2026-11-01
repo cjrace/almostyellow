@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Five of Hearts</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<g fill="#b91c1c" color="#b91c1c" font-family="Arial, Helvetica, sans-serif">
+<text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">5</text><g transform="translate(14 57) scale(0.26)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g>
+<g transform="rotate(180 125 175)"><text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">5</text><g transform="translate(14 57) scale(0.26)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g></g>
+<g transform="translate(53 48) scale(0.44)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g><g transform="translate(153 48) scale(0.44)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g><g transform="translate(103 153) scale(0.44)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g><g transform="translate(53 258) scale(0.44) rotate(180 50 50)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g><g transform="translate(153 258) scale(0.44) rotate(180 50 50)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g>
+</g>
+</svg>

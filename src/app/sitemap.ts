@@ -39,6 +39,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2,
     },
     {
+      url: "https://www.almostyellow.co.uk/games/redorblack",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.7,
+    },
+    {
+      url: "https://www.almostyellow.co.uk/games/suits",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.7,
+    },
+    {
       url: "https://www.almostyellow.co.uk/decisionmaker",
       lastModified: new Date(),
       changeFrequency: "yearly",

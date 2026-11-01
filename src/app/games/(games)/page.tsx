@@ -58,6 +58,22 @@ export default function Games() {
             link="/games/uno"
             linktext="Uno"
           />
+
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Red or Black v1"
+            description="Red or black? Simple but deadly. A Ben Palmer original."
+            link="/games/redorblack"
+            linktext="Red or Black v1"
+          />
+
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Suits"
+            description="Pick your suit and reap the consequences. Another Ben Palmer special."
+            link="/games/suits"
+            linktext="Suits"
+          />
         </SimpleGrid>
       </main>
     </>

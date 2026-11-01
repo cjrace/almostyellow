@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Jack of Clubs</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<g fill="#171717" color="#171717" font-family="Arial, Helvetica, sans-serif">
+<text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">J</text><g transform="translate(14 57) scale(0.26)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g>
+<g transform="rotate(180 125 175)"><text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">J</text><g transform="translate(14 57) scale(0.26)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g></g>
+<g transform="translate(70 97) scale(1.1)"><path d="M8 50 Q45 8 88 50 Z"/><rect x="4" y="48" width="88" height="10" rx="4"/><path d="M58 30 Q86 -4 99 2 Q86 16 66 38 Z"/></g><g transform="translate(80 180) scale(0.9)"><circle cx="50" cy="28" r="21"/><circle cx="27" cy="57" r="21"/><circle cx="73" cy="57" r="21"/><path d="M45 50 C45 78 40 89 32 97 L68 97 C60 89 55 78 55 50 Z"/></g>
+</g>
+</svg>

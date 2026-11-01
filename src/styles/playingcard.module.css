@@ -1,0 +1,40 @@
+/* Cards keep the 5:7 shape of the SVGs at every width */
+.card {
+  aspect-ratio: 5 / 7;
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6%;
+}
+
+/* The single card and the row fit the height of the space they're in (a size
+   container), as well as its width */
+.single {
+  width: min(100cqw, 100cqh * 5 / 7, 400px);
+  margin-inline: auto;
+}
+
+/* Four cards side by side on wider screens */
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-sm);
+  width: min(100cqw, 100cqh * 20 / 7 + 3 * var(--mantine-spacing-sm), 1000px);
+  margin-inline: auto;
+}
+
+/* Two by two on phones, so each card is big enough to read */
+@media (max-width: 47.99em) {
+  .single {
+    width: min(100cqw, 100cqh * 5 / 7, 260px);
+  }
+
+  .row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(
+      100cqw,
+      (100cqh - var(--mantine-spacing-sm)) * 5 / 7 + var(--mantine-spacing-sm),
+      360px
+    );
+  }
+}
