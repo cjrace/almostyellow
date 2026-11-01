@@ -5,12 +5,7 @@
   max-width: 40rem;
 }
 
-.players {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--mantine-spacing-md);
-}
-
+.players,
 .playing {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
