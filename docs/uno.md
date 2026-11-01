@@ -26,7 +26,7 @@ Historic-game entry remains available while changes await sync. If a returned sn
 
 A scoring permission can only be issued while its game is active. When an offline device reconnects, its previously issued permission lets queued changes amend that original game, even if a new game has started. Scores, lifetime totals and the amended result update atomically; statistics derive from the revised game records. Ordinary controls never add points to a game known to be completed.
 
-There is no trusted offline browser clock. The server can verify that the device’s permission predates completion, but cannot prove when an authorised person actually tapped. A holder of an old permission could fabricate a replay. Strictly preventing that would require rejecting some legitimate late offline rounds. This implementation uses the plan’s rule of accepting late changes from previously opened scoring sessions. Permissions and account identifiers are never exposed by public reads.
+There is no trusted offline browser clock. The server can verify that the device’s permission predates completion, but cannot prove when an authorised person actually tapped. A holder of an old permission could fabricate a replay. Strictly preventing that would require rejecting some legitimate late offline rounds. This implementation accepts late rounds from any scoring permission that was issued while its game was active. Permissions and account identifiers are never exposed by public reads.
 
 ## Validation
 
