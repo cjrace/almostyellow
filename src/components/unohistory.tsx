@@ -275,13 +275,19 @@ export default function UnoHistory() {
                     {g.source === "historic" ? " · historic game" : ""}
                   </Text>
                   <Badge
-                    variant={g.winner === "draw" ? "outline" : "light"}
+                    variant={g.winner === "draw" ? "outline" : "filled"}
                     color={
                       g.winner === "draw"
                         ? "gray"
                         : g.winner === "cam"
                           ? "orange"
-                          : "blue"
+                          : "yellow"
+                    }
+                    // Black text keeps the filled orange and yellow readable
+                    style={
+                      g.winner === "draw"
+                        ? undefined
+                        : { color: "var(--mantine-color-black)" }
                     }
                   >
                     {g.winner === "draw" ? "Draw" : `${names[g.winner]} won`}
