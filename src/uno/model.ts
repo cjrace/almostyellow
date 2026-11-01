@@ -160,7 +160,7 @@ export function statistics(state: UnoState) {
     [...days.values()]
       .sort((a, b) => b.rounds - a.rounds || a.date.localeCompare(b.date))
       .at(0) ?? null;
-  const months = new Map<string, Scores>();
+  const years = new Map<string, Scores>();
   const cumulative: { id: string; date: string; cam: number; laura: number }[] =
     [];
   const gamesWon: typeof cumulative = [];
@@ -173,13 +173,10 @@ export function statistics(state: UnoState) {
     cumulative.push({ id: g.id, date, ...totals });
     if (g.winner !== "draw") gameTotals[g.winner]++;
     gamesWon.push({ id: g.id, date, ...gameTotals });
-    // A year-only date must not invent a month for the monthly chart.
-    if (date.length >= 7) {
-      const month = date.slice(0, 7);
-      const count = months.get(month) ?? { cam: 0, laura: 0 };
-      if (g.winner !== "draw") count[g.winner]++;
-      months.set(month, count);
-    }
+    const year = date.slice(0, 4);
+    const count = years.get(year) ?? { cam: 0, laura: 0 };
+    if (g.winner !== "draw") count[g.winner]++;
+    years.set(year, count);
   }
   return {
     games,
@@ -201,7 +198,7 @@ export function statistics(state: UnoState) {
       : [],
     cumulative,
     gamesWon,
-    months: [...months].map(([date, scores]) => ({
+    years: [...years].map(([date, scores]) => ({
       id: date,
       date,
       ...scores,

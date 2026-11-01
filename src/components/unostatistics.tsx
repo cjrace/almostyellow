@@ -20,10 +20,15 @@ function Chart({
   title,
   points,
   oneSeries = false,
+  bars = false,
+  period = "Date",
 }: {
   title: string;
   points: Point[];
   oneSeries?: boolean;
+  // Clustered bars, with Cam and Laura side by side for each point
+  bars?: boolean;
+  period?: string;
 }) {
   const [view, setView] = useState("chart");
   const maximum = Math.max(1, ...points.flatMap((p) => [p.cam, p.laura]));
@@ -80,7 +85,7 @@ function Chart({
           <table aria-label={title}>
             <thead>
               <tr>
-                <th scope="col">Date</th>
+                <th scope="col">{period}</th>
                 {series.map((line) => (
                   <th scope="col" key={line.key}>
                     {line.name}
@@ -121,21 +126,79 @@ function Chart({
           <text x="15" y="165" fill="currentColor" fontSize="12">
             0
           </text>
-          {series.map((line) => {
-            const value = (p: Point) => (line.key === "cam" ? p.cam : p.laura);
-            return (
+          {bars
+            ? points.map((p, i) => {
+                // Each point gets an equal slot, with its two bars side by side
+                const slot = 370 / points.length;
+                const centre = 35 + slot * (i + 0.5);
+                const width = Math.min(40, slot * 0.35);
+                return (
+                  <g key={p.id}>
+                    {series.map((bar, j) => {
+                      const n = bar.key === "cam" ? p.cam : p.laura;
+                      const left = j === 0 ? centre - width - 1 : centre + 1;
+                      return (
+                        <g key={bar.key}>
+                          <rect
+                            x={left}
+                            y={y(n)}
+                            width={width}
+                            height={160 - y(n)}
+                            fill={bar.color}
+                          />
+                          <text
+                            x={left + width / 2}
+                            y={y(n) - 4}
+                            textAnchor="middle"
+                            fill="currentColor"
+                            fontSize="11"
+                          >
+                            {n}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    <text
+                      x={centre}
+                      y="178"
+                      textAnchor="middle"
+                      fill="currentColor"
+                      fontSize="12"
+                    >
+                      {p.date}
+                    </text>
+                  </g>
+                );
+              })
+            : series.map((line) => {
+                const value = (p: Point) =>
+                  line.key === "cam" ? p.cam : p.laura;
+                return (
+                  <polyline
+                    key={line.key}
+                    points={points
+                      .map((p, i) => `${String(x(i))},${String(y(value(p)))}`)
+                      .join(" ")}
+                    stroke={line.color}
+                    strokeWidth="3"
+                    fill="none"
+                  />
+                );
+              })}
+          {/* Bars get a key with colour swatches; lines are named at their ends */}
+          {series.map((line, j) =>
+            bars ? (
               <g key={line.key}>
-                <polyline
-                  points={points
-                    .map((p, i) => `${String(x(i))},${String(y(value(p)))}`)
-                    .join(" ")}
-                  stroke={line.color}
-                  strokeWidth="3"
-                  fill="none"
+                <rect
+                  x="414"
+                  y={30 + j * 20}
+                  width="12"
+                  height="12"
+                  fill={line.color}
                 />
                 <text
-                  x="414"
-                  y={(line.key === "cam" ? camLabel : lauraLabel) + 4}
+                  x="431"
+                  y={41 + j * 20}
                   fill="currentColor"
                   fontSize="13"
                   fontWeight="700"
@@ -143,20 +206,35 @@ function Chart({
                   {line.name}
                 </text>
               </g>
-            );
-          })}
-          <text x="35" y="190" fill="currentColor" fontSize="12">
-            {points[0].date}
-          </text>
-          <text
-            x="405"
-            y="190"
-            textAnchor="end"
-            fill="currentColor"
-            fontSize="12"
-          >
-            {points[points.length - 1].date}
-          </text>
+            ) : (
+              <text
+                key={line.key}
+                x="414"
+                y={(line.key === "cam" ? camLabel : lauraLabel) + 4}
+                fill="currentColor"
+                fontSize="13"
+                fontWeight="700"
+              >
+                {line.name}
+              </text>
+            ),
+          )}
+          {!bars && (
+            <>
+              <text x="35" y="190" fill="currentColor" fontSize="12">
+                {points[0].date}
+              </text>
+              <text
+                x="405"
+                y="190"
+                textAnchor="end"
+                fill="currentColor"
+                fontSize="12"
+              >
+                {points[points.length - 1].date}
+              </text>
+            </>
+          )}
         </svg>
       )}
     </Paper>
@@ -185,12 +263,12 @@ function Pair({
     winner === player ? leaderStyle(player) : undefined;
   return (
     <Text>
-      <span style={style("cam")}>
+      <span className={styles.nowrap} style={style("cam")}>
         Cam {cam}
         {suffix}
       </span>
       {" · "}
-      <span style={style("laura")}>
+      <span className={styles.nowrap} style={style("laura")}>
         Laura {laura}
         {suffix}
       </span>
@@ -202,7 +280,7 @@ export default function UnoStatistics() {
   const summary = uno.state ? statistics(uno.state) : null;
   const percentage = (wins: number) =>
     summary?.games.length
-      ? ((100 * wins) / summary.games.length).toFixed(1)
+      ? ((100 * wins) / summary.games.length).toFixed(0)
       : "0";
   return (
     <div className={styles.stats}>
@@ -263,14 +341,24 @@ export default function UnoStatistics() {
               <Paper withBorder p="sm">
                 <Text size="sm">Busiest day</Text>
                 <Text fw={700}>
-                  {summary.busiest
-                    ? `${String(summary.busiest.rounds)} rounds · ${summary.busiest.date}`
-                    : "—"}
+                  {summary.busiest ? (
+                    <>
+                      <span className={styles.nowrap}>
+                        {summary.busiest.rounds} rounds
+                      </span>
+                      {" · "}
+                      <span className={styles.nowrap}>
+                        {summary.busiest.date}
+                      </span>
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </Text>
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Longest game</Text>
-                <Text fw={700}>
+                <Text fw={700} className={styles.nowrap}>
                   {summary.longest
                     ? `${String(summary.longest.rounds)} rounds`
                     : "—"}
@@ -278,7 +366,7 @@ export default function UnoStatistics() {
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Shortest game</Text>
-                <Text fw={700}>
+                <Text fw={700} className={styles.nowrap}>
                   {summary.shortest
                     ? `${String(summary.shortest.rounds)} rounds`
                     : "—"}
@@ -288,8 +376,10 @@ export default function UnoStatistics() {
                 <Text size="sm">Biggest winning margin</Text>
                 {summary.biggest && summary.biggest.winner !== "draw" ? (
                   <Text style={leaderStyle(summary.biggest.winner)}>
-                    {names[summary.biggest.winner]} by {summary.biggest.margin}{" "}
-                    points
+                    {names[summary.biggest.winner]}{" "}
+                    <span className={styles.nowrap}>
+                      by {summary.biggest.margin} points
+                    </span>
                   </Text>
                 ) : (
                   <Text fw={700}>—</Text>
@@ -302,13 +392,16 @@ export default function UnoStatistics() {
               <Paper withBorder p="sm">
                 <Text size="sm">Highest individual score</Text>
                 {summary.highestBy.length === 1 ? (
-                  <Text style={leaderStyle(summary.highestBy[0])}>
+                  <Text
+                    className={styles.nowrap}
+                    style={leaderStyle(summary.highestBy[0])}
+                  >
                     {names[summary.highestBy[0]]} {summary.highest}
                   </Text>
                 ) : (
                   <Text fw={700}>
                     {summary.highestBy.map((p) => names[p]).join(" & ")}{" "}
-                    {summary.highest}
+                    <span className={styles.nowrap}>{summary.highest}</span>
                   </Text>
                 )}
               </Paper>
@@ -324,7 +417,12 @@ export default function UnoStatistics() {
                 points={summary.cumulative}
               />
               <Chart title="Cumulative games won" points={summary.gamesWon} />
-              <Chart title="Games won by month" points={summary.months} />
+              <Chart
+                title="Games won by year"
+                points={summary.years}
+                bars
+                period="Year"
+              />
               <Chart
                 title="Game length over time"
                 points={summary.dated.map((g) => ({

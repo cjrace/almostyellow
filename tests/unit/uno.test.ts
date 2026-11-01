@@ -54,12 +54,11 @@ describe("Uno statistics", () => {
       [1, 0],
       [1, 0],
     ]);
-    expect(stats.months).toEqual([
-      { id: "2024-01", date: "2024-01", cam: 1, laura: 0 },
-      { id: "2024-02", date: "2024-02", cam: 0, laura: 0 },
+    expect(stats.years).toEqual([
+      { id: "2024", date: "2024", cam: 1, laura: 0 },
     ]);
   });
-  it("recalculates an amended winner, margin, streak and monthly wins", () => {
+  it("recalculates an amended winner, margin, streak and yearly wins", () => {
     const games = [
       game("a", 2, 1, "2024-01-01"),
       game("b", 1, 4, "2024-01-02"),
@@ -77,14 +76,16 @@ describe("Uno statistics", () => {
     expect(after.streak.cam).toBe(2);
     expect(after.highest).toBe(5);
     expect(after.highestBy.length).toBeGreaterThan(0);
-    expect(after.months[0].cam).toBe(2);
+    expect(after.years[0].cam).toBe(2);
   });
-  it("does not assign year-only games to January", () => {
+  it("counts year-only games in their year", () => {
     const stats = statistics({
       board: emptyBoard(),
       games: [game("a", 3, 1, "2020")],
     });
-    expect(stats.months).toEqual([]);
+    expect(stats.years).toEqual([
+      { id: "2020", date: "2020", cam: 1, laura: 0 },
+    ]);
     expect(stats.cumulative).toHaveLength(1);
   });
   it("handles an empty history", () => {

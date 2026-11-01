@@ -96,6 +96,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
+/* Keeps a value and its label together, so a card line wraps between items */
+.nowrap {
+  white-space: nowrap;
+}
 .stats section > h2 {
   margin-bottom: 0.75rem;
 }

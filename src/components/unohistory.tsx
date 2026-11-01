@@ -315,8 +315,15 @@ export default function UnoHistory() {
               <Paper withBorder p="sm" key={g.id} className={styles.entry}>
                 <div className={styles.entryHead}>
                   <Text fw={700}>
-                    {gameDate(g) ?? "Unknown date"}
-                    {g.source === "historic" ? " · historic game" : ""}
+                    <span className={styles.nowrap}>
+                      {gameDate(g) ?? "Unknown date"}
+                    </span>
+                    {g.source === "historic" && (
+                      <>
+                        {" · "}
+                        <span className={styles.nowrap}>historic game</span>
+                      </>
+                    )}
                   </Text>
                   <Badge
                     variant={g.winner === "draw" ? "outline" : "filled"}
@@ -366,7 +373,9 @@ export default function UnoHistory() {
                   )}
                 </div>
                 <Text className={styles.entryScore}>
-                  Cam {g.cam} · Laura {g.laura}
+                  <span className={styles.nowrap}>Cam {g.cam}</span>
+                  {" · "}
+                  <span className={styles.nowrap}>Laura {g.laura}</span>
                 </Text>
                 {g.notes && (
                   <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
@@ -380,7 +389,11 @@ export default function UnoHistory() {
                 )}
                 <div className={styles.entryFoot}>
                   <Text size="sm" c="dimmed">
-                    {g.rounds} rounds · {g.margin} point margin
+                    <span className={styles.nowrap}>{g.rounds} rounds</span>
+                    {" · "}
+                    <span className={styles.nowrap}>
+                      {g.margin} point margin
+                    </span>
                   </Text>
                   <Button
                     variant="subtle"

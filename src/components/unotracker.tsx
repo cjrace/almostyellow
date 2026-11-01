@@ -213,7 +213,13 @@ export default function UnoTracker() {
                     : `${names[outcome?.winner ?? "cam"]} wins!`}
                 </Text>
                 <Text size="sm">
-                  {outcome?.rounds} rounds · {outcome?.margin} point margin
+                  <span className={styles.nowrap}>
+                    {outcome?.rounds} rounds
+                  </span>
+                  {" · "}
+                  <span className={styles.nowrap}>
+                    {outcome?.margin} point margin
+                  </span>
                 </Text>
                 {game.amended && (
                   <Text size="sm">
@@ -295,13 +301,20 @@ export default function UnoTracker() {
         {confirmation && (
           <>
             <Text>
-              Cam {confirmation.cam} · Laura {confirmation.laura}
+              <span className={styles.nowrap}>Cam {confirmation.cam}</span>
+              {" · "}
+              <span className={styles.nowrap}>Laura {confirmation.laura}</span>
             </Text>
             <Text>
-              {confirmation.cam + confirmation.laura} rounds ·{" "}
-              {result(confirmation).winner === "draw"
-                ? "Draw"
-                : `${names[result(confirmation).winner as "cam" | "laura"]} winning`}
+              <span className={styles.nowrap}>
+                {confirmation.cam + confirmation.laura} rounds
+              </span>
+              {" · "}
+              <span className={styles.nowrap}>
+                {result(confirmation).winner === "draw"
+                  ? "Draw"
+                  : `${names[result(confirmation).winner as "cam" | "laura"]} winning`}
+              </span>
             </Text>
             <Text size="sm" mt="sm">
               Previously offline rounds can still arrive and amend this result.
