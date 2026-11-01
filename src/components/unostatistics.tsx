@@ -166,6 +166,42 @@ function Chart({
     </Paper>
   );
 }
+// A card value for both players: the leader is bold and in their colour, and
+// a draw leaves both plain
+function Pair({
+  cam,
+  laura,
+  suffix = "",
+  lead = [Number(cam), Number(laura)],
+}: {
+  cam: string | number;
+  laura: string | number;
+  suffix?: string;
+  lead?: [number, number];
+}) {
+  const winner =
+    lead[0] === lead[1] ? null : lead[0] > lead[1] ? "cam" : "laura";
+  const style = (player: "cam" | "laura") =>
+    winner === player
+      ? {
+          fontWeight: 700,
+          color: `var(--mantine-color-${player === "cam" ? "orange" : "yellow"}-text)`,
+        }
+      : undefined;
+  return (
+    <Text>
+      <span style={style("cam")}>
+        Cam {cam}
+        {suffix}
+      </span>
+      {" · "}
+      <span style={style("laura")}>
+        Laura {laura}
+        {suffix}
+      </span>
+    </Text>
+  );
+}
 function gameDescription(game: Game | null) {
   return game
     ? `${gameDate(game) ?? "Unknown date"}: Cam ${String(game.cam)}, Laura ${String(game.laura)}`
@@ -175,6 +211,10 @@ function gameDescription(game: Game | null) {
 export default function UnoStatistics() {
   const uno = useUno();
   const summary = uno.state ? statistics(uno.state) : null;
+  const percentage = (wins: number) =>
+    summary?.games.length
+      ? ((100 * wins) / summary.games.length).toFixed(1)
+      : "0";
   return (
     <div className={styles.stats}>
       <UnoHeader page="stats" />
@@ -194,9 +234,10 @@ export default function UnoStatistics() {
             <div className={styles.summary}>
               <Paper withBorder p="sm">
                 <Text size="sm">All-time round wins</Text>
-                <Text fw={700}>
-                  Cam {uno.state?.board.cam} · Laura {uno.state?.board.laura}
-                </Text>
+                <Pair
+                  cam={uno.state?.board.cam ?? 0}
+                  laura={uno.state?.board.laura ?? 0}
+                />
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Games played</Text>
@@ -204,28 +245,16 @@ export default function UnoStatistics() {
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Games won</Text>
-                <Text fw={700}>
-                  Cam {summary.wins.cam} · Laura {summary.wins.laura}
-                </Text>
+                <Pair cam={summary.wins.cam} laura={summary.wins.laura} />
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Game win percentage</Text>
-                <Text fw={700}>
-                  Cam{" "}
-                  {summary.games.length
-                    ? ((100 * summary.wins.cam) / summary.games.length).toFixed(
-                        1,
-                      )
-                    : "0"}
-                  % · Laura{" "}
-                  {summary.games.length
-                    ? (
-                        (100 * summary.wins.laura) /
-                        summary.games.length
-                      ).toFixed(1)
-                    : "0"}
-                  %
-                </Text>
+                <Pair
+                  cam={percentage(summary.wins.cam)}
+                  laura={percentage(summary.wins.laura)}
+                  suffix="%"
+                  lead={[summary.wins.cam, summary.wins.laura]}
+                />
               </Paper>
               <Paper withBorder p="sm">
                 <Text size="sm">Draws</Text>
@@ -271,12 +300,6 @@ export default function UnoStatistics() {
                     : "—",
                   gameDescription(summary.closest),
                 ],
-                [
-                  "Longest winning streak",
-                  `Cam ${String(summary.streak.cam)} · Laura ${String(summary.streak.laura)}`,
-                  "",
-                ],
-                ["Highest individual score", String(summary.highest), ""],
               ].map(([label, value, detail]) => (
                 <Paper withBorder p="sm" key={label}>
                   <Text size="sm">{label}</Text>
@@ -284,6 +307,14 @@ export default function UnoStatistics() {
                   {detail && <Text size="xs">{detail}</Text>}
                 </Paper>
               ))}
+              <Paper withBorder p="sm">
+                <Text size="sm">Longest winning streak</Text>
+                <Pair cam={summary.streak.cam} laura={summary.streak.laura} />
+              </Paper>
+              <Paper withBorder p="sm">
+                <Text size="sm">Highest individual score</Text>
+                <Text fw={700}>{summary.highest}</Text>
+              </Paper>
             </div>
           </section>
           <section aria-labelledby="trends">

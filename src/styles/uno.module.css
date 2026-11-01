@@ -196,7 +196,8 @@
   }
 }
 @media (min-width: 72rem) {
-  .charts {
+  .charts,
+  .history {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
