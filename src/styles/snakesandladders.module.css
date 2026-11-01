@@ -21,7 +21,8 @@
   order: -1;
 }
 
-.controls > button {
+.controls > button,
+.controls > div > button {
   width: 100%;
 }
 
