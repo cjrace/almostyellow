@@ -13,6 +13,7 @@ const {
   syncUnoEvents,
   finishUnoGame,
   readUnoState,
+  readUnoVersion,
   readUnoHistory,
   addHistoricUnoGame,
 } = await import("@/services/uno");
@@ -144,6 +145,32 @@ describe("Uno scoring transactions", () => {
     expect(
       (await syncUnoEvents([event({ leaseId: randomUUID() })])).rejected,
     ).toHaveLength(1);
+  });
+  test("stops accepting late rounds 7 days after a game finishes and deletes its leases", async () => {
+    const { gameId, event } = await setup();
+    const state = await readUnoState();
+    await finishUnoGame(gameId, state.games[0].version);
+    const leases = adminDb().collection("unoLeases");
+    const [lease] = (await leases.get()).docs;
+    expect(lease.get("expiresAt")).toBeGreaterThan(Date.now());
+    // Move the finish and expiry back past the 7 day grace period
+    const eightDays = 8 * 24 * 60 * 60 * 1000;
+    await adminDb()
+      .doc(`unoGames/${gameId}`)
+      .update({ finishedAt: Date.now() - eightDays });
+    await lease.ref.update({ expiresAt: Date.now() - 1000 });
+    const late = await syncUnoEvents([event()]);
+    expect(late.rejected[0].message).toContain("7 days");
+    // The next game to finish clears the expired lease
+    const next = await startUnoGame();
+    const nextGame = next.games.find((g) => g.id === next.board.activeGameId);
+    await finishUnoGame(next.board.activeGameId ?? "", nextGame?.version ?? 0);
+    expect((await leases.get()).empty).toBe(true);
+  });
+  test("reads only the scoreboard version", async () => {
+    expect(await readUnoVersion()).toBe(0);
+    await startUnoGame();
+    expect(await readUnoVersion()).toBe((await readUnoState()).board.version);
   });
   test("stores historic scores, dates and notes once, including undated entries", async () => {
     const entry = {

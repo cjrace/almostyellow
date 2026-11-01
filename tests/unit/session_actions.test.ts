@@ -63,9 +63,9 @@ describe("signInAction", () => {
   it.each([
     [undefined, "/"],
     ["/admin", "/admin"],
-    ["/games/uno", "/games/uno"],
-    ["/games/uno/stats", "/games/uno/stats"],
-    ["/games/uno/session", "/"],
+    ["/games/uno-tracker", "/games/uno-tracker"],
+    ["/games/uno-tracker/stats", "/games/uno-tracker/stats"],
+    ["/games/uno-tracker/session", "/"],
     ["/admin/holidays", "/admin/holidays"],
     ["/admin/films/1/edit?x=1", "/admin/films/1/edit?x=1"],
     ["/admin/login", "/"],

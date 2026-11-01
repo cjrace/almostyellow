@@ -12,7 +12,10 @@ import {
 // already filters callbackUrl, but this action can be called directly.
 function safeRedirect(redirectTo: unknown) {
   if (typeof redirectTo !== "string") return "/";
-  if (redirectTo === "/games/uno" || redirectTo === "/games/uno/stats")
+  if (
+    redirectTo === "/games/uno-tracker" ||
+    redirectTo === "/games/uno-tracker/stats"
+  )
     return redirectTo;
   const isAdminPath =
     redirectTo === "/admin" || redirectTo.startsWith("/admin/");

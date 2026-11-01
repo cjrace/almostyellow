@@ -17,7 +17,10 @@ export const metadata: Metadata = {
 // doesn't leak an unrelated path.
 function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   if (!callbackUrl) return undefined;
-  if (callbackUrl === "/games/uno" || callbackUrl === "/games/uno/stats")
+  if (
+    callbackUrl === "/games/uno-tracker" ||
+    callbackUrl === "/games/uno-tracker/stats"
+  )
     return callbackUrl;
 
   try {

@@ -13,6 +13,7 @@ import { reconcile, validLease, type Reconciliation } from "./reconcile";
 export interface UnoTransport {
   account: () => Promise<string | null>;
   read: () => Promise<UnoState>;
+  version: () => Promise<number>;
   start: () => Promise<UnoState>;
   finish: (
     id: string,
@@ -219,11 +220,15 @@ export function createUnoController(
     const uid = await account();
     if (!(await replay(uid))) return;
     const before = await storage.read();
-    const state = await transport.read();
-    await apply({
-      state,
-      pendingAtRequest: before.events.map((event) => event.id),
-    });
+    // The full read is only worth it when the shared scoreboard has moved on.
+    const known = before.state?.board.version;
+    if (known === undefined || (await transport.version()) !== known) {
+      const state = await transport.read();
+      await apply({
+        state,
+        pendingAtRequest: before.events.map((event) => event.id),
+      });
+    }
     await lease(uid);
     failures = 0;
     retryAt = 0;

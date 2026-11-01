@@ -1,7 +1,7 @@
 /* Only the public Uno shell and same-origin versioned assets are cached.
    Session checks, server-action POSTs and RSC responses always use the network. */
 const CACHE = "uno-shell-v1";
-const pages = ["/games/uno", "/games/uno/stats"];
+const pages = ["/games/uno-tracker", "/games/uno-tracker/stats"];
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => {
   event.waitUntil(

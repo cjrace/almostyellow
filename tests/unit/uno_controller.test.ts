@@ -99,6 +99,7 @@ function setup(data = local()) {
   const transport = {
     account: vi.fn(() => Promise.resolve("alice" as string | null)),
     read: vi.fn(() => Promise.resolve(state())),
+    version: vi.fn(() => Promise.resolve(state().board.version)),
     start: vi.fn(() => Promise.resolve(state(2))),
     finish: vi.fn<UnoTransport["finish"]>(() =>
       Promise.resolve({
@@ -315,6 +316,7 @@ describe("per-tab coordinator", () => {
   it("records durably while the network lock is occupied and replays exactly once", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     const response = deferred<UnoState>();
     h.transport.read.mockReturnValueOnce(response.promise);
     h.online();
@@ -332,9 +334,22 @@ describe("per-tab coordinator", () => {
     expect(selectUno(h.controller.getSnapshot()).totals.cam).toBe(1);
     h.unsubscribe();
   });
+  it("skips the full read while the shared scoreboard version is unchanged", async () => {
+    const h = setup();
+    await h.ready();
+    h.online();
+    await h.controller.refresh();
+    expect(h.transport.version).toHaveBeenCalled();
+    expect(h.transport.read).not.toHaveBeenCalled();
+    h.transport.version.mockResolvedValue(2);
+    await h.controller.refresh();
+    expect(h.transport.read).toHaveBeenCalledOnce();
+    h.unsubscribe();
+  });
   it("coalesces repeated triggers into one follow-up refresh", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     const response = deferred<UnoState>();
     h.transport.read.mockReturnValueOnce(response.promise);
     h.online();
@@ -353,6 +368,7 @@ describe("per-tab coordinator", () => {
   it("releases a failed request's lock, backs off and retries on reconnection", async () => {
     const h = setup();
     await h.ready();
+    h.transport.version.mockResolvedValue(99);
     h.transport.read.mockRejectedValueOnce(new Error("Connection lost"));
     h.online();
     await h.controller.refresh();

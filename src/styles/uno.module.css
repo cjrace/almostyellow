@@ -1,6 +1,5 @@
 .tracker {
   max-width: 44rem;
-  margin: 0 auto;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
   display: grid;
   gap: 0.75rem;
@@ -40,15 +39,6 @@
   min-height: 1.5rem;
   margin-top: 0.25rem;
 }
-.storage {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-}
-.storage summary {
-  cursor: pointer;
-  padding: 0.75rem 0;
-  min-height: 44px;
-}
 .result {
   text-align: center;
   animation: celebrate 700ms ease-out;
@@ -68,7 +58,6 @@
 }
 .stats {
   max-width: 72rem;
-  margin: 0 auto;
   display: grid;
   gap: 1rem;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -121,12 +110,6 @@
   }
 }
 
-.tracker nav a,
-.stats nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
 .stats input,
 .form button {
   min-height: 44px;
@@ -135,4 +118,9 @@
   cursor: pointer;
   min-height: 44px;
   padding-top: 0.75rem;
+}
+.header {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 44rem;
 }

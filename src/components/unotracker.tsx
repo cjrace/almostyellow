@@ -8,6 +8,7 @@ import {
   Group,
   Modal,
   Paper,
+  SegmentedControl,
   Text,
   Title,
 } from "@mantine/core";
@@ -16,21 +17,28 @@ import { useUno } from "@/uno/useUno";
 import { unoController } from "@/uno/browser";
 import styles from "@/styles/uno.module.css";
 
-export function UnoNavigation({ stats = false }: { stats?: boolean }) {
+export function UnoHeader({ stats = false }: { stats?: boolean }) {
   return (
-    <nav aria-label="Uno">
-      <Group gap="lg">
-        <Anchor href="/games/uno" aria-current={!stats ? "page" : undefined}>
-          Tracker
-        </Anchor>
-        <Anchor
-          href="/games/uno/stats"
-          aria-current={stats ? "page" : undefined}
-        >
-          Statistics
-        </Anchor>
-      </Group>
-    </nav>
+    <header className={styles.header}>
+      <Title>Uno tracker</Title>
+      <SegmentedControl
+        aria-label="Uno pages"
+        value={stats ? "stats" : "tracker"}
+        onChange={(value) => {
+          window.location.assign(
+            value === "stats"
+              ? "/games/uno-tracker/stats"
+              : "/games/uno-tracker",
+          );
+        }}
+        data={[
+          { value: "tracker", label: "Tracker" },
+          { value: "stats", label: "Statistics" },
+        ]}
+        fullWidth
+        size="md"
+      />
+    </header>
   );
 }
 
@@ -56,22 +64,10 @@ function activeWorker(
   });
 }
 export function UnoOfflineShell() {
-  const [availability, setAvailability] = useState("");
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    let mounted = true;
-    function message(event: MessageEvent) {
-      if (!mounted) return;
-      if (event.data === "uno-offline-ready")
-        setAvailability("Ready to reopen offline on this device.");
-      if (event.data === "uno-offline-failed")
-        setAvailability(
-          "Offline reopening is not ready. Reopen Uno online and try again.",
-        );
-    }
-    navigator.serviceWorker.addEventListener("message", message);
     void navigator.serviceWorker
-      .register("/games/uno/sw.js", { scope: "/games/uno" })
+      .register("/games/uno-tracker/sw.js", { scope: "/games/uno-tracker" })
       .then(activeWorker)
       .then((worker) => {
         worker.postMessage({
@@ -81,22 +77,9 @@ export function UnoOfflineShell() {
             .map((entry) => entry.name),
         });
       })
-      .catch(() => {
-        if (mounted)
-          setAvailability(
-            "Offline reopening is unavailable. Keep this page open while scoring offline.",
-          );
-      });
-    return () => {
-      mounted = false;
-      navigator.serviceWorker.removeEventListener("message", message);
-    };
+      .catch(() => undefined);
   }, []);
-  return availability ? (
-    <Text size="xs" c="dimmed">
-      {availability}
-    </Text>
-  ) : null;
+  return null;
 }
 
 export default function UnoTracker() {
@@ -132,8 +115,8 @@ export default function UnoTracker() {
   }
   return (
     <div className={styles.tracker}>
-      <Title>Uno</Title>
-      <UnoNavigation />
+      <UnoHeader />
+      <UnoOfflineShell />
       <div className={styles.players} aria-label="Lifetime round wins">
         {players.map((player) => (
           <Paper withBorder p="sm" key={player}>
@@ -285,7 +268,7 @@ export default function UnoTracker() {
         ) : (
           uno.ready && (
             <Text mt="md">
-              <Anchor href="/admin/login?callbackUrl=/games/uno">
+              <Anchor href="/admin/login?callbackUrl=/games/uno-tracker">
                 Sign in
               </Anchor>{" "}
               to start a game or record rounds.
@@ -327,24 +310,6 @@ export default function UnoTracker() {
           </Group>
         </Paper>
       ))}
-      <details className={styles.storage}>
-        <summary>Offline storage</summary>
-        <Text size="sm">
-          Rounds are saved on this device before the score changes. They sync
-          while Uno is open and connected. Clearing browser data, private
-          browsing or storage eviction may remove unsynced rounds.
-        </Text>
-        <Button
-          variant="subtle"
-          size="compact-md"
-          onClick={() => {
-            void act(uno.enablePersistence);
-          }}
-        >
-          Request persistent storage
-        </Button>
-        <UnoOfflineShell />
-      </details>
       <Modal
         opened={!!confirmation}
         onClose={() => {

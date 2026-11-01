@@ -7,13 +7,13 @@ import type { LocalData } from "../../src/uno/storage";
 
 const SYNC = { timeout: 30_000 };
 async function signIn(page: Page, credentials = getCredentials()) {
-  await page.goto("/admin/login?callbackUrl=/games/uno");
+  await page.goto("/admin/login?callbackUrl=/games/uno-tracker");
   await page
     .getByPlaceholder("e.g. simply@thebest.co.uk")
     .fill(credentials.email);
   await page.getByPlaceholder("Enter password").fill(credentials.password);
   await page.getByRole("button", { name: "Log in", exact: true }).click();
-  await page.waitForURL("**/games/uno");
+  await page.waitForURL("**/games/uno-tracker");
   await expect(
     page.getByRole("button", { name: "Start new game" }),
   ).toBeEnabled(SYNC);
@@ -91,25 +91,28 @@ test.describe("Uno durable scoring", () => {
       path: test.info().outputPath("uno-mobile.png"),
       fullPage: true,
     });
-    await page
-      .locator("summary")
-      .filter({ hasText: "Offline storage" })
-      .click();
-    await expect(
-      page.getByText("Ready to reopen offline on this device."),
-    ).toBeVisible(SYNC);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            async () =>
+              (await (await caches.open("uno-shell-v1")).keys()).length,
+          ),
+        SYNC,
+      )
+      .toBeGreaterThan(1);
     const cachedPaths = await page.evaluate(async () => {
       const cache = await caches.open("uno-shell-v1");
       return (await cache.keys()).map(
         (request) => new URL(request.url).pathname,
       );
     });
-    expect(cachedPaths).toContain("/games/uno/stats");
+    expect(cachedPaths).toContain("/games/uno-tracker/stats");
     expect(
       cachedPaths.every(
         (path) =>
-          path === "/games/uno" ||
-          path === "/games/uno/stats" ||
+          path === "/games/uno-tracker" ||
+          path === "/games/uno-tracker/stats" ||
           path.startsWith("/_next/static/"),
       ),
     ).toBe(true);
@@ -117,14 +120,14 @@ test.describe("Uno durable scoring", () => {
       baseURL: test.info().project.use.baseURL,
     });
     const bob = await bobContext.newPage();
-    await bob.goto("/admin/login?callbackUrl=/games/uno");
+    await bob.goto("/admin/login?callbackUrl=/games/uno-tracker");
     const credentials = getSecondCredentials();
     await bob
       .getByPlaceholder("e.g. simply@thebest.co.uk")
       .fill(credentials.email);
     await bob.getByPlaceholder("Enter password").fill(credentials.password);
     await bob.getByRole("button", { name: "Log in", exact: true }).click();
-    await bob.waitForURL("**/games/uno");
+    await bob.waitForURL("**/games/uno-tracker");
     await expect(
       bob.getByRole("button", { name: "Add a round for Laura" }),
     ).toBeEnabled(SYNC);
@@ -171,7 +174,7 @@ test.describe("Uno durable scoring", () => {
     );
     await page.close();
     const reopened = await context.newPage();
-    await reopened.goto("/games/uno");
+    await reopened.goto("/games/uno-tracker");
     await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
     expect((await local(reopened)).events.map((event) => event.id)).toEqual(
       legacyEventIds,
@@ -202,7 +205,7 @@ test.describe("Uno durable scoring", () => {
     await start(page);
     await idle(page);
     let fail = true;
-    await page.route("**/games/uno", async (route) => {
+    await page.route("**/games/uno-tracker", async (route) => {
       if (route.request().method() === "POST" && fail) {
         fail = false;
         await route.fetch();
@@ -243,7 +246,7 @@ test.describe("Uno durable scoring", () => {
     page,
   }) => {
     await signIn(page);
-    await page.getByRole("link", { name: "Statistics", exact: true }).click();
+    await page.getByLabel("Statistics", { exact: true }).click();
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("8");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("6");
@@ -256,7 +259,7 @@ test.describe("Uno durable scoring", () => {
       page.getByText("Played in the garden after tea."),
     ).toBeVisible();
     await expect(page.getByText("2020-06-12 · historic game")).toBeVisible();
-    await page.getByRole("link", { name: "Tracker", exact: true }).click();
+    await page.getByLabel("Tracker", { exact: true }).click();
     await expect(page.getByTestId("lifetime-cam")).toHaveText("8", SYNC);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("6");
   });
@@ -273,7 +276,7 @@ test.describe("Uno durable scoring", () => {
     await page.getByRole("button", { name: "Add a round for Cam" }).click();
     await expect(page.getByTestId("score-cam")).toHaveText("1");
     // Simulate another account having signed in while this tab was offline.
-    await page.route("**/games/uno/session", (route) =>
+    await page.route("**/games/uno-tracker/session", (route) =>
       route.fulfill({ json: { uid: getSecondCredentials().uid } }),
     );
     await context.setOffline(false);
@@ -281,7 +284,7 @@ test.describe("Uno durable scoring", () => {
       page.getByRole("alert", { name: "Scores need attention" }),
     ).toContainText("another account", SYNC);
     expect((await local(page)).events).toHaveLength(1);
-    await page.unroute("**/games/uno/session");
+    await page.unroute("**/games/uno-tracker/session");
     await page.reload();
     await idle(page);
     expect((await local(page)).events).toHaveLength(0);
@@ -299,14 +302,14 @@ test.describe("Uno durable scoring", () => {
       baseURL: test.info().project.use.baseURL,
     });
     const other = await otherContext.newPage();
-    await other.goto("/admin/login?callbackUrl=/games/uno");
+    await other.goto("/admin/login?callbackUrl=/games/uno-tracker");
     const credentials = getSecondCredentials();
     await other
       .getByPlaceholder("e.g. simply@thebest.co.uk")
       .fill(credentials.email);
     await other.getByPlaceholder("Enter password").fill(credentials.password);
     await other.getByRole("button", { name: "Log in", exact: true }).click();
-    await other.waitForURL("**/games/uno");
+    await other.waitForURL("**/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Laura" }),
     ).toBeEnabled(SYNC);
@@ -323,7 +326,7 @@ test.describe("Uno durable scoring", () => {
     await idle(other);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("1", SYNC);
     await expect(page.getByTestId("score-laura")).toHaveText("0");
-    await page.getByRole("link", { name: "Statistics", exact: true }).click();
+    await page.getByLabel("Statistics", { exact: true }).click();
     await expect(
       page.getByText("Result amended after offline rounds synced."),
     ).toBeVisible();
@@ -337,7 +340,7 @@ test.describe("Uno durable scoring", () => {
     test.slow();
     await signIn(page);
     const other = await context.newPage();
-    await other.goto("/games/uno");
+    await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Start new game" }),
     ).toBeEnabled(SYNC);
@@ -350,7 +353,7 @@ test.describe("Uno durable scoring", () => {
       captured = resolve;
     });
     let armed = true;
-    await page.route("**/games/uno", async (route) => {
+    await page.route("**/games/uno-tracker", async (route) => {
       if (
         armed &&
         route.request().method() === "POST" &&
@@ -393,7 +396,7 @@ test.describe("Uno durable scoring", () => {
     await start(page);
     await idle(page);
     const other = await context.newPage();
-    await other.goto("/games/uno");
+    await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
     ).toBeEnabled(SYNC);
@@ -406,7 +409,7 @@ test.describe("Uno durable scoring", () => {
     const received = new Promise<void>((resolve) => {
       captured = resolve;
     });
-    await page.route("**/games/uno", async (route) => {
+    await page.route("**/games/uno-tracker", async (route) => {
       if (
         route.request().method() === "POST" &&
         route.request().postData()?.includes(gameId) &&
@@ -450,11 +453,11 @@ test.describe("Uno durable scoring", () => {
     await start(page);
     await idle(page);
     const other = await context.newPage();
-    await other.goto("/games/uno");
+    await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
     ).toBeEnabled(SYNC);
-    await page.getByRole("link", { name: "Statistics", exact: true }).click();
+    await page.getByLabel("Statistics", { exact: true }).click();
     await page.getByRole("button", { name: "Add historic game" }).click();
     await page.getByRole("textbox", { name: "Cam’s round wins" }).fill("5");
     await page.getByRole("textbox", { name: "Laura’s round wins" }).fill("3");
@@ -467,7 +470,7 @@ test.describe("Uno durable scoring", () => {
     const received = new Promise<void>((resolve) => {
       captured = resolve;
     });
-    await page.route("**/games/uno/stats", async (route) => {
+    await page.route("**/games/uno-tracker/stats", async (route) => {
       if (
         route.request().method() === "POST" &&
         route.request().postData()?.includes("datePrecision")
@@ -537,7 +540,7 @@ test.describe("Uno durable scoring", () => {
         version: 1,
         updatedAt: Date.now(),
       });
-      await page.goto("/games/uno/stats");
+      await page.goto("/games/uno-tracker/stats");
       await expect(
         page.getByRole("button", { name: "Scoring history" }),
       ).toHaveCount(2);
@@ -557,7 +560,7 @@ test.describe("Uno durable scoring", () => {
       const receivedSecond = new Promise<void>((resolve) => {
         capturedSecond = resolve;
       });
-      await page.route("**/games/uno/stats", async (route) => {
+      await page.route("**/games/uno-tracker/stats", async (route) => {
         const body = route.request().postData();
         if (route.request().method() === "POST" && body?.includes(ids[0])) {
           const response = await route.fetch();
