@@ -288,4 +288,15 @@ describe("Uno scoring transactions", () => {
       ).size,
     ).toBe(0);
   });
+  test("adds the lifetime totals up from the games, whatever the scoreboard says", async () => {
+    await addHistoricUnoGame({
+      id: randomUUID(),
+      cam: 12,
+      laura: 9,
+      playedOn: "2021-07-15",
+      notes: "",
+    });
+    await adminDb().doc("uno/scoreboard").update({ cam: 99, laura: 98 });
+    expect((await readUnoState()).board).toMatchObject({ cam: 12, laura: 9 });
+  });
 });

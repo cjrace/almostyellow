@@ -143,12 +143,16 @@ export function statistics(state: UnoState) {
   const months = new Map<string, Scores>();
   const cumulative: { id: string; date: string; cam: number; laura: number }[] =
     [];
+  const gamesWon: typeof cumulative = [];
+  const gameTotals = { cam: 0, laura: 0 };
   const totals = { ...state.board.startingTotals };
   for (const g of dated) {
     totals.cam += g.cam;
     totals.laura += g.laura;
     const date = gameDate(g) ?? "";
     cumulative.push({ id: g.id, date, ...totals });
+    if (g.winner !== "draw") gameTotals[g.winner]++;
+    gamesWon.push({ id: g.id, date, ...gameTotals });
     // A year-only date must not invent a month for the monthly chart.
     if (date.length >= 7) {
       const month = date.slice(0, 7);
@@ -172,6 +176,7 @@ export function statistics(state: UnoState) {
     closest: pick((a, b) => a.margin - b.margin),
     highest: games.reduce((n, g) => Math.max(n, g.cam, g.laura), 0),
     cumulative,
+    gamesWon,
     months: [...months].map(([date, scores]) => ({
       id: date,
       date,

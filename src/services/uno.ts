@@ -27,9 +27,26 @@ export async function readUnoState(): Promise<UnoState> {
     async (tx) => {
       const board = await tx.get(boardRef());
       const games = await tx.get(adminDb().collection("unoGames"));
-      return {
+      const state = {
         board: board.exists ? (board.data() as Board) : emptyBoard(),
         games: games.docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Game),
+      };
+      // The lifetime totals are added up from the games on every read, so a
+      // game changed or removed outside the app cannot leave them wrong.
+      const { startingTotals } = state.board;
+      return {
+        ...state,
+        board: {
+          ...state.board,
+          cam: games.docs.reduce(
+            (n, g) => n + (g.get("cam") as number),
+            startingTotals.cam,
+          ),
+          laura: games.docs.reduce(
+            (n, g) => n + (g.get("laura") as number),
+            startingTotals.laura,
+          ),
+        },
       };
     },
     { readOnly: true },

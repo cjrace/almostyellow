@@ -317,6 +317,7 @@ export default function UnoStatistics() {
                 title="Cumulative round wins"
                 points={summary.cumulative}
               />
+              <Chart title="Cumulative games won" points={summary.gamesWon} />
               <Chart title="Games won by month" points={summary.months} />
               <Chart
                 title="Game length over time"

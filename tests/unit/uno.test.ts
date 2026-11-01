@@ -48,6 +48,11 @@ describe("Uno statistics", () => {
     expect(stats.closest?.margin).toBe(0);
     expect(stats.cumulative).toHaveLength(2);
     expect(stats.cumulative.at(-1)).toMatchObject({ cam: 6, laura: 4 });
+    // Whole games won, with a draw adding to neither side
+    expect(stats.gamesWon.map(({ cam, laura }) => [cam, laura])).toEqual([
+      [1, 0],
+      [1, 0],
+    ]);
     expect(stats.months).toEqual([
       { id: "2024-01", date: "2024-01", cam: 1, laura: 0 },
       { id: "2024-02", date: "2024-02", cam: 0, laura: 0 },
