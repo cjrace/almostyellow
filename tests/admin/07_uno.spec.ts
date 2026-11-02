@@ -64,13 +64,10 @@ async function local(page: Page): Promise<LocalData> {
 }
 
 test.describe("Uno durable scoring", () => {
-  // One shared scoreboard; run its mutation scenarios sequentially in one project.
+  // One shared scoreboard, so playwright.config.ts runs this file in desktop
+  // Chrome only and its scenarios run one after another.
   test.describe.configure({ mode: "default" });
-  test.beforeEach(async ({ browserName }, info) => {
-    test.skip(
-      browserName !== "chromium" || info.project.name !== "Google Chrome",
-      "Shared scoreboard mutations run once in desktop Chrome; layouts run in all projects.",
-    );
+  test.beforeEach(async () => {
     const { projectId } = assertEmulatorEnvironment();
     const db = getFirestore(getApps()[0] ?? initializeApp({ projectId }));
     for (const name of ["uno", "unoGames", "unoLeases"])
@@ -98,24 +95,27 @@ test.describe("Uno durable scoring", () => {
       path: test.info().outputPath("uno-mobile.png"),
       fullPage: true,
     });
+    // The service worker caches the assets first and publishes the page
+    // shells last, so wait for every shell rather than just the first entries
+    const shells = [
+      "/games/uno-tracker",
+      "/games/uno-tracker/stats",
+      "/games/uno-tracker/history",
+    ];
+    const cachedShellPaths = () =>
+      page.evaluate(async () => {
+        const cache = await caches.open("uno-shell-v1");
+        return (await cache.keys()).map(
+          (request) => new URL(request.url).pathname,
+        );
+      });
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            async () =>
-              (await (await caches.open("uno-shell-v1")).keys()).length,
-          ),
-        SYNC,
-      )
-      .toBeGreaterThan(1);
-    const cachedPaths = await page.evaluate(async () => {
-      const cache = await caches.open("uno-shell-v1");
-      return (await cache.keys()).map(
-        (request) => new URL(request.url).pathname,
-      );
-    });
-    expect(cachedPaths).toContain("/games/uno-tracker/stats");
-    expect(cachedPaths).toContain("/games/uno-tracker/history");
+      .poll(async () => {
+        const paths = await cachedShellPaths();
+        return shells.every((path) => paths.includes(path));
+      }, SYNC)
+      .toBe(true);
+    const cachedPaths = await cachedShellPaths();
     expect(
       cachedPaths.every(
         (path) =>

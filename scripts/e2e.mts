@@ -14,11 +14,6 @@ const args = process.argv.slice(2);
 const build = !args.includes("--no-build");
 const playwrightArgs = args.filter((arg) => arg !== "--no-build");
 
-function run(command: string) {
-  const result = spawnSync(command, { shell: true, stdio: "inherit" });
-  return result.status ?? 1;
-}
-
 // Resolves true if something is already listening on the port
 function inUse(port: number) {
   return new Promise<boolean>((resolve) => {
@@ -63,7 +58,28 @@ function quote(arg: string) {
   return `"${arg}"`;
 }
 
-let status = build ? run("pnpm exec next build") : 0;
+// Next prints its whole route table, so show the output only if the build
+// fails or warns
+function buildApp() {
+  const started = Date.now();
+  const result = spawnSync("pnpm exec next build", {
+    shell: true,
+    encoding: "utf8",
+    // The default 1 MB would fail a build that prints a lot of warnings
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const output = `${result.stdout}${result.stderr}`;
+  if (result.status !== 0) {
+    console.error(output);
+    return result.status ?? 1;
+  }
+  const warnings = output.split("\n").filter((line) => /warn/i.test(line));
+  const seconds = ((Date.now() - started) / 1000).toFixed(0);
+  console.log(["Build OK (" + seconds + "s)", ...warnings].join("\n"));
+  return 0;
+}
+
+let status = build ? buildApp() : 0;
 if (status === 0) {
   // emulators:exec sets the emulator hosts for Playwright and next start, and
   // stops the emulators when the tests finish. The CLI is run with node rather
@@ -74,6 +90,8 @@ if (status === 0) {
     [
       "node_modules/firebase-tools/lib/bin/firebase.js",
       "emulators:exec",
+      "--log-verbosity",
+      "QUIET",
       "--project",
       process.env.FIREBASE_PROJECT_ID ?? "",
       "--only",

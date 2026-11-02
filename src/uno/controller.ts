@@ -264,6 +264,9 @@ export function createUnoController(
             if (runtime.online() && listeners.size) await refreshLocked();
           });
         } catch (error) {
+          // A request cut off by the connection dropping is not a fault: the
+          // status already says Offline, and reconnecting retries at once
+          if (!runtime.online()) continue;
           failures++;
           retryAt =
             runtime.now() + Math.min(60000, 1000 * 2 ** Math.min(failures, 6));
