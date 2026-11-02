@@ -71,7 +71,7 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 
 ### Chopin Liszt (Firestore)
 
-The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener. Changes queue in memory while offline and are lost if the page closes with some unsent; the list needs a connection to open. The last change to reach Firestore wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener. Changes queue in memory while offline and are lost if the page closes with some unsent, so the page asks before unloading while any are waiting. The list needs a connection to open. The offline message also shows while the listener is serving cached data, as phones can report being online on a signal too weak to reach Firestore. The last change to reach Firestore wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
 
 ### Uno (Firestore)
 
