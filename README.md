@@ -75,7 +75,7 @@ pnpm test:firebase # All the Firebase emulator tests
 pnpm test:e2e      # Build, then the Playwright tests against the emulators
 ```
 
-See [AGENTS.md](AGENTS.md) for how the test fixtures and Firebase safeguards work.
+See [tests/README.md](tests/README.md) for what each stage covers, how to read the output and how to write a test, and [AGENTS.md](AGENTS.md) for more on the test fixtures and Firebase safeguards.
 
 ### Pre-commit hooks
 

@@ -83,6 +83,8 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 ### Tests
 
+`tests/README.md` explains the test set-up for people, including how to name tests: `test.describe` for who and where, a test name saying what they see or can do, and Given/When/Then `test.step`s for long journeys. Follow it in new tests, and update it when adding a stage or folder.
+
 Playwright E2E tests in `tests/`, split into three folders:
 
 - `tests/public/` — Public pages, no auth needed
