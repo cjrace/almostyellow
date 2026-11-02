@@ -61,6 +61,7 @@ function quote(arg: string) {
 // Next prints its whole route table, so show the output only if the build
 // fails or warns
 function buildApp() {
+  console.log("Building the app...");
   const started = Date.now();
   const result = spawnSync("pnpm exec next build", {
     shell: true,

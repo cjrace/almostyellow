@@ -13,8 +13,12 @@ const args = process.argv.slice(2);
 const format = !args.includes("--no-format");
 const e2eArgs = args.includes("--no-build") ? " --no-build" : "";
 
+const stages = format ? 5 : 4;
+let stage = 0;
+
 function heading(text: string) {
-  console.log(`\n=== ${text} ===`);
+  stage++;
+  console.log(`\n=== [${String(stage)}/${String(stages)}] ${text} ===`);
 }
 
 function fail(code: number | null): never {
@@ -46,6 +50,7 @@ const plural = (count: number, word: string) =>
 
 if (format) {
   heading("Formatting with Prettier");
+  console.log("Formatting every file...");
   const prettier = capture("prettier . --write --no-color");
   if (prettier.status !== 0) {
     console.error(prettier.stdout + prettier.stderr);
@@ -64,6 +69,7 @@ if (format) {
 }
 
 heading("Linting with ESLint");
+console.log("Checking every file...");
 const eslint = capture("eslint --format json");
 interface LintResult {
   errorCount: number;
@@ -92,6 +98,7 @@ heading("Unit tests with Vitest");
 run("vitest run");
 
 heading("Firebase emulator tests with Vitest (Security Rules, server actions)");
+console.log("Starting the Firebase emulators...");
 run("pnpm test:ci");
 
 heading("End-to-end tests with Playwright (build, then Chrome and Firefox)");
