@@ -91,11 +91,9 @@ export default defineConfig({
   // Run local server before starting the tests. Never reuse one already
   // running, as a dev server would be pointing at the production database.
   webServer: {
-    command: "next start",
+    // Runs next start, hiding the error 03_server_actions causes on purpose
+    command: "node scripts/serve-test.mts",
     url: "http://localhost:3000/",
     reuseExistingServer: false,
-    // 03_server_actions posts an unknown Server Action ID on purpose, which the
-    // server logs as an error on every run
-    stderr: "ignore",
   },
 });
