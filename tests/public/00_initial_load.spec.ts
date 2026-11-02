@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test('Homepage has the title "Almost Yellow"', async ({ page }) => {
+test('The homepage shows the "Almost Yellow" title', async ({ page }) => {
   await page.goto("/");
   // Check the h1 exists
   await expect(page.locator("h1")).toContainText("Almost Yellow");

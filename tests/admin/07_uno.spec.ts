@@ -80,130 +80,154 @@ test.describe("Uno durable scoring", () => {
     browser,
   }) => {
     test.slow();
-    await signIn(page);
-    await start(page);
-    await idle(page);
-    await page.setViewportSize({ width: 375, height: 740 });
-    const scoringButton = await page
-      .getByRole("button", { name: "Add a round for Cam" })
-      .boundingBox();
-    expect(scoringButton?.height).toBeGreaterThanOrEqual(56);
-    expect(
-      (scoringButton?.y ?? 0) + (scoringButton?.height ?? 0),
-    ).toBeLessThanOrEqual(740);
-    await page.screenshot({
-      path: test.info().outputPath("uno-mobile.png"),
-      fullPage: true,
-    });
-    // The service worker caches the assets first and publishes the page
-    // shells last, so wait for every shell rather than just the first entries
-    const shells = [
-      "/games/uno-tracker",
-      "/games/uno-tracker/stats",
-      "/games/uno-tracker/history",
-    ];
-    const cachedShellPaths = () =>
-      page.evaluate(async () => {
-        const cache = await caches.open("uno-shell-v1");
-        return (await cache.keys()).map(
-          (request) => new URL(request.url).pathname,
-        );
+    await test.step("Given Cam starts a game on a phone-sized screen", async () => {
+      await signIn(page);
+      await start(page);
+      await idle(page);
+      await page.setViewportSize({ width: 375, height: 740 });
+      const scoringButton = await page
+        .getByRole("button", { name: "Add a round for Cam" })
+        .boundingBox();
+      expect(scoringButton?.height).toBeGreaterThanOrEqual(56);
+      expect(
+        (scoringButton?.y ?? 0) + (scoringButton?.height ?? 0),
+      ).toBeLessThanOrEqual(740);
+      await page.screenshot({
+        path: test.info().outputPath("uno-mobile.png"),
+        fullPage: true,
       });
-    await expect
-      .poll(async () => {
-        const paths = await cachedShellPaths();
-        return shells.every((path) => paths.includes(path));
-      }, SYNC)
-      .toBe(true);
-    const cachedPaths = await cachedShellPaths();
-    expect(
-      cachedPaths.every(
-        (path) =>
-          path === "/games/uno-tracker" ||
-          path === "/games/uno-tracker/stats" ||
-          path === "/games/uno-tracker/history" ||
-          path.startsWith("/_next/static/"),
-      ),
-    ).toBe(true);
-    const bobContext = await browser.newContext({
-      baseURL: test.info().project.use.baseURL,
     });
-    const bob = await bobContext.newPage();
-    await bob.goto("/admin/login?callbackUrl=/games/uno-tracker");
-    const credentials = getSecondCredentials();
-    await bob
-      .getByPlaceholder("e.g. simply@thebest.co.uk")
-      .fill(credentials.email);
-    await bob.getByPlaceholder("Enter password").fill(credentials.password);
-    await bob.getByRole("button", { name: "Log in", exact: true }).click();
-    await bob.waitForURL("**/games/uno-tracker");
-    await expect(
-      bob.getByRole("button", { name: "Add a round for Laura" }),
-    ).toBeEnabled(SYNC);
-    await context.setOffline(true);
-    await bobContext.setOffline(true);
-    await bob.getByRole("button", { name: "Add a round for Laura" }).click();
-    await expect(bob.getByTestId("score-laura")).toHaveText("1");
-    await page
-      .getByRole("button", { name: "Add a round for Cam" })
-      .click({ clickCount: 3 });
-    await expect(page.getByTestId("score-cam")).toHaveText("3");
-    await page.getByRole("button", { name: "Remove a round for Cam" }).click();
-    await expect(page.getByTestId("score-cam")).toHaveText("2");
-    await expect(
-      page.getByRole("button", { name: "Finish game", exact: true }),
-    ).toBeDisabled();
-    const legacyEventIds = (await local(page)).events.map((event) => event.id);
-    expect(legacyEventIds).toHaveLength(4);
-    // Emulate an existing version-1 record written before local revisions existed.
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve, reject) => {
-          const open = indexedDB.open("almostyellow-uno", 1);
-          open.onsuccess = () => {
-            const db = open.result;
-            const transaction = db.transaction("data", "readwrite");
-            const store = transaction.objectStore("data");
-            const read = store.get("current");
-            read.onsuccess = () => {
-              const value = read.result as Partial<LocalData>;
-              delete value.revision;
-              store.put(value, "current");
-            };
-            transaction.oncomplete = () => {
-              db.close();
-              resolve();
-            };
-            transaction.onerror = () => {
-              db.close();
-              reject(new Error("Could not prepare legacy storage"));
-            };
-          };
-        }),
-    );
-    await page.close();
-    const reopened = await context.newPage();
-    await reopened.goto("/games/uno-tracker");
-    await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
-    expect((await local(reopened)).events.map((event) => event.id)).toEqual(
-      legacyEventIds,
-    );
-    await reopened
-      .getByRole("button", { name: "Add a round for Laura" })
-      .click();
-    await expect(reopened.getByTestId("score-laura")).toHaveText("1");
-    await context.setOffline(false);
-    await idle(reopened);
-    await expect
-      .poll(async () => (await local(reopened)).events.length, SYNC)
-      .toBe(0);
-    await bobContext.setOffline(false);
-    await idle(bob);
-    await expect(bob.getByTestId("score-cam")).toHaveText("2", SYNC);
-    await expect(bob.getByTestId("score-laura")).toHaveText("2", SYNC);
-    await reopened.reload();
-    await expect(reopened.getByTestId("lifetime-cam")).toHaveText("2", SYNC);
-    await bobContext.close();
+    await test.step("Then the three tracker pages are cached for offline use", async () => {
+      // The service worker caches the assets first and publishes the page
+      // shells last, so wait for every shell rather than just the first entries
+      const shells = [
+        "/games/uno-tracker",
+        "/games/uno-tracker/stats",
+        "/games/uno-tracker/history",
+      ];
+      const cachedShellPaths = () =>
+        page.evaluate(async () => {
+          const cache = await caches.open("uno-shell-v1");
+          return (await cache.keys()).map(
+            (request) => new URL(request.url).pathname,
+          );
+        });
+      await expect
+        .poll(async () => {
+          const paths = await cachedShellPaths();
+          return shells.every((path) => paths.includes(path));
+        }, SYNC)
+        .toBe(true);
+      const cachedPaths = await cachedShellPaths();
+      expect(
+        cachedPaths.every(
+          (path) =>
+            path === "/games/uno-tracker" ||
+            path === "/games/uno-tracker/stats" ||
+            path === "/games/uno-tracker/history" ||
+            path.startsWith("/_next/static/"),
+        ),
+      ).toBe(true);
+    });
+    const { bob, bobContext } =
+      await test.step("Given Laura is signed in on a second device", async () => {
+        const bobContext = await browser.newContext({
+          baseURL: test.info().project.use.baseURL,
+        });
+        const bob = await bobContext.newPage();
+        await bob.goto("/admin/login?callbackUrl=/games/uno-tracker");
+        const credentials = getSecondCredentials();
+        await bob
+          .getByPlaceholder("e.g. simply@thebest.co.uk")
+          .fill(credentials.email);
+        await bob.getByPlaceholder("Enter password").fill(credentials.password);
+        await bob.getByRole("button", { name: "Log in", exact: true }).click();
+        await bob.waitForURL("**/games/uno-tracker");
+        await expect(
+          bob.getByRole("button", { name: "Add a round for Laura" }),
+        ).toBeEnabled(SYNC);
+        return { bob, bobContext };
+      });
+    const legacyEventIds =
+      await test.step("When both devices go offline and score rounds, including a correction", async () => {
+        await context.setOffline(true);
+        await bobContext.setOffline(true);
+        await bob
+          .getByRole("button", { name: "Add a round for Laura" })
+          .click();
+        await expect(bob.getByTestId("score-laura")).toHaveText("1");
+        await page
+          .getByRole("button", { name: "Add a round for Cam" })
+          .click({ clickCount: 3 });
+        await expect(page.getByTestId("score-cam")).toHaveText("3");
+        await page
+          .getByRole("button", { name: "Remove a round for Cam" })
+          .click();
+        await expect(page.getByTestId("score-cam")).toHaveText("2");
+        await expect(
+          page.getByRole("button", { name: "Finish game", exact: true }),
+        ).toBeDisabled();
+        const legacyEventIds = (await local(page)).events.map(
+          (event) => event.id,
+        );
+        expect(legacyEventIds).toHaveLength(4);
+        return legacyEventIds;
+      });
+    const reopened =
+      await test.step("When the queue was saved by an older version and the tracker is closed and reopened, the queued rounds are kept", async () => {
+        // Emulate an existing version-1 record written before local revisions existed.
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve, reject) => {
+              const open = indexedDB.open("almostyellow-uno", 1);
+              open.onsuccess = () => {
+                const db = open.result;
+                const transaction = db.transaction("data", "readwrite");
+                const store = transaction.objectStore("data");
+                const read = store.get("current");
+                read.onsuccess = () => {
+                  const value = read.result as Partial<LocalData>;
+                  delete value.revision;
+                  store.put(value, "current");
+                };
+                transaction.oncomplete = () => {
+                  db.close();
+                  resolve();
+                };
+                transaction.onerror = () => {
+                  db.close();
+                  reject(new Error("Could not prepare legacy storage"));
+                };
+              };
+            }),
+        );
+        await page.close();
+        const reopened = await context.newPage();
+        await reopened.goto("/games/uno-tracker");
+        await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
+        expect((await local(reopened)).events.map((event) => event.id)).toEqual(
+          legacyEventIds,
+        );
+        await reopened
+          .getByRole("button", { name: "Add a round for Laura" })
+          .click();
+        await expect(reopened.getByTestId("score-laura")).toHaveText("1");
+        return reopened;
+      });
+    await test.step("When both devices reconnect, every round syncs once", async () => {
+      await context.setOffline(false);
+      await idle(reopened);
+      await expect
+        .poll(async () => (await local(reopened)).events.length, SYNC)
+        .toBe(0);
+      await bobContext.setOffline(false);
+      await idle(bob);
+      await expect(bob.getByTestId("score-cam")).toHaveText("2", SYNC);
+      await expect(bob.getByTestId("score-laura")).toHaveText("2", SYNC);
+      await reopened.reload();
+      await expect(reopened.getByTestId("lifetime-cam")).toHaveText("2", SYNC);
+      await bobContext.close();
+    });
   });
 
   test("a failed response retains the queue and retry does not duplicate the award", async ({

@@ -151,30 +151,37 @@ test("Changes made offline sync after reconnecting", async ({
   const bread = uniqueName("Bread");
   const eggs = uniqueName("Eggs");
   const jam = uniqueName("Jam");
-  await openBothLists(page, bobPage);
-  await addItems(page, bread, eggs);
-  await expect(item(bobPage, eggs)).toBeVisible();
+  await test.step("Given Alice and Bob both have the list open", async () => {
+    await openBothLists(page, bobPage);
+    await addItems(page, bread, eggs);
+    await expect(item(bobPage, eggs)).toBeVisible();
+  });
 
-  await goOffline(page);
-  await expect(page.getByText("You're offline")).toBeVisible();
-  await item(page, bread).click();
-  await addItems(page, jam);
-  // Shown straight away, but marked as waiting
-  await expect(item(page, bread)).toBeChecked();
-  await expect(item(page, jam)).toBeVisible();
-  await expect(page.getByText("Not synced yet")).toHaveCount(2);
+  await test.step("When Alice goes offline and makes changes, they show at once marked as not synced", async () => {
+    await goOffline(page);
+    await expect(page.getByText("You're offline")).toBeVisible();
+    await item(page, bread).click();
+    await addItems(page, jam);
+    // Shown straight away, but marked as waiting
+    await expect(item(page, bread)).toBeChecked();
+    await expect(item(page, jam)).toBeVisible();
+    await expect(page.getByText("Not synced yet")).toHaveCount(2);
+  });
 
-  // Bob carries on while Alice is offline
-  await item(bobPage, eggs).click();
-  await expect(item(bobPage, eggs)).toBeChecked();
-  await expect(item(bobPage, bread)).not.toBeChecked();
+  await test.step("While Alice is offline, Bob's changes still work and he does not see hers", async () => {
+    await item(bobPage, eggs).click();
+    await expect(item(bobPage, eggs)).toBeChecked();
+    await expect(item(bobPage, bread)).not.toBeChecked();
+  });
 
-  await page.context().setOffline(false);
-  await expect(item(bobPage, jam)).toBeVisible(SYNC);
-  await expect(item(bobPage, bread)).toBeChecked();
-  await expect(item(page, eggs)).toBeChecked(SYNC);
-  await expect(page.getByText("Not synced yet")).toHaveCount(0);
-  await expect(page.getByText("You're offline")).toBeHidden();
+  await test.step("When Alice reconnects, both lists catch up", async () => {
+    await page.context().setOffline(false);
+    await expect(item(bobPage, jam)).toBeVisible(SYNC);
+    await expect(item(bobPage, bread)).toBeChecked();
+    await expect(item(page, eggs)).toBeChecked(SYNC);
+    await expect(page.getByText("Not synced yet")).toHaveCount(0);
+    await expect(page.getByText("You're offline")).toBeHidden();
+  });
 });
 
 test("Leaving with changes not yet saved asks first", async ({ page }) => {

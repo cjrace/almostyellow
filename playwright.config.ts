@@ -8,7 +8,7 @@ const vitestTests = ["unit/**", "firebase/**"];
    them. A project's testIgnore replaces the top-level one, hence vitestTests. */
 const sharedScoreboard = [...vitestTests, "**/admin/07_uno.spec.ts"];
 /* Service-worker evaluation is only available in Chromium */
-const serviceWorker = [...sharedScoreboard, "**/public/04_uno_offline.spec.ts"];
+const serviceWorker = [...sharedScoreboard, "**/public/06_uno_offline.spec.ts"];
 
 /**
  * See https://playwright.dev/docs/test-configuration.

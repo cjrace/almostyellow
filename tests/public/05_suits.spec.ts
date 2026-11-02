@@ -63,94 +63,99 @@ test("Plays a full game of 13 turns", async ({ page }) => {
     const player = players[turn % 3];
     const suit = SuitNames[turn % 4];
     const finalTurn = turn === 12;
-
-    await expect(page.locator("#suits_turn")).toHaveText(`${player}'s turn`);
-    await expect(page.locator("#suits_turn_count")).toHaveText(
-      `Turn ${String(turn + 1)} of 13`,
-    );
-    // Three players, so each other player's share is 2
-    await expect(page.locator("#suits_magic_number")).toHaveText(
-      "Magic number2",
-    );
-    await expect(page.locator("#suits_choose")).toHaveText(
-      `${player}, choose a suit`,
-    );
-    await expect(cards).toHaveCount(4);
-    if (turn === 0) {
-      for (const card of await cards.all()) {
-        await expect(card).toHaveAttribute("alt", "Face-down card");
+    await test.step(`Turn ${String(turn + 1)}: ${player} picks ${suit} and sees the result`, async () => {
+      await expect(page.locator("#suits_turn")).toHaveText(`${player}'s turn`);
+      await expect(page.locator("#suits_turn_count")).toHaveText(
+        `Turn ${String(turn + 1)} of 13`,
+      );
+      // Three players, so each other player's share is 2
+      await expect(page.locator("#suits_magic_number")).toHaveText(
+        "Magic number2",
+      );
+      await expect(page.locator("#suits_choose")).toHaveText(
+        `${player}, choose a suit`,
+      );
+      await expect(cards).toHaveCount(4);
+      if (turn === 0) {
+        for (const card of await cards.all()) {
+          await expect(card).toHaveAttribute("alt", "Face-down card");
+        }
       }
-    }
-    // Players hear about the double before they guess
-    await expect(page.getByText("This turn counts double.")).toBeVisible({
-      visible: finalTurn,
+      // Players hear about the double before they guess
+      await expect(page.getByText("This turn counts double.")).toBeVisible({
+        visible: finalTurn,
+      });
+
+      // Each player starts with no suit picked
+      await expect(revealButton).toBeDisabled();
+      await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+      // The segmented control hides its radio inputs, so press the label
+      await page.locator("label").filter({ hasText: suit }).click();
+      await expect(page.getByRole("radio", { name: suit })).toBeChecked();
+
+      // Every other turn uses the keyboard shortcut instead of the button
+      if (turn % 2 === 0) {
+        await revealButton.click();
+      } else {
+        await page.keyboard.press("Control+Enter");
+      }
+
+      // Wait for the turn to move on before reading the cards
+      await expect(page.locator("#suits_turn")).toHaveText(
+        finalTurn ? "Game over" : `${players[(turn + 1) % 3]}'s turn`,
+      );
+      await expect(page.locator("#suits_chosen")).toContainText(
+        `${player} picked`,
+      );
+      await expect(page.locator("#suits_chosen")).toContainText(suit);
+
+      // Work out the result from the cards on screen
+      const alts = await Promise.all(
+        (await cards.all()).map((card) => card.getAttribute("alt")),
+      );
+      const matches = alts.filter((alt) => alt?.endsWith(` of ${suit}`)).length;
+      const suitsDrawn = new Set(alts.map((alt) => alt?.split(" of ")[1]));
+      const multiplier = finalTurn ? 2 : 1;
+      const doubled = finalTurn ? " (doubled for the final turn)" : "";
+      if (suitsDrawn.size === 4) {
+        await expect(result).toContainText("Safe round");
+        await expect(result).toContainText(
+          `One of every suit, so everyone except ${player} drinks ${String(multiplier)}${doubled}.`,
+        );
+      } else if (matches > 0) {
+        const drinks = matches * 2 * multiplier;
+        await expect(result).toHaveText(
+          `${player} matched ${String(matches)} ${matches === 1 ? "card" : "cards"}. Hand out ${String(drinks)} drinks${doubled}.`,
+        );
+      } else {
+        await expect(result).toHaveText(
+          `No matches. ${player} drinks ${String(4 * multiplier)}${doubled}.`,
+        );
+      }
+
+      // Focus moves to the next player's suit picker
+      if (!finalTurn) {
+        await expect(page.getByRole("radio", { name: "Hearts" })).toBeFocused();
+      }
     });
-
-    // Each player starts with no suit picked
-    await expect(revealButton).toBeDisabled();
-    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
-    // The segmented control hides its radio inputs, so press the label
-    await page.locator("label").filter({ hasText: suit }).click();
-    await expect(page.getByRole("radio", { name: suit })).toBeChecked();
-
-    // Every other turn uses the keyboard shortcut instead of the button
-    if (turn % 2 === 0) {
-      await revealButton.click();
-    } else {
-      await page.keyboard.press("Control+Enter");
-    }
-
-    // Wait for the turn to move on before reading the cards
-    await expect(page.locator("#suits_turn")).toHaveText(
-      finalTurn ? "Game over" : `${players[(turn + 1) % 3]}'s turn`,
-    );
-    await expect(page.locator("#suits_chosen")).toContainText(
-      `${player} picked`,
-    );
-    await expect(page.locator("#suits_chosen")).toContainText(suit);
-
-    // Work out the result from the cards on screen
-    const alts = await Promise.all(
-      (await cards.all()).map((card) => card.getAttribute("alt")),
-    );
-    const matches = alts.filter((alt) => alt?.endsWith(` of ${suit}`)).length;
-    const suitsDrawn = new Set(alts.map((alt) => alt?.split(" of ")[1]));
-    const multiplier = finalTurn ? 2 : 1;
-    const doubled = finalTurn ? " (doubled for the final turn)" : "";
-    if (suitsDrawn.size === 4) {
-      await expect(result).toContainText("Safe round");
-      await expect(result).toContainText(
-        `One of every suit, so everyone except ${player} drinks ${String(multiplier)}${doubled}.`,
-      );
-    } else if (matches > 0) {
-      const drinks = matches * 2 * multiplier;
-      await expect(result).toHaveText(
-        `${player} matched ${String(matches)} ${matches === 1 ? "card" : "cards"}. Hand out ${String(drinks)} drinks${doubled}.`,
-      );
-    } else {
-      await expect(result).toHaveText(
-        `No matches. ${player} drinks ${String(4 * multiplier)}${doubled}.`,
-      );
-    }
-
-    // Focus moves to the next player's suit picker
-    if (!finalTurn) {
-      await expect(page.getByRole("radio", { name: "Hearts" })).toBeFocused();
-    }
   }
 
-  await expect(page.getByText("All 13 turns have been played.")).toBeVisible();
-  await expect(page.getByRole("radio")).toHaveCount(0);
-  await expect(revealButton).toHaveCount(0);
+  await test.step("Then the game is over and can be replayed with the same players", async () => {
+    await expect(
+      page.getByText("All 13 turns have been played."),
+    ).toBeVisible();
+    await expect(page.getByRole("radio")).toHaveCount(0);
+    await expect(revealButton).toHaveCount(0);
 
-  // Replay keeps the players
-  await page
-    .getByRole("button", { name: "Play again with same players" })
-    .click();
-  await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
-  await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
-  await expect(result).toHaveText("");
-  await expect(page.locator("#suits_chosen")).toHaveText("");
+    // Replay keeps the players
+    await page
+      .getByRole("button", { name: "Play again with same players" })
+      .click();
+    await expect(page.locator("#suits_turn")).toHaveText("Ben's turn");
+    await expect(page.locator("#suits_turn_count")).toHaveText("Turn 1 of 13");
+    await expect(result).toHaveText("");
+    await expect(page.locator("#suits_chosen")).toHaveText("");
+  });
 });
 
 test("Won't reveal with the shortcut before a suit is picked", async ({

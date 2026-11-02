@@ -1,72 +1,79 @@
 import { test, expect } from "@playwright/test";
 import { SuitNames, RankNames, getCardName } from "@/components/carddeck";
 
-test("No card drawn on load", async ({ page }) => {
-  await page.goto("/games/irishbingo");
-  await expect(page.locator("#latest_card")).toContainText(
-    "No cards drawn yet",
-  );
-  await expect(page.locator("#calling_card img")).toHaveAttribute(
-    "src",
-    "/images/cards/back.svg",
-  );
-});
-
-test("Gameplay works", async ({ page }) => {
-  await page.goto("/games/irishbingo");
-
-  // Test deck to compare against
-  const allCardNames: string[] = [];
-  SuitNames.forEach((suit) => {
-    RankNames.forEach((rank) => {
-      const cardName = getCardName(suit, rank);
-      allCardNames.push(cardName);
-    });
-  });
-
-  // Cycle through a full 52 clicks and...
-  // 1. Check it draws an accurate full deck (no dupes or missing cards)
-  // 2. Check that the counter shows the right text for number of button presses
-  const drawnCards: string[] = [];
-
-  for (let buttonpress = 0; buttonpress < 52; buttonpress++) {
-    const buttonpress_reindexed = buttonpress + 1; // adjusting for zero indexing...
-    await page.getByRole("button", { name: "Draw a Card" }).click();
-
-    const drawnCard = (await page.locator("#latest_card").textContent()) ?? "";
-    drawnCards.push(drawnCard);
-
-    // The picture matches the card called out
-    const [rank, suit] = drawnCard.toLowerCase().split(" of ");
+test.describe("A player of Irish Bingo", () => {
+  test("sees no card drawn when the game opens", async ({ page }) => {
+    await page.goto("/games/irishbingo");
+    await expect(page.locator("#latest_card")).toContainText(
+      "No cards drawn yet",
+    );
     await expect(page.locator("#calling_card img")).toHaveAttribute(
       "src",
-      `/images/cards/${rank}-${suit}.svg`,
+      "/images/cards/back.svg",
     );
+  });
 
-    await expect(page.locator("#card_count")).toContainText(
-      `${String(buttonpress_reindexed)} / 52 cards`,
-    );
-  }
+  test("can draw the whole deck once each, then shuffle and start again", async ({
+    page,
+  }) => {
+    await page.goto("/games/irishbingo");
 
-  // Force both lists to alphabetical order to remove randomness
-  expect(drawnCards.sort()).toEqual(allCardNames.sort());
+    // Test deck to compare against
+    const allCardNames: string[] = [];
+    SuitNames.forEach((suit) => {
+      RankNames.forEach((rank) => {
+        const cardName = getCardName(suit, rank);
+        allCardNames.push(cardName);
+      });
+    });
 
-  // Button disables after full deck is drawn
-  await expect(page.getByLabel("Deck Exhausted")).toContainText(
-    "Deck Exhausted",
-  );
+    await test.step("When they draw all 52 cards, each card shows once with its picture and the count", async () => {
+      const drawnCards: string[] = [];
 
-  // Shuffle a new deck resets
-  await page.getByRole("button", { name: "Shuffle new deck" }).click();
-  await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
+      for (let buttonpress = 0; buttonpress < 52; buttonpress++) {
+        const buttonpress_reindexed = buttonpress + 1; // adjusting for zero indexing...
+        await page.getByRole("button", { name: "Draw a Card" }).click();
 
-  // Can draw after reshuffle
-  await page.getByRole("button", { name: "Draw a Card" }).click();
-  await page.getByRole("button", { name: "Draw a Card" }).click();
-  await page.getByRole("button", { name: "Draw a Card" }).click();
-  await expect(page.locator("#card_count")).toContainText("3 / 52 cards");
+        const drawnCard =
+          (await page.locator("#latest_card").textContent()) ?? "";
+        drawnCards.push(drawnCard);
 
-  // Reset works after just a handful of cards
-  await page.getByRole("button", { name: "Shuffle new deck" }).click();
-  await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
+        // The picture matches the card called out
+        const [rank, suit] = drawnCard.toLowerCase().split(" of ");
+        await expect(page.locator("#calling_card img")).toHaveAttribute(
+          "src",
+          `/images/cards/${rank}-${suit}.svg`,
+        );
+
+        await expect(page.locator("#card_count")).toContainText(
+          `${String(buttonpress_reindexed)} / 52 cards`,
+        );
+      }
+
+      // Force both lists to alphabetical order to remove randomness
+      expect(drawnCards.sort()).toEqual(allCardNames.sort());
+    });
+
+    await test.step("Then the deck is exhausted", async () => {
+      await expect(page.getByLabel("Deck Exhausted")).toContainText(
+        "Deck Exhausted",
+      );
+    });
+
+    await test.step("When they shuffle a new deck, the count resets and they can draw again", async () => {
+      await page.getByRole("button", { name: "Shuffle new deck" }).click();
+      await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
+
+      // Can draw after reshuffle
+      await page.getByRole("button", { name: "Draw a Card" }).click();
+      await page.getByRole("button", { name: "Draw a Card" }).click();
+      await page.getByRole("button", { name: "Draw a Card" }).click();
+      await expect(page.locator("#card_count")).toContainText("3 / 52 cards");
+    });
+
+    await test.step("When they shuffle after a few cards, the count resets again", async () => {
+      await page.getByRole("button", { name: "Shuffle new deck" }).click();
+      await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
+    });
+  });
 });
