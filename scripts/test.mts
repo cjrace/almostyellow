@@ -8,6 +8,7 @@
 // Stops at the first stage that fails.
 import { spawnSync } from "node:child_process";
 
+const started = Date.now();
 const args = process.argv.slice(2);
 const format = !args.includes("--no-format");
 const e2eArgs = args.includes("--no-build") ? " --no-build" : "";
@@ -96,4 +97,7 @@ run("pnpm test:ci");
 heading("End-to-end tests with Playwright (build, then Chrome and Firefox)");
 run(`node scripts/e2e.mts${e2eArgs}`);
 
-console.log("\nAll checks passed");
+const seconds = Math.round((Date.now() - started) / 1000);
+console.log(
+  `\nAll checks passed in ${String(Math.floor(seconds / 60))}m ${String(seconds % 60).padStart(2, "0")}s`,
+);
