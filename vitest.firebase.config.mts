@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import path from "path";
 
 // Tests that need the Firebase emulators. Run them through
-// "firebase emulators:exec", see the test:rules and test:ci scripts.
+// "firebase emulators:exec", see the test:rules and test:firebase scripts.
 export default defineConfig({
   resolve: {
     alias: {

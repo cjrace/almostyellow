@@ -69,10 +69,10 @@ The tests use fixed ports, so stop `pnpm dev` (port 3000) and `pnpm emulators` (
 ### Running one set of tests
 
 ```bash
-pnpm test:unit    # Unit tests, no Java needed
-pnpm test:rules   # Firestore Security Rules only
-pnpm test:ci      # All the Firebase emulator tests
-pnpm test:e2e     # Build, then the Playwright tests against the emulators
+pnpm test:unit     # Unit tests, no Java needed
+pnpm test:rules    # Firestore Security Rules only
+pnpm test:firebase # All the Firebase emulator tests
+pnpm test:e2e      # Build, then the Playwright tests against the emulators
 ```
 
 See [AGENTS.md](AGENTS.md) for how the test fixtures and Firebase safeguards work.

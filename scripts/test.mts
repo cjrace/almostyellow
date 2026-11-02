@@ -1,27 +1,38 @@
 // Runs every check in order, with a heading for each stage and a one-line
 // result for the quiet ones (Prettier and ESLint).
 //
-//   node scripts/test.mts                 format, lint, then every test suite
-//   node scripts/test.mts --no-format     leave the files as they are
-//   node scripts/test.mts --no-build      reuse the existing .next build
+//   pnpm test                  format, lint, then every test suite
+//   pnpm test --no-format      leave the files as they are
+//   pnpm test-only             --no-format, and reuse the existing .next build
 //
+// Run it through pnpm, which puts prettier, eslint and vitest on the PATH.
 // Stops at the first stage that fails.
 import { spawnSync } from "node:child_process";
 
 const started = Date.now();
 const args = process.argv.slice(2);
 const format = !args.includes("--no-format");
-const e2eArgs = args.includes("--no-build") ? " --no-build" : "";
+const build = !args.includes("--no-build");
 
 const stages = format ? 5 : 4;
 let stage = 0;
+let stageName = "";
 
 function heading(text: string) {
   stage++;
+  stageName = text;
   console.log(`\n=== [${String(stage)}/${String(stages)}] ${text} ===`);
 }
 
+function elapsed() {
+  const seconds = Math.round((Date.now() - started) / 1000);
+  return `${String(Math.floor(seconds / 60))}m ${String(seconds % 60).padStart(2, "0")}s`;
+}
+
 function fail(code: number | null): never {
+  console.log(
+    `\n=== [Overall] Failed at ${String(stage)}/${String(stages)} ${stageName} after ${elapsed()} ===`,
+  );
   process.exit(code ?? 1);
 }
 
@@ -70,7 +81,12 @@ if (format) {
 
 heading("Linting with ESLint");
 console.log("Checking every file...");
-const eslint = capture("eslint --format json");
+// The cache skips files that have not changed since the last run. A change to
+// a type in one file can leave a stale result for a file that uses it, so CI
+// runs pnpm lint without the cache.
+const eslintCache =
+  "--cache --cache-strategy content --cache-location node_modules/.cache/eslint/";
+const eslint = capture(`eslint ${eslintCache} --format json`);
 interface LintResult {
   errorCount: number;
   warningCount: number;
@@ -90,7 +106,7 @@ console.log(
 );
 if (errors > 0 || warnings > 0) {
   // Show the problems in ESLint's usual format
-  run("eslint");
+  run(`eslint ${eslintCache} --max-warnings 0`);
   fail(1);
 }
 
@@ -99,12 +115,11 @@ run("vitest run");
 
 heading("Firebase emulator tests with Vitest (Security Rules, server actions)");
 console.log("Starting the Firebase emulators...");
-run("pnpm test:ci");
+run("pnpm test:firebase");
 
-heading("End-to-end tests with Playwright (build, then Chrome and Firefox)");
-run(`node scripts/e2e.mts${e2eArgs}`);
-
-const seconds = Math.round((Date.now() - started) / 1000);
-console.log(
-  `\nAll checks passed in ${String(Math.floor(seconds / 60))}m ${String(seconds % 60).padStart(2, "0")}s`,
+heading(
+  `End-to-end tests with Playwright (${build ? "build, then " : ""}Chrome and Firefox)`,
 );
+run(`node scripts/e2e.mts${build ? "" : " --no-build"}`);
+
+console.log(`\n=== [Overall] All checks passed in ${elapsed()} ===`);

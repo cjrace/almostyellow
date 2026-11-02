@@ -11,7 +11,7 @@ pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 ```
 
-`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one. Prettier and ESLint print a single line each, with the number of files checked. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
+`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
 
 Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
@@ -102,12 +102,13 @@ Any server action that reads private data or changes data must call `requireAuth
 The Firebase work is tested against the local Auth and Firestore emulators, never a real project. Java 21 or later must be installed for the Firestore emulator.
 
 ```bash
-pnpm test:rules    # Security Rules tests, project demo-almostyellow
-pnpm test:ci       # Everything under tests/firebase, project demo-almostyellow-ci
-pnpm emulators     # Start the emulators by hand, for example while writing tests
+pnpm test:rules        # Security Rules tests, project demo-almostyellow
+pnpm test:firebase     # Everything under tests/firebase, project demo-almostyellow-ci
+pnpm test:firebase:run # The same against emulators you started with pnpm emulators
+pnpm emulators         # Start the emulators by hand, for example while writing tests
 ```
 
 - `firebase.json`, `firestore.rules` and `firestore.indexes.json` configure the emulators and rules.
 - `tests/firebase/fixtures.ts` holds the synthetic users and records, and `tests/firebase/seed.ts` resets the emulators to them. Seeding happens before every test, so each starts from the same data.
 - `tests/firebase/guard.ts` refuses to run unless the project is one of the two `demo-` projects, both emulator hosts are local, Security Rules are loaded and no Google or Firebase credentials are set. Its own tests are in `tests/unit/firebase_guard.test.ts`.
-- `pnpm test` and `pnpm test-only` run `pnpm test:ci` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.
+- `pnpm test` and `pnpm test-only` run `pnpm test:firebase` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.
