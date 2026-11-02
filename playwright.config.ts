@@ -25,8 +25,8 @@ export default defineConfig({
   /* Retry on all environments to reduce flakiness */
   retries: 3,
   /* More than 4 browsers alongside the app and the Firebase emulators starves
-     Firefox, which then times out at random. CI has fewer cores than that. */
-  workers: process.env.CI ? 2 : 4,
+     Firefox, which then times out at random. A CI runner has 4 cores. */
+  workers: process.env.CI ? 3 : 4,
   /* Never serve the report at the end of a run: it waits for Ctrl+C, which
      keeps the emulators running and blocks the next run.
      Open it with "pnpm exec playwright show-report". */
