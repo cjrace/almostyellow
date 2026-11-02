@@ -74,7 +74,8 @@ function buildApp() {
     console.error(output);
     return result.status ?? 1;
   }
-  const warnings = output.split("\n").filter((line) => /warn/i.test(line));
+  // Next marks most warnings with ⚠ rather than the word
+  const warnings = output.split("\n").filter((line) => /warn|⚠/i.test(line));
   const seconds = ((Date.now() - started) / 1000).toFixed(0);
   console.log(["Build OK (" + seconds + "s)", ...warnings].join("\n"));
   return 0;
