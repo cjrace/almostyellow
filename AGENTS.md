@@ -6,11 +6,12 @@
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
+pnpm test-only     # The same without reformatting files or rebuilding the app
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 ```
 
-Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
+`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one. Prettier and ESLint print a single line each, with the number of files checked. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
 
 Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
@@ -21,6 +22,14 @@ pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves Firefox and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
+
+CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
+
+`scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
+
+## Dependencies
+
+`pnpm-workspace.yaml` holds `overrides` for security fixes and `allowBuilds` for packages allowed to run install scripts. Leave them unless a bump needs the change. `patches/` patches `firebase-tools` and `superstatic` for minimatch's named export, and `tests/unit/dependency_compatibility.test.ts` checks the patches still work, so keep it passing when updating either package.
 
 ## Branch naming
 
@@ -36,6 +45,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `(homepage)/` — Home page (route group, no URL segment)
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
+  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits and the Uno tracker. Only Uno uses Firestore
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
@@ -57,11 +67,11 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 
 ### Cocktails (Firestore)
 
-`src/app/cocktails/page.tsx` reads the `cocktails` collection on each request with `src/services/cocktails.ts`, and passes it to the client component for filtering. There is no page for changing cocktails yet. Ratings are out of 5 in halves, and photos must be under `/images/`; `tests/firebase/rules.test.ts` checks every catalogue recipe meets the rules.
+`src/app/cocktails/page.tsx` reads the `cocktails` collection on each request with `src/services/cocktails.ts`. There is no page for changing cocktails yet. Ratings are out of 5 in halves, and photos must be under `/images/`; `tests/firebase/rules.test.ts` checks every catalogue recipe meets the rules.
 
 ### Chopin Liszt (Firestore)
 
-The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The queue is only kept in memory, so changes not yet sent are lost if the page closes (the page asks before unloading while any are waiting), and the list needs a connection to open. The offline message also shows when the listener is serving cached data, as phones can report being online on a signal too weak to reach Firestore. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener. Changes queue in memory while offline and are lost if the page closes with some unsent; the list needs a connection to open. The last change to reach Firestore wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
 
 ### Uno (Firestore)
 
