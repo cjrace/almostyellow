@@ -65,6 +65,8 @@ function buildApp() {
   const result = spawnSync("pnpm exec next build", {
     shell: true,
     encoding: "utf8",
+    // The default 1 MB would fail a build that prints a lot of warnings
+    maxBuffer: 64 * 1024 * 1024,
   });
   const output = `${result.stdout}${result.stderr}`;
   if (result.status !== 0) {
