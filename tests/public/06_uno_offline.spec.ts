@@ -8,27 +8,25 @@ for (const failure of ["open", "match", "put"] as const) {
     context,
   }) => {
     await page.goto("/games/uno-tracker");
+    // Assets are cached one at a time, and CSS or fonts can land first, so wait
+    // for a JavaScript file rather than for any entry
+    const findCachedScript = () =>
+      page.evaluate(async () => {
+        const cache = await caches.open("uno-shell-v1");
+        return (await cache.keys())
+          .map((request) => request.url)
+          .find((url) => new URL(url).pathname.endsWith(".js"));
+      });
     await expect
-      .poll(
-        () =>
-          page.evaluate(
-            async () =>
-              (await (await caches.open("uno-shell-v1")).keys()).length,
-          ),
-        { timeout: 30000 },
-      )
-      .toBeGreaterThan(1);
+      .poll(findCachedScript, {
+        message: "No cached JavaScript asset was found.",
+        timeout: 30000,
+      })
+      .toBeTruthy();
     await expect
       .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
       .toBe(true);
-    const asset = await page.evaluate(async () => {
-      const cache = await caches.open("uno-shell-v1");
-      return (await cache.keys())
-        .map((request) => request.url)
-        .find((url) => new URL(url).pathname.endsWith(".js"));
-    });
-    if (!asset) throw new Error("No cached JavaScript asset was found.");
-    const url = `${asset}?cache-failure=${failure}`;
+    const url = `${await findCachedScript()}?cache-failure=${failure}`;
     expect((await page.request.get(url)).status()).toBe(200);
     await context.serviceWorkers()[0].evaluate((failure) => {
       if (failure === "open")
