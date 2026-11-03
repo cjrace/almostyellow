@@ -68,3 +68,9 @@ Write tests so that someone who has never seen the code can tell what a person c
 - **If a test can only run in some browsers**, leave it out of the others with `testIgnore` in `playwright.config.ts` rather than skipping it, so the summary only lists real skips.
 
 Unit and Firebase tests describe the code rather than a person (`describe("signInAction")`), but their names still say what should happen, such as `"rejects an expired session"`.
+
+### Test files share their imports
+
+The Vitest configs set `isolate: false`, so test files that run in the same worker share imported modules instead of loading them again. That is much faster, but a module that keeps state (a cached Firebase app or Firestore instance, a channel, a list filled at import time) keeps it from one file to the next. `src/firebase/client.ts` and `src/uno/browser.ts` do this today, and no test imports them. The Admin SDK app in `src/firebase/admin.ts` is shared too, which is safe because every Firebase test uses the same demo project.
+
+If you write a test that imports a module like that, or one that changes `process.env`, either put things back in an `afterEach` or set `isolate: true` in that Vitest config. A sign something is leaking is a test that fails only in the full run. To check, run `pnpm exec vitest run --sequence.shuffle` a few times, which mixes up the order of files and tests.
