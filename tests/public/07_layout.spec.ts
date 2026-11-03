@@ -3,7 +3,29 @@ import { test, expect } from "@playwright/test";
 /* The layout tests set their own window size, so they check the same thing in
    every browser project. */
 const phone = { width: 390, height: 844 };
+const smallPhone = { width: 320, height: 640 };
 const desktop = { width: 1280, height: 800 };
+
+test.describe("A visitor on a small phone", () => {
+  test.use({ viewport: smallPhone });
+
+  test("can read every rope in Boom Boom Pirate", async ({ page }) => {
+    await page.goto("/games/boomboompirate");
+    await page.getByRole("button", { name: "Start Game" }).click();
+    const ropes = page.getByRole("button", { name: /^Rope \d+$/ });
+    await expect(ropes.first()).toBeVisible();
+
+    // No label is cut short with an ellipsis
+    const cut = await ropes.evaluateAll(
+      (buttons) =>
+        buttons.filter((button) => {
+          const label = button.querySelector(".mantine-Button-label");
+          return !label || label.scrollWidth > label.clientWidth;
+        }).length,
+    );
+    expect(cut).toBe(0);
+  });
+});
 
 test.describe("A visitor on a phone", () => {
   test.use({ viewport: phone });

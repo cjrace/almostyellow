@@ -9,7 +9,7 @@ body {
   padding: var(--site-frame-padding);
 }
 
-@media (max-width: 768px) {
+@mixin smaller-than $mantine-breakpoint-sm {
   /* Smaller spacing for smaller screens */
   .site-frame {
     --site-frame-padding: 10px;

@@ -1,25 +1,5 @@
-/* Snakes and Ladders layout. Phones stack the board above the controls, wide
-   screens put the controls beside a board sized to fit the window */
-
-.setup {
-  max-width: 40rem;
-}
-
-.players,
-.playing {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--mantine-spacing-md);
-}
-
-.boardArea {
-  order: -1;
-}
-
-.controls > button,
-.controls > div > button {
-  width: 100%;
-}
+/* The Snakes and Ladders board. Mantine's Grid lays out the page around it,
+   but cannot make a square sized to fit the window */
 
 /* A square of ten by ten, never taller than the window */
 .board {
@@ -52,20 +32,7 @@
   max-height: 80%;
 }
 
-@media (min-width: 48em) {
-  .players {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .playing {
-    grid-template-columns: minmax(14rem, 1fr) minmax(0, 2fr);
-    align-items: start;
-  }
-
-  .boardArea {
-    order: 0;
-  }
-
+@mixin larger-than $mantine-breakpoint-sm {
   .board {
     margin-inline: 0;
   }

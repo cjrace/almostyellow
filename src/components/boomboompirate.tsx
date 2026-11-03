@@ -4,10 +4,10 @@ import { useState } from "react";
 import {
   Box,
   Button,
-  Grid,
   Modal,
   Text,
   NumberInput,
+  SimpleGrid,
   Stack,
   Space,
 } from "@mantine/core";
@@ -123,27 +123,28 @@ const BoomBoomPirate = () => {
         </Stack>
       ) : (
         <>
-          <Grid>
+          {/* Few enough columns on a phone that "Rope 50" still fits */}
+          <SimpleGrid cols={{ base: 3, sm: 4, md: 6 }}>
             {Array.from({ length: totalRopes }, (_, rope) => rope).map(
               (rope) => (
-                <Grid.Col span={2} key={rope}>
-                  <Button
-                    variant="outline"
-                    fullWidth
-                    onClick={() => {
-                      handleRopePull(rope);
-                    }}
-                    color={ropeStates[rope] || "blue"}
-                    disabled={loadingRope !== null}
-                  >
-                    {loadingRope === rope
-                      ? (currentIcon ?? "Loading...")
-                      : `Rope ${(rope + 1).toString()}`}
-                  </Button>
-                </Grid.Col>
+                <Button
+                  key={rope}
+                  variant="outline"
+                  fullWidth
+                  px="xs"
+                  onClick={() => {
+                    handleRopePull(rope);
+                  }}
+                  color={ropeStates[rope] || "blue"}
+                  disabled={loadingRope !== null}
+                >
+                  {loadingRope === rope
+                    ? (currentIcon ?? "Loading...")
+                    : `Rope ${(rope + 1).toString()}`}
+                </Button>
               ),
             )}
-          </Grid>
+          </SimpleGrid>
 
           <Space h="xl" />
 

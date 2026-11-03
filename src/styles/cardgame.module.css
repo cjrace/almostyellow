@@ -58,7 +58,7 @@ label[data-active] .redSuit {
   gap: var(--mantine-spacing-sm);
 }
 
-@media (min-width: 48em) {
+@mixin larger-than $mantine-breakpoint-sm {
   /* Red or Black puts the buttons beside the card, in a column with a set
      width so it doesn't change with the length of the card name */
   .sideBySide {
@@ -85,7 +85,7 @@ label[data-active] .redSuit {
   }
 }
 
-@media (max-width: 47.99em) {
+@mixin smaller-than $mantine-breakpoint-sm {
   .board {
     margin-top: var(--mantine-spacing-md);
   }

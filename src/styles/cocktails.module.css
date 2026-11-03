@@ -1,11 +1,4 @@
-/* Cards flow into as many columns as fit, one on a phone */
-.cocktailList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-  gap: 0 var(--mantine-spacing-md);
-  align-items: start;
-}
-
+/* Lets a card shrink below its content inside the grid */
 .cocktailCard {
   min-width: 0;
 }

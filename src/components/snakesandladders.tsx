@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  Grid,
   Button,
   Modal,
   Box,
@@ -9,6 +10,7 @@ import {
   Space,
   TextInput,
   NumberInput,
+  SimpleGrid,
   Group,
   ActionIcon,
   SegmentedControl,
@@ -355,160 +357,146 @@ const SnakesAndLadders = () => {
     setGameInitialized(false); // Reset to show initiation step };
   };
 
+  if (!gameInitialized) {
+    return (
+      <Box maw="40rem">
+        {/* Form to set up the players */}
+        <NumberInput
+          value={numPlayers}
+          onChange={(value) => {
+            setNumPlayers(Number(value) || 2);
+          }}
+          label="Number of Players"
+          min={2}
+          max={10}
+          maw="12rem"
+        />
+
+        <Space h="xl" />
+
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          {Array.from({ length: numPlayers }, (_, seat) => seat).map((seat) => (
+            <Stack key={seat} mb="sm" gap="xs">
+              <TextInput
+                label={`Name of player ${(seat + 1).toString()}:`}
+                labelProps={{
+                  style: {
+                    margin: "0 0 0.75em 0",
+                  },
+                }}
+                value={players[seat]?.name || ""}
+                onChange={(event) => {
+                  handlePlayerSetup(
+                    seat,
+                    event.currentTarget.value,
+                    players[seat]?.icon || "cat",
+                  );
+                }}
+              />
+              <Text size="xs" c="dimmed">
+                Choose your avatar
+              </Text>
+              <Group>
+                <IconSelection
+                  selectedIcon={players[seat]?.icon || "cat"}
+                  onChange={(icon) => {
+                    handlePlayerSetup(
+                      seat,
+                      players[seat]?.name || `Player ${(seat + 1).toString()}`,
+                      icon,
+                    );
+                  }}
+                />
+              </Group>
+            </Stack>
+          ))}
+        </SimpleGrid>
+
+        <Button onClick={initializePlayers} fullWidth mt="md">
+          Start game!
+        </Button>
+      </Box>
+    );
+  }
+
+  // Phones put the board above the controls, wider screens beside them
   return (
-    <div className={gameInitialized ? layout.playing : layout.setup}>
-      <Box className={layout.controls}>
-        {!gameInitialized && (
-          <>
-            {/* Form to set up the players */}
-            <NumberInput
-              value={numPlayers}
-              onChange={(value) => {
-                setNumPlayers(Number(value) || 2);
-              }}
-              label="Number of Players"
-              min={2}
-              max={10}
-              maw="12rem"
-            />
+    <Grid>
+      <Grid.Col span={{ base: 12, sm: 4 }} order={{ base: 2, sm: 1 }}>
+        <PlayerList players={players} currentPlayer={currentPlayer} />
 
-            <Space h="xl" />
-
-            <div className={layout.players}>
-              {Array.from({ length: numPlayers }, (_, seat) => seat).map(
-                (seat) => (
-                  <Box key={seat}>
-                    <Stack mb="sm" gap="xs">
-                      <TextInput
-                        label={`Name of player ${(seat + 1).toString()}:`}
-                        labelProps={{
-                          style: {
-                            margin: "0 0 0.75em 0",
-                          },
-                        }}
-                        value={players[seat]?.name || ""}
-                        onChange={(event) => {
-                          handlePlayerSetup(
-                            seat,
-                            event.currentTarget.value,
-                            players[seat]?.icon || "cat",
-                          );
-                        }}
-                      />
-                      <Text size="xs" c="dimmed">
-                        Choose your avatar
-                      </Text>
-                      <Group>
-                        <IconSelection
-                          selectedIcon={players[seat]?.icon || "cat"}
-                          onChange={(icon) => {
-                            handlePlayerSetup(
-                              seat,
-                              players[seat]?.name ||
-                                `Player ${(seat + 1).toString()}`,
-                              icon,
-                            );
-                          }}
-                        />
-                      </Group>
-                    </Stack>
-                  </Box>
-                ),
-              )}
-            </div>
-
-            <Button onClick={initializePlayers} mt="md">
-              Start game!
-            </Button>
-          </>
+        {showDiceResult && diceResult !== null && (
+          <Text ta="left" mt="md">
+            {players[currentPlayer]?.name} moves {diceResult} places!
+          </Text>
         )}
 
-        {gameInitialized && (
-          <Box>
-            <PlayerList players={players} currentPlayer={currentPlayer} />
+        <Space h="md" />
 
-            {showDiceResult && diceResult !== null && (
-              <Text ta="left" mt="md">
-                {players[currentPlayer]?.name} moves {diceResult} places!
-              </Text>
-            )}
+        <Button
+          onClick={rollDice}
+          fullWidth
+          mt="md"
+          disabled={!!winner || playerPositions.length === 0 || isRolling}
+        >
+          {isRolling
+            ? rollingDiceIcon
+            : `Roll Dice (${players[currentPlayer]?.name})`}
+        </Button>
 
-            <Space h="md" />
+        <Space h="md" />
 
-            <Button
-              onClick={rollDice}
-              mt="md"
-              disabled={!!winner || playerPositions.length === 0 || isRolling}
-            >
-              {isRolling
-                ? rollingDiceIcon
-                : `Roll Dice (${players[currentPlayer]?.name})`}
-            </Button>
+        <Button onClick={restartGame} fullWidth mt="md">
+          Restart Game
+        </Button>
+      </Grid.Col>
 
-            <Space h="md" />
+      <Grid.Col span={{ base: 12, sm: 8 }} order={{ base: 1, sm: 2 }}>
+        <SegmentedControl
+          value={viewMode}
+          color="orange"
+          onChange={setViewMode}
+          data={[
+            { label: "Show Names", value: "names" },
+            { label: "Show Icons", value: "icons" },
+          ]}
+          mt="sm"
+        />
 
-            <Button onClick={restartGame} mt="md">
+        <Space h="xl" />
+
+        <div className={layout.board} data-testid="board">
+          {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
+            const pos = index + 1;
+            const playerAtPos = playerPositions.findIndex(
+              (playerPos) => playerPos === pos,
+            );
+            return (
+              <div key={pos} className={layout.cell}>
+                {playerAtPos !== -1 &&
+                  (viewMode === "names" ? (
+                    <span>{players[playerAtPos]?.name}</span>
+                  ) : (
+                    icons.find((icon) => icon.id === players[playerAtPos]?.icon)
+                      ?.component
+                  ))}
+                {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
+                {pos === 100 && <IconTrophy size={24} color="gold" />}
+              </div>
+            );
+          })}
+        </div>
+
+        <Modal opened={!!popupMessage} onClose={closePopup} title="Game Update">
+          {popupMessage}
+          {winner !== null && (
+            <Button onClick={restartGame} fullWidth mt="md">
               Restart Game
             </Button>
-          </Box>
-        )}
-      </Box>
-
-      <Box className={layout.boardArea}>
-        {gameInitialized && (
-          <>
-            <SegmentedControl
-              value={viewMode}
-              color="orange"
-              onChange={setViewMode}
-              data={[
-                { label: "Show Names", value: "names" },
-                { label: "Show Icons", value: "icons" },
-              ]}
-              mt="sm"
-            />
-
-            <Space h="xl" />
-
-            <div className={layout.board} data-testid="board">
-              {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-                const pos = index + 1;
-                const playerAtPos = playerPositions.findIndex(
-                  (playerPos) => playerPos === pos,
-                );
-                return (
-                  <div key={pos} className={layout.cell}>
-                    {playerAtPos !== -1 &&
-                      (viewMode === "names" ? (
-                        <span>{players[playerAtPos]?.name}</span>
-                      ) : (
-                        icons.find(
-                          (icon) => icon.id === players[playerAtPos]?.icon,
-                        )?.component
-                      ))}
-                    {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
-                    {pos === 100 && <IconTrophy size={24} color="gold" />}
-                  </div>
-                );
-              })}
-            </div>
-
-            <Modal
-              opened={!!popupMessage}
-              onClose={closePopup}
-              title="Game Update"
-            >
-              {popupMessage}
-              {winner !== null && (
-                <Button onClick={restartGame} fullWidth mt="md">
-                  Restart Game
-                </Button>
-              )}
-            </Modal>
-          </>
-        )}
-      </Box>
-    </div>
+          )}
+        </Modal>
+      </Grid.Col>
+    </Grid>
   );
 };
 

@@ -207,7 +207,7 @@
 }
 /* On a phone the tracker is exactly one screen tall, so it never scrolls. The
    score and the +1 buttons share whatever height is left. */
-@media (max-width: 47.99em) {
+@mixin smaller-than $mantine-breakpoint-sm {
   .tracker {
     height: calc(100dvh - 60px - 2rem - 20px);
     min-height: 26rem;

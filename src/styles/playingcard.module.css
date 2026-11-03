@@ -24,7 +24,7 @@
 }
 
 /* Two by two on phones, so each card is big enough to read */
-@media (max-width: 47.99em) {
+@mixin smaller-than $mantine-breakpoint-sm {
   .single {
     width: min(100cqw, 100cqh * 5 / 7, 260px);
   }
