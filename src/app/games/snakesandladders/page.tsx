@@ -2,6 +2,7 @@ import { Title, Space } from "@mantine/core";
 import SnakesAndLadders from "@/components/snakesandladders";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
   title: "Snakes and Ladders",
@@ -15,14 +16,14 @@ export const metadata: Metadata = {
 
 export default function SnakesAndLaddersPage() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
         <Title>Snakes and Ladders</Title>
-        <Space h="xl" />
+        <Space h="md" />
         <SnakesAndLadders />
       </main>
-    </>
+    </div>
   );
 }

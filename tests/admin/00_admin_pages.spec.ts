@@ -43,6 +43,41 @@ test("Can sign in and navigate admin", async ({ page }) => {
   await expect(page).toHaveTitle("Almost Yellow");
 });
 
+test.describe("A signed in user on a desktop", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("sees the holidays timeline in a narrow column in the middle of the page", async ({
+    page,
+  }) => {
+    const { email, password } = getCredentials();
+    await page.goto("/admin/login");
+    const emailInput = page.getByPlaceholder("e.g. simply@thebest.co.uk");
+    await expect(emailInput).toBeEditable();
+    await emailInput.fill(email);
+    await page.getByPlaceholder("Enter password").fill(password);
+    await Promise.all([
+      page.waitForURL("/", { timeout: 15_000 }),
+      page.getByRole("button", { name: "Log in" }).click(),
+    ]);
+    await page.goto("/admin/holidays");
+    await expect(page.locator("h1")).toContainText("Our trips and holidays");
+
+    // The timeline's text is short and left-aligned, so a wide column leaves
+    // it sitting left of centre with empty space to its right
+    const column = await page
+      .locator("#main-content > .mantine-Container-root")
+      .boundingBox();
+    const screenWidth = await page.evaluate(
+      () => document.documentElement.clientWidth,
+    );
+    if (!column) throw new Error("The holidays column is missing");
+    expect(
+      Math.abs(column.x + column.width / 2 - screenWidth / 2),
+    ).toBeLessThan(2);
+    expect(column.width).toBeLessThanOrEqual(540);
+  });
+});
+
 test("Redirected to login if tried to get to admin pages while not signed in", async ({
   page,
 }) => {

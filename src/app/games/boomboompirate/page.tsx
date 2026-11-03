@@ -2,6 +2,7 @@ import { Space, Title } from "@mantine/core";
 import BoomBoomPirate from "@/components/boomboompirate";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
   title: "Boom Boom Pirate",
@@ -14,14 +15,14 @@ export const metadata: Metadata = {
 
 export default function BoomBoomPiratePage() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
         <Title>Boom Boom Pirate</Title>
-        <Space h="xl" />
+        <Space h="md" />
         <BoomBoomPirate />
       </main>
-    </>
+    </div>
   );
 }

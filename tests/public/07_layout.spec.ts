@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 /* The layout tests set their own window size, so they check the same thing in
    every browser project. */
@@ -6,24 +6,67 @@ const phone = { width: 390, height: 844 };
 const smallPhone = { width: 320, height: 640 };
 const desktop = { width: 1280, height: 800 };
 
+// Whether the page is taller than the window
+function pageScrolls(page: Page) {
+  return page.evaluate(
+    () => document.documentElement.scrollHeight > window.innerHeight,
+  );
+}
+
+async function startBoomBoomPirate(page: Page, ropes: number) {
+  await page.goto("/games/boomboompirate");
+  await page.getByLabel("Number of ropes").fill(ropes.toString());
+  await page.getByRole("button", { name: "Start Game" }).click();
+  const buttons = page.getByRole("button", { name: /^Rope \d+$/ });
+  await expect(buttons).toHaveCount(ropes);
+  return buttons;
+}
+
 test.describe("A visitor on a small phone", () => {
   test.use({ viewport: smallPhone });
 
-  test("can read every rope in Boom Boom Pirate", async ({ page }) => {
-    await page.goto("/games/boomboompirate");
-    await page.getByRole("button", { name: "Start Game" }).click();
-    const ropes = page.getByRole("button", { name: /^Rope \d+$/ });
-    await expect(ropes.first()).toBeVisible();
+  test("can read and tap all 50 ropes in Boom Boom Pirate", async ({
+    page,
+  }) => {
+    const ropes = await startBoomBoomPirate(page, 50);
 
-    // No label is cut short with an ellipsis
-    const cut = await ropes.evaluateAll(
-      (buttons) =>
-        buttons.filter((button) => {
-          const label = button.querySelector(".mantine-Button-label");
-          return !label || label.scrollWidth > label.clientWidth;
-        }).length,
+    // No label is cut short with an ellipsis, and every rope is big enough to
+    // tap. With 50 the ropes may scroll within their grid, but the page doesn't
+    const sizes = await ropes.evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const label = button.querySelector(".mantine-Button-label");
+        return {
+          cut: !label || label.scrollWidth > label.clientWidth,
+          height: button.getBoundingClientRect().height,
+        };
+      }),
     );
-    expect(cut).toBe(0);
+    expect(sizes.filter((size) => size.cut)).toHaveLength(0);
+    expect(
+      Math.min(...sizes.map((size) => size.height)),
+    ).toBeGreaterThanOrEqual(44);
+    expect(await pageScrolls(page)).toBe(false);
+  });
+
+  test("sees the Irish Bingo buttons at the bottom of the screen", async ({
+    page,
+  }) => {
+    await page.goto("/games/irishbingo");
+    const shuffle = await page
+      .getByRole("button", { name: "Shuffle new deck" })
+      .boundingBox();
+    if (!shuffle) throw new Error("The shuffle button is missing");
+
+    expect(await pageScrolls(page)).toBe(false);
+    expect(shuffle.y + shuffle.height).toBeGreaterThan(smallPhone.height - 32);
+  });
+
+  test("sees the whole Uno tracker without scrolling", async ({ page }) => {
+    await page.goto("/games/uno-tracker");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Uno tracker",
+    );
+    expect(await pageScrolls(page)).toBe(false);
   });
 });
 
@@ -59,6 +102,36 @@ test.describe("A visitor on a phone", () => {
     await expect(page.locator('img[alt="Mr. Tayto"]')).toBeHidden();
   });
 
+  test("sees a big Irish Bingo card with the buttons at the bottom", async ({
+    page,
+  }) => {
+    await page.goto("/games/irishbingo");
+    const card = await page.locator("#calling_card img").boundingBox();
+    const shuffle = await page
+      .getByRole("button", { name: "Shuffle new deck" })
+      .boundingBox();
+    if (!card || !shuffle) throw new Error("The card or buttons are missing");
+
+    expect(await pageScrolls(page)).toBe(false);
+    expect(card.height).toBeGreaterThan(phone.height * 0.4);
+    expect(shuffle.y + shuffle.height).toBeGreaterThan(phone.height - 32);
+  });
+
+  test("sees the Boom Boom Pirate ropes fill the screen", async ({ page }) => {
+    const ropes = await startBoomBoomPirate(page, 20);
+    const restart = await page
+      .getByRole("button", { name: "Restart Game" })
+      .boundingBox();
+    if (!restart) throw new Error("The restart button is missing");
+
+    expect(await pageScrolls(page)).toBe(false);
+    expect(restart.y + restart.height).toBeGreaterThan(phone.height - 40);
+    const heights = await ropes.evaluateAll((buttons) =>
+      buttons.map((button) => button.getBoundingClientRect().height),
+    );
+    expect(Math.min(...heights)).toBeGreaterThan(60);
+  });
+
   test("sees the Cocktails cards in a single column", async ({ page }) => {
     await page.goto("/cocktails");
     const cards = page.getByRole("heading", { level: 2 });
@@ -68,6 +141,14 @@ test.describe("A visitor on a phone", () => {
       els.map((el) => Math.round(el.getBoundingClientRect().left)),
     );
     expect(new Set(lefts).size).toBe(1);
+  });
+
+  test("sees the whole Uno tracker without scrolling", async ({ page }) => {
+    await page.goto("/games/uno-tracker");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Uno tracker",
+    );
+    expect(await pageScrolls(page)).toBe(false);
   });
 });
 
@@ -89,14 +170,73 @@ test.describe("A visitor on a desktop", () => {
     );
     expect(new Set(lefts).size).toBeGreaterThan(1);
   });
+
+  test("sees the Boom Boom Pirate ropes fill the screen", async ({ page }) => {
+    await startBoomBoomPirate(page, 5);
+    const restart = await page
+      .getByRole("button", { name: "Restart Game" })
+      .boundingBox();
+    if (!restart) throw new Error("The restart button is missing");
+
+    expect(await pageScrolls(page)).toBe(false);
+    expect(restart.y + restart.height).toBeGreaterThan(desktop.height - 40);
+  });
 });
 
 test.describe("A player of Snakes and Ladders", () => {
-  async function startGame(page: import("@playwright/test").Page) {
+  async function startGame(page: Page, players = 2) {
     await page.goto("/games/snakesandladders");
+    await page.getByLabel("Number of Players").fill(players.toString());
     await page.getByLabel("Name of player 1:").fill("Al");
     await page.getByRole("button", { name: "Start game!" }).click();
     await expect(page.getByTestId("board")).toBeVisible();
+  }
+
+  // The board and the Roll button, which should be fully on screen
+  async function boardAndRoll(page: Page) {
+    const board = await page.getByTestId("board").boundingBox();
+    const roll = await page
+      .getByRole("button", { name: /Roll Dice/ })
+      .boundingBox();
+    if (!board || !roll) throw new Error("The board or controls are missing");
+    return { board, roll };
+  }
+
+  for (const [where, viewport] of [
+    ["a phone", phone],
+    ["a small phone", smallPhone],
+    ["a desktop", desktop],
+  ] as const) {
+    test.describe(`on ${where}`, () => {
+      test.use({ viewport });
+
+      test("sees the whole game without scrolling, even with 10 players", async ({
+        page,
+      }) => {
+        await startGame(page, 10);
+        const { board, roll } = await boardAndRoll(page);
+
+        expect(await pageScrolls(page)).toBe(false);
+        expect(Math.abs(board.width - board.height)).toBeLessThan(2);
+        expect(board.y + board.height).toBeLessThanOrEqual(viewport.height);
+        expect(roll.y + roll.height).toBeLessThanOrEqual(viewport.height);
+      });
+
+      test("sees how far they move without the game moving about", async ({
+        page,
+      }) => {
+        await startGame(page);
+        const before = await boardAndRoll(page);
+        await page.getByRole("button", { name: /Roll Dice/ }).click();
+        await expect(page.getByRole("status")).toHaveText(
+          /^Al moves \d places?$/,
+        );
+
+        const after = await boardAndRoll(page);
+        expect(after.board).toEqual(before.board);
+        expect(after.roll.y).toBe(before.roll.y);
+      });
+    });
   }
 
   test.describe("on a phone", () => {
@@ -106,23 +246,31 @@ test.describe("A player of Snakes and Ladders", () => {
       page,
     }) => {
       await startGame(page);
+      const { board, roll } = await boardAndRoll(page);
 
-      const board = await page.getByTestId("board").boundingBox();
-      const roll = await page
-        .getByRole("button", { name: /Roll Dice/ })
-        .boundingBox();
-      if (!board || !roll) throw new Error("The board or controls are missing");
-
-      expect(Math.abs(board.width - board.height)).toBeLessThan(2);
       expect(board.x).toBeGreaterThanOrEqual(0);
       expect(board.x + board.width).toBeLessThanOrEqual(phone.width);
       expect(board.y + board.height).toBeLessThanOrEqual(roll.y);
     });
 
+    test("can open the list of every player", async ({ page }) => {
+      await startGame(page, 10);
+      await expect(page.getByTestId("turn")).toContainText("Al's turn");
+
+      await page.getByRole("button", { name: "Players" }).click();
+      const drawer = page.getByRole("dialog", { name: "Players" });
+      await expect(drawer).toBeVisible();
+      await expect(drawer.getByText(/^Player \d+$/)).toHaveCount(9);
+      await expect(drawer.getByText("Al", { exact: true })).toBeVisible();
+      await expect(
+        drawer.getByRole("button", { name: "Restart Game" }),
+      ).toBeVisible();
+    });
+
     test("can read a name on the board", async ({ page }) => {
       await startGame(page);
       await page.getByRole("button", { name: /Roll Dice/ }).click();
-      await expect(page.getByText(/Al moves \d places!/)).toBeVisible();
+      await expect(page.getByRole("status")).toHaveText(/^Al moves/);
 
       const cell = page.getByTestId("board").getByText("Al", { exact: true });
       await expect(cell).toBeVisible();
@@ -144,16 +292,10 @@ test.describe("A player of Snakes and Ladders", () => {
 
     test("sees a square board beside the controls", async ({ page }) => {
       await startGame(page);
-
-      const board = await page.getByTestId("board").boundingBox();
-      const roll = await page
-        .getByRole("button", { name: /Roll Dice/ })
-        .boundingBox();
-      if (!board || !roll) throw new Error("The board or controls are missing");
+      const { board, roll } = await boardAndRoll(page);
 
       expect(Math.abs(board.width - board.height)).toBeLessThan(2);
       expect(roll.x + roll.width).toBeLessThanOrEqual(board.x);
-      expect(board.y + board.height).toBeLessThanOrEqual(desktop.height);
     });
   });
 });

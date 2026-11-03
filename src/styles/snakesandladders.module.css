@@ -1,16 +1,54 @@
-/* The Snakes and Ladders board. Mantine's Grid lays out the page around it,
-   but cannot make a square sized to fit the window */
+/* The Snakes and Ladders game. It fills the height the page leaves it
+   (cardgame.module.css's .screen) and never scrolls, so the board is sized to
+   fit the space as well as the width */
 
-/* A square of ten by ten, never taller than the window */
+.game {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-md);
+  min-height: 0;
+}
+
+.boardArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-md);
+  min-height: 0;
+}
+
+/* Phones put the controls under the board */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+  order: 1;
+}
+
+.viewMode {
+  align-self: flex-start;
+}
+
+/* A size container, so the board can be the largest square that fits. The
+   zero basis matters, as in cardgame.module.css's .table */
+.table {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 15rem;
+  container-type: size;
+}
+
+/* A square of ten by ten */
 .board {
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   grid-template-rows: repeat(10, minmax(0, 1fr));
-  width: min(100%, calc(100dvh - 16rem));
-  min-width: 15rem;
+  width: min(100cqw, 100cqh);
   aspect-ratio: 1;
-  margin-inline: auto;
   border: 1px solid #ddd;
+  container-type: inline-size;
 }
 
 .cell {
@@ -21,7 +59,7 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid #ddd;
-  font-size: clamp(0.7rem, 2.6vw, 0.9rem);
+  font-size: clamp(0.7rem, 2.4cqi, 0.9rem);
   text-align: center;
   overflow-wrap: anywhere;
   line-height: 1.1;
@@ -32,12 +70,111 @@
   max-height: 80%;
 }
 
+.buttons {
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+}
+
+.roll {
+  flex: 1;
+}
+
+/* Keeps room for the "+4" badge, shown or not */
+.badgeSlot {
+  flex: none;
+  width: 2.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
 @mixin larger-than $mantine-breakpoint-sm {
-  .board {
-    margin-inline: 0;
+  /* The players and buttons on the left, the board on the right */
+  .game {
+    display: grid;
+    grid-template-columns: min(20rem, 35%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--mantine-spacing-xl);
   }
 
-  .cell {
-    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+  .controls {
+    order: 0;
+    min-height: 0;
   }
+
+  /* Ten players may not fit beside the board, so the list scrolls on its own */
+  .playerList {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .table {
+    place-items: start;
+  }
+}
+
+/* The avatar picker: a radio group drawn as a row of icons */
+.avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.avatarLegend {
+  padding: 0;
+  margin-bottom: var(--mantine-spacing-xs);
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid transparent;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--mantine-primary-color-filled);
+  cursor: pointer;
+}
+
+/* Kept in the page for the keyboard and screen readers, but drawn by the
+   label around it */
+.avatarRadio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.avatar:has(.avatarRadio:checked) {
+  background-color: orange;
+  border-color: orange;
+  color: var(--mantine-color-black);
+}
+
+.avatar:has(.avatarRadio:focus-visible) {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}
+
+/* Picked by another player */
+.avatar:has(.avatarRadio:disabled) {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.avatarIcon {
+  display: flex;
+  pointer-events: none;
 }

@@ -64,3 +64,54 @@
   pointer-events: none;
   z-index: 9998;
 }
+
+/* The game fills the height the page leaves it (cardgame.module.css's .screen),
+   and the explosions are placed inside it */
+.game {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* The ropes share the height left, so a few ropes make big buttons. Each keeps
+   a 44px tap target, so lots of ropes on a small phone scroll within the grid.
+   The component sets the column and row counts for each screen size */
+.ropes {
+  --rope-cols: var(--rope-cols-base);
+  --rope-rows: var(--rope-rows-base);
+  /* Labels grow with the button, but never wider than "Rope 50" fits */
+  --rope-fz: clamp(
+    var(--mantine-font-size-sm),
+    min(100cqh / var(--rope-rows) * 0.3, 100cqw / var(--rope-cols) * 0.15),
+    var(--mantine-font-size-xl)
+  );
+  display: grid;
+  flex: 1 1 0;
+  min-height: 12rem;
+  grid-template-columns: repeat(var(--rope-cols), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--rope-rows), minmax(2.75rem, 1fr));
+  gap: var(--mantine-spacing-sm);
+  overflow-y: auto;
+  container-type: size;
+}
+
+@mixin larger-than $mantine-breakpoint-sm {
+  .ropes {
+    --rope-cols: 4;
+    --rope-rows: var(--rope-rows-sm);
+  }
+
+  /* Full width on phones, in reach of a thumb, but not across a desktop */
+  .restart {
+    align-self: flex-start;
+  }
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .ropes {
+    --rope-cols: 6;
+    --rope-rows: var(--rope-rows-md);
+  }
+}

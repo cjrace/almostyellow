@@ -7,7 +7,6 @@ import {
   Modal,
   Text,
   NumberInput,
-  SimpleGrid,
   Stack,
   Space,
 } from "@mantine/core";
@@ -100,8 +99,11 @@ const BoomBoomPirate = () => {
     setGameInitialized(true);
   };
 
+  // Fewer, bigger ropes on a phone when there's room for them
+  const phoneColumns = totalRopes <= 8 ? 2 : 3;
+
   return (
-    <Box p="md" style={{ position: "relative" }}>
+    <Box p="md" className={styles.game}>
       {!gameInitialized ? (
         <Stack align="center">
           <NumberInput
@@ -123,15 +125,28 @@ const BoomBoomPirate = () => {
         </Stack>
       ) : (
         <>
-          {/* Few enough columns on a phone that "Rope 50" still fits */}
-          <SimpleGrid cols={{ base: 3, sm: 4, md: 6 }}>
+          {/* The ropes fill the height left, with Restart at the bottom.
+              Few enough columns on a phone that "Rope 50" still fits */}
+          <div
+            className={styles.ropes}
+            style={
+              {
+                "--rope-cols-base": phoneColumns,
+                "--rope-rows-base": Math.ceil(totalRopes / phoneColumns),
+                "--rope-rows-sm": Math.ceil(totalRopes / 4),
+                "--rope-rows-md": Math.ceil(totalRopes / 6),
+              } as React.CSSProperties
+            }
+          >
             {Array.from({ length: totalRopes }, (_, rope) => rope).map(
               (rope) => (
                 <Button
                   key={rope}
                   variant="outline"
                   fullWidth
+                  h="100%"
                   px="xs"
+                  styles={{ label: { fontSize: "var(--rope-fz)" } }}
                   onClick={() => {
                     handleRopePull(rope);
                   }}
@@ -144,11 +159,14 @@ const BoomBoomPirate = () => {
                 </Button>
               ),
             )}
-          </SimpleGrid>
+          </div>
 
-          <Space h="xl" />
-
-          <Button onClick={restartGame} color="red">
+          <Button
+            onClick={restartGame}
+            color="red"
+            mt="md"
+            className={styles.restart}
+          >
             Restart Game
           </Button>
 

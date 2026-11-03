@@ -4,9 +4,7 @@ import { useState } from "react";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   Alert,
-  Grid,
   Button,
-  Space,
   Image,
   Box,
   Progress,
@@ -24,23 +22,25 @@ import {
 import playConfetti from "@/components/playconfetti";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
+import layout from "@/styles/cardgame.module.css";
+import cardStyles from "@/styles/playingcard.module.css";
+import bingo from "@/styles/irishbingo.module.css";
 
+// The card grows to fill the height left above the buttons
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
-  <Box ta="center">
-    <Title order={2}>Calling..</Title>
-    {card ? (
-      <Text my="md" id="latest_card">
-        {getCardName(card.suit, card.rank)}
+  <>
+    <Box ta="center">
+      <Title order={2}>Calling..</Title>
+      <Text mt="xs" id="latest_card">
+        {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
       </Text>
-    ) : (
-      <Text my="md" id="latest_card">
-        No cards drawn yet
-      </Text>
-    )}
-    <Box w="min(100%, 160px)" mx="auto" id="calling_card">
-      <PlayingCard card={card} decorative />
     </Box>
-  </Box>
+    <div className={layout.table} id="calling_card">
+      <div className={cardStyles.single}>
+        <PlayingCard card={card} decorative />
+      </div>
+    </div>
+  </>
 );
 
 export default function IrishBingo() {
@@ -77,8 +77,8 @@ export default function IrishBingo() {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
 
   return (
-    <Grid>
-      <Grid.Col span={12}>
+    <div className={layout.game}>
+      <div>
         <Group gap="xs">
           <Title>Irish Bingo</Title>
           <Tooltip
@@ -191,16 +191,12 @@ export default function IrishBingo() {
             </Center>
           </Container>
         </Modal>
-      </Grid.Col>
+      </div>
 
-      <Space h="xl" />
-
-      <Grid.Col
-        span={{ base: 4, sm: 6, lg: 6 }}
-        visibleFrom="sm"
-        style={{ display: "flex", justifyContent: "center" }}
-      >
-        <Box style={{ display: "flex", alignItems: "flex-start" }}>
+      {/* Phones give the card all the height left, with the buttons at the
+          bottom. Wider screens put Mr. Tayto beside it */}
+      <div className={bingo.board}>
+        <Box visibleFrom="sm" className={bingo.mascot}>
           <Image
             aria-hidden
             src="/images/tayto.png"
@@ -208,96 +204,92 @@ export default function IrishBingo() {
             fit="contain"
             h="auto"
             w="auto"
-            style={{ maxWidth: "100%", height: "auto" }}
+            style={{ maxWidth: "100%", maxHeight: "100%" }}
           />
         </Box>
-      </Grid.Col>
 
-      <Grid.Col span={{ base: 12, sm: 5, lg: 4 }}>
-        <CalloutBox card={latestCard} />
-        <Space h="xl" />
-        <Progress
-          // Make each draw 1/52 of the way
-          value={drawnCards.length * 1.923}
-          size="lg"
-          color={progressColor}
-          aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
-        />
-        <Text
-          mt="sm"
-          id="card_count"
-          ta="center"
-        >{`${drawnCards.length.toString()} / 52 cards`}</Text>
-        <Space h="md" />
-        <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
-          Draw a card
-        </Button>
-        <Space h="md" />
-        {mainDeck.length === 0 && (
-          <>
-            <Alert title="Deck Exhausted" color="red">
-              You have drawn a full deck, please reshuffle.
-            </Alert>
-            <Space h="md" />
-          </>
-        )}
-        <Button
-          variant="default"
-          onClick={() => {
-            setModalCardOpened(true);
-          }}
-          fullWidth
-          disabled={drawnCards.length > 1 ? false : true}
-        >
-          View all called cards
-        </Button>
+        <div className={bingo.caller}>
+          <CalloutBox card={latestCard} />
+          <div className={layout.controls}>
+            <Progress
+              // Make each draw 1/52 of the way
+              value={drawnCards.length * 1.923}
+              size="lg"
+              color={progressColor}
+              aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
+            />
+            <Text
+              id="card_count"
+              ta="center"
+            >{`${drawnCards.length.toString()} / 52 cards`}</Text>
+            <Button
+              disabled={mainDeck.length === 0}
+              onClick={drawCard}
+              fullWidth
+            >
+              Draw a card
+            </Button>
+            {mainDeck.length === 0 && (
+              <Alert title="Deck Exhausted" color="red">
+                You have drawn a full deck, please reshuffle.
+              </Alert>
+            )}
+            <Button
+              variant="default"
+              onClick={() => {
+                setModalCardOpened(true);
+              }}
+              fullWidth
+              disabled={drawnCards.length > 1 ? false : true}
+            >
+              View all called cards
+            </Button>
 
-        <Modal
-          opened={modalCardOpened}
-          onClose={() => {
-            setModalCardOpened(false);
-          }}
-          size="xs"
-          title="All called cards"
-          transitionProps={{
-            transition: "fade",
-            duration: 300,
-            timingFunction: "linear",
-          }}
-          closeButtonProps={{ "aria-label": "Close modal" }}
-        >
-          <List type="ordered" withPadding>
-            {drawnCards.map((card) => (
-              <List.Item key={`${card.rank}-${card.suit}`}>
-                {getCardName(card.suit, card.rank)}
-              </List.Item>
-            ))}
-          </List>
-        </Modal>
+            <Modal
+              opened={modalCardOpened}
+              onClose={() => {
+                setModalCardOpened(false);
+              }}
+              size="xs"
+              title="All called cards"
+              transitionProps={{
+                transition: "fade",
+                duration: 300,
+                timingFunction: "linear",
+              }}
+              closeButtonProps={{ "aria-label": "Close modal" }}
+            >
+              <List type="ordered" withPadding>
+                {drawnCards.map((card) => (
+                  <List.Item key={`${card.rank}-${card.suit}`}>
+                    {getCardName(card.suit, card.rank)}
+                  </List.Item>
+                ))}
+              </List>
+            </Modal>
 
-        <Space h="md" />
-
-        <Button
-          // Once the deck runs out, shuffling is the next thing to do
-          variant={mainDeck.length === 0 ? "filled" : "default"}
-          onClick={newDeck}
-          fullWidth
-          disabled={drawnCards.length > 0 ? false : true}
-        >
-          Shuffle new deck
-        </Button>
-        <Space h="md" />
-        {drawnCards.length >= 10 && (
-          <Button
-            variant="default"
-            onClick={playConfetti}
-            fullWidth
-            rightSection={<IconConfetti />}
-          >
-            Has someone won?
-          </Button>
-        )}
-      </Grid.Col>
-    </Grid>
+            <Button
+              // Once the deck runs out, shuffling is the next thing to do
+              variant={mainDeck.length === 0 ? "filled" : "default"}
+              onClick={newDeck}
+              fullWidth
+              disabled={drawnCards.length > 0 ? false : true}
+            >
+              Shuffle new deck
+            </Button>
+            {drawnCards.length >= 10 && (
+              <Button
+                variant="default"
+                onClick={playConfetti}
+                fullWidth
+                rightSection={<IconConfetti />}
+              >
+                Has someone won?
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
