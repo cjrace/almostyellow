@@ -26,7 +26,9 @@ for (const failure of ["open", "match", "put"] as const) {
     await expect
       .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller))
       .toBe(true);
-    const url = `${await findCachedScript()}?cache-failure=${failure}`;
+    const asset = await findCachedScript();
+    if (!asset) throw new Error("No cached JavaScript asset was found.");
+    const url = `${asset}?cache-failure=${failure}`;
     expect((await page.request.get(url)).status()).toBe(200);
     await context.serviceWorkers()[0].evaluate((failure) => {
       if (failure === "open")
