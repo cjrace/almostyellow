@@ -470,7 +470,7 @@ const SnakesAndLadders = () => {
 
             <Space h="xl" />
 
-            <div className={layout.board}>
+            <div className={layout.board} data-testid="board">
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
                 const pos = index + 1;
                 const playerAtPos = playerPositions.findIndex(

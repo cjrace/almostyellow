@@ -5,12 +5,13 @@ body {
 }
 
 .site-frame {
-  padding: 20px;
+  --site-frame-padding: 20px;
+  padding: var(--site-frame-padding);
 }
 
 @media (max-width: 768px) {
   /* Smaller spacing for smaller screens */
   .site-frame {
-    padding: 10px;
+    --site-frame-padding: 10px;
   }
 }

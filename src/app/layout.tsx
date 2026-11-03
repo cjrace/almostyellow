@@ -1,10 +1,5 @@
 import "@mantine/core/styles.css";
-import {
-  MantineProvider,
-  ColorSchemeScript,
-  AppShell,
-  Anchor,
-} from "@mantine/core";
+import { MantineProvider, ColorSchemeScript, Anchor } from "@mantine/core";
 import { acalat } from "@/styles/acalat";
 import "@/styles/global.css";
 import type { Metadata } from "next";
@@ -62,12 +57,12 @@ export default function RootLayout({
       </head>
       <body>
         <MantineProvider defaultColorScheme="dark" theme={acalat}>
-          <AppShell className="site-frame">
+          <div className="site-frame">
             <Anchor href="#main-content" className={skip.skiplink}>
               Skip to main content
             </Anchor>
             {children}
-          </AppShell>
+          </div>
           <Analytics />
           <SpeedInsights />
         </MantineProvider>

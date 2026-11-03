@@ -3,17 +3,11 @@
    a thumb */
 
 /* Wraps the header and main, so the game can take whatever height is left.
-   Takes off the .site-frame padding set in global.css */
+   Takes off the .site-frame padding set in global.css, which sets the variable */
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 40px);
-}
-
-@media (max-width: 768px) {
-  .screen {
-    min-height: calc(100dvh - 20px);
-  }
+  min-height: calc(100dvh - 2 * var(--site-frame-padding));
 }
 
 .screen > main,
