@@ -70,6 +70,83 @@ test.describe("A visitor on a small phone", () => {
   });
 });
 
+// The card games gain buttons and alerts as the deck runs down (Irish Bingo's
+// "Has someone won?" after 10 cards, and "Deck Exhausted" after 52), so the
+// page is checked after every draw
+for (const [where, viewport] of [
+  ["a small phone", smallPhone],
+  ["a phone", phone],
+] as const) {
+  test.describe(`A visitor on ${where}`, () => {
+    test.use({ viewport });
+
+    test("can draw the whole Irish Bingo deck without the page scrolling", async ({
+      page,
+    }) => {
+      await page.goto("/games/irishbingo");
+      const draw = page.getByRole("button", { name: "Draw a card" });
+      const card = page.locator("#calling_card img");
+      expect(await pageScrolls(page), "before drawing").toBe(false);
+
+      for (let drawn = 1; drawn <= 52; drawn++) {
+        await draw.click();
+        await expect(page.locator("#card_count")).toHaveText(
+          `${drawn.toString()} / 52 cards`,
+        );
+        expect(await pageScrolls(page), `after ${drawn.toString()}`).toBe(
+          false,
+        );
+        await expect(card, `after ${drawn.toString()}`).toBeInViewport({
+          ratio: 1,
+        });
+      }
+
+      // Both extras showed up along the way, and the page still fits. The
+      // alert takes the Draw button's place
+      await expect(
+        page.getByRole("button", { name: "Has someone won?" }),
+      ).toBeInViewport({ ratio: 1 });
+      await expect(page.getByText("Deck Exhausted")).toBeInViewport({
+        ratio: 1,
+      });
+      await expect(draw).toBeHidden();
+      await expect(
+        page.getByRole("button", { name: "Shuffle new deck" }),
+      ).toBeInViewport({ ratio: 1 });
+    });
+
+    // Red or Black shows the same "Deck Exhausted" alert after 52 cards
+    test("can draw the whole Red or Black deck without the page scrolling", async ({
+      page,
+    }) => {
+      await page.goto("/games/redorblack");
+      const draw = page.getByRole("button", { name: "Draw a card" });
+      const card = page.locator("main img");
+      expect(await pageScrolls(page), "before drawing").toBe(false);
+
+      for (let drawn = 1; drawn <= 52; drawn++) {
+        await draw.click();
+        await expect(page.locator("#cards_remaining")).toContainText(
+          `${(52 - drawn).toString()} cards remaining`,
+        );
+        expect(await pageScrolls(page), `after ${drawn.toString()}`).toBe(
+          false,
+        );
+        await expect(card, `after ${drawn.toString()}`).toBeInViewport({
+          ratio: 1,
+        });
+      }
+
+      await expect(page.getByText("Deck Exhausted")).toBeInViewport({
+        ratio: 1,
+      });
+      await expect(
+        page.getByRole("button", { name: "Shuffle new deck" }),
+      ).toBeInViewport({ ratio: 1 });
+    });
+  });
+}
+
 test.describe("A visitor on a phone", () => {
   test.use({ viewport: phone });
 
@@ -94,12 +171,22 @@ test.describe("A visitor on a phone", () => {
       .toBeLessThan(2);
   });
 
-  test("does not see the Irish Bingo mascot", async ({ page }) => {
+  test("sees Mr. Tayto calling the Irish Bingo cards beside the card name", async ({
+    page,
+  }) => {
     await page.goto("/games/irishbingo");
-    await expect(
-      page.getByRole("button", { name: "Draw a Card" }),
-    ).toBeVisible();
+    const caller = page.getByTestId("caller-mascot");
+    await expect(caller).toBeVisible();
+    // The big Mr. Tayto from wider screens stays hidden
     await expect(page.locator('img[alt="Mr. Tayto"]')).toBeHidden();
+
+    // He stands to the left of the card name, in the same row
+    const mascot = await caller.boundingBox();
+    const name = await page.locator("#latest_card").boundingBox();
+    if (!mascot || !name) throw new Error("Mr. Tayto or the name is missing");
+    expect(mascot.x + mascot.width).toBeLessThan(name.x);
+    expect(name.y).toBeGreaterThan(mascot.y);
+    expect(name.y).toBeLessThan(mascot.y + mascot.height);
   });
 
   test("sees a big Irish Bingo card with the buttons at the bottom", async ({
@@ -155,9 +242,10 @@ test.describe("A visitor on a phone", () => {
 test.describe("A visitor on a desktop", () => {
   test.use({ viewport: desktop });
 
-  test("sees the Irish Bingo mascot", async ({ page }) => {
+  test("sees the big Irish Bingo mascot beside the card", async ({ page }) => {
     await page.goto("/games/irishbingo");
     await expect(page.locator('img[alt="Mr. Tayto"]')).toBeVisible();
+    await expect(page.getByTestId("caller-mascot")).toBeHidden();
   });
 
   test("sees the Cocktails cards side by side in columns", async ({ page }) => {
@@ -271,6 +359,16 @@ test.describe("A player of Snakes and Ladders", () => {
       await startGame(page);
       await page.getByRole("button", { name: /Roll Dice/ }).click();
       await expect(page.getByRole("status")).toHaveText(/^Al moves/);
+
+      // Al moves a square at a time, so wait until it's the next player's turn
+      // before measuring. Landing on a snake or ladder pops up a message first
+      await expect(async () => {
+        const update = page.getByRole("dialog", { name: "Game Update" });
+        if (await update.isVisible()) await page.keyboard.press("Escape");
+        await expect(
+          page.getByRole("button", { name: "Roll Dice (Player 2)" }),
+        ).toBeEnabled({ timeout: 1_000 });
+      }).toPass({ timeout: 15_000 });
 
       const cell = page.getByTestId("board").getByText("Al", { exact: true });
       await expect(cell).toBeVisible();

@@ -94,18 +94,18 @@ export default function RedOrBlack() {
               {`${cardsRemaining.toString()} cards remaining`}
             </span>
           </Text>
-          <Button
-            ref={drawButtonRef}
-            disabled={cardsRemaining === 0}
-            onClick={drawCard}
-            fullWidth
-          >
-            Draw a card
-          </Button>
-          {cardsRemaining === 0 && (
-            <Alert title="Deck Exhausted" color="red">
-              You have drawn a full deck, please reshuffle.
-            </Alert>
+          {/* The alert takes the Draw button's place, so the card keeps its
+              size on small phones */}
+          {cardsRemaining === 0 ? (
+            <Alert
+              title="Deck Exhausted: please reshuffle"
+              color="red"
+              py="xs"
+            />
+          ) : (
+            <Button ref={drawButtonRef} onClick={drawCard} fullWidth>
+              Draw a card
+            </Button>
           )}
           <Button
             variant="default"

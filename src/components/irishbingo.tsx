@@ -26,16 +26,29 @@ import layout from "@/styles/cardgame.module.css";
 import cardStyles from "@/styles/playingcard.module.css";
 import bingo from "@/styles/irishbingo.module.css";
 
-// The card grows to fill the height left above the buttons
+// The card grows to fill the height left above the buttons. On phones Mr.
+// Tayto calls the card from a speech bubble, in the height the text takes
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   <>
-    <Box ta="center">
-      <Title order={2}>Calling..</Title>
-      <Text mt="xs" id="latest_card">
-        {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
-      </Text>
-    </Box>
-    <div className={layout.table} id="calling_card">
+    <Group justify="center" gap="sm" wrap="nowrap">
+      <Image
+        hiddenFrom="sm"
+        aria-hidden
+        src="/images/tayto.png"
+        alt=""
+        h={64}
+        w="auto"
+        fit="contain"
+        data-testid="caller-mascot"
+      />
+      <Box ta="center" className={bingo.bubble}>
+        <Title order={2}>Calling..</Title>
+        <Text mt={4} id="latest_card">
+          {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
+        </Text>
+      </Box>
+    </Group>
+    <div className={`${layout.table} ${bingo.table}`} id="calling_card">
       <div className={cardStyles.single}>
         <PlayingCard card={card} decorative />
       </div>
@@ -218,21 +231,31 @@ export default function IrishBingo() {
               color={progressColor}
               aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
             />
-            <Text
-              id="card_count"
-              ta="center"
-            >{`${drawnCards.length.toString()} / 52 cards`}</Text>
-            <Button
-              disabled={mainDeck.length === 0}
-              onClick={drawCard}
-              fullWidth
-            >
-              Draw a card
-            </Button>
-            {mainDeck.length === 0 && (
-              <Alert title="Deck Exhausted" color="red">
-                You have drawn a full deck, please reshuffle.
-              </Alert>
+            {/* "Has someone won?" shares the count's row, and the alert takes
+                the Draw button's place, so the card keeps its size on phones */}
+            <Group justify="center" gap="md" mih={28}>
+              <Text id="card_count">{`${drawnCards.length.toString()} / 52 cards`}</Text>
+              {drawnCards.length >= 10 && (
+                <Button
+                  variant="default"
+                  size="compact-sm"
+                  onClick={playConfetti}
+                  rightSection={<IconConfetti size={16} />}
+                >
+                  Has someone won?
+                </Button>
+              )}
+            </Group>
+            {mainDeck.length === 0 ? (
+              <Alert
+                title="Deck Exhausted: please reshuffle"
+                color="red"
+                py="xs"
+              />
+            ) : (
+              <Button onClick={drawCard} fullWidth>
+                Draw a card
+              </Button>
             )}
             <Button
               variant="default"
@@ -277,16 +300,6 @@ export default function IrishBingo() {
             >
               Shuffle new deck
             </Button>
-            {drawnCards.length >= 10 && (
-              <Button
-                variant="default"
-                onClick={playConfetti}
-                fullWidth
-                rightSection={<IconConfetti />}
-              >
-                Has someone won?
-              </Button>
-            )}
           </div>
         </div>
       </div>

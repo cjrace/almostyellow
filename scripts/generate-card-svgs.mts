@@ -5,7 +5,7 @@
 //
 // Names match getCardImagePath() in src/components/carddeck.tsx, which can't
 // be imported here as Node only strips types from .ts files.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const outDir = join(import.meta.dirname, "..", "public", "images", "cards");
@@ -208,6 +208,13 @@ ${centre(label, suit)}
 `;
 }
 
+// Mr. Tayto for the back. An SVG shown through <img> can't load other files,
+// so he's embedded. tayto-card.png is tayto.png shrunk to 220px wide, to keep
+// the back small
+const tayto = `data:image/png;base64,${readFileSync(
+  join(import.meta.dirname, "..", "public", "images", "tayto-card.png"),
+).toString("base64")}`;
+
 function back() {
   const lines: string[] = [];
   for (let offset = -height; offset < width + height; offset += 22) {
@@ -223,8 +230,7 @@ function back() {
 <rect x="2" y="2" width="${width - 4}" height="${height - 4}" rx="16" fill="#ffffff" stroke="${border}" stroke-width="3"/>
 <g clip-path="url(#inner)" stroke="${paleOrange}" stroke-width="5">${lines.join("")}</g>
 <rect x="18" y="18" width="${width - 36}" height="${height - 36}" rx="10" fill="none" stroke="${orange}" stroke-width="4"/>
-<path d="M125 120 L170 175 L125 230 L80 175 Z" fill="#ffffff" stroke="${orange}" stroke-width="4"/>
-<path d="M125 145 L150 175 L125 205 L100 175 Z" fill="${orange}"/>
+<image href="${tayto}" x="25" y="75" width="200" height="200"/>
 </svg>
 `;
 }

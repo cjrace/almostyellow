@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Drawer,
+  Flex,
   Modal,
   Box,
   Text,
@@ -514,7 +515,7 @@ const SnakesAndLadders = () => {
           : ""}
       </VisuallyHidden>
 
-      <div className={layout.controls}>
+      <Stack gap="sm" className={layout.controls}>
         <Box visibleFrom="sm" className={layout.playerList}>
           <PlayerList
             players={players}
@@ -532,10 +533,10 @@ const SnakesAndLadders = () => {
           <RollBadge roll={roll} />
         </Group>
 
-        <div className={layout.buttons}>
+        <Flex direction={{ base: "row", sm: "column" }} gap="sm">
           <Button
             onClick={rollDice}
-            className={layout.roll}
+            flex={1}
             disabled={!!winner || playerPositions.length === 0 || isRolling}
           >
             {isRolling ? rollingDiceIcon : `Roll Dice (${current?.name ?? ""})`}
@@ -552,8 +553,8 @@ const SnakesAndLadders = () => {
           <Button visibleFrom="sm" variant="default" onClick={restartGame}>
             Restart Game
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Stack>
 
       <Drawer
         opened={playersOpened}

@@ -15,6 +15,39 @@
   min-width: 0;
 }
 
+/* On phones Mr. Tayto calls the card from a speech bubble beside him */
+@mixin smaller-than $mantine-breakpoint-sm {
+  /* Lets the card shrink a little further on the smallest phones, so the
+     deck-finished alert still fits */
+  .table {
+    min-height: 10rem;
+  }
+
+  .bubble {
+    position: relative;
+    flex: 1;
+    padding: 4px var(--mantine-spacing-sm);
+    border-radius: var(--mantine-radius-lg);
+    background: light-dark(
+      var(--mantine-color-gray-1),
+      var(--mantine-color-white)
+    );
+    color: var(--mantine-color-black);
+  }
+
+  /* The tail, pointing at Mr. Tayto */
+  .bubble::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    translate: 0 -50%;
+    border-block: 8px solid transparent;
+    border-right: 12px solid
+      light-dark(var(--mantine-color-gray-1), var(--mantine-color-white));
+  }
+}
+
 @mixin larger-than $mantine-breakpoint-sm {
   /* Mr. Tayto on the left, the caller in a column on the right */
   .board {

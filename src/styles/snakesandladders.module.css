@@ -18,11 +18,8 @@
   min-height: 0;
 }
 
-/* Phones put the controls under the board */
+/* Phones put the controls (a Mantine Stack) under the board */
 .controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mantine-spacing-sm);
   order: 1;
 }
 
@@ -70,15 +67,6 @@
   max-height: 80%;
 }
 
-.buttons {
-  display: flex;
-  gap: var(--mantine-spacing-sm);
-}
-
-.roll {
-  flex: 1;
-}
-
 /* Keeps room for the "+4" badge, shown or not */
 .badgeSlot {
   flex: none;
@@ -106,10 +94,6 @@
     flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
-  }
-
-  .buttons {
-    flex-direction: column;
   }
 
   .table {
