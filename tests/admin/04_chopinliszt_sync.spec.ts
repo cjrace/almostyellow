@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { test as base, expect, type Page } from "@playwright/test";
 import { getCredentials, getSecondCredentials } from "./helpers";
+import { users } from "../firebase/fixtures";
 
 // How the list behaves for the people using it, each tested below:
 //
@@ -81,6 +82,26 @@ async function addItems(page: Page, ...texts: string[]) {
 async function goOffline(page: Page) {
   await expect(page.getByText("Not synced yet")).toHaveCount(0);
   await page.context().setOffline(true);
+}
+
+// What Firestore has saved for an item, read from the emulator. The page's
+// "Not synced yet" label only shows once a change has been waiting for a
+// second, so its absence does not mean the change has been saved.
+async function savedItem(id: string | null) {
+  const host = String(process.env.FIRESTORE_EMULATOR_HOST);
+  const project = String(process.env.FIREBASE_PROJECT_ID);
+  const response = await fetch(
+    `http://${host}/v1/projects/${project}/databases/(default)/documents/shoppingItems/${String(id)}`,
+    { headers: { Authorization: "Bearer owner" } },
+  );
+  return response.ok
+    ? ((await response.json()) as {
+        fields: {
+          checked: { booleanValue: boolean };
+          updatedBy: { stringValue: string };
+        };
+      })
+    : null;
 }
 
 function uniqueName(label: string) {
@@ -239,8 +260,11 @@ test("An item deleted on another device stays deleted", async ({
   await item(page, soap).click();
   await expect(item(page, soap)).toBeChecked();
 
+  const soapId = await item(page, soap).getAttribute("id");
   await bobPage.getByRole("button", { name: `Delete ${soap}` }).click();
   await expect(item(bobPage, soap)).toBeHidden();
+  // Alice must not reconnect until the delete has been saved
+  await expect.poll(() => savedItem(soapId)).toBeNull();
 
   // Alice's change is refused rather than bringing the item back
   await page.context().setOffline(false);
@@ -261,12 +285,18 @@ test("When both change the same item, the change saved last wins", async ({
   // Alice ticks it offline, then Bob ticks and unticks it online
   await goOffline(page);
   await item(page, tea).click();
+  const teaId = await item(page, tea).getAttribute("id");
   await item(bobPage, tea).click();
   await expect(item(bobPage, tea)).toBeChecked();
   await item(bobPage, tea).click();
   await expect(item(bobPage, tea)).not.toBeChecked();
   // Bob's changes have reached Firestore, and Alice's is still waiting
-  await expect(bobPage.getByText("Not synced yet")).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const saved = (await savedItem(teaId))?.fields;
+      return [saved?.checked.booleanValue, saved?.updatedBy.stringValue];
+    })
+    .toEqual([false, users.bob.uid]);
   await expect(page.getByText("Not synced yet")).toHaveCount(1);
 
   // Alice's change reaches Firestore last, so both end up ticked

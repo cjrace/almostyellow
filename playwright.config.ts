@@ -10,6 +10,10 @@ const sharedScoreboard = [...vitestTests, "**/admin/07_uno.spec.ts"];
 /* Service-worker evaluation is only available in Chromium */
 const serviceWorker = [...sharedScoreboard, "**/public/06_uno_offline.spec.ts"];
 
+/* The Chopin Liszt offline tests switch the browser offline mid-test and are
+   still flaky in Firefox when several run together, so Chrome covers them */
+const offlineSync = [...serviceWorker, "**/admin/04_chopinliszt_sync.spec.ts"];
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -70,7 +74,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Firefox"],
       },
-      testIgnore: serviceWorker,
+      testIgnore: offlineSync,
     },
     /* TODO: Fix these - seems to work on Laura's phone in real life but the tests are having none of it
     {

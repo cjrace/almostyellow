@@ -16,15 +16,17 @@ test.describe("A visitor on a phone", () => {
 
     const dialog = page.locator("[data-modal-content]");
     await expect(dialog).toBeVisible();
-    // Let the opening animation finish before measuring
-    await page.waitForTimeout(500);
-
-    const box = await dialog.boundingBox();
     const screenWidth = await page.evaluate(
       () => document.documentElement.clientWidth,
     );
-    if (!box) throw new Error("The modal has no size");
-    expect(Math.abs(box.x + box.width / 2 - screenWidth / 2)).toBeLessThan(2);
+    // Keep checking until the opening animation has finished
+    await expect
+      .poll(async () => {
+        const box = await dialog.boundingBox();
+        if (!box) return Infinity;
+        return Math.abs(box.x + box.width / 2 - screenWidth / 2);
+      })
+      .toBeLessThan(2);
   });
 
   test("does not see the Irish Bingo mascot", async ({ page }) => {
