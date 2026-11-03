@@ -24,35 +24,39 @@ test("Can add, edit and delete a film", async ({ page }) => {
   test.slow();
   const name = `Test film ${randomUUID().slice(0, 8)}`;
 
-  await signInTo(page, "/admin/films/add");
-  await page.getByLabel("Film title").fill(name);
-  await page.getByLabel("Year the film was released").fill("1999");
-  await page.getByLabel("I have watched this film").check();
-  await Promise.all([
-    page.waitForURL("/films"),
-    page.getByRole("button", { name: "Add film" }).click(),
-  ]);
-  await expect(card(page, `${name} (1999)`)).toBeVisible();
+  await test.step("When a signed-in admin adds a film, it shows in the list", async () => {
+    await signInTo(page, "/admin/films/add");
+    await page.getByLabel("Film title").fill(name);
+    await page.getByLabel("Year the film was released").fill("1999");
+    await page.getByLabel("I have watched this film").check();
+    await Promise.all([
+      page.waitForURL("/films"),
+      page.getByRole("button", { name: "Add film" }).click(),
+    ]);
+    await expect(card(page, `${name} (1999)`)).toBeVisible();
+  });
 
-  // Edit it
-  await card(page, name).getByRole("link", { name: "Edit film" }).click();
-  await expect(page.getByLabel("Film title")).toHaveValue(name);
-  await page.getByLabel("Year the film was released").fill("2001");
-  await Promise.all([
-    page.waitForURL("/films"),
-    page.getByRole("button", { name: "Update Film" }).click(),
-  ]);
-  await expect(card(page, `${name} (2001)`)).toBeVisible();
+  await test.step("When they edit it, the change shows", async () => {
+    await card(page, name).getByRole("link", { name: "Edit film" }).click();
+    await expect(page.getByLabel("Film title")).toHaveValue(name);
+    await page.getByLabel("Year the film was released").fill("2001");
+    await Promise.all([
+      page.waitForURL("/films"),
+      page.getByRole("button", { name: "Update Film" }).click(),
+    ]);
+    await expect(card(page, `${name} (2001)`)).toBeVisible();
+  });
 
-  // Delete it
-  await card(page, name).getByRole("link", { name: "Edit film" }).click();
-  await page.getByRole("button", { name: "Delete Film" }).click();
-  await Promise.all([
-    page.waitForURL("/films"),
-    page.getByRole("button", { name: "Confirm deletion" }).click(),
-  ]);
-  await expect(page.getByText("Seven Samurai (1954)")).toBeVisible();
-  await expect(card(page, name)).toHaveCount(0);
+  await test.step("When they delete it, it is gone", async () => {
+    await card(page, name).getByRole("link", { name: "Edit film" }).click();
+    await page.getByRole("button", { name: "Delete Film" }).click();
+    await Promise.all([
+      page.waitForURL("/films"),
+      page.getByRole("button", { name: "Confirm deletion" }).click(),
+    ]);
+    await expect(page.getByText("Seven Samurai (1954)")).toBeVisible();
+    await expect(card(page, name)).toHaveCount(0);
+  });
 });
 
 test("Editing a film that does not exist shows not found", async ({ page }) => {

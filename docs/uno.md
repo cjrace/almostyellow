@@ -34,6 +34,6 @@ There is no trusted offline browser clock. The server can verify that the device
 
 ## Validation
 
-Run the repository commands in `AGENTS.md`. New coverage lives in `tests/unit/uno.test.ts`, `tests/unit/uno_controller.test.ts`, `tests/firebase/uno.test.ts`, `tests/admin/07_uno.spec.ts` and `tests/public/04_uno.spec.ts`, with authentication and Security Rules checks in the existing suites. The shared-scoreboard mutation tests run sequentially in desktop Chrome to avoid cross-project interference; public layout checks run in all configured browser projects. Automated tests use only the local demo-project Firebase emulators.
+Run the repository commands in `AGENTS.md`. New coverage lives in `tests/unit/uno.test.ts`, `tests/unit/uno_controller.test.ts`, `tests/firebase/uno.test.ts`, `tests/admin/07_uno.spec.ts`, `tests/public/06_uno.spec.ts` and `tests/public/06_uno_offline.spec.ts`, with authentication and Security Rules checks in the existing suites. The shared-scoreboard mutation tests run sequentially in desktop Chrome to avoid cross-project interference; public layout checks run in all configured browser projects. Automated tests use only the local demo-project Firebase emulators.
 
 Real Android Chrome and iPhone Safari checks remain necessary for operating-system app closure, browser storage policies and real device safe areas; desktop emulation cannot establish those behaviours.

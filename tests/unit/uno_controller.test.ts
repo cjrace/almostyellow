@@ -382,6 +382,24 @@ describe("per-tab coordinator", () => {
     expect(h.controller.getSnapshot().error).toBe("");
     h.unsubscribe();
   });
+  it("does not report a request that failed because the connection dropped", async () => {
+    const h = setup();
+    await h.ready();
+    h.transport.version.mockResolvedValue(99);
+    h.transport.read.mockImplementationOnce(() => {
+      h.online(false);
+      return Promise.reject(new Error("Failed to fetch"));
+    });
+    h.online();
+    await h.controller.refresh();
+    expect(h.controller.getSnapshot().error).toBe("");
+    h.online();
+    h.connection();
+    await vi.waitFor(() => {
+      expect(h.transport.read).toHaveBeenCalledTimes(2);
+    });
+    h.unsubscribe();
+  });
   it("checks a clean queue after taking the lock and retains points recorded during finish", async () => {
     const h = setup();
     await h.ready();
