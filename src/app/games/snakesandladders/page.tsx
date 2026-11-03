@@ -20,7 +20,14 @@ export default function SnakesAndLaddersPage() {
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
-        <Title>Snakes and Ladders</Title>
+        <Title
+          fz={{
+            base: "var(--mantine-h2-font-size)",
+            sm: "var(--mantine-h1-font-size)",
+          }}
+        >
+          Snakes and Ladders
+        </Title>
         <Space h="md" />
         <SnakesAndLadders />
       </main>

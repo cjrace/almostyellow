@@ -42,7 +42,15 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
         data-testid="caller-mascot"
       />
       <Box ta="center" className={bingo.bubble}>
-        <Title order={2}>Calling..</Title>
+        <Title
+          order={2}
+          fz={{
+            base: "var(--mantine-h3-font-size)",
+            sm: "var(--mantine-h2-font-size)",
+          }}
+        >
+          Calling..
+        </Title>
         <Text mt={4} id="latest_card">
           {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
         </Text>
@@ -93,7 +101,14 @@ export default function IrishBingo() {
     <div className={layout.game}>
       <div>
         <Group gap="xs">
-          <Title>Irish Bingo</Title>
+          <Title
+            fz={{
+              base: "var(--mantine-h2-font-size)",
+              sm: "var(--mantine-h1-font-size)",
+            }}
+          >
+            Irish Bingo
+          </Title>
           <Tooltip
             label="Game instructions"
             openDelay={250}

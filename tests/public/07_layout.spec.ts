@@ -68,6 +68,28 @@ test.describe("A visitor on a small phone", () => {
     );
     expect(await pageScrolls(page)).toBe(false);
   });
+
+  // A heading that wraps takes height the game needs
+  for (const game of [
+    "boomboompirate",
+    "irishbingo",
+    "redorblack",
+    "snakesandladders",
+    "suits",
+    "uno-tracker",
+  ]) {
+    test(`sees the ${game} heading on one line`, async ({ page }) => {
+      await page.goto(`/games/${game}`);
+      const heading = page.getByRole("heading", { level: 1 });
+      await expect(heading).toBeVisible();
+      const lines = await heading.evaluate(
+        (el) =>
+          el.getBoundingClientRect().height /
+          parseFloat(getComputedStyle(el).lineHeight),
+      );
+      expect(Math.round(lines)).toBe(1);
+    });
+  }
 });
 
 // The card games gain buttons and alerts as the deck runs down (Irish Bingo's

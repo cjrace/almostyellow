@@ -32,7 +32,14 @@ export default function CardGameTitle({
   return (
     <>
       <Group gap="xs">
-        <Title>{title}</Title>
+        <Title
+          fz={{
+            base: "var(--mantine-h2-font-size)",
+            sm: "var(--mantine-h1-font-size)",
+          }}
+        >
+          {title}
+        </Title>
         <Tooltip
           label="Game instructions"
           openDelay={250}

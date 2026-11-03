@@ -19,7 +19,14 @@ export default function BoomBoomPiratePage() {
       <Header noCrumbs={true} game={true} />
 
       <main id="main-content">
-        <Title>Boom Boom Pirate</Title>
+        <Title
+          fz={{
+            base: "var(--mantine-h2-font-size)",
+            sm: "var(--mantine-h1-font-size)",
+          }}
+        >
+          Boom Boom Pirate
+        </Title>
         <Space h="md" />
         <BoomBoomPirate />
       </main>
