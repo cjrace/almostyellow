@@ -34,6 +34,7 @@ Before you start contributing to the code, please take a moment to review the fo
    - Push your changes
    - Open a PR against the `main` branch of this repository
    - Follow the template to create a detailed description of your changes
+   - For screenshots, either drag them into the PR description, or put them in a folder named after the PR number on the `pr-assets` branch and link to them
    - Once approved, you may merge the PR by squashing the commits into a single PR commit
 
 ## Code of Conduct

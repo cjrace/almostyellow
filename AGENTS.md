@@ -35,6 +35,10 @@ CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel j
 
 Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/2026-10`.
 
+## PR screenshots
+
+Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
+
 ## Architecture
 
 **Next.js App Router** with the `src/` directory. Package manager is **pnpm**.
