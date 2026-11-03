@@ -41,8 +41,9 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid #ddd;
-  font-size: clamp(0.5rem, 2.2vw, 0.9rem);
+  font-size: clamp(0.7rem, 2.6vw, 0.9rem);
   text-align: center;
+  overflow-wrap: anywhere;
   line-height: 1.1;
 }
 
@@ -70,6 +71,6 @@
   }
 
   .cell {
-    font-size: clamp(0.6rem, 1.1vw, 0.9rem);
+    font-size: clamp(0.7rem, 1.1vw, 0.9rem);
   }
 }
