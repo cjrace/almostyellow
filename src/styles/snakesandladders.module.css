@@ -135,15 +135,16 @@
   color: var(--mantine-color-dimmed);
 }
 
+/* A full-size tap target, with the icon drawn as before: white (black in
+   light mode), and the picked one in an orange circle */
 .avatar {
   position: relative;
   display: grid;
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  border: 2px solid transparent;
-  border-radius: var(--mantine-radius-sm);
-  color: var(--mantine-primary-color-filled);
+  border-radius: 50%;
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
   cursor: pointer;
 }
 
@@ -157,10 +158,17 @@
   cursor: inherit;
 }
 
-.avatar:has(.avatarRadio:checked) {
+.avatarIcon {
+  display: flex;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.avatar:has(.avatarRadio:checked) .avatarIcon {
   background-color: orange;
   border-color: orange;
-  color: var(--mantine-color-black);
+  color: var(--mantine-color-white);
 }
 
 .avatar:has(.avatarRadio:focus-visible) {
@@ -172,9 +180,4 @@
 .avatar:has(.avatarRadio:disabled) {
   opacity: 0.3;
   cursor: not-allowed;
-}
-
-.avatarIcon {
-  display: flex;
-  pointer-events: none;
 }
