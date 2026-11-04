@@ -94,7 +94,7 @@ test.describe("A visitor on a small phone", () => {
 
 // The card games gain buttons and alerts as the deck runs down (Irish Bingo's
 // "Has someone won?" after 10 cards, and "Deck Exhausted" after 52), so the
-// page is checked after every draw
+// page is checked after every draw or turn
 for (const [where, viewport] of [
   ["a small phone", smallPhone],
   ["a phone", phone],
@@ -165,6 +165,120 @@ for (const [where, viewport] of [
       await expect(
         page.getByRole("button", { name: "Shuffle new deck" }),
       ).toBeInViewport({ ratio: 1 });
+    });
+  });
+}
+
+// Suits stacks its buttons on phones, except short ones, where they share a
+// row at 720px tall or less. A Pixel 8 or 9 in Chrome is 412 wide and 830 to 915 tall
+for (const [where, viewport, buttons] of [
+  ["a small phone", smallPhone, "side by side"],
+  ["a phone", phone, "stacked"],
+  ["a Pixel phone", { width: 412, height: 830 }, "stacked"],
+  ["a tall Pixel phone", { width: 412, height: 915 }, "stacked"],
+] as const) {
+  test.describe(`A visitor on ${where}`, () => {
+    test.use({ viewport });
+
+    // Suits gains the "Final turn" alert on the last turn, a "Safe round" alert
+    // whenever the cards are one of each suit, and "Play again" at the end
+    test(`can play a whole game of Suits without the page scrolling, with the buttons ${buttons}`, async ({
+      page,
+    }) => {
+      await page.goto("/games/suits");
+      await page.getByRole("button", { name: "Add player" }).click();
+      await page.getByLabel("Player 1 name").fill("Ben");
+      await page.getByLabel("Player 3 name").fill("Cam");
+      // A fixed shuffle with safe rounds on turns 4, 12 and 13, so the tallest
+      // screens come up: the final turn after a safe round, and a safe round
+      // at the end. The seeded generator is mulberry32. The seed is set as the
+      // Start button is clicked, before the game shuffles, as the page may
+      // use Math.random itself before then
+      await page.evaluate(() => {
+        let seed = 0;
+        window.addEventListener(
+          "click",
+          (event) => {
+            const button =
+              event.target instanceof Element && event.target.closest("button");
+            if (button && button.textContent === "Start game") seed = 74;
+          },
+          { capture: true },
+        );
+        Math.random = () => {
+          seed = (seed + 0x6d2b79f5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      });
+      await page.getByRole("button", { name: "Start game" }).click();
+
+      const reveal = page.getByRole("button", { name: "Reveal four cards" });
+      const cards = page.locator("main img");
+
+      // Everything a player needs is on screen, and big enough to tap
+      async function expectAllOnScreen(when: string) {
+        expect(await pageScrolls(page), when).toBe(false);
+        for (const card of await cards.all()) {
+          await expect(card, when).toBeInViewport({ ratio: 1 });
+        }
+        // The game's buttons and suits, though not the instructions button
+        const targets = page.locator(
+          "main .mantine-Button-root:visible, main .mantine-SegmentedControl-label:visible",
+        );
+        for (const target of await targets.all()) {
+          await expect(target, when).toBeInViewport({ ratio: 1 });
+          const box = await target.boundingBox();
+          expect(box?.height, when).toBeGreaterThanOrEqual(44);
+        }
+      }
+
+      // Reveal and Change players are side by side on short phones, and one
+      // above the other, full width, on taller ones
+      const revealBox = await reveal.boundingBox();
+      const changeBox = await page
+        .getByRole("button", { name: "Change players" })
+        .boundingBox();
+      if (buttons === "side by side") {
+        expect(changeBox?.y).toBe(revealBox?.y);
+      } else {
+        expect(changeBox?.y).toBeGreaterThan(
+          (revealBox?.y ?? 0) + (revealBox?.height ?? 0),
+        );
+        expect(changeBox?.width).toBe(revealBox?.width);
+      }
+
+      for (let turn = 1; turn <= 13; turn++) {
+        const when = `on turn ${turn.toString()}`;
+        await page.locator("label").filter({ hasText: "Hearts" }).click();
+        await expect(reveal).toBeEnabled();
+        if (turn === 13) {
+          await expect(page.getByText("Final turn")).toBeInViewport({
+            ratio: 1,
+          });
+        }
+        await expectAllOnScreen(when);
+        await reveal.click();
+        // Wait for the turn to move on
+        await expect(page.locator("#suits_turn_count"), when).toHaveText(
+          turn === 13
+            ? "All 13 turns played"
+            : `Turn ${(turn + 1).toString()} of 13`,
+        );
+        if ([4, 12, 13].includes(turn)) {
+          await expect(page.locator("#suits_result"), when).toContainText(
+            "Safe round",
+          );
+        }
+        await expectAllOnScreen(`after ${when}`);
+      }
+
+      await expect(page.locator("#suits_turn")).toHaveText("Game over");
+      await expect(
+        page.getByRole("button", { name: "Play again with same players" }),
+      ).toBeInViewport({ ratio: 1 });
+      await expectAllOnScreen("at the end");
     });
   });
 }
