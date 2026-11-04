@@ -262,13 +262,14 @@ export default function IrishBingo() {
               aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
             />
             {/* "Has someone won?" shares the count's row, and the alert takes
-                the Draw button's place, so the card keeps its size on phones */}
-            <Group justify="center" gap="md" mih={28}>
+                the Draw button's place, so the card keeps its size on phones.
+                The row is the button's height before it shows up at 10 cards,
+                so the card doesn't shrink partway through */}
+            <Group justify="center" gap="md" mih={36}>
               <Text id="card_count">{`${drawnCards.length.toString()} / 52 cards`}</Text>
               {drawnCards.length >= 10 && (
                 <Button
                   variant="default"
-                  size="compact-sm"
                   onClick={playConfetti}
                   rightSection={<IconConfetti size={16} />}
                 >
