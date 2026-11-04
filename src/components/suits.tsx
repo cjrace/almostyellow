@@ -12,7 +12,6 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Flex,
   Group,
   Kbd,
   List,
@@ -362,13 +361,12 @@ export default function Suits() {
             </div>
           )}
 
-          {/* On phones Reveal and Change players share a row, so the cards
-              keep their space */}
-          <Flex direction={{ base: "row", sm: "column" }} wrap="wrap" gap="sm">
+          {/* Stacked, except on short phones, where Reveal and Change players
+              share a row so the cards keep their space */}
+          <div className={suits.controls}>
             {state.phase === "guessing" && (
               <>
                 <Button
-                  flex={{ base: 1, sm: "none" }}
                   disabled={state.chosenSuit === null}
                   aria-keyshortcuts="Control+Enter Meta+Enter"
                   onClick={revealCards}
@@ -385,7 +383,7 @@ export default function Suits() {
             {state.phase === "complete" && (
               <>
                 <Button
-                  w="100%"
+                  className={suits.wide}
                   ref={playAgainButtonRef}
                   onClick={() => {
                     act(
@@ -400,7 +398,6 @@ export default function Suits() {
             )}
 
             <Button
-              flex={{ base: 1, sm: "none" }}
               variant="default"
               onClick={() => {
                 if (isUnfinished(state)) {
@@ -412,7 +409,7 @@ export default function Suits() {
             >
               Change players
             </Button>
-          </Flex>
+          </div>
         </div>
       )}
 

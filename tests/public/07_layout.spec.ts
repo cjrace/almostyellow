@@ -144,10 +144,23 @@ for (const [where, viewport] of [
         page.getByRole("button", { name: "Shuffle new deck" }),
       ).toBeInViewport({ ratio: 1 });
     });
+  });
+}
+
+// Suits stacks its buttons on phones, except short ones, where they share a
+// row at 720px tall or less. A Pixel 8 or 9 in Chrome is 412 wide and 830 to 915 tall
+for (const [where, viewport, buttons] of [
+  ["a small phone", smallPhone, "side by side"],
+  ["a phone", phone, "stacked"],
+  ["a Pixel phone", { width: 412, height: 830 }, "stacked"],
+  ["a tall Pixel phone", { width: 412, height: 915 }, "stacked"],
+] as const) {
+  test.describe(`A visitor on ${where}`, () => {
+    test.use({ viewport });
 
     // Suits gains the "Final turn" alert on the last turn, a "Safe round" alert
     // whenever the cards are one of each suit, and "Play again" at the end
-    test("can play a whole game of Suits without the page scrolling", async ({
+    test(`can play a whole game of Suits without the page scrolling, with the buttons ${buttons}`, async ({
       page,
     }) => {
       await page.goto("/games/suits");
@@ -199,6 +212,21 @@ for (const [where, viewport] of [
         }
       }
 
+      // Reveal and Change players are side by side on short phones, and one
+      // above the other, full width, on taller ones
+      const revealBox = await reveal.boundingBox();
+      const changeBox = await page
+        .getByRole("button", { name: "Change players" })
+        .boundingBox();
+      if (buttons === "side by side") {
+        expect(changeBox?.y).toBe(revealBox?.y);
+      } else {
+        expect(changeBox?.y).toBeGreaterThan(
+          (revealBox?.y ?? 0) + (revealBox?.height ?? 0),
+        );
+        expect(changeBox?.width).toBe(revealBox?.width);
+      }
+
       for (let turn = 1; turn <= 13; turn++) {
         const when = `on turn ${turn.toString()}`;
         await page.locator("label").filter({ hasText: "Hearts" }).click();
@@ -228,6 +256,7 @@ for (const [where, viewport] of [
       await expect(
         page.getByRole("button", { name: "Play again with same players" }),
       ).toBeInViewport({ ratio: 1 });
+      await expectAllOnScreen("at the end");
     });
   });
 }

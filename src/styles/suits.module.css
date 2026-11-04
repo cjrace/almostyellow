@@ -3,6 +3,13 @@
    spare, and four in a row when there isn't, which is the same card size in
    half the height */
 
+/* Reveal and Change players, one above the other */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+}
+
 @mixin smaller-than $mantine-breakpoint-sm {
   /* The element type outranks the shared rules in cardgame.module.css */
   div.board {
@@ -38,5 +45,22 @@
   .board :global(.mantine-Button-root) {
     --button-height: 2.75rem;
     --button-padding-x: var(--mantine-spacing-sm);
+  }
+
+  /* Short phones put them side by side, as stacked they'd push the page into
+     scrolling. Stacked, a game needs up to 696px of height with long names, on
+     the final turn after a safe round. Play again keeps a row to itself */
+  @media (max-height: 45em) {
+    .controls {
+      flex-flow: row wrap;
+    }
+
+    .controls > * {
+      flex: 1;
+    }
+
+    .controls > .wide {
+      flex-basis: 100%;
+    }
   }
 }
