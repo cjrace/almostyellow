@@ -71,6 +71,8 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
   await expect(remaining).toContainText("52 cards remaining");
   await expect(card).toHaveAttribute("alt", "Face-down card");
   await expect(viewDrawn).toBeDisabled();
+  // Shuffle disables itself, so focus moves back to the returning Draw button
+  await expect(page.getByRole("button", { name: "Draw a card" })).toBeFocused();
 
   await page.getByRole("button", { name: "Draw a card" }).click();
   await expect(remaining).toContainText("51 cards remaining");

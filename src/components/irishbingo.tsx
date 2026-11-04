@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   Alert,
@@ -72,6 +72,17 @@ export default function IrishBingo() {
   const [latestCard, setLatestCard] = useState<Card | null>(null);
   const progressColor = drawnCards.length > 35 ? "red" : "";
 
+  // At one end of the deck each button goes, or disables itself, so focus
+  // moves to the other one rather than being lost. The ref is read after the
+  // render, as Draw isn't on the page while the deck is empty
+  const drawButtonRef = useRef<HTMLButtonElement>(null);
+  const shuffleButtonRef = useRef<HTMLButtonElement>(null);
+  const focusNextRef = useRef<RefObject<HTMLButtonElement | null> | null>(null);
+  useEffect(() => {
+    focusNextRef.current?.current?.focus();
+    focusNextRef.current = null;
+  }, [mainDeck]);
+
   // Function to draw a random card
   const drawCard = () => {
     if (mainDeck.length > 0) {
@@ -81,6 +92,9 @@ export default function IrishBingo() {
       // Draw the top card from the shuffled deck
       const [drawnCard, ...remainingMainDeck] = shuffledDeck;
 
+      if (remainingMainDeck.length === 0) {
+        focusNextRef.current = shuffleButtonRef;
+      }
       setDrawnCards([...drawnCards, drawnCard]);
       setLatestCard(drawnCard);
       setMainDeck(remainingMainDeck);
@@ -89,6 +103,7 @@ export default function IrishBingo() {
 
   // Reset the deck to start drawing again
   const newDeck = () => {
+    focusNextRef.current = drawButtonRef;
     setMainDeck(createCardDeck());
     setDrawnCards([]); // Clear the drawn cards as well
     setLatestCard(null); // Clear the latest card
@@ -268,7 +283,7 @@ export default function IrishBingo() {
                 py="xs"
               />
             ) : (
-              <Button onClick={drawCard} fullWidth>
+              <Button ref={drawButtonRef} onClick={drawCard} fullWidth>
                 Draw a card
               </Button>
             )}
@@ -309,6 +324,7 @@ export default function IrishBingo() {
             <Button
               // Once the deck runs out, shuffling is the next thing to do
               variant={mainDeck.length === 0 ? "filled" : "default"}
+              ref={shuffleButtonRef}
               onClick={newDeck}
               fullWidth
               disabled={drawnCards.length > 0 ? false : true}
