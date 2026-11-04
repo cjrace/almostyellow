@@ -24,7 +24,10 @@ function safeRedirect(redirectTo: unknown) {
 }
 
 // The cookie is Secure everywhere but on this computer. Safari won't keep a
-// Secure cookie from http://localhost, which the tests and pnpm dev use
+// Secure cookie from http://localhost, which the tests and pnpm dev use.
+// next.config.ts can go by NODE_ENV and SERVED_OVER_HTTP at build time, but
+// the tests run a production build with next start, so this checks the host
+// the request came to. Only the person sending it gets the plainer cookie
 const localHosts = ["localhost", "127.0.0.1", "[::1]"];
 async function servedFromLocalhost() {
   const host = (await headers()).get("host") ?? "";
