@@ -289,7 +289,7 @@ export default function Suits() {
           </Group>
 
           {state.phase === "guessing" && isFinalTurn(state) && (
-            <Alert color="orange" title="Final turn: counts double" py={6} />
+            <Alert color="orange" title="Final turn counts double" py={6} />
           )}
 
           {/* The last turn stays on show while the next player picks */}

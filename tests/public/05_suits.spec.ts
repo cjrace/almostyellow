@@ -82,7 +82,7 @@ test("Plays a full game of 13 turns", async ({ page }) => {
         }
       }
       // Players hear about the double before they guess
-      await expect(page.getByText("Final turn: counts double")).toBeVisible({
+      await expect(page.getByText("Final turn counts double")).toBeVisible({
         visible: finalTurn,
       });
 
