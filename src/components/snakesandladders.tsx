@@ -4,7 +4,9 @@ import { useState } from "react";
 import {
   Badge,
   Button,
+  Chip,
   Drawer,
+  Fieldset,
   Flex,
   Modal,
   Box,
@@ -161,41 +163,57 @@ const assignIcons = (players: Player[], numPlayers: number) => {
   });
 };
 
-// A radio group, so it's one tab stop and the arrow keys pick an icon. Icons
-// another player picked are disabled, and the arrow keys skip them
+// Chips in a group are radio buttons sharing a name, so it's one tab stop and
+// the arrow keys pick an icon. Icons another player picked are disabled, and
+// the arrow keys skip them
 const IconSelection: React.FC<IconSelectionProps> = ({
   seat,
   selectedIcon,
   takenIcons,
   onChange,
-}) => {
-  return (
-    <fieldset className={layout.avatars}>
-      <legend className={layout.avatarLegend}>
-        Avatar for player {(seat + 1).toString()}
-      </legend>
-      {icons.map((icon) => (
-        <label key={icon.id} className={layout.avatar} title={icon.label}>
-          <input
-            type="radio"
-            className={layout.avatarRadio}
+}) => (
+  <Fieldset
+    variant="unstyled"
+    legend={`Avatar for player ${(seat + 1).toString()}`}
+    styles={{
+      legend: {
+        marginBottom: "var(--mantine-spacing-xs)",
+        fontSize: "var(--mantine-font-size-xs)",
+        color: "var(--mantine-color-dimmed)",
+      },
+    }}
+  >
+    <Chip.Group value={selectedIcon} onChange={onChange}>
+      <Group gap="xs">
+        {icons.map((icon) => (
+          <Chip
+            key={icon.id}
             name={`avatar-${seat.toString()}`}
             value={icon.id}
-            checked={selectedIcon === icon.id}
             disabled={takenIcons.has(icon.id)}
-            onChange={() => {
-              onChange(icon.id);
+            color="orange"
+            icon={null}
+            wrapperProps={{ title: icon.label }}
+            // A round 44px tap target holding just the icon
+            styles={{
+              label: {
+                width: "2.75rem",
+                height: "2.75rem",
+                padding: 0,
+                justifyContent: "center",
+              },
             }}
-          />
-          <span aria-hidden className={layout.avatarIcon}>
-            {icon.component}
-          </span>
-          <VisuallyHidden>{icon.label}</VisuallyHidden>
-        </label>
-      ))}
-    </fieldset>
-  );
-};
+          >
+            <span aria-hidden style={{ display: "flex" }}>
+              {icon.component}
+            </span>
+            <VisuallyHidden>{icon.label}</VisuallyHidden>
+          </Chip>
+        ))}
+      </Group>
+    </Chip.Group>
+  </Fieldset>
+);
 
 // The space for the dice result is always there, so nothing moves when it shows
 const RollBadge: React.FC<{ roll: number | null }> = ({ roll }) => (
