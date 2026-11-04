@@ -226,6 +226,71 @@ test("Leaving with changes not yet saved asks first", async ({ page }) => {
   await expect(item(page, rice)).toBeChecked();
 });
 
+test.describe("Someone leaving Chopin Liszt", () => {
+  for (const destination of [
+    { name: "Home", path: "/", heading: "Almost Yellow" },
+    { name: "Admin", path: "/admin", heading: "Admin" },
+  ]) {
+    test(`can cancel the ${destination.name} breadcrumb and save their pending change`, async ({
+      page,
+      bobPage,
+    }) => {
+      const rice = uniqueName("Rice");
+      const firestoreRequest = (url: URL) =>
+        url.host === process.env.FIRESTORE_EMULATOR_HOST;
+
+      await test.step("Given an unsent change while the rest of the site is reachable", async () => {
+        await openBothLists(page, bobPage);
+        await addItems(page, rice);
+        await expect(item(bobPage, rice)).toBeVisible();
+
+        // Drop the existing Firestore connection and block its retries, while
+        // keeping page navigation online so a failed request cannot mask the bug.
+        await page.route(firestoreRequest, (route) => route.abort());
+        await page.context().setOffline(true);
+        await page.context().setOffline(false);
+        await item(page, rice).click();
+        await expect(page.getByText("Not synced yet")).toHaveCount(1);
+      });
+
+      await test.step("When they cancel the warning, the list keeps their change", async () => {
+        const dialog = page.waitForEvent("dialog", { timeout: 10_000 });
+        const click = page
+          .getByRole("link", { name: destination.name, exact: true })
+          .click({ noWaitAfter: true });
+        const warning = await dialog;
+        expect(warning.type()).toBe("beforeunload");
+        await warning.dismiss();
+        await click;
+
+        await expect(page).toHaveURL("/admin/chopinliszt");
+        await expect(item(page, rice)).toBeChecked();
+        await expect(item(bobPage, rice)).not.toBeChecked();
+      });
+
+      await test.step("Then reconnecting saves the change and they can leave without a warning", async () => {
+        await page.unroute(firestoreRequest);
+        await expect(item(bobPage, rice)).toBeChecked(SYNC);
+        await expect(page.getByText("Not synced yet")).toHaveCount(0);
+
+        const warnings: string[] = [];
+        page.on("dialog", async (dialog) => {
+          warnings.push(dialog.type());
+          await dialog.dismiss();
+        });
+        await page
+          .getByRole("link", { name: destination.name, exact: true })
+          .click();
+        await expect(page).toHaveURL(destination.path);
+        await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+          destination.heading,
+        );
+        expect(warnings).toEqual([]);
+      });
+    });
+  }
+});
+
 test("Opening the list without signal says it needs a connection", async ({
   page,
 }) => {

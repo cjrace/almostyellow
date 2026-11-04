@@ -29,6 +29,7 @@ interface BreadcrumbItem {
 
 interface HeaderProps {
   crumbs?: BreadcrumbItem[];
+  nativeBreadcrumbs?: boolean;
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
@@ -38,6 +39,7 @@ interface HeaderProps {
 
 export default function Header({
   crumbs,
+  nativeBreadcrumbs = false,
   noCrumbs = false, // This needs to be set to true if you want to use any of the other buttons
   game = false,
   whiskyJournal = false,
@@ -60,8 +62,8 @@ export default function Header({
           <Group>
             <Breadcrumbs>
               {crumbs?.map((item) =>
-                // The current page's crumb has no href, so stays a plain link
-                item.href ? (
+                // Native links let beforeunload protect pending changes.
+                item.href && !nativeBreadcrumbs ? (
                   <Anchor component={Link} href={item.href} key={item.href}>
                     {item.title}
                   </Anchor>

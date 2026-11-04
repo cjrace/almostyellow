@@ -22,7 +22,7 @@ export default async function ChopinLiszt() {
 
   return (
     <>
-      <Header crumbs={crumbitems} />
+      <Header crumbs={crumbitems} nativeBreadcrumbs />
 
       <main id="main-content">
         <Container size="lg">

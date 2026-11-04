@@ -66,7 +66,7 @@ Write tests so that someone who has never seen the code can tell what a person c
   ```
 
 - **Use comments for why**, not for what the next line does.
-- **Import `test` and `expect` from `../playwright`**, not `@playwright/test`. Its pages wait after `goto` and `reload` until React has taken over the page. Safari is slower to get there, and anything typed before then is wiped. A page you open yourself with `newPage()` needs `waitsForHydration(page)`, and a link to another page should be a Next.js `Link`, so it opens without a full page load.
+- **Import `test` and `expect` from `../playwright`**, not `@playwright/test`. Its pages wait after `goto` and `reload` until React has taken over the page. Safari is slower to get there, and anything typed before then is wiped. A page you open yourself with `newPage()` needs `waitsForHydration(page)`, and a link to another page should be a Next.js `Link`, so it opens without a full page load. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation.
 - **If a test can only run in some browsers**, leave it out of the others with `testIgnore` in `playwright.config.ts` rather than skipping it, so the summary only lists real skips.
 
 Unit and Firebase tests describe the code rather than a person (`describe("signInAction")`), but their names still say what should happen, such as `"rejects an expired session"`.
