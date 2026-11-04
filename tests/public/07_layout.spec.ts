@@ -185,6 +185,9 @@ for (const [where, viewport, buttons] of [
     test(`can play a whole game of Suits without the page scrolling, with the buttons ${buttons}`, async ({
       page,
     }) => {
+      // Checks every card and button on all 13 turns, which can take Safari
+      // longer than the default allows
+      test.slow();
       await page.goto("/games/suits");
       await page.getByRole("button", { name: "Add player" }).click();
       await page.getByLabel("Player 1 name").fill("Ben");

@@ -84,6 +84,9 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Build application ready to test
         run: pnpm exec next build
+        # Served over http://localhost, see next.config.ts and tests/test-env.ts
+        env:
+          SERVED_OVER_HTTP: "true"
       - name: Run all Playwright tests against the Firebase emulators
         run: pnpm test:e2e --no-build
       - uses: actions/upload-artifact@v7

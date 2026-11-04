@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
-// Only on Vercel, which serves the site over HTTPS. Safari applies it to
-// http://localhost too, so local and CI builds would load nothing in WebKit
-const upgradeInsecure = process.env.VERCEL ? "upgrade-insecure-requests;" : "";
+// Left out only for builds served over plain HTTP on this computer: pnpm dev,
+// and test builds, which set SERVED_OVER_HTTP (tests/test-env.ts and CI).
+// Safari applies it to http://localhost too, so those would load nothing
+const servedOverHttp =
+  process.env.NODE_ENV === "development" ||
+  process.env.SERVED_OVER_HTTP === "true";
+const upgradeInsecure = servedOverHttp ? "" : "upgrade-insecure-requests;";
 
 const cspHeader = `
 img-src 'self' blob: data:;
