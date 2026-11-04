@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "../playwright";
+import { test, expect, waitsForHydration, type Page } from "../playwright";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
@@ -134,7 +134,7 @@ test.describe("Uno durable scoring", () => {
         const bobContext = await browser.newContext({
           baseURL: test.info().project.use.baseURL,
         });
-        const bob = await bobContext.newPage();
+        const bob = waitsForHydration(await bobContext.newPage());
         await bob.goto("/admin/login?callbackUrl=/games/uno-tracker");
         const credentials = getSecondCredentials();
         await bob
@@ -202,7 +202,7 @@ test.describe("Uno durable scoring", () => {
             }),
         );
         await page.close();
-        const reopened = await context.newPage();
+        const reopened = waitsForHydration(await context.newPage());
         await reopened.goto("/games/uno-tracker");
         await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
         expect((await local(reopened)).events.map((event) => event.id)).toEqual(
@@ -434,7 +434,7 @@ test.describe("Uno durable scoring", () => {
     const otherContext = await browser.newContext({
       baseURL: test.info().project.use.baseURL,
     });
-    const other = await otherContext.newPage();
+    const other = waitsForHydration(await otherContext.newPage());
     await other.goto("/admin/login?callbackUrl=/games/uno-tracker");
     const credentials = getSecondCredentials();
     await other
@@ -472,7 +472,7 @@ test.describe("Uno durable scoring", () => {
   }) => {
     test.slow();
     await signIn(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Start new game" }),
@@ -534,7 +534,7 @@ test.describe("Uno durable scoring", () => {
     await signIn(page);
     await start(page);
     await idle(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
@@ -591,7 +591,7 @@ test.describe("Uno durable scoring", () => {
     await signIn(page);
     await start(page);
     await idle(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
