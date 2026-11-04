@@ -95,11 +95,7 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
       </Text>
 
       {/* Cards flow into as many columns as fit, one on a phone */}
-      <SimpleGrid
-        minColWidth="min(100%, 22rem)"
-        verticalSpacing={0}
-        style={{ alignItems: "start" }}
-      >
+      <SimpleGrid minColWidth="min(100%, 22rem)" verticalSpacing={0}>
         {searchedCocktails
           .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
           .map((cocktail) => (

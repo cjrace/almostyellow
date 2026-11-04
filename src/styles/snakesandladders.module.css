@@ -2,6 +2,13 @@
    (cardgame.module.css's .screen) and never scrolls, so the board is sized to
    fit the space as well as the width */
 
+.space {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
 .game {
   display: flex;
   flex-direction: column;
@@ -76,12 +83,21 @@
 }
 
 @mixin larger-than $mantine-breakpoint-sm {
+  /* Measure the height left for the game, so its width follows the board
+     rather than leaving the players and board at one side of a wide page. */
+  .space {
+    container-type: size;
+    min-height: 20rem;
+  }
+
   /* The players and buttons on the left, the board on the right */
   .game {
     display: grid;
     grid-template-columns: min(20rem, 35%) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     gap: var(--mantine-spacing-xl);
+    width: min(100%, calc(100cqh + 20rem + var(--mantine-spacing-xl)));
+    margin-inline: auto;
   }
 
   .controls {
@@ -94,9 +110,5 @@
     flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
-  }
-
-  .table {
-    place-items: start;
   }
 }

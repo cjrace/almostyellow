@@ -84,6 +84,38 @@ function pageScrolls(page: Page) {
   );
 }
 
+async function expectMatchingCocktailRows(page: Page) {
+  const cards = page.getByTestId("cocktail-card");
+  await expect(cards.first()).toBeVisible();
+  const boxes = await cards.evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        top: Math.round(box.top),
+        bottom: box.bottom,
+        height: box.height,
+      };
+    }),
+  );
+  const rows = Map.groupBy(boxes, (box) => box.top);
+  expect([...rows.values()].some((row) => row.length > 1)).toBe(true);
+  for (const row of rows.values()) {
+    expect(
+      Math.max(...row.map((box) => box.bottom)) -
+        Math.min(...row.map((box) => box.bottom)),
+    ).toBeLessThan(2);
+    expect(
+      Math.max(...row.map((box) => box.height)) -
+        Math.min(...row.map((box) => box.height)),
+    ).toBeLessThan(2);
+  }
+  // Different recipes can make different rows taller; only a row's own
+  // cards need to match each other.
+  expect(
+    new Set(boxes.map((box) => Math.round(box.height))).size,
+  ).toBeGreaterThan(1);
+}
+
 async function startBoomBoomPirate(page: Page, ropes: number) {
   await page.goto("/games/boomboompirate");
   await page.getByLabel("Number of ropes").fill(ropes.toString());
@@ -468,6 +500,7 @@ test.describe("A visitor on a desktop", () => {
       els.map((el) => Math.round(el.getBoundingClientRect().left)),
     );
     expect(new Set(lefts).size).toBeGreaterThan(1);
+    await expectMatchingCocktailRows(page);
   });
 
   test("sees the Boom Boom Pirate ropes fill the screen", async ({ page }) => {
@@ -479,6 +512,15 @@ test.describe("A visitor on a desktop", () => {
 
     expect(await pageScrolls(page)).toBe(false);
     expect(restart.y + restart.height).toBeGreaterThan(desktop.height - 40);
+  });
+});
+
+test.describe("A visitor to Cocktails on a wide desktop", () => {
+  test.use({ viewport: { width: 1920, height: 900 } });
+
+  test("sees cards with matching heights within each row", async ({ page }) => {
+    await page.goto("/cocktails");
+    await expectMatchingCocktailRows(page);
   });
 });
 
@@ -501,6 +543,15 @@ test.describe("A player of Snakes and Ladders", () => {
     return { board, roll };
   }
 
+  async function expectCentredGame(page: Page, width: number) {
+    const { board, roll } = await boardAndRoll(page);
+    const left = Math.min(board.x, roll.x);
+    const right = Math.max(board.x + board.width, roll.x + roll.width);
+    expect(Math.abs((left + right) / 2 - width / 2)).toBeLessThan(24);
+    expect(Math.abs(board.width - board.height)).toBeLessThan(2);
+    expect(roll.height).toBeGreaterThanOrEqual(36);
+  }
+
   for (const [where, viewport] of [
     ["a phone", phone],
     ["a small phone", smallPhone],
@@ -519,6 +570,8 @@ test.describe("A player of Snakes and Ladders", () => {
         expect(Math.abs(board.width - board.height)).toBeLessThan(2);
         expect(board.y + board.height).toBeLessThanOrEqual(viewport.height);
         expect(roll.y + roll.height).toBeLessThanOrEqual(viewport.height);
+        if (where === "a desktop")
+          await expectCentredGame(page, viewport.width);
       });
 
       test("sees how far they move without the game moving about", async ({
@@ -605,6 +658,24 @@ test.describe("A player of Snakes and Ladders", () => {
 
       expect(Math.abs(board.width - board.height)).toBeLessThan(2);
       expect(roll.x + roll.width).toBeLessThanOrEqual(board.x);
+      await expectCentredGame(page, desktop.width);
     });
+  });
+
+  test.describe("on a wide desktop", () => {
+    const viewport = { width: 1920, height: 900 };
+    test.use({ viewport });
+
+    for (const players of [2, 10]) {
+      test(`sees ${players.toString()} players and a large square board centred together`, async ({
+        page,
+      }) => {
+        await startGame(page, players);
+        await expectCentredGame(page, viewport.width);
+        const { board } = await boardAndRoll(page);
+        expect(board.height).toBeGreaterThan(viewport.height * 0.6);
+        expect(await pageScrolls(page)).toBe(false);
+      });
+    }
   });
 });

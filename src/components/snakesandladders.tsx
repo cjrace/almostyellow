@@ -525,122 +525,131 @@ const SnakesAndLadders = () => {
   // the current player, with everyone else in a drawer. Wider screens list
   // every player beside the board
   return (
-    <div className={layout.game}>
-      {/* Said out loud, as the badge only shows the number */}
-      <VisuallyHidden role="status">
-        {roll !== null && current
-          ? `${current.name} moves ${String(roll)} ${roll === 1 ? "place" : "places"}`
-          : ""}
-      </VisuallyHidden>
+    <div className={layout.space}>
+      <div className={layout.game}>
+        {/* Said out loud, as the badge only shows the number */}
+        <VisuallyHidden role="status">
+          {roll !== null && current
+            ? `${current.name} moves ${String(roll)} ${roll === 1 ? "place" : "places"}`
+            : ""}
+        </VisuallyHidden>
 
-      <Stack gap="sm" className={layout.controls}>
-        <Box visibleFrom="sm" className={layout.playerList}>
+        <Stack gap="sm" className={layout.controls}>
+          <Box visibleFrom="sm" className={layout.playerList}>
+            <PlayerList
+              players={players}
+              currentPlayer={currentPlayer}
+              positions={playerPositions}
+              roll={roll}
+            />
+          </Box>
+
+          <Group hiddenFrom="sm" gap="sm" wrap="nowrap" data-testid="turn">
+            {icons.find((icon) => icon.id === current?.icon)?.component}
+            <Text fw={700} truncate style={{ flex: 1 }}>
+              {current?.name}&apos;s turn
+            </Text>
+            <RollBadge roll={roll} />
+          </Group>
+
+          <Flex direction={{ base: "row", sm: "column" }} gap="sm">
+            <Button
+              onClick={rollDice}
+              flex={{ base: 1, sm: "none" }}
+              disabled={!!winner || playerPositions.length === 0 || isRolling}
+            >
+              {isRolling
+                ? rollingDiceIcon
+                : `Roll Dice (${current?.name ?? ""})`}
+            </Button>
+            <Button
+              hiddenFrom="sm"
+              variant="default"
+              onClick={() => {
+                setPlayersOpened(true);
+              }}
+            >
+              Players
+            </Button>
+            <Button visibleFrom="sm" variant="default" onClick={restartGame}>
+              Restart Game
+            </Button>
+          </Flex>
+        </Stack>
+
+        <Drawer
+          opened={playersOpened}
+          onClose={() => {
+            setPlayersOpened(false);
+          }}
+          position="bottom"
+          size="auto"
+          title="Players"
+          hiddenFrom="sm"
+        >
           <PlayerList
             players={players}
             currentPlayer={currentPlayer}
             positions={playerPositions}
             roll={roll}
           />
-        </Box>
-
-        <Group hiddenFrom="sm" gap="sm" wrap="nowrap" data-testid="turn">
-          {icons.find((icon) => icon.id === current?.icon)?.component}
-          <Text fw={700} truncate style={{ flex: 1 }}>
-            {current?.name}&apos;s turn
-          </Text>
-          <RollBadge roll={roll} />
-        </Group>
-
-        <Flex direction={{ base: "row", sm: "column" }} gap="sm">
           <Button
-            onClick={rollDice}
-            flex={1}
-            disabled={!!winner || playerPositions.length === 0 || isRolling}
-          >
-            {isRolling ? rollingDiceIcon : `Roll Dice (${current?.name ?? ""})`}
-          </Button>
-          <Button
-            hiddenFrom="sm"
+            onClick={restartFromDrawer}
+            fullWidth
+            mt="md"
             variant="default"
-            onClick={() => {
-              setPlayersOpened(true);
-            }}
           >
-            Players
-          </Button>
-          <Button visibleFrom="sm" variant="default" onClick={restartGame}>
             Restart Game
           </Button>
-        </Flex>
-      </Stack>
+        </Drawer>
 
-      <Drawer
-        opened={playersOpened}
-        onClose={() => {
-          setPlayersOpened(false);
-        }}
-        position="bottom"
-        size="auto"
-        title="Players"
-        hiddenFrom="sm"
-      >
-        <PlayerList
-          players={players}
-          currentPlayer={currentPlayer}
-          positions={playerPositions}
-          roll={roll}
-        />
-        <Button onClick={restartFromDrawer} fullWidth mt="md" variant="default">
-          Restart Game
-        </Button>
-      </Drawer>
+        <div className={layout.boardArea}>
+          <SegmentedControl
+            value={viewMode}
+            color="orange"
+            onChange={setViewMode}
+            data={[
+              { label: "Show Names", value: "names" },
+              { label: "Show Icons", value: "icons" },
+            ]}
+            className={layout.viewMode}
+          />
 
-      <div className={layout.boardArea}>
-        <SegmentedControl
-          value={viewMode}
-          color="orange"
-          onChange={setViewMode}
-          data={[
-            { label: "Show Names", value: "names" },
-            { label: "Show Icons", value: "icons" },
-          ]}
-          className={layout.viewMode}
-        />
-
-        <div className={layout.table}>
-          <div className={layout.board} data-testid="board">
-            {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
-              const pos = index + 1;
-              const playerAtPos = playerPositions.findIndex(
-                (playerPos) => playerPos === pos,
-              );
-              return (
-                <div key={pos} className={layout.cell}>
-                  {playerAtPos !== -1 &&
-                    (viewMode === "names" ? (
-                      <span>{players[playerAtPos]?.name}</span>
-                    ) : (
-                      icons.find(
-                        (icon) => icon.id === players[playerAtPos]?.icon,
-                      )?.component
-                    ))}
-                  {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
-                  {pos === 100 && <IconTrophy size={24} color="gold" />}
-                </div>
-              );
-            })}
+          <div className={layout.table}>
+            <div className={layout.board} data-testid="board">
+              {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
+                const pos = index + 1;
+                const playerAtPos = playerPositions.findIndex(
+                  (playerPos) => playerPos === pos,
+                );
+                return (
+                  <div key={pos} className={layout.cell}>
+                    {playerAtPos !== -1 &&
+                      (viewMode === "names" ? (
+                        <span>{players[playerAtPos]?.name}</span>
+                      ) : (
+                        icons.find(
+                          (icon) => icon.id === players[playerAtPos]?.icon,
+                        )?.component
+                      ))}
+                    {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
+                    {pos === 100 && <IconTrophy size={24} color="gold" />}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      <Modal opened={!!popupMessage} onClose={closePopup} title="Game Update">
-        {popupMessage}
-        {winner !== null && (
-          <Button onClick={restartGame} fullWidth mt="md">
-            Restart Game
-          </Button>
-        )}
-      </Modal>
+        <Modal opened={!!popupMessage} onClose={closePopup} title="Game Update">
+          {popupMessage}
+          {winner !== null && (
+            <Button onClick={restartGame} fullWidth mt="md">
+              Restart Game
+            </Button>
+          )}
+        </Modal>
+      </div>
     </div>
   );
 };
