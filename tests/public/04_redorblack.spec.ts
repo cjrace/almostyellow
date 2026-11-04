@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { SuitNames, RankNames, getCardName } from "@/components/carddeck";
 
 test("Credits Ben and shows the instructions", async ({ page }) => {
@@ -50,6 +50,13 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
     drawnCards.push((await card.getAttribute("alt")) ?? "");
   }
 
+  // The alert takes the Draw button's place, and focus moves on to Shuffle
+  await expect(page.getByRole("button", { name: "Draw a card" })).toBeHidden();
+  await expect(page.getByText("Deck Exhausted")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Shuffle new deck" }),
+  ).toBeFocused();
+
   // The list of drawn cards is in the order they came out
   const viewDrawn = page.getByRole("button", { name: "View all drawn cards" });
   await viewDrawn.click();
@@ -59,15 +66,13 @@ test("Draws the whole deck one card at a time", async ({ page }) => {
   await expect(drawnList).toBeHidden();
 
   expect(drawnCards.sort()).toEqual(allCardNames.sort());
-  await expect(
-    page.getByRole("button", { name: "Draw a card" }),
-  ).toBeDisabled();
-  await expect(page.getByText("Deck Exhausted")).toBeVisible();
 
   await page.getByRole("button", { name: "Shuffle new deck" }).click();
   await expect(remaining).toContainText("52 cards remaining");
   await expect(card).toHaveAttribute("alt", "Face-down card");
   await expect(viewDrawn).toBeDisabled();
+  // Shuffle disables itself, so focus moves back to the returning Draw button
+  await expect(page.getByRole("button", { name: "Draw a card" })).toBeFocused();
 
   await page.getByRole("button", { name: "Draw a card" }).click();
   await expect(remaining).toContainText("51 cards remaining");

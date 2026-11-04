@@ -1,7 +1,8 @@
-import { SimpleGrid, Title, Space } from "@mantine/core";
+import { SimpleGrid, Stack, Title } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
 import GamesCard from "@/components/gamescard";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata: Metadata = {
   title: "Games",
@@ -19,14 +20,17 @@ const crumbitems = [
 
 export default function Games() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header crumbs={crumbitems} />
 
-      <main id="main-content">
+      <Stack component="main" id="main-content" gap="md">
         <Title>Our games</Title>
-        <Space h="xl" />
 
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, lg: 3 }}
+          spacing="lg"
+          style={{ flex: "1 1 0", gridAutoRows: "minmax(min-content, 1fr)" }}
+        >
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Irish Bingo"
@@ -75,7 +79,7 @@ export default function Games() {
             linktext="Suits"
           />
         </SimpleGrid>
-      </main>
-    </>
+      </Stack>
+    </div>
   );
 }

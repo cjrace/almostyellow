@@ -6,6 +6,7 @@ import {
   TextInput,
   ActionIcon,
   Group,
+  SimpleGrid,
 } from "@mantine/core";
 import { useState } from "react";
 import styles from "@/styles/cocktails.module.css";
@@ -93,7 +94,8 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
         Showing {searchedCocktails.length} of {cocktails.length} cocktails
       </Text>
 
-      <div className={styles.cocktailList}>
+      {/* Cards flow into as many columns as fit, one on a phone */}
+      <SimpleGrid minColWidth="min(100%, 22rem)" verticalSpacing={0}>
         {searchedCocktails
           .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
           .map((cocktail) => (
@@ -101,7 +103,7 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
               <CocktailBox {...cocktail} />
             </div>
           ))}
-      </div>
+      </SimpleGrid>
     </>
   );
 }

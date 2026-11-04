@@ -1,7 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 
 // Service-worker evaluation is only available in Chromium, so playwright.config.ts
-// leaves this file out of the Firefox project.
+// leaves this file out of the Mobile Safari project.
 for (const failure of ["open", "match", "put"] as const) {
   test(`online assets still load when cache ${failure} fails`, async ({
     page,

@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page } from "../playwright";
 import { SuitNames } from "@/components/carddeck";
 
 async function startGame(page: Page, names: string[]) {
@@ -82,7 +82,7 @@ test("Plays a full game of 13 turns", async ({ page }) => {
         }
       }
       // Players hear about the double before they guess
-      await expect(page.getByText("This turn counts double.")).toBeVisible({
+      await expect(page.getByText("Final turn counts double")).toBeVisible({
         visible: finalTurn,
       });
 
@@ -141,9 +141,9 @@ test("Plays a full game of 13 turns", async ({ page }) => {
   }
 
   await test.step("Then the game is over and can be replayed with the same players", async () => {
-    await expect(
-      page.getByText("All 13 turns have been played."),
-    ).toBeVisible();
+    await expect(page.locator("#suits_turn_count")).toHaveText(
+      "All 13 turns played",
+    );
     await expect(page.getByRole("radio")).toHaveCount(0);
     await expect(revealButton).toHaveCount(0);
 

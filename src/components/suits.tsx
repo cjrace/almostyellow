@@ -51,6 +51,7 @@ import {
 } from "@/components/suitsgame";
 import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/playingcard.module.css";
+import suits from "@/styles/suits.module.css";
 
 const suitSymbols: Record<string, string> = {
   Hearts: "♥",
@@ -243,22 +244,30 @@ export default function Suits() {
           />
         </div>
       ) : (
-        <div className={`${layout.board} ${layout.wideTable}`}>
+        <div className={`${layout.board} ${layout.wideTable} ${suits.board}`}>
           <Group justify="space-between" align="flex-start" wrap="nowrap">
-            <div>
+            {/* Long names wrap onto a second line at most, so the cards keep
+                their space on small phones */}
+            <div style={{ minWidth: 0 }}>
               <Title
                 order={2}
                 size="h3"
                 id="suits_turn"
                 ref={turnHeadingRef}
                 tabIndex={-1}
+                lineClamp={2}
+                style={{ overflowWrap: "anywhere" }}
               >
                 {state.phase === "complete"
                   ? "Game over"
                   : `${currentPlayer(state)}'s turn`}
               </Title>
+              {/* Says when the deck has run out, in place of an alert, so the
+                  cards keep their space on small phones */}
               <Text c="dimmed" id="suits_turn_count">
-                Turn {Math.min(state.turn + 1, TOTAL_TURNS)} of {TOTAL_TURNS}
+                {state.phase === "complete"
+                  ? `All ${TOTAL_TURNS.toString()} turns played`
+                  : `Turn ${(state.turn + 1).toString()} of ${TOTAL_TURNS.toString()}`}
               </Text>
             </div>
             <Paper
@@ -267,8 +276,9 @@ export default function Suits() {
               py={4}
               ta="center"
               id="suits_magic_number"
+              style={{ flexShrink: 0 }}
             >
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="dimmed" style={{ whiteSpace: "nowrap" }}>
                 Magic number
               </Text>
               <Text fz={28} fw={700} lh={1.1}>
@@ -278,9 +288,7 @@ export default function Suits() {
           </Group>
 
           {state.phase === "guessing" && isFinalTurn(state) && (
-            <Alert color="orange" title="Final turn">
-              This turn counts double.
-            </Alert>
+            <Alert color="orange" title="Final turn counts double" py={6} />
           )}
 
           {/* The last turn stays on show while the next player picks */}
@@ -292,8 +300,8 @@ export default function Suits() {
             )}
           </Text>
 
-          <div className={layout.table}>
-            <div className={styles.row}>
+          <div className={`${layout.table} ${suits.table}`}>
+            <div className={`${styles.row} ${suits.row}`}>
               {[0, 1, 2, 3].map((index) => (
                 <PlayingCard
                   key={index}
@@ -307,9 +315,12 @@ export default function Suits() {
             {lastTurn?.result.kind === "safe" ? (
               <Alert
                 color="green"
-                title="Safe round"
+                py="xs"
                 icon={<IconShieldCheck aria-hidden="true" />}
               >
+                <Text span fw={700} inherit>
+                  Safe round.
+                </Text>{" "}
                 {describeResult(lastTurn.player, lastTurn.result)}
               </Alert>
             ) : (
@@ -322,7 +333,12 @@ export default function Suits() {
           {/* Next to the buttons, so a thumb has less far to move */}
           {state.phase === "guessing" && (
             <div ref={pickerRef}>
-              <Text id="suits_choose" fw={500} size="sm">
+              <Text
+                id="suits_choose"
+                fw={500}
+                size="sm"
+                className={suits.prompt}
+              >
                 {currentPlayer(state)}, choose a suit
               </Text>
               <SegmentedControl
@@ -345,7 +361,9 @@ export default function Suits() {
             </div>
           )}
 
-          <div className={layout.controls}>
+          {/* Stacked, except on short phones, where Reveal and Change players
+              share a row so the cards keep their space */}
+          <div className={`${layout.controls} ${suits.controls}`}>
             {state.phase === "guessing" && (
               <>
                 <Button
@@ -363,22 +381,18 @@ export default function Suits() {
             )}
 
             {state.phase === "complete" && (
-              <>
-                <Alert color="orange" title="That's the whole deck">
-                  All {TOTAL_TURNS} turns have been played.
-                </Alert>
-                <Button
-                  ref={playAgainButtonRef}
-                  onClick={() => {
-                    act(
-                      { type: "replay", deck: newDeck() },
-                      focusOn(turnHeadingRef),
-                    );
-                  }}
-                >
-                  Play again with same players
-                </Button>
-              </>
+              <Button
+                className={suits.wide}
+                ref={playAgainButtonRef}
+                onClick={() => {
+                  act(
+                    { type: "replay", deck: newDeck() },
+                    focusOn(turnHeadingRef),
+                  );
+                }}
+              >
+                Play again with same players
+              </Button>
             )}
 
             <Button

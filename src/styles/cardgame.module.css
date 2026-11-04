@@ -3,17 +3,11 @@
    a thumb */
 
 /* Wraps the header and main, so the game can take whatever height is left.
-   Takes off the body margins set in global.css */
+   Takes off the .site-frame padding set in global.css, which sets the variable */
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 40px);
-}
-
-@media (max-width: 768px) {
-  .screen {
-    min-height: calc(100dvh - 20px);
-  }
+  min-height: calc(100dvh - 2 * var(--site-frame-padding));
 }
 
 .screen > main,
@@ -64,7 +58,7 @@ label[data-active] .redSuit {
   gap: var(--mantine-spacing-sm);
 }
 
-@media (min-width: 48em) {
+@mixin larger-than $mantine-breakpoint-sm {
   /* Red or Black puts the buttons beside the card, in a column with a set
      width so it doesn't change with the length of the card name */
   .sideBySide {
@@ -91,7 +85,7 @@ label[data-active] .redSuit {
   }
 }
 
-@media (max-width: 47.99em) {
+@mixin smaller-than $mantine-breakpoint-sm {
   .board {
     margin-top: var(--mantine-spacing-md);
   }

@@ -1,0 +1,61 @@
+/* Suits fits a whole game on a small phone (cardgame.module.css has the rest
+   of the layout). On phones the cards go two by two when there's height to
+   spare, and four in a row when there isn't, which is the same card size in
+   half the height */
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  /* The element type outranks the shared rules in cardgame.module.css */
+  div.board {
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* Tall enough for four cards in a row */
+  div.table {
+    min-height: 5.5rem;
+  }
+
+  /* Four in a row once the space is half as wide again as it is tall, as two
+     by two would make the cards smaller there */
+  @container (min-aspect-ratio: 3 / 2) {
+    .table .row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: min(100cqw, 100cqh * 20 / 7 + 3 * var(--mantine-spacing-sm));
+    }
+  }
+
+  /* The heading already says whose turn it is, so the prompt is left for
+     screen readers, which name the suit picker with it */
+  .prompt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Big enough to tap */
+  .board :global(.mantine-Button-root) {
+    --button-height: 2.75rem;
+    --button-padding-x: var(--mantine-spacing-sm);
+  }
+
+  /* Short phones put them side by side, as stacked they'd push the page into
+     scrolling. Stacked, a game needs up to 696px of height with long names, on
+     the final turn after a safe round. Play again keeps a row to itself */
+  @media (max-height: 45em) {
+    /* The element type outranks .controls in cardgame.module.css, which
+       stacks them everywhere else */
+    div.controls {
+      flex-flow: row wrap;
+    }
+
+    .controls > * {
+      flex: 1;
+    }
+
+    .controls > .wide {
+      flex-basis: 100%;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, waitsForHydration, type Page } from "../playwright";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
@@ -134,7 +134,7 @@ test.describe("Uno durable scoring", () => {
         const bobContext = await browser.newContext({
           baseURL: test.info().project.use.baseURL,
         });
-        const bob = await bobContext.newPage();
+        const bob = waitsForHydration(await bobContext.newPage());
         await bob.goto("/admin/login?callbackUrl=/games/uno-tracker");
         const credentials = getSecondCredentials();
         await bob
@@ -202,7 +202,7 @@ test.describe("Uno durable scoring", () => {
             }),
         );
         await page.close();
-        const reopened = await context.newPage();
+        const reopened = waitsForHydration(await context.newPage());
         await reopened.goto("/games/uno-tracker");
         await expect(reopened.getByTestId("score-cam")).toHaveText("2", SYNC);
         expect((await local(reopened)).events.map((event) => event.id)).toEqual(
@@ -373,6 +373,30 @@ test.describe("Uno durable scoring", () => {
     expect(await layout()).toEqual(settled);
     expect(await pillHeight()).toBe(pill);
   });
+  test("a long sync status fits a small phone without scrolling", async ({
+    page,
+    context,
+  }) => {
+    test.slow();
+    await page.setViewportSize({ width: 320, height: 640 });
+    await signIn(page);
+    await start(page);
+    await idle(page);
+    // The longest status: offline with changes waiting to sync
+    await context.setOffline(true);
+    await page.getByRole("button", { name: "Add a round for Cam" }).click();
+    await expect(page.getByRole("status")).toContainText("not yet synced");
+    const overflow = await page.evaluate(() => ({
+      across: document.documentElement.scrollWidth - window.innerWidth,
+      down: document.documentElement.scrollHeight - window.innerHeight,
+    }));
+    expect(overflow).toEqual({ across: 0, down: 0 });
+    await expect(page.locator("button[aria-haspopup=dialog]")).toBeInViewport({
+      ratio: 1,
+    });
+    await context.setOffline(false);
+    await idle(page);
+  });
   test("queued rounds are preserved when the signed-in account changes", async ({
     page,
     context,
@@ -410,7 +434,7 @@ test.describe("Uno durable scoring", () => {
     const otherContext = await browser.newContext({
       baseURL: test.info().project.use.baseURL,
     });
-    const other = await otherContext.newPage();
+    const other = waitsForHydration(await otherContext.newPage());
     await other.goto("/admin/login?callbackUrl=/games/uno-tracker");
     const credentials = getSecondCredentials();
     await other
@@ -448,7 +472,7 @@ test.describe("Uno durable scoring", () => {
   }) => {
     test.slow();
     await signIn(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Start new game" }),
@@ -510,7 +534,7 @@ test.describe("Uno durable scoring", () => {
     await signIn(page);
     await start(page);
     await idle(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),
@@ -567,7 +591,7 @@ test.describe("Uno durable scoring", () => {
     await signIn(page);
     await start(page);
     await idle(page);
-    const other = await context.newPage();
+    const other = waitsForHydration(await context.newPage());
     await other.goto("/games/uno-tracker");
     await expect(
       other.getByRole("button", { name: "Add a round for Cam" }),

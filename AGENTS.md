@@ -19,7 +19,7 @@ Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) 
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
 
-Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves Firefox and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
+Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
@@ -34,6 +34,12 @@ CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel j
 ## Branch naming
 
 Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/2026-10`.
+
+## PR screenshots
+
+When a PR changes how a page looks, include before and after screenshots of each affected page at both desktop and mobile sizes in its description. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check both layouts even when the change is aimed at only one of them.
+
+Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
 ## Architecture
 
@@ -81,6 +87,8 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 [Mantine](https://mantine.dev/) with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
 
+Lay pages out with Mantine (`Stack`, `Group`, `SimpleGrid`, `Grid`). Use a CSS module only for shapes Mantine can't make, such as the square Snakes and Ladders board sized to the window. Write breakpoints as `@mixin larger-than $mantine-breakpoint-sm` or `@mixin smaller-than $mantine-breakpoint-sm`, not fixed widths, so they match Mantine's props. Games that fill exactly one screen wrap the page in `.screen` from `src/styles/cardgame.module.css` and let the game take the height left, using a size container like its `.table`, rather than subtracting fixed heights from `100dvh`.
+
 ### Tests
 
 `tests/README.md` explains the test set-up for people, including how to name tests: `test.describe` for who and where, a test name saying what they see or can do, and Given/When/Then `test.step`s for long journeys. Follow it in new tests, and update it when adding a stage or folder.
@@ -93,7 +101,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 
 They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
-Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
+Tests run against Mobile Chrome, Desktop Chrome and Mobile Safari (WebKit on an iPhone 14). Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
 
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 

@@ -25,7 +25,7 @@ export default defineConfig({
   /* Retry on all environments to reduce flakiness */
   retries: 3,
   /* More than 4 browsers alongside the app and the Firebase emulators starves
-     Firefox, which then times out at random. CI has fewer cores than that. */
+     them, and tests time out at random. CI has fewer cores than that. */
   workers: process.env.CI ? 2 : 4,
   /* Never serve the report at the end of a run: it waits for Ctrl+C, which
      keeps the emulators running and blocks the next run.
@@ -35,7 +35,7 @@ export default defineConfig({
     ["html", { open: "never" }],
     ["./tests/reporters/summary.ts"],
   ],
-  /* Give Firefox extra slack on assertions; default 5s races with App Router renders. */
+  /* Extra slack on assertions; the default 5s races with App Router renders. */
   expect: {
     timeout: 10_000,
   },
@@ -65,27 +65,14 @@ export default defineConfig({
         channel: "chrome",
       },
     },
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-      },
-      testIgnore: serviceWorker,
-    },
-    /* TODO: Fix these - seems to work on Laura's phone in real life but the tests are having none of it
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-      },
-    },
+    /* Every browser on an iPhone uses WebKit, Chrome included */
     {
       name: "Mobile Safari",
       use: {
         ...devices["iPhone 14"],
       },
+      testIgnore: serviceWorker,
     },
-  */
   ],
 
   // Run local server before starting the tests. Never reuse one already

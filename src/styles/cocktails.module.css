@@ -1,5 +1,14 @@
+/* Lets a card shrink below its content inside the grid */
+.cocktailCard {
+  min-width: 0;
+  display: flex;
+}
+
 /* Cocktail card container */
 .cocktailBox {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 5px;
   margin-bottom: 10px;
   border-radius: 8px;
@@ -34,12 +43,17 @@
 }
 
 .cocktailImage {
+  flex-shrink: 0;
+  max-width: 40%;
+  height: auto;
   border-radius: 4px;
 }
 
 /* Cocktail details */
 .cocktailDetails {
   display: flex; /* Flexbox layout */
+  flex: 1;
+  flex-wrap: wrap; /* Stack the columns when the card is narrow */
   gap: 20px; /* Spacing between columns (adjust as needed) */
   font-family: var(--font-family);
   font-size: 14px;
@@ -50,7 +64,8 @@
 
 /* Each column (ingredients and instructions) */
 .column {
-  flex: 1; /* Distribute available space equally between columns */
+  flex: 1 1 10rem; /* Share the space, wrapping below 10rem each */
+  min-width: 0;
 }
 
 /* Ingredients list */

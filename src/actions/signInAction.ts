@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   createSessionCookie,
@@ -23,6 +23,17 @@ function safeRedirect(redirectTo: unknown) {
   return isAdminPath && redirectTo !== "/admin/login" ? redirectTo : "/";
 }
 
+// The cookie is Secure everywhere but on this computer. Safari won't keep a
+// Secure cookie from http://localhost, which the tests and pnpm dev use.
+// next.config.ts can go by NODE_ENV and SERVED_OVER_HTTP at build time, but
+// the tests run a production build with next start, so this checks the host
+// the request came to. Only the person sending it gets the plainer cookie
+const localHosts = ["localhost", "127.0.0.1", "[::1]"];
+async function servedFromLocalhost() {
+  const host = (await headers()).get("host") ?? "";
+  return localHosts.includes(host.replace(/:\d+$/, ""));
+}
+
 // Server actions only accept same-origin POSTs, which is the CSRF protection
 // for creating a session. Returns an error message, or redirects on success.
 export async function signInAction(idToken: unknown, redirectTo?: unknown) {
@@ -33,7 +44,7 @@ export async function signInAction(idToken: unknown, redirectTo?: unknown) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, sessionCookie, {
     httpOnly: true,
-    secure: true,
+    secure: !(await servedFromLocalhost()),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_DURATION_MS / 1000,

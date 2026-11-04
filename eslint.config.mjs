@@ -22,6 +22,9 @@ const ignoresConfig = defineConfig([
       "playwright-report/",
       ".vercel/",
       "**/pnpm-*/dist/",
+      // Claude Code keeps worktrees here, each with its own copy of the code
+      // and build output
+      ".claude/",
     ],
   },
 ]);

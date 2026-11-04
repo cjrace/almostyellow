@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "../playwright";
 import { getCredentials } from "./helpers";
 
 // Every test running at the same time shares the one list, so this only

@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Header from "@/components/header";
-import { Container, Group, Title, Button } from "@mantine/core";
+import ButtonLink from "@/components/buttonlink";
+import { Container, Group, Title } from "@mantine/core";
 import FilmList from "@/components/filmlist";
 import { IconPlus } from "@tabler/icons-react";
 
@@ -29,14 +30,13 @@ export default function FilmsPage() {
         <Container size="lg">
           <Group justify="space-between">
             <Title mb="lg">Cam&apos;s film list</Title>
-            <Button
+            <ButtonLink
               leftSection={<IconPlus />}
               variant="default"
-              component="a"
               href="/admin/films/add"
             >
               Add new film
-            </Button>
+            </ButtonLink>
           </Group>
 
           <FilmList />

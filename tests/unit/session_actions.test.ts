@@ -5,13 +5,19 @@ import { NextRequest } from "next/server";
 // proxy. Firebase itself is mocked here; the real session checks run against
 // the emulator in tests/firebase/session.test.ts.
 
-const { createSessionCookie, verifySessionCookie, cookieStore, redirect } =
-  vi.hoisted(() => ({
-    createSessionCookie: vi.fn(),
-    verifySessionCookie: vi.fn(),
-    cookieStore: { set: vi.fn(), delete: vi.fn() },
-    redirect: vi.fn(),
-  }));
+const {
+  createSessionCookie,
+  verifySessionCookie,
+  cookieStore,
+  requestHeaders,
+  redirect,
+} = vi.hoisted(() => ({
+  createSessionCookie: vi.fn(),
+  verifySessionCookie: vi.fn(),
+  cookieStore: { set: vi.fn(), delete: vi.fn() },
+  requestHeaders: new Headers(),
+  redirect: vi.fn(),
+}));
 
 vi.mock("@/auth", () => ({
   SESSION_COOKIE: "__session",
@@ -19,7 +25,10 @@ vi.mock("@/auth", () => ({
   createSessionCookie,
   verifySessionCookie,
 }));
-vi.mock("next/headers", () => ({ cookies: () => cookieStore }));
+vi.mock("next/headers", () => ({
+  cookies: () => cookieStore,
+  headers: () => requestHeaders,
+}));
 vi.mock("next/navigation", () => ({ redirect }));
 
 import { signInAction } from "@/actions/signInAction";
@@ -28,6 +37,7 @@ import { proxy } from "@/proxy";
 
 beforeEach(() => {
   vi.clearAllMocks();
+  requestHeaders.set("host", "www.almostyellow.co.uk");
 });
 
 describe("signInAction", () => {
@@ -44,6 +54,38 @@ describe("signInAction", () => {
       path: "/",
       maxAge: 5 * 24 * 60 * 60,
     });
+  });
+
+  it.each([
+    ["localhost:3000", false],
+    ["127.0.0.1:3000", false],
+    ["[::1]:3000", false],
+    ["localhost.example.com", true],
+    ["almostyellow.vercel.app", true],
+  ])("on %s, sets secure to %s", async (host, secure) => {
+    createSessionCookie.mockResolvedValue("session-value");
+    requestHeaders.set("host", host);
+
+    await signInAction("id-token");
+
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      "__session",
+      "session-value",
+      expect.objectContaining({ secure }),
+    );
+  });
+
+  it("sets a secure cookie when the request has no host", async () => {
+    createSessionCookie.mockResolvedValue("session-value");
+    requestHeaders.delete("host");
+
+    await signInAction("id-token");
+
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      "__session",
+      "session-value",
+      expect.objectContaining({ secure: true }),
+    );
   });
 
   it("sets no cookie when Firebase refuses the token", async () => {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { SuitNames, RankNames, getCardName } from "@/components/carddeck";
 
 test.describe("A player of Irish Bingo", () => {
@@ -54,15 +54,22 @@ test.describe("A player of Irish Bingo", () => {
       expect(drawnCards.sort()).toEqual(allCardNames.sort());
     });
 
-    await test.step("Then the deck is exhausted", async () => {
+    await test.step("Then the deck is exhausted, and focus moves on to Shuffle", async () => {
       await expect(page.getByLabel("Deck Exhausted")).toContainText(
         "Deck Exhausted",
       );
+      await expect(
+        page.getByRole("button", { name: "Shuffle new deck" }),
+      ).toBeFocused();
     });
 
     await test.step("When they shuffle a new deck, the count resets and they can draw again", async () => {
       await page.getByRole("button", { name: "Shuffle new deck" }).click();
       await expect(page.locator("#card_count")).toContainText("0 / 52 cards");
+      // Shuffle disables itself, so focus moves back to the returning Draw button
+      await expect(
+        page.getByRole("button", { name: "Draw a Card" }),
+      ).toBeFocused();
 
       // Can draw after reshuffle
       await page.getByRole("button", { name: "Draw a Card" }).click();

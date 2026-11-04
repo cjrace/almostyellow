@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { getCredentials } from "./helpers";
 
 test("Redirected back to the originally requested admin page after login", async ({

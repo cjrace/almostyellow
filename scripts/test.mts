@@ -118,7 +118,7 @@ console.log("Starting the Firebase emulators...");
 run("pnpm test:firebase");
 
 heading(
-  `End-to-end tests with Playwright (${build ? "build, then " : ""}Chrome and Firefox)`,
+  `End-to-end tests with Playwright (${build ? "build, then " : ""}Chrome and Safari)`,
 );
 run(`node scripts/e2e.mts${build ? "" : " --no-build"}`);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { Alert, Button, List, Modal, Text } from "@mantine/core";
 import {
   Card,
@@ -24,13 +24,14 @@ export default function RedOrBlack() {
   const latestCard = drawnCards.at(-1) ?? null;
   const cardsRemaining = deck?.length ?? 52;
 
-  // Each button disables itself at one end of the deck, so focus moves to the
-  // other one rather than being lost
+  // At one end of the deck each button goes, or disables itself, so focus
+  // moves to the other one rather than being lost. The ref is read after the
+  // render, as Draw isn't on the page while the deck is empty
   const drawButtonRef = useRef<HTMLButtonElement>(null);
   const shuffleButtonRef = useRef<HTMLButtonElement>(null);
-  const focusNextRef = useRef<HTMLButtonElement | null>(null);
+  const focusNextRef = useRef<RefObject<HTMLButtonElement | null> | null>(null);
   useEffect(() => {
-    focusNextRef.current?.focus();
+    focusNextRef.current?.current?.focus();
     focusNextRef.current = null;
   }, [deck]);
 
@@ -39,13 +40,13 @@ export default function RedOrBlack() {
     if (currentDeck.length === 0) return;
 
     const { drawn, remaining } = drawCards(currentDeck, 1);
-    if (remaining.length === 0) focusNextRef.current = shuffleButtonRef.current;
+    if (remaining.length === 0) focusNextRef.current = shuffleButtonRef;
     setDrawnCards([...drawnCards, ...drawn]);
     setDeck(remaining);
   };
 
   const newDeck = () => {
-    focusNextRef.current = drawButtonRef.current;
+    focusNextRef.current = drawButtonRef;
     setDeck(null);
     setDrawnCards([]);
   };
@@ -94,18 +95,18 @@ export default function RedOrBlack() {
               {`${cardsRemaining.toString()} cards remaining`}
             </span>
           </Text>
-          <Button
-            ref={drawButtonRef}
-            disabled={cardsRemaining === 0}
-            onClick={drawCard}
-            fullWidth
-          >
-            Draw a card
-          </Button>
-          {cardsRemaining === 0 && (
-            <Alert title="Deck Exhausted" color="red">
-              You have drawn a full deck, please reshuffle.
-            </Alert>
+          {/* The alert takes the Draw button's place, so the card keeps its
+              size on small phones */}
+          {cardsRemaining === 0 ? (
+            <Alert
+              title="Deck Exhausted: please reshuffle"
+              color="red"
+              py="xs"
+            />
+          ) : (
+            <Button ref={drawButtonRef} onClick={drawCard} fullWidth>
+              Draw a card
+            </Button>
           )}
           <Button
             variant="default"

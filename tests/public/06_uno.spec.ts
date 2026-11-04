@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 
 for (const { path, tab } of [
   { path: "/games/uno-tracker", tab: "Tracker" },
