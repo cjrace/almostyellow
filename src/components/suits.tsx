@@ -363,7 +363,7 @@ export default function Suits() {
 
           {/* Stacked, except on short phones, where Reveal and Change players
               share a row so the cards keep their space */}
-          <div className={suits.controls}>
+          <div className={`${layout.controls} ${suits.controls}`}>
             {state.phase === "guessing" && (
               <>
                 <Button
@@ -381,20 +381,18 @@ export default function Suits() {
             )}
 
             {state.phase === "complete" && (
-              <>
-                <Button
-                  className={suits.wide}
-                  ref={playAgainButtonRef}
-                  onClick={() => {
-                    act(
-                      { type: "replay", deck: newDeck() },
-                      focusOn(turnHeadingRef),
-                    );
-                  }}
-                >
-                  Play again with same players
-                </Button>
-              </>
+              <Button
+                className={suits.wide}
+                ref={playAgainButtonRef}
+                onClick={() => {
+                  act(
+                    { type: "replay", deck: newDeck() },
+                    focusOn(turnHeadingRef),
+                  );
+                }}
+              >
+                Play again with same players
+              </Button>
             )}
 
             <Button
