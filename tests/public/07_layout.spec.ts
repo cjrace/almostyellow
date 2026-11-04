@@ -6,6 +6,77 @@ const phone = { width: 390, height: 844 };
 const smallPhone = { width: 320, height: 640 };
 const desktop = { width: 1280, height: 800 };
 
+for (const viewport of [
+  { width: 1280, height: 720 },
+  { width: 1366, height: 650 },
+  { width: 1920, height: 900 },
+]) {
+  test.describe(`A visitor with a ${viewport.width.toString()} by ${viewport.height.toString()} desktop window`, () => {
+    test.use({ viewport });
+
+    test("sees all six games and their Play buttons without scrolling", async ({
+      page,
+    }) => {
+      await page.goto("/games");
+      const play = page.getByRole("link", { name: /^Play / });
+      await expect(play).toHaveCount(6);
+      for (const button of await play.all()) {
+        await expect(button).toBeInViewport({ ratio: 1 });
+      }
+      expect(await pageScrolls(page)).toBe(false);
+    });
+
+    test("sees the Irish Bingo mascot and controls together in the centre", async ({
+      page,
+    }) => {
+      await page.goto("/games/irishbingo");
+      const mascot = await page.locator('img[alt="Mr. Tayto"]').boundingBox();
+      const card = await page.locator("#calling_card img").boundingBox();
+      const draw = await page
+        .getByRole("button", { name: "Draw a card" })
+        .boundingBox();
+      if (!mascot || !card || !draw)
+        throw new Error("The mascot, card or controls are missing");
+
+      // The visible game forms one centred group, rather than sitting at
+      // opposite sides of a wide screen with an empty column between them.
+      const left = Math.min(mascot.x, draw.x);
+      const right = Math.max(mascot.x + mascot.width, draw.x + draw.width);
+      expect(Math.abs((left + right) / 2 - viewport.width / 2)).toBeLessThan(
+        40,
+      );
+      expect(card.x - (mascot.x + mascot.width)).toBeLessThan(160);
+      expect(right - left).toBeLessThan(900);
+      await expect(
+        page.getByRole("button", { name: "Shuffle new deck" }),
+      ).toBeInViewport({ ratio: 1 });
+      expect(await pageScrolls(page)).toBe(false);
+    });
+  });
+}
+
+test.describe("A visitor with a short desktop window", () => {
+  test.use({ viewport: { width: 1280, height: 480 } });
+
+  test("can scroll to every game without its text or Play button being cut off", async ({
+    page,
+  }) => {
+    await page.goto("/games");
+    expect(await pageScrolls(page)).toBe(true);
+    const play = page.getByRole("link", { name: /^Play / });
+    await expect(play).toHaveCount(6);
+    for (const button of await play.all()) {
+      await button.scrollIntoViewIfNeeded();
+      await expect(button).toBeInViewport({ ratio: 1 });
+    }
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth,
+      ),
+    ).toBe(false);
+  });
+});
+
 // Whether the page is taller than the window
 function pageScrolls(page: Page) {
   return page.evaluate(
@@ -98,6 +169,7 @@ test.describe("A visitor on a small phone", () => {
 for (const [where, viewport] of [
   ["a small phone", smallPhone],
   ["a phone", phone],
+  ["a laptop", { width: 1366, height: 650 }],
 ] as const) {
   test.describe(`A visitor on ${where}`, () => {
     test.use({ viewport });

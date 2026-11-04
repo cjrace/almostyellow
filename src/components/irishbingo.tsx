@@ -247,7 +247,8 @@ export default function IrishBingo() {
             fit="contain"
             h="auto"
             w="auto"
-            style={{ maxWidth: "100%", maxHeight: "100%" }}
+            maw="min(100%, 20rem)"
+            mah="24rem"
           />
         </Box>
 
