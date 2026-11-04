@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { SuitNames, RankNames, getCardName } from "@/components/carddeck";
 
 test.describe("A player of Irish Bingo", () => {

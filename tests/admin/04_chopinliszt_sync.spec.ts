@@ -1,5 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { test as base, expect, type Page } from "@playwright/test";
+import {
+  test as base,
+  expect,
+  type Page,
+  waitsForHydration,
+} from "../playwright";
 import { getCredentials, getSecondCredentials } from "./helpers";
 import { users } from "../firebase/fixtures";
 
@@ -29,7 +34,7 @@ const test = base.extend<{ bobPage: Page }>({
     const context = await browser.newContext({
       baseURL: "http://localhost:3000/",
     });
-    await use(await context.newPage());
+    await use(waitsForHydration(await context.newPage()));
     await context.close();
   },
 });

@@ -1,4 +1,4 @@
-import { test, expect, request, type Page } from "@playwright/test";
+import { test, expect, request, type Page } from "../playwright";
 import { getCredentials } from "./helpers";
 
 // Server actions are plain POSTs, so anyone can send one without going through

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { getCredentials } from "./helpers";
 
 test("Can sign in and navigate admin", async ({ page }) => {

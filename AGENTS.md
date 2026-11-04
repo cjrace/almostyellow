@@ -19,7 +19,7 @@ Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) 
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
 
-Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves Firefox and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
+Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
@@ -101,7 +101,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 
 They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
-Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
+Tests run against Mobile Chrome, Desktop Chrome and Mobile Safari (WebKit on an iPhone 14). Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is only sent on Vercel (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
 
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 

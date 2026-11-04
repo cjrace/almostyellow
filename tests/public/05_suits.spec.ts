@@ -1,4 +1,4 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page } from "../playwright";
 import { SuitNames } from "@/components/carddeck";
 
 async function startGame(page: Page, names: string[]) {

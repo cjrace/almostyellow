@@ -10,7 +10,7 @@
 | 2. Linting          | Mistakes that can be spotted without running anything, such as a promise nobody waits for, a hook used wrongly or an image without a text alternative. Warnings fail too. | Every file                               | `pnpm lint`                                          |
 | 3. Unit tests       | Logic working on its own: the card deck, Uno scoring, sign-in checks, and that every protected server action asks for a session.                                          | `unit/`                                  | `pnpm test:unit`                                     |
 | 4. Firebase tests   | Who can read and change which data (the Security Rules), and that the server actions save exactly what they should.                                                       | `firebase/`                              | `pnpm test:firebase` (rules only: `pnpm test:rules`) |
-| 5. End-to-end tests | The site as people use it, clicking through real browsers: Chrome on a phone, Chrome on a desktop, and Firefox.                                                           | `public/`, `public-firestore/`, `admin/` | `pnpm test:e2e`                                      |
+| 5. End-to-end tests | The site as people use it, clicking through real browsers: Chrome on a phone, Chrome on a desktop, and Safari on an iPhone.                                               | `public/`, `public-firestore/`, `admin/` | `pnpm test:e2e`                                      |
 
 `pnpm test-only` runs the same checks without reformatting files or rebuilding the app, which is quicker when nothing outside the tests has changed.
 
@@ -43,6 +43,7 @@ To see screenshots, traces and each step of an end-to-end test, open the report 
 | `reporters/`        | The summary printed at the end of the end-to-end stage.                                                                     |
 | `global-setup.ts`   | Loads the made-up users and records into the emulators before the end-to-end tests start.                                   |
 | `test-env.ts`       | Points every test at the emulators.                                                                                         |
+| `playwright.ts`     | Playwright for the end-to-end tests, with pages that wait for the site to be ready before a test types into them.           |
 
 ## Keeping real data safe
 
@@ -65,6 +66,7 @@ Write tests so that someone who has never seen the code can tell what a person c
   ```
 
 - **Use comments for why**, not for what the next line does.
+- **Import `test` and `expect` from `../playwright`**, not `@playwright/test`. Its pages wait after `goto` and `reload` until React has taken over the page. Safari is slower to get there, and anything typed before then is wiped. A page you open yourself with `newPage()` needs `waitsForHydration(page)`, and a link to another page should be a Next.js `Link`, so it opens without a full page load.
 - **If a test can only run in some browsers**, leave it out of the others with `testIgnore` in `playwright.config.ts` rather than skipping it, so the summary only lists real skips.
 
 Unit and Firebase tests describe the code rather than a person (`describe("signInAction")`), but their names still say what should happen, such as `"rejects an expired session"`.

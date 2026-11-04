@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import fs from "fs";
 import { films } from "../firebase/fixtures";
 
@@ -37,22 +37,29 @@ test.describe("A visitor to the film list", () => {
     );
   });
 
-  test("can copy the film names", async ({ page, context }) => {
-    // Grant clipboard permissions to browser context when not in firefox
-    // firefox works without permissions, and doesn't recognise it when granted
-    const browser = context.browser();
-    if (browser && browser.browserType().name() !== "firefox") {
-      await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-    }
+  test("can copy the film names", async ({ page }) => {
+    // Keeps what the page copies, as reading the real clipboard needs a
+    // permission Safari doesn't have
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        value: {
+          writeText: (text: string) => {
+            document.documentElement.dataset.copied = text;
+            return Promise.resolve();
+          },
+        },
+      });
+    });
 
     await page.goto("/films");
     await page
       .getByRole("button", { name: "Copy film names to clipboard" })
       .click();
 
-    const clipboardText = await page.evaluate(() =>
-      navigator.clipboard.readText(),
-    );
+    await expect(page.locator("html[data-copied]")).toBeAttached();
+    const clipboardText = await page
+      .locator("html")
+      .getAttribute("data-copied");
     expect(clipboardText).toContain("Final Destination (2000)");
     expect(clipboardText).toContain("Seven Samurai (1954)");
   });

@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import skip from "@/styles/skip.module.css";
+import Hydrated from "@/components/hydrated";
 
 export const metadata: Metadata = {
   title: {
@@ -65,6 +66,7 @@ export default function RootLayout({
           </div>
           <Analytics />
           <SpeedInsights />
+          <Hydrated />
         </MantineProvider>
       </body>
     </html>

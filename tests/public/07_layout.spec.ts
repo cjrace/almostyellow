@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "../playwright";
 
 /* The layout tests set their own window size, so they check the same thing in
    every browser project. */

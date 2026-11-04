@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 
 test('The homepage shows the "Almost Yellow" title', async ({ page }) => {
   await page.goto("/");
