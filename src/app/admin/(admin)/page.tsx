@@ -1,6 +1,7 @@
-import { Button, Title, Group, Space } from "@mantine/core";
+import { Title, Group, Space } from "@mantine/core";
 import { Metadata } from "next";
 import Header from "@/components/header";
+import ButtonLink from "@/components/buttonlink";
 import { SignOutButton } from "@/components/SignOutButton";
 import {
   IconShoppingCart,
@@ -29,45 +30,41 @@ export default function Admin() {
         <Space h="xl" />
 
         <Group justify="center" gap="xl">
-          <Button
+          <ButtonLink
             leftSection={<IconShoppingCart />}
             variant="default"
-            component="a"
             size="xl"
             href="/admin/chopinliszt"
           >
             Chopin Liszt
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconBeach />}
             variant="default"
-            component="a"
             size="xl"
             href="/admin/holidays"
           >
             Our holidays!
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconGlass />}
             variant="default"
-            component="a"
             size="xl"
             href="/admin/whiskyjournal/add"
           >
             Add new whisky
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconMovie />}
             variant="default"
-            component="a"
             size="xl"
             href="/admin/films/add"
           >
             Add new film
-          </Button>
+          </ButtonLink>
         </Group>
 
         <Space h="lg" />

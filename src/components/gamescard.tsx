@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Card, Text, Image, Button, Center } from "@mantine/core";
 
 interface GamesCardProps {
@@ -48,7 +49,7 @@ export default function GamesCard({
       </div>
       <Button
         variant="default"
-        component="a"
+        component={Link}
         size="md"
         mt="md"
         href={link}

@@ -1,5 +1,6 @@
 import Header from "@/components/header";
-import { Button, Container, Title, Text, Stack } from "@mantine/core";
+import ButtonLink from "@/components/buttonlink";
+import { Container, Title, Text, Stack } from "@mantine/core";
 
 export default function FilmNotFound() {
   return (
@@ -13,9 +14,7 @@ export default function FilmNotFound() {
             <Text ta="center">
               We couldn&apos;t find the film you were looking for.
             </Text>
-            <Button href="/film" component="a">
-              Return to films list
-            </Button>
+            <ButtonLink href="/films">Return to films list</ButtonLink>
           </Stack>
         </Container>
       </main>

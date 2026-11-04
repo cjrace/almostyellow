@@ -1,5 +1,6 @@
 import Header from "@/components/header";
-import { Button, Container, Title, Text, Stack } from "@mantine/core";
+import ButtonLink from "@/components/buttonlink";
+import { Container, Title, Text, Stack } from "@mantine/core";
 
 export default function NotFound() {
   return (
@@ -13,9 +14,7 @@ export default function NotFound() {
             <Text ta="center">
               We couldn&apos;t find the page you were looking for.
             </Text>
-            <Button href="/" component="a">
-              Return home
-            </Button>
+            <ButtonLink href="/">Return home</ButtonLink>
           </Stack>
         </Container>
       </main>
