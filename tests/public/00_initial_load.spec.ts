@@ -7,3 +7,46 @@ test('The homepage shows the "Almost Yellow" title', async ({ page }) => {
   // Check the overall website title exists
   await expect(page).toHaveTitle("Almost Yellow");
 });
+
+test.describe("A visitor on the homepage", () => {
+  for (const width of [320, 1280]) {
+    test(`sees centred, unclipped button labels at ${width.toString()}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/");
+      const buttons = page.locator("main .mantine-Button-root");
+      await expect(buttons).toHaveCount(6);
+      for (const button of await buttons.all()) {
+        const bounds = await button.evaluate((element) => {
+          const button = element.getBoundingClientRect();
+          const label = element.querySelector(".mantine-Button-label");
+          if (!label) throw new Error("The button label is missing.");
+          const text = label.getBoundingClientRect();
+          const style = getComputedStyle(label);
+          return {
+            centreOffset: Math.abs(
+              (text.top + text.bottom - button.top - button.bottom) / 2,
+            ),
+            fits:
+              text.left >= button.left &&
+              text.right <= button.right &&
+              text.top >= button.top &&
+              text.bottom <= button.bottom,
+            lineHeight:
+              Number.parseFloat(style.lineHeight) /
+              Number.parseFloat(style.fontSize),
+          };
+        });
+        expect(bounds.centreOffset).toBeLessThan(2);
+        expect(bounds.fits).toBe(true);
+        expect(bounds.lineHeight).toBeGreaterThanOrEqual(1.3);
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    });
+  }
+});
