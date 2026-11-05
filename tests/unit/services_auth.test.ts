@@ -24,6 +24,7 @@ const { requireAuth, createCustomToken, collection } = vi.hoisted(() => {
 });
 
 vi.mock("@/auth", () => ({ requireAuth }));
+vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/firebase/admin", () => ({
   adminAuth: () => ({ createCustomToken }),
@@ -35,6 +36,7 @@ function databaseUsed() {
 }
 
 import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
+import { createBuzzer, controlBuzzer } from "@/actions/buzzer";
 import * as uno from "@/services/uno";
 import * as filmlist from "@/services/filmlist";
 import * as whiskyjournal from "@/services/whiskyjournal";
@@ -139,6 +141,8 @@ describe("firestoreTokenAction", () => {
 // every mutation refuses an unauthorised call before validating input or using it.
 describe("Uno authentication", () => {
   it.each([
+    ["createBuzzer", () => createBuzzer(fakeId)],
+    ["controlBuzzer", () => controlBuzzer("open", {})],
     ["startUnoGame", () => uno.startUnoGame()],
     ["openUnoScoring", () => uno.openUnoScoring(fakeId)],
     ["syncUnoEvents", () => uno.syncUnoEvents([])],

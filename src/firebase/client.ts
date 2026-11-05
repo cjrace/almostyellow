@@ -23,7 +23,7 @@ export interface FirebaseClientConfig {
 }
 
 function clientApp(config: FirebaseClientConfig) {
-  const apps = getApps();
+  const apps = getApps().filter((app) => app.name === "[DEFAULT]");
   if (apps.length > 0) return { app: apps[0], isNew: false };
   const app = initializeApp({
     apiKey: config.apiKey,
