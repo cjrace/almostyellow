@@ -171,8 +171,7 @@
   gap: 0.25rem;
   overflow-wrap: anywhere;
 }
-.entryHead,
-.entryFoot {
+.entryHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
