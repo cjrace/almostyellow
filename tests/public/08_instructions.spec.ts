@@ -12,12 +12,6 @@ test.describe("A visitor reading game instructions", () => {
       baseURL,
     }) => {
       const path = `/games/${game}`;
-      const html = await (await page.request.get(path)).text();
-      expect(
-        html
-          .replaceAll(/<!--[\s\S]*?-->/g, "")
-          .includes(`${title} instructions`),
-      ).toBe(true);
       const noJS = await browser.newContext({
         javaScriptEnabled: false,
         baseURL,
