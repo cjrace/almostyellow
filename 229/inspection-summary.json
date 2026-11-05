@@ -1,0 +1,2226 @@
+[
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 1280,
+      "innerWidth": 1280,
+      "innerHeight": 800,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "innerWidth": 320,
+      "innerHeight": 700,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/login",
+    "measure": {
+      "overflow": false
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/cocktails",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/decisionmaker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/films",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/boomboompirate",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/irishbingo",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/redorblack",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/snakesandladders",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/suits",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/uno-tracker",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/uno-tracker/history",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/games/uno-tracker/stats",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/whiskyjournal",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/films/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/films/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/holidays",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/[id]/edit",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/whiskyjournal/add",
+    "measure": {
+      "overflow": false,
+      "scrollWidth": 632,
+      "innerWidth": 632,
+      "innerHeight": 352,
+      "unnamed": [],
+      "clipped": []
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "dark",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "desktop-chrome",
+    "scheme": "light",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "dark",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "mobile-chrome",
+    "scheme": "light",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "dark",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "mobile-safari",
+    "scheme": "light",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "dark",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  },
+  {
+    "device": "desktop-zoom",
+    "scheme": "light",
+    "path": "/admin/chopinliszt",
+    "measure": {
+      "overflow": false,
+      "clipped": [],
+      "loaded": 2
+    }
+  }
+]

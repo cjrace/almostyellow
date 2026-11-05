@@ -1,0 +1,128 @@
+[
+  {
+    "path": "/",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/cocktails",
+    "scores": {
+      "performance": 0.95,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/decisionmaker",
+    "scores": {
+      "performance": 0.99,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/films",
+    "scores": {
+      "performance": 0.94,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games",
+    "scores": {
+      "performance": 0.94,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/boomboompirate",
+    "scores": {
+      "performance": 0.98,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/irishbingo",
+    "scores": {
+      "performance": 0.9,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/redorblack",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/snakesandladders",
+    "scores": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/suits",
+    "scores": {
+      "performance": 0.94,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/uno-tracker",
+    "scores": {
+      "performance": 0.89,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/uno-tracker/history",
+    "scores": {
+      "performance": 0.87,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/games/uno-tracker/stats",
+    "scores": {
+      "performance": 0.94,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  },
+  {
+    "path": "/whiskyjournal",
+    "scores": {
+      "performance": 0.95,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 1
+    }
+  }
+]

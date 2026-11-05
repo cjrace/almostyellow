@@ -1,0 +1,158 @@
+$ node scripts/test.mts
+
+=== [1/6] Formatting with Prettier ===
+Formatting every file...
+Prettier: 207 files checked, 0 reformatted
+
+=== [2/6] Linting with ESLint ===
+Checking every file...
+ESLint: 160 files checked, 0 errors, 0 warnings
+
+=== [3/6] Unit tests with Vitest ===
+
+ RUN  v5.0.5 C:/code_projects/almostyellow/.claude/worktrees/pr-229-completion
+
+·······································································································································································································
+
+ Test Files  10 passed (10)
+      Tests  199 passed (199)
+   Start at  07:47:21
+   Duration  1.94s (import 56%, tests 36%, transform 6%, worker 3%)
+
+
+=== [4/6] Firebase emulator tests with Vitest (Security Rules, server actions) ===
+Starting the Firebase emulators...
+$ firebase emulators:exec --log-verbosity QUIET --project demo-almostyellow-ci --only auth,firestore "pnpm test:firebase:run"
+i  Running script: pnpm test:firebase:run
+$ vitest run -c vitest.firebase.config.mts
+
+ RUN  v5.0.5 C:/code_projects/almostyellow/.claude/worktrees/pr-229-completion
+
+····················································································································································································
+
+ Test Files  7 passed (7)
+      Tests  180 passed (180)
+   Start at  07:47:38
+   Duration  23.89s (tests 90%, import 9%, transform 1%)
+
++  Script exited successfully (code 0)
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+
+=== [5/6] End-to-end tests with Playwright (build, then Chrome and Safari) ===
+Building the app...
+Build OK (17s)
+i  Running script: pnpm exec playwright test
+[WebServer] (node:20340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:25920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 587 tests using 4 workers
+(node:31616) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37596) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+················································································
+················································································
+(node:16776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+················································································
+················································································
+················································································
+(node:46132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+················································································
+················································································
+···························
+  587 passed (8.0m)
+
+Playwright: 587 passed, 0 failed, 0 skipped, 0 flaky (482s)
++  Script exited successfully (code 0)
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+
+=== [6/6] Accessibility and SEO checks with Lighthouse ===
+i  Running script: pnpm exec playwright test --config playwright.lighthouse.config.ts
+[WebServer] (node:17180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:33952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✅  .lighthouseci/ directory writable
+✅  Configuration file found
+✅  Chrome installation found
+⚠️   GitHub token not set
+Healthcheck passed!
+
+(node:12612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Running Lighthouse 1 time(s) on http://localhost:3000/
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/cocktails
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/decisionmaker
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/films
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/boomboompirate
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/irishbingo
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/redorblack
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/snakesandladders
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/suits
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/uno-tracker
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/uno-tracker/history
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/games/uno-tracker/stats
+Run #1...done.
+Running Lighthouse 1 time(s) on http://localhost:3000/whiskyjournal
+Run #1...done.
+Done running Lighthouse!
+
+Checking assertions against 14 URL(s), 14 total run(s)
+
+All results processed!
+(node:15320) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Dumping 14 reports to disk at C:\code_projects\almostyellow\.claude\worktrees\pr-229-completion\.lighthouseci...
+(node:13688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Done writing reports to disk.
+
+Done running autorun.
+(node:2144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 tests\lighthouse\lighthouse.spec.ts:8:5 › Every public page passes Lighthouse (3.4m)
+
+  1 passed (3.5m)
++  Script exited successfully (code 0)
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+
+=== [Overall] All checks passed in 13m 19s ===

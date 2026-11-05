@@ -1,0 +1,1706 @@
+[
+  {
+    "run": 1,
+    "path": "/games",
+    "phase": "before",
+    "lcp": 1052,
+    "images": [
+      {
+        "url": "/images/almo-border.png",
+        "bytes": 549852
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "path": "/games",
+    "phase": "after",
+    "lcp": 820,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "bytes": 5702
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      },
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "path": "/games/irishbingo",
+    "phase": "before",
+    "lcp": 1088,
+    "images": [
+      {
+        "url": "/images/tayto.png",
+        "bytes": 108712
+      },
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/tayto.png",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "path": "/games/irishbingo",
+    "phase": "after",
+    "lcp": 804,
+    "images": [
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "bytes": 3562
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "lazy"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "path": "/cocktails",
+    "phase": "before",
+    "lcp": 1388,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "path": "/cocktails",
+    "phase": "after",
+    "lcp": 944,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "eager"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/games",
+    "phase": "before",
+    "lcp": 964,
+    "images": [
+      {
+        "url": "/images/almo-border.png",
+        "bytes": 549852
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/games",
+    "phase": "after",
+    "lcp": 800,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "bytes": 5702
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      },
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/games/irishbingo",
+    "phase": "before",
+    "lcp": 1020,
+    "images": [
+      {
+        "url": "/images/tayto.png",
+        "bytes": 108712
+      },
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/tayto.png",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/games/irishbingo",
+    "phase": "after",
+    "lcp": 820,
+    "images": [
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "bytes": 3562
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "lazy"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/cocktails",
+    "phase": "before",
+    "lcp": 1684,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "path": "/cocktails",
+    "phase": "after",
+    "lcp": 872,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "eager"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/games",
+    "phase": "before",
+    "lcp": 972,
+    "images": [
+      {
+        "url": "/images/almo-border.png",
+        "bytes": 549852
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/almo-border.png",
+        "width": 108,
+        "height": 144,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/games",
+    "phase": "after",
+    "lcp": 768,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "bytes": 5702
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      },
+      {
+        "src": "/_next/image?url=%2Fimages%2Falmo-border.png&w=128&q=75",
+        "width": 108,
+        "height": 144,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/games/irishbingo",
+    "phase": "before",
+    "lcp": 1000,
+    "images": [
+      {
+        "url": "/images/tayto.png",
+        "bytes": 108712
+      },
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/images/tayto.png",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "auto"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/games/irishbingo",
+    "phase": "after",
+    "lcp": 824,
+    "images": [
+      {
+        "url": "/images/cards/back.svg",
+        "bytes": 14220
+      },
+      {
+        "url": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "bytes": 3562
+      },
+      {
+        "url": "/images/cards/ace-hearts.svg",
+        "bytes": 1020
+      },
+      {
+        "url": "/images/cards/king-hearts.svg",
+        "bytes": 513
+      },
+      {
+        "url": "/images/cards/queen-hearts.svg",
+        "bytes": 553
+      },
+      {
+        "url": "/images/cards/jack-hearts.svg",
+        "bytes": 484
+      },
+      {
+        "url": "/images/cards/ten-hearts.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/eight-hearts.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-hearts.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-hearts.svg",
+        "bytes": 453
+      },
+      {
+        "url": "/images/cards/five-hearts.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-hearts.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-hearts.svg",
+        "bytes": 442
+      },
+      {
+        "url": "/images/cards/two-hearts.svg",
+        "bytes": 435
+      },
+      {
+        "url": "/images/cards/ace-diamonds.svg",
+        "bytes": 767
+      },
+      {
+        "url": "/images/cards/king-diamonds.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/queen-diamonds.svg",
+        "bytes": 507
+      },
+      {
+        "url": "/images/cards/jack-diamonds.svg",
+        "bytes": 941
+      },
+      {
+        "url": "/images/cards/ten-diamonds.svg",
+        "bytes": 429
+      },
+      {
+        "url": "/images/cards/nine-diamonds.svg",
+        "bytes": 423
+      },
+      {
+        "url": "/images/cards/eight-diamonds.svg",
+        "bytes": 422
+      },
+      {
+        "url": "/images/cards/seven-diamonds.svg",
+        "bytes": 418
+      },
+      {
+        "url": "/images/cards/six-diamonds.svg",
+        "bytes": 410
+      },
+      {
+        "url": "/images/cards/five-diamonds.svg",
+        "bytes": 407
+      },
+      {
+        "url": "/images/cards/four-diamonds.svg",
+        "bytes": 400
+      },
+      {
+        "url": "/images/cards/three-diamonds.svg",
+        "bytes": 968
+      },
+      {
+        "url": "/images/cards/two-diamonds.svg",
+        "bytes": 876
+      },
+      {
+        "url": "/images/cards/ace-clubs.svg",
+        "bytes": 419
+      },
+      {
+        "url": "/images/cards/king-clubs.svg",
+        "bytes": 506
+      },
+      {
+        "url": "/images/cards/queen-clubs.svg",
+        "bytes": 548
+      },
+      {
+        "url": "/images/cards/jack-clubs.svg",
+        "bytes": 486
+      },
+      {
+        "url": "/images/cards/ten-clubs.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/nine-clubs.svg",
+        "bytes": 469
+      },
+      {
+        "url": "/images/cards/eight-clubs.svg",
+        "bytes": 466
+      },
+      {
+        "url": "/images/cards/seven-clubs.svg",
+        "bytes": 461
+      },
+      {
+        "url": "/images/cards/six-clubs.svg",
+        "bytes": 454
+      },
+      {
+        "url": "/images/cards/five-clubs.svg",
+        "bytes": 450
+      },
+      {
+        "url": "/images/cards/four-clubs.svg",
+        "bytes": 444
+      },
+      {
+        "url": "/images/cards/three-clubs.svg",
+        "bytes": 441
+      },
+      {
+        "url": "/images/cards/two-clubs.svg",
+        "bytes": 434
+      },
+      {
+        "url": "/images/cards/ace-spades.svg",
+        "bytes": 820
+      },
+      {
+        "url": "/images/cards/king-spades.svg",
+        "bytes": 540
+      },
+      {
+        "url": "/images/cards/queen-spades.svg",
+        "bytes": 578
+      },
+      {
+        "url": "/images/cards/jack-spades.svg",
+        "bytes": 512
+      },
+      {
+        "url": "/images/cards/ten-spades.svg",
+        "bytes": 500
+      },
+      {
+        "url": "/images/cards/nine-spades.svg",
+        "bytes": 496
+      },
+      {
+        "url": "/images/cards/eight-spades.svg",
+        "bytes": 495
+      },
+      {
+        "url": "/images/cards/seven-spades.svg",
+        "bytes": 488
+      },
+      {
+        "url": "/images/cards/six-spades.svg",
+        "bytes": 481
+      },
+      {
+        "url": "/images/cards/five-spades.svg",
+        "bytes": 478
+      },
+      {
+        "url": "/images/cards/four-spades.svg",
+        "bytes": 472
+      },
+      {
+        "url": "/images/cards/three-spades.svg",
+        "bytes": 468
+      },
+      {
+        "url": "/images/cards/two-spades.svg",
+        "bytes": 460
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Ftayto.png&w=96&q=75",
+        "width": 64.421875,
+        "height": 64,
+        "loading": "lazy"
+      },
+      {
+        "src": "/images/cards/back.svg",
+        "width": 260,
+        "height": 364,
+        "loading": "auto"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/cocktails",
+    "phase": "before",
+    "lcp": 1348,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "lazy"
+      }
+    ]
+  },
+  {
+    "run": 3,
+    "path": "/cocktails",
+    "phase": "after",
+    "lcp": 892,
+    "images": [
+      {
+        "url": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "bytes": 11578
+      }
+    ],
+    "visibleImages": [
+      {
+        "src": "/_next/image?url=%2Fimages%2Fcocktail-placeholder.jpg&w=256&q=75",
+        "width": 131.1875,
+        "height": 131.1875,
+        "loading": "eager"
+      }
+    ]
+  }
+]
