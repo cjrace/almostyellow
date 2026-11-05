@@ -60,13 +60,6 @@ export interface PendingEvent extends ScoreEvent {
   status: "pending" | "attention";
   error?: string;
 }
-export interface EventHistory {
-  id: string;
-  player: Player;
-  delta: number;
-  createdAt: number;
-  receivedAt: number;
-}
 export interface Lease {
   id: string;
   gameId: string;

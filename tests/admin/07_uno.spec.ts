@@ -292,6 +292,11 @@ test.describe("Uno durable scoring", () => {
       page.getByText("Played in the garden after tea."),
     ).toBeVisible();
     await expect(page.getByText("2020-06-12 · historic game")).toBeVisible();
+    await expect(page.getByText("Cam 8")).toBeVisible();
+    await expect(page.getByText("Laura 6")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Scoring history" }),
+    ).toHaveCount(0);
     await openTab(page, "Tracker");
     await expect(page.getByTestId("lifetime-cam")).toHaveText("8", SYNC);
     await expect(page.getByTestId("lifetime-laura")).toHaveText("6");
@@ -633,111 +638,4 @@ test.describe("Uno durable scoring", () => {
     await expect(other.getByTestId("lifetime-laura")).toHaveText("3");
     expect((await local(other)).events).toHaveLength(0);
   });
-
-  for (const firstFails of [false, true]) {
-    test(`history responses and errors from a closed game are ignored (${firstFails ? "error" : "success"})`, async ({
-      page,
-    }) => {
-      const { projectId } = assertEmulatorEnvironment();
-      const db = getFirestore(getApps()[0] ?? initializeApp({ projectId }));
-      const ids = [
-        "dbeb9180-6337-4257-8cca-97bf1bb0a151",
-        "dbeb9180-6337-4257-8cca-97bf1bb0a152",
-      ];
-      for (let i = 0; i < 2; i++) {
-        const when = Date.parse(
-          i === 0 ? "2026-10-31T12:00:00Z" : "2026-10-30T12:00:00Z",
-        );
-        const player = i === 0 ? "cam" : "laura";
-        await db.doc(`unoGames/${ids[i]}`).set({
-          id: ids[i],
-          cam: i === 0 ? 1 : 0,
-          laura: i === 1 ? 1 : 0,
-          status: "completed",
-          startedAt: when,
-          finishedAt: when,
-          playedOn: null,
-          notes: "",
-          source: "live",
-          winner: player,
-          rounds: 1,
-          margin: 1,
-          version: 1,
-          amended: false,
-        });
-        await db
-          .doc(`unoGames/${ids[i]}/events/dbeb9180-6337-4257-8cca-97bf1bb0a153`)
-          .set({ player, delta: 1, createdAt: when, receivedAt: when });
-      }
-      await db.doc("uno/scoreboard").set({
-        cam: 1,
-        laura: 1,
-        startingTotals: { cam: 0, laura: 0 },
-        activeGameId: null,
-        lastFinishedGameId: ids[0],
-        version: 1,
-        updatedAt: Date.now(),
-      });
-      await page.goto("/games/uno-tracker/history");
-      await expect(
-        page.getByRole("button", { name: "Scoring history" }),
-      ).toHaveCount(2);
-      let release!: () => void;
-      const held = new Promise<void>((resolve) => {
-        release = resolve;
-      });
-      let captured!: () => void;
-      const received = new Promise<void>((resolve) => {
-        captured = resolve;
-      });
-      let releaseSecond!: () => void;
-      const heldSecond = new Promise<void>((resolve) => {
-        releaseSecond = resolve;
-      });
-      let capturedSecond!: () => void;
-      const receivedSecond = new Promise<void>((resolve) => {
-        capturedSecond = resolve;
-      });
-      await page.route("**/games/uno-tracker/history", async (route) => {
-        const body = route.request().postData();
-        if (route.request().method() === "POST" && body?.includes(ids[0])) {
-          const response = await route.fetch();
-          captured();
-          await held;
-          if (firstFails) await route.abort();
-          else await route.fulfill({ response });
-        } else if (
-          route.request().method() === "POST" &&
-          body?.includes(ids[1])
-        ) {
-          const response = await route.fetch();
-          capturedSecond();
-          await heldSecond;
-          await route.fulfill({ response });
-        } else await route.continue();
-      });
-      await page
-        .getByRole("button", { name: "Scoring history" })
-        .nth(0)
-        .click();
-      await received;
-      await page.getByRole("button", { name: "Close scoring history" }).click();
-      await page
-        .getByRole("button", { name: "Scoring history" })
-        .nth(1)
-        .click();
-      release();
-      await receivedSecond;
-      await expect(page.getByRole("dialog")).toContainText("2026-10-30");
-      await expect(page.getByRole("dialog")).toContainText("Loading rounds…");
-      await expect(page.getByRole("dialog").locator("li")).toHaveCount(0);
-      await expect(page.getByRole("dialog")).not.toContainText(
-        "Could not load scoring history",
-      );
-      releaseSecond();
-      await expect(page.getByRole("dialog").locator("li")).toContainText(
-        "Laura +1",
-      );
-    });
-  }
 });
