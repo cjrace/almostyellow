@@ -20,7 +20,7 @@ Three paired runs per page, fresh isolated Chrome contexts, 390 × 844, 4× CPU 
 
 ## Screenshots
 
-Each page has desktop and mobile pairs with and without the credit; extra pairs cover instructions, deletion and shopping dialogs, a game in progress and its players drawer.
+Each page has desktop and mobile pairs. Most also include the credit; extra pairs cover instructions, deletion and shopping dialogs, a game in progress and its players drawer. Uno scoring and draw states include both colour schemes.
 
 | Page, device and state | Before | After |
 | --- | --- | --- |
