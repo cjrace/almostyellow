@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { test, expect } from "../playwright";
-import { expectNoAxeViolations, schemes, useScheme } from "../axe";
+import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 import { films, whiskies } from "../firebase/fixtures";
 import { signIn } from "./helpers";
 
@@ -17,12 +17,12 @@ for (const scheme of schemes) {
       await useScheme(page, scheme);
     });
 
-    test("Login page meets WCAG 2.2 AA, with and without an error", async ({
+    test("Login page passes accessibility checks, with and without an error", async ({
       page,
     }) => {
       await page.goto("/admin/login");
       await expect(page.locator("h1")).toBeVisible();
-      await expectNoAxeViolations(page, { soft: true });
+      await expectNoUnexpectedAxeViolations(page, { soft: true });
 
       await page
         .getByPlaceholder("e.g. simply@thebest.co.uk")
@@ -32,11 +32,11 @@ for (const scheme of schemes) {
       await expect(page.locator("main").getByRole("alert")).toHaveText(
         "Invalid credentials.",
       );
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
     // Signing in is slow, so one test looks at every page in turn
-    test("Admin pages meet WCAG 2.2 AA", async ({ page }) => {
+    test("Admin pages pass accessibility checks", async ({ page }) => {
       test.slow();
       await signIn(page);
       for (const route of [
@@ -48,7 +48,7 @@ for (const scheme of schemes) {
         await test.step(route, async () => {
           await page.goto(url(route));
           await expect(page.locator("h1")).toBeVisible();
-          await expectNoAxeViolations(page, { soft: true });
+          await expectNoUnexpectedAxeViolations(page, { soft: true });
         });
       }
     });
@@ -70,14 +70,14 @@ for (const scheme of schemes) {
         await expect(
           dialog.getByRole("button", { name: "Close deletion confirmation" }),
         ).toBeVisible();
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
         await page.keyboard.press("Escape");
         await expect(dialog).toBeHidden();
         await expect(trigger).toBeFocused();
       }
     });
 
-    test("Shopping list add dialog meets WCAG 2.2 AA with an input error", async ({
+    test("Shopping list add dialog passes accessibility checks with an input error", async ({
       page,
     }) => {
       await signIn(page);
@@ -87,7 +87,7 @@ for (const scheme of schemes) {
       await expect(
         page.getByRole("dialog", { name: "Add new items" }),
       ).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page
         .getByPlaceholder("Add new items, one per line...")
         .fill("x".repeat(501));
@@ -97,7 +97,7 @@ for (const scheme of schemes) {
       await expect(
         page.getByText(/Each item must be .* characters or fewer/),
       ).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page.keyboard.press("Escape");
       await expect(trigger).toBeFocused();
     });

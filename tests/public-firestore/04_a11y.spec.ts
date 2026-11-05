@@ -1,5 +1,5 @@
 import { test, expect } from "../playwright";
-import { expectNoAxeViolations, schemes, useScheme } from "../axe";
+import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 // Distinct page layouts; game states and dialogs are exercised below.
 const publicRoutes = [
   "/",
@@ -13,6 +13,53 @@ const publicRoutes = [
   "/games/uno-tracker/history",
 ];
 
+test(
+  "contrast exceptions do not hide other colours, text or accessibility failures",
+  { tag: "@desktop" },
+  async ({ page }) => {
+    const document = (content: string) =>
+      `<!doctype html><html lang="en"><head><title>Contrast exception scope</title></head><body><main><h1>Contrast exception scope</h1>${content}</main></body></html>`;
+    const approved =
+      'class="mantine-Button-root" style="color:#fff;background:#fd7e14;border:0;padding:8px;font:16px sans-serif"';
+    await page.setContent(
+      document(`<button ${approved}>Original filled control</button>`),
+    );
+    await expectNoUnexpectedAxeViolations(page);
+
+    await page.setContent(
+      document(
+        '<p style="color:#fff;background:#fd7e14">Ordinary text stays checked</p>',
+      ),
+    );
+    await expect(expectNoUnexpectedAxeViolations(page)).rejects.toThrow(
+      /color-contrast/,
+    );
+
+    await page.setContent(
+      document(
+        `<button ${approved.replace("#fd7e14", "#ffaaaa")}>An unapproved colour</button>`,
+      ),
+    );
+    await expect(expectNoUnexpectedAxeViolations(page)).rejects.toThrow(
+      /color-contrast/,
+    );
+
+    await page.setContent(
+      document(
+        `<button ${approved.replace("color:#fff", "color:#f8f9fa")}>An unapproved foreground</button>`,
+      ),
+    );
+    await expect(expectNoUnexpectedAxeViolations(page)).rejects.toThrow(
+      /color-contrast/,
+    );
+
+    await page.setContent(document(`<button ${approved}></button>`));
+    await expect(expectNoUnexpectedAxeViolations(page)).rejects.toThrow(
+      /button-name/,
+    );
+  },
+);
+
 for (const scheme of schemes) {
   test.describe(`${scheme} scheme`, { tag: "@desktop" }, () => {
     test.beforeEach(async ({ page }) => {
@@ -20,14 +67,14 @@ for (const scheme of schemes) {
     });
 
     for (const path of publicRoutes) {
-      test(`${path} meets WCAG 2.2 AA`, async ({ page }) => {
+      test(`${path} passes accessibility checks`, async ({ page }) => {
         await page.goto(path);
         await expect(page.locator("h1")).toBeVisible();
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
       });
     }
 
-    test("Decision maker meets WCAG 2.2 AA with an error and a decision", async ({
+    test("Decision maker passes accessibility checks with an error and a decision", async ({
       page,
     }) => {
       await page.goto("/decisionmaker");
@@ -35,17 +82,17 @@ for (const scheme of schemes) {
       await expect(
         page.getByText("Please enter at least 2 options."),
       ).toBeVisible();
-      await expectNoAxeViolations(page, { soft: true });
+      await expectNoUnexpectedAxeViolations(page, { soft: true });
 
       await page
         .getByLabel("List out your options")
         .fill("Pizza\nCurry\nFish and chips");
       await page.getByRole("button", { name: "Make a decision" }).click();
       await expect(page.getByTestId("choice_made")).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
-    test("Cocktails meet WCAG 2.2 AA with no search results", async ({
+    test("Cocktails pass accessibility checks with no search results", async ({
       page,
     }) => {
       await page.goto("/cocktails");
@@ -53,7 +100,7 @@ for (const scheme of schemes) {
         .getByPlaceholder("Search cocktail names...")
         .fill("Nothing is called this");
       await expect(page.getByText(/Showing 0 of \d+ cocktails/)).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
     for (const { path, button, dialog } of [
@@ -78,11 +125,11 @@ for (const scheme of schemes) {
         dialog: "Whisky rating scales",
       },
     ]) {
-      test(`${dialog} dialog meets WCAG 2.2 AA`, async ({ page }) => {
+      test(`${dialog} dialog passes accessibility checks`, async ({ page }) => {
         await page.goto(path);
         await page.getByRole("button", { name: button }).click();
         await expect(page.getByRole("dialog", { name: dialog })).toBeVisible();
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
       });
     }
 
@@ -102,7 +149,7 @@ for (const scheme of schemes) {
           .getByRole("dialog", { name: "All called cards" })
           .getByRole("listitem"),
       ).toHaveCount(2);
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page.goto("/games/redorblack");
       await page
         .getByRole("button", { name: "Draw a card", exact: true })
@@ -111,7 +158,7 @@ for (const scheme of schemes) {
       await expect(
         page.getByRole("dialog", { name: "All drawn cards" }),
       ).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page.goto("/whiskyjournal");
       await expect(
         page.getByRole("img", { name: "Rated 5 out of 5", exact: true }),
@@ -125,7 +172,7 @@ for (const scheme of schemes) {
       ).toBeVisible();
     });
 
-    test("Boom Boom Pirate meets WCAG 2.2 AA mid-game and after an explosion", async ({
+    test("Boom Boom Pirate passes accessibility checks mid-game and after an explosion", async ({
       page,
     }) => {
       await page.goto("/games/boomboompirate");
@@ -134,7 +181,7 @@ for (const scheme of schemes) {
       });
       await page.getByLabel("Number of ropes").fill("5");
       await page.getByRole("button", { name: "Start Game" }).click();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page.getByRole("button", { name: "Rope 1", exact: true }).click();
       // The result is announced, and shown in words as well as colour
       await expect(page.getByRole("status")).toContainText("Rope 1", {
@@ -144,22 +191,24 @@ for (const scheme of schemes) {
         page.getByRole("button", { name: /^Rope 1, (safe|boom!)$/ }),
       ).toBeVisible();
       await expect(page.getByRole("dialog", { name: "Boom!" })).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
-    test("Snakes and Ladders meets WCAG 2.2 AA mid-game", async ({ page }) => {
+    test("Snakes and Ladders passes accessibility checks mid-game", async ({
+      page,
+    }) => {
       await page.goto("/games/snakesandladders");
       await page.getByRole("button", { name: "Start game!" }).click();
       await expect(
         page.getByRole("button", { name: "Roll Dice (Player 1)" }),
       ).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await expect(page.locator('[aria-current="step"]:visible')).toContainText(
         "Player 1",
       );
     });
 
-    test("Uno sync details meet WCAG 2.2 AA", async ({ page }) => {
+    test("Uno sync details pass accessibility checks", async ({ page }) => {
       await page.goto("/games/uno-tracker");
       await page
         .getByRole("button", { name: "All scores saved", exact: true })
@@ -167,10 +216,12 @@ for (const scheme of schemes) {
       await expect(
         page.getByRole("dialog", { name: "Sync details" }),
       ).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
-    test("Suits end-game confirmation meets WCAG 2.2 AA", async ({ page }) => {
+    test("Suits end-game confirmation passes accessibility checks", async ({
+      page,
+    }) => {
       await page.goto("/games/suits");
       await page
         .getByRole("button", { name: "Start game", exact: true })
@@ -179,10 +230,10 @@ for (const scheme of schemes) {
         .getByRole("button", { name: "Change players", exact: true })
         .click();
       await expect(page.getByRole("dialog")).toBeVisible();
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
     });
 
-    test("Snakes and Ladders game update meets WCAG 2.2 AA", async ({
+    test("Snakes and Ladders game update passes accessibility checks", async ({
       page,
     }) => {
       await page.goto("/games/snakesandladders");
@@ -217,7 +268,7 @@ for (const scheme of schemes) {
       await expect(update).toContainText("landed on a ladder", {
         timeout: 7000,
       });
-      await expectNoAxeViolations(page);
+      await expectNoUnexpectedAxeViolations(page);
       await page.keyboard.press("Escape");
       await expect(
         page.getByRole("button", { name: /^Roll Dice/ }),

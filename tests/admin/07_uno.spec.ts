@@ -10,7 +10,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
 import { getCredentials, getSecondCredentials } from "./helpers";
 import type { LocalData } from "../../src/uno/storage";
-import { expectNoAxeViolations, schemes, useScheme } from "../axe";
+import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 import { expectClearOfBadge, mockConfetti, showConfetti } from "../confetti";
 
 const SYNC = { timeout: 30_000 };
@@ -94,7 +94,7 @@ test.describe("Uno durable scoring", () => {
   test.describe("dialog accessibility", () => {
     test.use({ serviceWorkers: "block" });
     for (const scheme of schemes) {
-      test(`${scheme} scoring, finish and history dialogs meet WCAG 2.2 AA above the badge`, async ({
+      test(`${scheme} scoring, finish and history dialogs pass accessibility checks above the badge`, async ({
         page,
       }) => {
         test.slow();
@@ -111,7 +111,7 @@ test.describe("Uno durable scoring", () => {
         const finish = page.getByRole("dialog", { name: "Finish this game?" });
         await expect(finish).toBeVisible();
         await expect(finish).toHaveCSS("opacity", "1");
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
         await expectClearOfBadge(
           finish.getByRole("button", { name: "Confirm finish" }),
           page,
@@ -131,7 +131,7 @@ test.describe("Uno durable scoring", () => {
           exact: true,
         });
         await expect(history).not.toContainText("Loading rounds…");
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
         await history
           .getByRole("button", { name: "Close scoring history" })
           .click();
@@ -143,13 +143,13 @@ test.describe("Uno durable scoring", () => {
         await expect(deleting).toBeVisible();
         await expect(deleting).toHaveCSS("opacity", "1");
         await page.mouse.move(0, 0);
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
         const deleteGame = deleting.getByRole("button", {
           name: "Delete game",
           exact: true,
         });
         await deleteGame.hover();
-        await expectNoAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(page);
         await expectClearOfBadge(deleteGame, page);
         await page.keyboard.press("Escape");
         await expect(deleting).toBeHidden();

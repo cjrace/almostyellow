@@ -41,7 +41,12 @@ export const FilmCard: React.FC<Film> = ({
           </ActionIcon>
 
           {top_30 && (
-            <Badge color="yellow" size="lg" leftSection={<IconChecklist />}>
+            <Badge
+              color="yellow"
+              size="lg"
+              fw={400}
+              leftSection={<IconChecklist />}
+            >
               <Text display={{ base: "none", sm: "inline" }}>IMDB top 30</Text>
               <Text display={{ base: "inline", sm: "none" }}>Top 30</Text>
             </Badge>
@@ -53,6 +58,7 @@ export const FilmCard: React.FC<Film> = ({
               aria-label="Watched"
               color="green"
               size="lg"
+              fw={400}
               leftSection={<IconEyeglass />}
             >
               <Text display={{ base: "none", sm: "inline" }}>Watched</Text>
@@ -60,7 +66,7 @@ export const FilmCard: React.FC<Film> = ({
           )}
 
           {not_in_jar && (
-            <Badge color="red" size="lg" leftSection={<PiJarBold />}>
+            <Badge color="red" size="lg" fw={400} leftSection={<PiJarBold />}>
               Add to jar
             </Badge>
           )}

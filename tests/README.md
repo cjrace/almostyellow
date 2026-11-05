@@ -16,6 +16,8 @@
 
 The sitemap and SEO checks share `src/discover-routes.ts`. It discovers App Router pages from source, so their route lists stay current. Accessibility tests deliberately select representative page layouts and interactive states in Desktop Chrome, in both colour schemes. Unit tests cover route groups, Windows paths, private folders, duplicates and unsupported public dynamic or parallel routes. The sitemap is generated at build time and omits modification dates unless real content dates are available.
 
+Filled controls retain their original colours and white text/icons by design. `contrast-exceptions.ts` lists the exact accepted colour pairs; `axe.ts` limits these exceptions to filled buttons, action icons, badges and selected choices. Accepted findings appear as `approved-contrast-exception` annotations in the HTML report. Ordinary text, unapproved colour pairs and other accessibility rules still fail. A browser regression test verifies those boundaries. These accepted contrast gaps mean passing the scans does not establish WCAG AA conformance.
+
 ## Browser test fixtures
 
 `confetti.ts` supplies a local replacement for the confetti script. It creates the same fixed credit badge only after activation, so the layout tests can check overlap, resizing and navigation without downloading the vendor's script. A permanent 40px bottom gap keeps controls above the badge, including in dialogs and drawers. Confetti tests cover representative scrolling pages and game layouts; the functional card-game journeys also check layout at the states where controls and alerts change, with that gap always present.
