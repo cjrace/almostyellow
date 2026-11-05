@@ -381,23 +381,65 @@ for (const [where, viewport, buttons] of [
       await page.getByRole("button", { name: "Start game" }).click();
 
       const reveal = page.getByRole("button", { name: "Reveal four cards" });
-      const cards = page.locator("main img");
+      // Measure each state in one browser call. Separate viewport and size
+      // checks for every element can exhaust Safari's test timeout under load.
+      const layoutTargets = page.locator(
+        "main img, main .mantine-Button-root:visible, main .mantine-SegmentedControl-label:visible",
+      );
 
       // Everything a player needs is on screen, and big enough to tap
       async function expectAllOnScreen(when: string) {
-        expect(await pageScrolls(page), when).toBe(false);
-        for (const card of await cards.all()) {
-          await expect(card, when).toBeInViewport({ ratio: 1 });
-        }
-        // The game's buttons and suits, though not the instructions button
-        const targets = page.locator(
-          "main .mantine-Button-root:visible, main .mantine-SegmentedControl-label:visible",
-        );
-        for (const target of await targets.all()) {
-          await expect(target, when).toBeInViewport({ ratio: 1 });
-          const box = await target.boundingBox();
-          expect(box?.height, when).toBeGreaterThanOrEqual(44);
-        }
+        await expect
+          .poll(
+            () =>
+              layoutTargets.evaluateAll(async (elements) => {
+                // Intersection ratios also catch clipping by an ancestor, as
+                // Playwright's individual viewport assertions do.
+                const ratios = await new Promise<Map<Element, number>>(
+                  (resolve) => {
+                    const observed = new Map<Element, number>();
+                    if (elements.length === 0) {
+                      resolve(observed);
+                      return;
+                    }
+                    const observer = new IntersectionObserver((entries) => {
+                      for (const entry of entries)
+                        observed.set(entry.target, entry.intersectionRatio);
+                      if (observed.size === elements.length) {
+                        observer.disconnect();
+                        resolve(observed);
+                      }
+                    });
+                    for (const element of elements) observer.observe(element);
+                  },
+                );
+                const outsideViewport: string[] = [];
+                const smallControls: string[] = [];
+                for (const element of elements) {
+                  const box = element.getBoundingClientRect();
+                  const name =
+                    element.getAttribute("alt") ?? element.textContent.trim();
+                  if (ratios.get(element) !== 1) outsideViewport.push(name);
+                  if (!element.matches("img") && box.height < 44)
+                    smallControls.push(name);
+                }
+                return {
+                  cards: elements.filter((element) => element.matches("img"))
+                    .length,
+                  scrolls:
+                    document.documentElement.scrollHeight > window.innerHeight,
+                  outsideViewport,
+                  smallControls,
+                };
+              }),
+            { message: when },
+          )
+          .toEqual({
+            cards: 4,
+            scrolls: false,
+            outsideViewport: [],
+            smallControls: [],
+          });
       }
 
       // Reveal and Change players are side by side on short phones, and one
