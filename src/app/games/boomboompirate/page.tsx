@@ -6,7 +6,7 @@ import layout from "@/styles/cardgame.module.css";
 
 export const metadata = pageMetadata(
   "Boom Boom Pirate",
-  "Play Boom Boom Pirate together: choose 5 to 50 ropes, take turns pulling them and try to avoid the pirate's hidden trap.",
+  "Pull the right ropes or things will go boom!",
 );
 
 export default function BoomBoomPiratePage() {

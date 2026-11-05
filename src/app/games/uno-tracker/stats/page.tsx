@@ -3,7 +3,7 @@ import Header from "@/components/header";
 import UnoStatistics from "@/components/unostatistics";
 export const metadata = pageMetadata(
   "Uno tracker statistics",
-  "Compare Uno wins, scores and player statistics across completed games.",
+  "Who's winning Cam and Laura's Uno rivalry? Let the numbers settle it.",
 );
 export default function UnoStatsPage() {
   return (

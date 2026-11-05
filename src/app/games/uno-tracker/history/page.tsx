@@ -4,7 +4,7 @@ import UnoHistory from "@/components/unohistory";
 
 export const metadata = pageMetadata(
   "Uno game history",
-  "Browse completed Uno games and review the scores from each round.",
+  "Revisit Cam and Laura's Uno battles. Bragging rights are on the line.",
 );
 export default function UnoHistoryPage() {
   return (

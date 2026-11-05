@@ -6,7 +6,7 @@ import layout from "@/styles/cardgame.module.css";
 
 export const metadata = pageMetadata(
   "Games",
-  "Play Irish Bingo, Snakes and Ladders, Boom Boom Pirate, Red or Black and Suits, or keep score with our Uno tracker.",
+  "Our collection of online games.",
 );
 
 const crumbitems = [

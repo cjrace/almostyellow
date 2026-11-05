@@ -24,12 +24,9 @@ const structuredData = {
 export default function Home() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        // Built from constants above, never user input
-        // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
       <Header noCrumbs={true} />
 
       <main id="main-content">

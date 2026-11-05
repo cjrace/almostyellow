@@ -5,7 +5,7 @@ import layout from "@/styles/cardgame.module.css";
 
 export const metadata = pageMetadata(
   "Uno tracker",
-  "Track Uno scores, follow the current game and see who is leading.",
+  "Keeping score in Cam and Laura's never-ending Uno rivalry.",
 );
 export default function UnoPage() {
   return (

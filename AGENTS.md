@@ -124,7 +124,7 @@ Automated checks do not establish complete WCAG conformance. For UI changes, sup
 
 Follow component and CSS imports to identify affected routes. A page-specific CSS module only affects the pages that use it. For shared layout, theme or component changes, run the relevant automated coverage across consumers and inspect representative pages for each distinct layout or interaction. Expand the checks when a failure or wider risk justifies it.
 
-Use `pnpm serve:test` to build and preview against the emulators with synthetic fixtures; add `--no-build` to reuse an unchanged build. The desktop app's `almostyellow-emulators` launch configuration uses that preview. Choose the checks relevant to the change:
+Use `pnpm serve:test` to build and preview against the emulators with synthetic fixtures; add `--no-build` to reuse an unchanged build. Choose the checks relevant to the change:
 
 - **Controls and focus:** use the changed controls by keyboard, including focus after actions and closing dialogs.
 - **Colours:** inspect both colour schemes when changing colours, focus indicators or component appearance.
@@ -132,7 +132,7 @@ Use `pnpm serve:test` to build and preview against the emulators with synthetic 
 - **Dynamic content:** check accessible names and announcements when changing dialogs, errors or results.
 - **Animation:** check reduced motion and flashing when changing effects or timing.
 
-The `a11y-seo-check` skill in `.claude/skills/` describes this scoped routine. Documentation-only changes do not need browser checks.
+Documentation-only changes do not need browser checks.
 
 ### Firebase emulators
 

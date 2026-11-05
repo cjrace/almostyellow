@@ -36,6 +36,18 @@ for (const { path } of publicRoutes) {
       .getAttribute("content");
     expect(new URL(image ?? "").origin).toBe(siteUrl);
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+
+    if (path === "/") {
+      const json = await page
+        .locator('script[type="application/ld+json"]')
+        .textContent();
+      expect(JSON.parse(json ?? "")).toEqual({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Almost Yellow",
+        url: siteUrl,
+      });
+    }
   });
 }
 
