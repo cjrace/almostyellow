@@ -1,11 +1,14 @@
 import { test, expect, waitsForHydration } from "../playwright";
 import { users } from "../firebase/fixtures";
+import { expectNoUnexpectedAxeViolations, useScheme } from "../axe";
 test.describe("Quiz host and guests", () => {
   test("join, buzz, refresh, reset and remove a player", async ({
     page,
     browser,
   }, testInfo) => {
     test.setTimeout(90000);
+    if (testInfo.project.name === "Google Chrome")
+      await useScheme(page, "dark");
     const guestName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
     await test.step("Given a guest identity exists before admin sign-in", async () => {
       await page.goto("/games/buzzer");
@@ -103,6 +106,10 @@ test.describe("Quiz host and guests", () => {
           guest.getByRole("button", { name: "Buzz recorded", exact: true }),
         ).toBeVisible();
       });
+      if (testInfo.project.name === "Google Chrome") {
+        await expectNoUnexpectedAxeViolations(page);
+        await expectNoUnexpectedAxeViolations(guest);
+      }
       await page
         .getByRole("button", { name: "Close buzzing", exact: true })
         .click();
@@ -134,6 +141,11 @@ test.describe("Quiz host and guests", () => {
         guest.getByRole("alert").filter({ hasText: "removed" }),
       ).toBeVisible();
       await page.getByRole("button", { name: "End room", exact: true }).click();
+      await expect(
+        page.getByRole("dialog", { name: "End this room?" }),
+      ).toBeVisible();
+      if (testInfo.project.name === "Google Chrome")
+        await expectNoUnexpectedAxeViolations(page);
       await page
         .getByRole("dialog")
         .getByRole("button", { name: "End room", exact: true })
@@ -151,44 +163,54 @@ test.describe("Quiz host and guests", () => {
       page.getByRole("link", { name: /^Play / }).last(),
     ).toHaveAttribute("href", "/games/buzzer");
   });
-  test("fits narrow screens and zoom in both colour schemes", async ({
-    page,
-  }, testInfo) => {
-    await page.goto("/games/buzzer");
-    for (const scheme of ["dark", "light"]) {
-      await page.evaluate((scheme) => {
-        document.documentElement.setAttribute(
-          "data-mantine-color-scheme",
-          scheme,
-        );
-      }, scheme);
-      await page.setViewportSize({ width: 320, height: 640 });
-      await expect(
-        page.getByLabel("Room code", { exact: true }),
-      ).toBeInViewport();
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth,
-        ),
-      ).toBe(true);
-      await page.screenshot({
-        path: testInfo.outputPath("landing-" + scheme + ".png"),
-        fullPage: true,
-      });
-      await page.setViewportSize({ width: 1280, height: 800 });
-      await page.evaluate(() => {
-        document.body.style.zoom = "2";
-      });
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth,
-        ),
-      ).toBe(true);
-      await page.evaluate(() => {
-        document.body.style.zoom = "1";
-      });
-    }
-  });
+  test(
+    "fits a phone in both colour schemes",
+    { tag: "@phone" },
+    async ({ page }, testInfo) => {
+      await page.goto("/games/buzzer");
+      for (const scheme of ["dark", "light"]) {
+        await page.evaluate((scheme) => {
+          document.documentElement.setAttribute(
+            "data-mantine-color-scheme",
+            scheme,
+          );
+        }, scheme);
+        await expect(
+          page.getByLabel("Room code", { exact: true }),
+        ).toBeInViewport();
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await page.screenshot({
+          path: testInfo.outputPath("landing-" + scheme + ".png"),
+          fullPage: true,
+        });
+      }
+    },
+  );
+  test(
+    "fits 200% zoom in both colour schemes",
+    { tag: "@desktop" },
+    async ({ page }) => {
+      await page.goto("/games/buzzer");
+      for (const scheme of ["dark", "light"]) {
+        await page.evaluate((scheme) => {
+          document.documentElement.setAttribute(
+            "data-mantine-color-scheme",
+            scheme,
+          );
+          document.body.style.zoom = "2";
+        }, scheme);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+      }
+    },
+  );
   test("explains play and keeps room links out of search", async ({ page }) => {
     await page.goto("/games/buzzer?room=ABC234");
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(

@@ -90,7 +90,8 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
         />
       </Group>
 
-      <Text m="xs">
+      {/* Read out as the search or filters change the results */}
+      <Text m="xs" role="status">
         Showing {searchedCocktails.length} of {cocktails.length} cocktails
       </Text>
 
@@ -98,9 +99,9 @@ export default function Cocktails({ cocktails }: { cocktails: Cocktail[] }) {
       <SimpleGrid minColWidth="min(100%, 22rem)" verticalSpacing={0}>
         {searchedCocktails
           .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-          .map((cocktail) => (
+          .map((cocktail, index) => (
             <div key={cocktail.name} className={styles.cocktailCard}>
-              <CocktailBox {...cocktail} />
+              <CocktailBox {...cocktail} eager={index === 0} />
             </div>
           ))}
       </SimpleGrid>

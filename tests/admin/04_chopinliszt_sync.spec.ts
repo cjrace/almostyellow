@@ -79,13 +79,20 @@ async function addItems(page: Page, ...texts: string[]) {
   await page
     .getByPlaceholder("Add new items, one per line...")
     .fill(texts.join("\n"));
-  await page.getByRole("button", { name: "Add items and close modal" }).click();
+  await page
+    .getByRole("button", { name: "Add item(s) and close modal" })
+    .click();
+  for (const text of texts) await expect(item(page, text)).toBeVisible();
 }
 
 // Waits until everything on the page has been saved, so only changes made
 // from here on are left waiting
 async function goOffline(page: Page) {
-  await expect(page.getByText("Not synced yet")).toHaveCount(0);
+  // The visible warning is delayed by a second, so its absence is not an ACK.
+  await expect(page.locator("#add-items")).not.toHaveAttribute(
+    "data-pending",
+    SYNC,
+  );
   await page.context().setOffline(true);
 }
 

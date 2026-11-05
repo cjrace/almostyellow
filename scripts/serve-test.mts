@@ -3,7 +3,26 @@
 // tests/admin/03_server_actions.spec.ts causes on purpose by posting a made-up
 // Server Action ID.
 import { spawn } from "node:child_process";
+import { registerHooks } from "node:module";
 import { createInterface } from "node:readline";
+
+// The preview uses the same server and fixtures as Playwright. Node needs
+// extensions on the test helpers' relative imports; Playwright handles those
+// itself during an ordinary test run.
+if (process.argv.includes("--seed")) {
+  registerHooks({
+    resolve(specifier, context, nextResolve) {
+      try {
+        return nextResolve(specifier, context);
+      } catch (error) {
+        if (!specifier.startsWith(".") || /\.\w+$/.test(specifier)) throw error;
+        return nextResolve(`${specifier}.ts`, context);
+      }
+    },
+  });
+  const { resetAndSeed } = await import("../tests/firebase/seed.ts");
+  await resetAndSeed();
+}
 
 const madeUpAction = `Failed to find Server Action "${"0".repeat(42)}"`;
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/header";
 import Buzzer from "@/components/buzzer";
 import { firebaseClientConfig, getSession } from "@/auth";
+import { pageMetadata } from "@/metadata";
 export async function generateMetadata({
   searchParams,
 }: {
@@ -9,22 +10,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { room } = await searchParams;
   return {
-    title: "Quiz buzzer",
-    description: "Join a room and buzz in with friends.",
-    openGraph: {
-      title: "Quiz buzzer | Almost Yellow",
-      description: "Join a room and buzz in with friends.",
-      type: "website",
-      siteName: "Almost Yellow",
-      url: "https://www.almostyellow.co.uk/games/buzzer",
-      images: [
-        {
-          url: "https://www.almostyellow.co.uk/images/almo-border.png",
-          alt: "Almost Yellow mascot",
-        },
-      ],
-    },
-    alternates: { canonical: "https://www.almostyellow.co.uk/games/buzzer" },
+    ...pageMetadata("Quiz buzzer", "Join a room and buzz in with friends."),
     robots: room ? { index: false, follow: false } : undefined,
   };
 }

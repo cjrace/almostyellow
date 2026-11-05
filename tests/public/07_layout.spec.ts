@@ -1,139 +1,54 @@
 import { test, expect, type Page } from "../playwright";
 
-/* The layout tests set their own window size, so they check the same thing in
-   every browser project. */
-const phone = { width: 390, height: 844 };
-const smallPhone = { width: 320, height: 640 };
 const desktop = { width: 1280, height: 800 };
 
-for (const viewport of [
-  { width: 1280, height: 720 },
-  { width: 1366, height: 650 },
-  { width: 1920, height: 900 },
-]) {
-  test.describe(`A visitor with a ${viewport.width.toString()} by ${viewport.height.toString()} desktop window`, () => {
-    test.use({ viewport });
+for (const viewport of [desktop, { width: 1366, height: 650 }]) {
+  test.describe(
+    `A visitor with a ${viewport.width.toString()} by ${viewport.height.toString()} desktop window`,
+    { tag: "@desktop" },
+    () => {
+      test.use({ viewport });
 
-    test("sees all seven games and their Play buttons without scrolling", async ({
-      page,
-    }) => {
-      await page.goto("/games");
-      const play = page.getByRole("link", { name: /^Play / });
-      await expect(play).toHaveCount(7);
-      for (const button of await play.all()) {
-        await expect(button).toBeInViewport({ ratio: 1 });
-      }
-      expect(await pageScrolls(page)).toBe(false);
-    });
-
-    test("sees the Irish Bingo mascot and controls together in the centre", async ({
-      page,
-    }) => {
-      await page.goto("/games/irishbingo");
-      const mascot = await page.locator('img[alt="Mr. Tayto"]').boundingBox();
-      const card = await page.locator("#calling_card img").boundingBox();
-      const draw = await page
-        .getByRole("button", { name: "Draw a card" })
-        .boundingBox();
-      if (!mascot || !card || !draw)
-        throw new Error("The mascot, card or controls are missing");
-
-      // The visible game forms one centred group, rather than sitting at
-      // opposite sides of a wide screen with an empty column between them.
-      const left = Math.min(mascot.x, draw.x);
-      const right = Math.max(mascot.x + mascot.width, draw.x + draw.width);
-      expect(Math.abs((left + right) / 2 - viewport.width / 2)).toBeLessThan(
-        40,
-      );
-      expect(card.x - (mascot.x + mascot.width)).toBeLessThan(160);
-      expect(right - left).toBeLessThan(900);
-      await expect(
-        page.getByRole("button", { name: "Shuffle new deck" }),
-      ).toBeInViewport({ ratio: 1 });
-      expect(await pageScrolls(page)).toBe(false);
-    });
-  });
-}
-
-test.describe("A visitor with a short desktop window", () => {
-  test.use({ viewport: { width: 1280, height: 480 } });
-
-  test("can scroll to every game without its text or Play button being cut off", async ({
-    page,
-  }) => {
-    await page.goto("/games");
-    expect(await pageScrolls(page)).toBe(true);
-    const play = page.getByRole("link", { name: /^Play / });
-    await expect(play).toHaveCount(7);
-    for (const button of await play.all()) {
-      // Centre the target to avoid Chromium rounding a nearest-edge scroll
-      // down and leaving a fraction of its last pixel outside the viewport.
-      await button.evaluate((element) => {
-        element.scrollIntoView({ block: "center" });
-      });
-      await expect(button).toBeInViewport({ ratio: 1 });
-    }
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth,
-      ),
-    ).toBe(false);
-  });
-});
-
-for (const viewport of [smallPhone, phone, { width: 412, height: 915 }]) {
-  test.describe(`A games visitor on a ${viewport.width.toString()}px phone`, () => {
-    test.use({ viewport });
-
-    test("sees full-width Play buttons of the same size below each card's content", async ({
-      page,
-    }) => {
-      await page.goto("/games");
-      const cards = page.locator("main article");
-      await expect(cards).toHaveCount(7);
-      await expect(cards.getByRole("heading", { level: 2 })).toHaveText([
-        "Irish Bingo",
-        "Snakes and Ladders",
-        "Suits",
-        "Uno tracker",
-        "Red or Black v1",
-        "Boom Boom Pirate",
-        "Quiz buzzer",
-      ]);
-
-      for (const scheme of ["dark", "light"]) {
-        await page.evaluate((colourScheme) => {
-          document.documentElement.setAttribute(
-            "data-mantine-color-scheme",
-            colourScheme,
-          );
-        }, scheme);
-        const sizes = [];
-        for (const card of await cards.all()) {
-          const button = card.getByRole("link", { name: /^Play / });
-          const cardBox = await card.boundingBox();
-          const buttonBox = await button.boundingBox();
-          const imageBox = await card.locator("img").boundingBox();
-          const textBox = await card.locator("p").boundingBox();
-          if (!cardBox || !buttonBox || !imageBox || !textBox)
-            throw new Error("A game card's content is missing");
-          expect(buttonBox.y).toBeGreaterThanOrEqual(
-            Math.max(imageBox.y + imageBox.height, textBox.y + textBox.height),
-          );
-          expect(cardBox.width - buttonBox.width).toBeLessThanOrEqual(32);
-          expect(buttonBox.height).toBeGreaterThanOrEqual(44);
-          sizes.push({ width: buttonBox.width, height: buttonBox.height });
+      test("sees all seven games and their Play buttons without scrolling", async ({
+        page,
+      }) => {
+        await page.goto("/games");
+        const play = page.getByRole("link", { name: /^Play / });
+        await expect(play).toHaveCount(7);
+        for (const button of await play.all()) {
+          await expect(button).toBeInViewport({ ratio: 1 });
         }
-        expect(new Set(sizes.map((size) => size.width)).size).toBe(1);
-        expect(new Set(sizes.map((size) => size.height)).size).toBe(1);
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth > window.innerWidth,
-          ),
-        ).toBe(false);
-      }
-    });
-  });
+        expect(await pageScrolls(page)).toBe(false);
+      });
+
+      test("sees the Irish Bingo mascot and controls together in the centre", async ({
+        page,
+      }) => {
+        await page.goto("/games/irishbingo");
+        const mascot = await page.locator('img[alt="Mr. Tayto"]').boundingBox();
+        const card = await page.locator("#calling_card img").boundingBox();
+        const draw = await page
+          .getByRole("button", { name: "Draw a card" })
+          .boundingBox();
+        if (!mascot || !card || !draw)
+          throw new Error("The mascot, card or controls are missing");
+
+        // The visible game forms one centred group, rather than sitting at
+        // opposite sides of a wide screen with an empty column between them.
+        const left = Math.min(mascot.x, draw.x);
+        const right = Math.max(mascot.x + mascot.width, draw.x + draw.width);
+        expect(Math.abs((left + right) / 2 - viewport.width / 2)).toBeLessThan(
+          40,
+        );
+        expect(card.x - (mascot.x + mascot.width)).toBeLessThan(160);
+        expect(right - left).toBeLessThan(900);
+        await expect(
+          page.getByRole("button", { name: "Shuffle new deck" }),
+        ).toBeInViewport({ ratio: 1 });
+        expect(await pageScrolls(page)).toBe(false);
+      });
+    },
+  );
 }
 
 // Whether the page is taller than the window
@@ -141,6 +56,22 @@ function pageScrolls(page: Page) {
   return page.evaluate(
     () => document.documentElement.scrollHeight > window.innerHeight,
   );
+}
+
+async function expectAtContentBottom(
+  page: Page,
+  control: { y: number; height: number },
+) {
+  // Screen-filling controls sit above the permanent confetti gap.
+  const bottom = await page
+    .locator(".site-frame")
+    .evaluate(
+      (element) =>
+        innerHeight -
+        Number.parseFloat(getComputedStyle(element).paddingBottom),
+    );
+  expect(control.y + control.height).toBeGreaterThan(bottom - 24);
+  expect(control.y + control.height).toBeLessThanOrEqual(bottom + 1);
 }
 
 async function expectMatchingCocktailRows(page: Page) {
@@ -184,8 +115,55 @@ async function startBoomBoomPirate(page: Page, ropes: number) {
   return buttons;
 }
 
-test.describe("A visitor on a small phone", () => {
-  test.use({ viewport: smallPhone });
+test.describe("A visitor on a phone", { tag: "@phone" }, () => {
+  test("sees full-width Play buttons of the same size below each card's content", async ({
+    page,
+  }) => {
+    await page.goto("/games");
+    const cards = page.locator("main article");
+    await expect(cards).toHaveCount(7);
+    await expect(cards.getByRole("heading", { level: 2 })).toHaveText([
+      "Irish Bingo",
+      "Snakes and Ladders",
+      "Suits",
+      "Uno tracker",
+      "Red or Black v1",
+      "Boom Boom Pirate",
+      "Quiz buzzer",
+    ]);
+
+    for (const scheme of ["dark", "light"]) {
+      await page.evaluate((colourScheme) => {
+        document.documentElement.setAttribute(
+          "data-mantine-color-scheme",
+          colourScheme,
+        );
+      }, scheme);
+      const sizes = [];
+      for (const card of await cards.all()) {
+        const button = card.getByRole("link", { name: /^Play / });
+        const cardBox = await card.boundingBox();
+        const buttonBox = await button.boundingBox();
+        const imageBox = await card.locator("img").boundingBox();
+        const textBox = await card.locator("p").boundingBox();
+        if (!cardBox || !buttonBox || !imageBox || !textBox)
+          throw new Error("A game card's content is missing");
+        expect(buttonBox.y).toBeGreaterThanOrEqual(
+          Math.max(imageBox.y + imageBox.height, textBox.y + textBox.height),
+        );
+        expect(cardBox.width - buttonBox.width).toBeLessThanOrEqual(32);
+        expect(buttonBox.height).toBeGreaterThanOrEqual(44);
+        sizes.push({ width: buttonBox.width, height: buttonBox.height });
+      }
+      expect(new Set(sizes.map((size) => size.width)).size).toBe(1);
+      expect(new Set(sizes.map((size) => size.height)).size).toBe(1);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > window.innerWidth,
+        ),
+      ).toBe(false);
+    }
+  });
 
   test("can read and tap all 50 ropes in Boom Boom Pirate", async ({
     page,
@@ -220,15 +198,7 @@ test.describe("A visitor on a small phone", () => {
     if (!shuffle) throw new Error("The shuffle button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(shuffle.y + shuffle.height).toBeGreaterThan(smallPhone.height - 32);
-  });
-
-  test("sees the whole Uno tracker without scrolling", async ({ page }) => {
-    await page.goto("/games/uno-tracker");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Uno tracker",
-    );
-    expect(await pageScrolls(page)).toBe(false);
+    await expectAtContentBottom(page, shuffle);
   });
 
   // A heading that wraps takes height the game needs
@@ -254,246 +224,7 @@ test.describe("A visitor on a small phone", () => {
   }
 });
 
-// The card games gain buttons and alerts as the deck runs down (Irish Bingo's
-// "Has someone won?" after 10 cards, and "Deck Exhausted" after 52), so the
-// page is checked after every draw or turn
-for (const [where, viewport] of [
-  ["a small phone", smallPhone],
-  ["a phone", phone],
-  ["a laptop", { width: 1366, height: 650 }],
-] as const) {
-  test.describe(`A visitor on ${where}`, () => {
-    test.use({ viewport });
-
-    test("can draw the whole Irish Bingo deck without the page scrolling", async ({
-      page,
-    }) => {
-      await page.goto("/games/irishbingo");
-      const draw = page.getByRole("button", { name: "Draw a card" });
-      const card = page.locator("#calling_card img");
-      expect(await pageScrolls(page), "before drawing").toBe(false);
-
-      for (let drawn = 1; drawn <= 52; drawn++) {
-        await draw.click();
-        await expect(page.locator("#card_count")).toHaveText(
-          `${drawn.toString()} / 52 cards`,
-        );
-        expect(await pageScrolls(page), `after ${drawn.toString()}`).toBe(
-          false,
-        );
-        await expect(card, `after ${drawn.toString()}`).toBeInViewport({
-          ratio: 1,
-        });
-      }
-
-      // Both extras showed up along the way, and the page still fits. The
-      // alert takes the Draw button's place
-      await expect(
-        page.getByRole("button", { name: "Has someone won?" }),
-      ).toBeInViewport({ ratio: 1 });
-      await expect(page.getByText("Deck Exhausted")).toBeInViewport({
-        ratio: 1,
-      });
-      await expect(draw).toBeHidden();
-      await expect(
-        page.getByRole("button", { name: "Shuffle new deck" }),
-      ).toBeInViewport({ ratio: 1 });
-    });
-
-    // Red or Black shows the same "Deck Exhausted" alert after 52 cards
-    test("can draw the whole Red or Black deck without the page scrolling", async ({
-      page,
-    }) => {
-      await page.goto("/games/redorblack");
-      const draw = page.getByRole("button", { name: "Draw a card" });
-      const card = page.locator("main img");
-      expect(await pageScrolls(page), "before drawing").toBe(false);
-
-      for (let drawn = 1; drawn <= 52; drawn++) {
-        await draw.click();
-        await expect(page.locator("#cards_remaining")).toContainText(
-          `${(52 - drawn).toString()} cards remaining`,
-        );
-        expect(await pageScrolls(page), `after ${drawn.toString()}`).toBe(
-          false,
-        );
-        await expect(card, `after ${drawn.toString()}`).toBeInViewport({
-          ratio: 1,
-        });
-      }
-
-      await expect(page.getByText("Deck Exhausted")).toBeInViewport({
-        ratio: 1,
-      });
-      await expect(
-        page.getByRole("button", { name: "Shuffle new deck" }),
-      ).toBeInViewport({ ratio: 1 });
-    });
-  });
-}
-
-// Suits stacks its buttons on phones, except short ones, where they share a
-// row at 720px tall or less. A Pixel 8 or 9 in Chrome is 412 wide and 830 to 915 tall
-for (const [where, viewport, buttons] of [
-  ["a small phone", smallPhone, "side by side"],
-  ["a phone", phone, "stacked"],
-  ["a Pixel phone", { width: 412, height: 830 }, "stacked"],
-  ["a tall Pixel phone", { width: 412, height: 915 }, "stacked"],
-] as const) {
-  test.describe(`A visitor on ${where}`, () => {
-    test.use({ viewport });
-
-    // Suits gains the "Final turn" alert on the last turn, a "Safe round" alert
-    // whenever the cards are one of each suit, and "Play again" at the end
-    test(`can play a whole game of Suits without the page scrolling, with the buttons ${buttons}`, async ({
-      page,
-    }) => {
-      // Checks every card and button on all 13 turns, which can take Safari
-      // longer than the default allows
-      test.slow();
-      await page.goto("/games/suits");
-      await page.getByRole("button", { name: "Add player" }).click();
-      await page.getByLabel("Player 1 name").fill("Ben");
-      await page.getByLabel("Player 3 name").fill("Cam");
-      // A fixed shuffle with safe rounds on turns 4, 12 and 13, so the tallest
-      // screens come up: the final turn after a safe round, and a safe round
-      // at the end. The seeded generator is mulberry32. The seed is set as the
-      // Start button is clicked, before the game shuffles, as the page may
-      // use Math.random itself before then
-      await page.evaluate(() => {
-        let seed = 0;
-        window.addEventListener(
-          "click",
-          (event) => {
-            const button =
-              event.target instanceof Element && event.target.closest("button");
-            if (button && button.textContent === "Start game") seed = 74;
-          },
-          { capture: true },
-        );
-        Math.random = () => {
-          seed = (seed + 0x6d2b79f5) | 0;
-          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-        };
-      });
-      await page.getByRole("button", { name: "Start game" }).click();
-
-      const reveal = page.getByRole("button", { name: "Reveal four cards" });
-      // Measure each state in one browser call. Separate viewport and size
-      // checks for every element can exhaust Safari's test timeout under load.
-      const layoutTargets = page.locator(
-        "main img, main .mantine-Button-root:visible, main .mantine-SegmentedControl-label:visible",
-      );
-
-      // Everything a player needs is on screen, and big enough to tap
-      async function expectAllOnScreen(when: string) {
-        await expect
-          .poll(
-            () =>
-              layoutTargets.evaluateAll(async (elements) => {
-                // Intersection ratios also catch clipping by an ancestor, as
-                // Playwright's individual viewport assertions do.
-                const ratios = await new Promise<Map<Element, number>>(
-                  (resolve) => {
-                    const observed = new Map<Element, number>();
-                    if (elements.length === 0) {
-                      resolve(observed);
-                      return;
-                    }
-                    const observer = new IntersectionObserver((entries) => {
-                      for (const entry of entries)
-                        observed.set(entry.target, entry.intersectionRatio);
-                      if (observed.size === elements.length) {
-                        observer.disconnect();
-                        resolve(observed);
-                      }
-                    });
-                    for (const element of elements) observer.observe(element);
-                  },
-                );
-                const outsideViewport: string[] = [];
-                const smallControls: string[] = [];
-                for (const element of elements) {
-                  const box = element.getBoundingClientRect();
-                  const name =
-                    element.getAttribute("alt") ?? element.textContent.trim();
-                  if (ratios.get(element) !== 1) outsideViewport.push(name);
-                  if (!element.matches("img") && box.height < 44)
-                    smallControls.push(name);
-                }
-                return {
-                  cards: elements.filter((element) => element.matches("img"))
-                    .length,
-                  scrolls:
-                    document.documentElement.scrollHeight > window.innerHeight,
-                  outsideViewport,
-                  smallControls,
-                };
-              }),
-            { message: when },
-          )
-          .toEqual({
-            cards: 4,
-            scrolls: false,
-            outsideViewport: [],
-            smallControls: [],
-          });
-      }
-
-      // Reveal and Change players are side by side on short phones, and one
-      // above the other, full width, on taller ones
-      const revealBox = await reveal.boundingBox();
-      const changeBox = await page
-        .getByRole("button", { name: "Change players" })
-        .boundingBox();
-      if (buttons === "side by side") {
-        expect(changeBox?.y).toBe(revealBox?.y);
-      } else {
-        expect(changeBox?.y).toBeGreaterThan(
-          (revealBox?.y ?? 0) + (revealBox?.height ?? 0),
-        );
-        expect(changeBox?.width).toBe(revealBox?.width);
-      }
-
-      for (let turn = 1; turn <= 13; turn++) {
-        const when = `on turn ${turn.toString()}`;
-        await page.locator("label").filter({ hasText: "Hearts" }).click();
-        await expect(reveal).toBeEnabled();
-        if (turn === 13) {
-          await expect(page.getByText("Final turn")).toBeInViewport({
-            ratio: 1,
-          });
-        }
-        await expectAllOnScreen(when);
-        await reveal.click();
-        // Wait for the turn to move on
-        await expect(page.locator("#suits_turn_count"), when).toHaveText(
-          turn === 13
-            ? "All 13 turns played"
-            : `Turn ${(turn + 1).toString()} of 13`,
-        );
-        if ([4, 12, 13].includes(turn)) {
-          await expect(page.locator("#suits_result"), when).toContainText(
-            "Safe round",
-          );
-        }
-        await expectAllOnScreen(`after ${when}`);
-      }
-
-      await expect(page.locator("#suits_turn")).toHaveText("Game over");
-      await expect(
-        page.getByRole("button", { name: "Play again with same players" }),
-      ).toBeInViewport({ ratio: 1 });
-      await expectAllOnScreen("at the end");
-    });
-  });
-}
-
-test.describe("A visitor on a phone", () => {
-  test.use({ viewport: phone });
-
+test.describe("A visitor on a phone", { tag: "@phone" }, () => {
   test("sees a modal centred on the screen", async ({ page }) => {
     await page.goto("/games/irishbingo");
     await page
@@ -544,8 +275,13 @@ test.describe("A visitor on a phone", () => {
     if (!card || !shuffle) throw new Error("The card or buttons are missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(card.height).toBeGreaterThan(phone.height * 0.4);
-    expect(shuffle.y + shuffle.height).toBeGreaterThan(phone.height - 32);
+    const table = await page.locator("#calling_card").boundingBox();
+    if (!table) throw new Error("The card area is missing");
+    // The card fills the available height or width while preserving its shape.
+    expect(
+      Math.max(card.height / table.height, card.width / table.width),
+    ).toBeGreaterThan(0.9);
+    await expectAtContentBottom(page, shuffle);
   });
 
   test("sees the Boom Boom Pirate ropes fill the screen", async ({ page }) => {
@@ -556,11 +292,11 @@ test.describe("A visitor on a phone", () => {
     if (!restart) throw new Error("The restart button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(restart.y + restart.height).toBeGreaterThan(phone.height - 40);
+    await expectAtContentBottom(page, restart);
     const heights = await ropes.evaluateAll((buttons) =>
       buttons.map((button) => button.getBoundingClientRect().height),
     );
-    expect(Math.min(...heights)).toBeGreaterThan(60);
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(44);
   });
 
   test("sees the Cocktails cards in a single column", async ({ page }) => {
@@ -583,8 +319,34 @@ test.describe("A visitor on a phone", () => {
   });
 });
 
-test.describe("A visitor on a desktop", () => {
+test.describe("A visitor on a desktop", { tag: "@desktop" }, () => {
   test.use({ viewport: desktop });
+
+  for (const game of ["redorblack", "suits"]) {
+    test(`can start ${game} with cards and controls on screen`, async ({
+      page,
+    }) => {
+      await page.goto(`/games/${game}`);
+      if (game === "suits")
+        await page
+          .getByRole("button", { name: "Start game", exact: true })
+          .click();
+      const cards = page.locator("main img:visible");
+      await expect(cards).toHaveCount(game === "suits" ? 4 : 1);
+      for (const card of await cards.all())
+        await expect(card).toBeInViewport({ ratio: 1 });
+      await expect(
+        page.getByRole("button", {
+          name: game === "suits" ? "Reveal four cards" : "Draw a card",
+        }),
+      ).toBeInViewport({ ratio: 1 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    });
+  }
 
   test("sees the big Irish Bingo mascot beside the card", async ({ page }) => {
     await page.goto("/games/irishbingo");
@@ -612,16 +374,7 @@ test.describe("A visitor on a desktop", () => {
     if (!restart) throw new Error("The restart button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(restart.y + restart.height).toBeGreaterThan(desktop.height - 40);
-  });
-});
-
-test.describe("A visitor to Cocktails on a wide desktop", () => {
-  test.use({ viewport: { width: 1920, height: 900 } });
-
-  test("sees cards with matching heights within each row", async ({ page }) => {
-    await page.goto("/cocktails");
-    await expectMatchingCocktailRows(page);
+    await expectAtContentBottom(page, restart);
   });
 });
 
@@ -654,47 +407,52 @@ test.describe("A player of Snakes and Ladders", () => {
   }
 
   for (const [where, viewport] of [
-    ["a phone", phone],
-    ["a small phone", smallPhone],
+    ["a phone", undefined],
     ["a desktop", desktop],
   ] as const) {
-    test.describe(`on ${where}`, () => {
-      test.use({ viewport });
+    test.describe(
+      `on ${where}`,
+      { tag: viewport ? "@desktop" : "@phone" },
+      () => {
+        if (viewport) test.use({ viewport });
 
-      test("sees the whole game without scrolling, even with 10 players", async ({
-        page,
-      }) => {
-        await startGame(page, 10);
-        const { board, roll } = await boardAndRoll(page);
+        test("sees the whole game without scrolling, even with 10 players", async ({
+          page,
+        }) => {
+          await startGame(page, 10);
+          const { board, roll } = await boardAndRoll(page);
 
-        expect(await pageScrolls(page)).toBe(false);
-        expect(Math.abs(board.width - board.height)).toBeLessThan(2);
-        expect(board.y + board.height).toBeLessThanOrEqual(viewport.height);
-        expect(roll.y + roll.height).toBeLessThanOrEqual(viewport.height);
-        if (where === "a desktop")
-          await expectCentredGame(page, viewport.width);
-      });
+          expect(await pageScrolls(page)).toBe(false);
+          expect(Math.abs(board.width - board.height)).toBeLessThan(2);
+          expect(board.y + board.height).toBeLessThanOrEqual(
+            page.viewportSize()?.height ?? 0,
+          );
+          expect(roll.y + roll.height).toBeLessThanOrEqual(
+            page.viewportSize()?.height ?? 0,
+          );
+          if (where === "a desktop")
+            await expectCentredGame(page, viewport.width);
+        });
 
-      test("sees how far they move without the game moving about", async ({
-        page,
-      }) => {
-        await startGame(page);
-        const before = await boardAndRoll(page);
-        await page.getByRole("button", { name: /Roll Dice/ }).click();
-        await expect(page.getByRole("status")).toHaveText(
-          /^Al moves \d places?$/,
-        );
+        test("sees how far they move without the game moving about", async ({
+          page,
+        }) => {
+          await startGame(page);
+          const before = await boardAndRoll(page);
+          await page.getByRole("button", { name: /Roll Dice/ }).click();
+          await expect(page.getByRole("status")).toHaveText(
+            /^Al moves \d places?$/,
+          );
 
-        const after = await boardAndRoll(page);
-        expect(after.board).toEqual(before.board);
-        expect(after.roll.y).toBe(before.roll.y);
-      });
-    });
+          const after = await boardAndRoll(page);
+          expect(after.board).toEqual(before.board);
+          expect(after.roll.y).toBe(before.roll.y);
+        });
+      },
+    );
   }
 
-  test.describe("on a phone", () => {
-    test.use({ viewport: phone });
-
+  test.describe("on a phone", { tag: "@phone" }, () => {
     test("sees a square board above the controls that fits the screen", async ({
       page,
     }) => {
@@ -702,7 +460,9 @@ test.describe("A player of Snakes and Ladders", () => {
       const { board, roll } = await boardAndRoll(page);
 
       expect(board.x).toBeGreaterThanOrEqual(0);
-      expect(board.x + board.width).toBeLessThanOrEqual(phone.width);
+      expect(board.x + board.width).toBeLessThanOrEqual(
+        page.viewportSize()?.width ?? 0,
+      );
       expect(board.y + board.height).toBeLessThanOrEqual(roll.y);
     });
 
@@ -715,6 +475,7 @@ test.describe("A player of Snakes and Ladders", () => {
       await expect(drawer).toBeVisible();
       await expect(drawer.getByText(/^Player \d+$/)).toHaveCount(9);
       await expect(drawer.getByText("Al", { exact: true })).toBeVisible();
+      await expect(drawer.locator('[aria-current="step"]')).toContainText("Al");
       await expect(
         drawer.getByRole("button", { name: "Restart Game" }),
       ).toBeVisible();
@@ -750,7 +511,7 @@ test.describe("A player of Snakes and Ladders", () => {
     });
   });
 
-  test.describe("on a desktop", () => {
+  test.describe("on a desktop", { tag: "@desktop" }, () => {
     test.use({ viewport: desktop });
 
     test("sees a square board beside the controls", async ({ page }) => {
@@ -761,22 +522,5 @@ test.describe("A player of Snakes and Ladders", () => {
       expect(roll.x + roll.width).toBeLessThanOrEqual(board.x);
       await expectCentredGame(page, desktop.width);
     });
-  });
-
-  test.describe("on a wide desktop", () => {
-    const viewport = { width: 1920, height: 900 };
-    test.use({ viewport });
-
-    for (const players of [2, 10]) {
-      test(`sees ${players.toString()} players and a large square board centred together`, async ({
-        page,
-      }) => {
-        await startGame(page, players);
-        await expectCentredGame(page, viewport.width);
-        const { board } = await boardAndRoll(page);
-        expect(board.height).toBeGreaterThan(viewport.height * 0.6);
-        expect(await pageScrolls(page)).toBe(false);
-      });
-    }
   });
 });

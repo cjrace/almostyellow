@@ -1,16 +1,12 @@
 import Suits from "@/components/suits";
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import layout from "@/styles/cardgame.module.css";
 
-export const metadata: Metadata = {
-  title: "Suits",
-  description: "Pick a suit, reveal four cards. A Ben Palmer original.",
-  openGraph: {
-    title: "Suits | Almost Yellow",
-    description: "Pick a suit, reveal four cards. A Ben Palmer original.",
-  },
-};
+export const metadata = pageMetadata(
+  "Suits",
+  "Pick a suit, reveal four cards. A Ben Palmer original.",
+);
 
 export default function SuitsPage() {
   return (

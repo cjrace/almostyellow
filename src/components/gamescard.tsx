@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { Card, Text, Image, Button, Flex, Group, Box } from "@mantine/core";
 
 interface GamesCardProps {
@@ -28,6 +29,10 @@ export default function GamesCard({
       >
         <Group wrap="nowrap" gap="sm" flex={1} miw={0}>
           <Image
+            component={NextImage}
+            width={40}
+            height={40}
+            sizes="40px"
             aria-hidden
             alt=""
             src={imagePath}
@@ -40,10 +45,7 @@ export default function GamesCard({
             <Text component="h2" size="md" fw={500}>
               {title}
             </Text>
-            <Text
-              size="sm"
-              c="light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1))"
-            >
+            <Text size="sm" c="dimmed">
               {description}
             </Text>
           </Box>

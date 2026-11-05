@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@mantine/hooks";
+import useGameTimers from "@/components/usegametimers";
 import {
   Box,
   Button,
@@ -12,6 +14,7 @@ import {
 } from "@mantine/core";
 import {
   IconBomb,
+  IconCheck,
   IconSquare,
   IconSquareCheck,
   IconSquareX,
@@ -40,45 +43,87 @@ const BoomBoomPirate = () => {
   const [currentIcon, setCurrentIcon] = useState<JSX.Element | null>(null);
   const [showExplosions, setShowExplosions] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false); // New state for game initialization
+  const [lastPull, setLastPull] = useState("");
+  const reducedMotion = useReducedMotion();
+  const { after, clear } = useGameTimers();
 
-  const ropeIcons = [
-    <IconSquare key="square" />,
-    <IconSquareCheck key="check" />,
-    <IconSquareX key="x" />,
-  ];
+  // The ropes are disabled while one is pulled, and the setup screen comes and
+  // goes, so put focus back where a keyboard user can carry on playing
+  const setupRef = useRef<HTMLInputElement>(null);
+  const ropesRef = useRef<HTMLDivElement>(null);
+  const ropeToFocusRef = useRef<number | null>(null);
+  const backToSetupRef = useRef(false);
 
-  const cycleIcons = () => {
+  useEffect(() => {
+    if (gameInitialized && loadingRope === null && !isExplosion) {
+      if (ropeToFocusRef.current === null) return;
+      ropesRef.current
+        ?.querySelector<HTMLButtonElement>(
+          `[data-rope="${ropeToFocusRef.current.toString()}"]`,
+        )
+        ?.focus();
+      ropeToFocusRef.current = null;
+    }
+    if (!gameInitialized && backToSetupRef.current) {
+      backToSetupRef.current = false;
+      setupRef.current?.focus();
+    }
+  }, [gameInitialized, loadingRope, isExplosion]);
+
+  useEffect(() => {
+    if (loadingRope === null || reducedMotion) return;
+    const ropeIcons = [
+      <IconSquare key="square" />,
+      <IconSquareCheck key="check" />,
+      <IconSquareX key="x" />,
+    ];
     let count = 0;
     const intervalId = setInterval(() => {
       setCurrentIcon(ropeIcons[count]);
       count = (count + 1) % ropeIcons.length;
     }, 100); // Change icon every 100ms
 
-    return intervalId;
-  };
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [loadingRope, reducedMotion]);
 
   const handleRopePull = (index: number) => {
     if (ropeStates[index]) return; // Skip if already clicked
 
+    ropeToFocusRef.current = index;
     setLoadingRope(index);
-    const intervalId = cycleIcons(); // Start cycling icons
-
-    setTimeout(() => {
-      clearInterval(intervalId); // Stop cycling icons
+    after(() => {
       if (index === explosionRope) {
         setIsExplosion(true);
         setRopeStates((prevState) => ({ ...prevState, [index]: "red" }));
-        setShowExplosions(true); // Show explosion animation
-        setTimeout(() => {
+        setLastPull(`Rope ${(index + 1).toString()} was the trap. Boom!`);
+        setShowExplosions(!reducedMotion);
+        after(() => {
           setShowExplosions(false);
-          setIsExplosion(true); // Show modal after explosions
         }, 1500); // Hide explosion after animation
       } else {
         setRopeStates((prevState) => ({ ...prevState, [index]: "green" }));
+        setLastPull(`Rope ${(index + 1).toString()} is safe.`);
       }
       setLoadingRope(null);
       setCurrentIcon(null);
     }, 2000); // Simulate loading state for 2 seconds
+  };
+
+  // Says in words what the colour shows, for screen readers
+  const ropeLabel = (rope: number) => {
+    const name = `Rope ${(rope + 1).toString()}`;
+    if (ropeStates[rope] === "green") return `${name}, safe`;
+    if (ropeStates[rope] === "red") return `${name}, boom!`;
+    return name;
+  };
+
+  // Shows the result by shape as well as colour
+  const ropeIcon = (rope: number) => {
+    if (ropeStates[rope] === "green") return <IconCheck size={16} />;
+    if (ropeStates[rope] === "red") return <IconBomb size={16} />;
+    return null;
   };
 
   const closeModal = () => {
@@ -86,16 +131,21 @@ const BoomBoomPirate = () => {
   };
 
   const restartGame = () => {
+    clear();
+    setShowExplosions(false);
+    backToSetupRef.current = true;
     setGameInitialized(false); // Go back to initiation page
     setExplosionRope(generateRandomRope(totalRopes)); // Generate a new random rope for explosion
     setLoadingRope(null);
     setRopeStates({});
+    setLastPull("");
     setIsExplosion(false);
     setCurrentIcon(null);
   };
 
   const startGame = () => {
     setExplosionRope(generateRandomRope(totalRopes));
+    ropeToFocusRef.current = 0;
     setGameInitialized(true);
   };
 
@@ -103,10 +153,15 @@ const BoomBoomPirate = () => {
   const phoneColumns = totalRopes <= 8 ? 2 : 3;
 
   return (
-    <Box p="md" className={styles.game}>
+    <Box
+      p="md"
+      className={styles.game}
+      data-setup={!gameInitialized || undefined}
+    >
       {!gameInitialized ? (
         <Stack align="center">
           <NumberInput
+            ref={setupRef}
             value={totalRopes}
             onChange={(value) => {
               if (typeof value === "number") {
@@ -128,6 +183,7 @@ const BoomBoomPirate = () => {
           {/* The ropes fill the height left, with Restart at the bottom.
               Few enough columns on a phone that "Rope 50" still fits */}
           <div
+            ref={ropesRef}
             className={styles.ropes}
             style={
               {
@@ -142,6 +198,9 @@ const BoomBoomPirate = () => {
               (rope) => (
                 <Button
                   key={rope}
+                  data-rope={rope}
+                  aria-label={ropeLabel(rope)}
+                  leftSection={ropeIcon(rope)}
                   variant="outline"
                   fullWidth
                   h="100%"
@@ -154,13 +213,16 @@ const BoomBoomPirate = () => {
                   disabled={loadingRope !== null}
                 >
                   {loadingRope === rope
-                    ? (currentIcon ?? "Loading...")
+                    ? reducedMotion
+                      ? "Loading..."
+                      : (currentIcon ?? "Loading...")
                     : `Rope ${(rope + 1).toString()}`}
                 </Button>
               ),
             )}
           </div>
 
+          <Text role="status">{lastPull}</Text>
           <Button
             onClick={restartGame}
             color="red"
@@ -170,26 +232,33 @@ const BoomBoomPirate = () => {
             Restart Game
           </Button>
 
-          <Modal
-            opened={isExplosion}
-            onClose={closeModal}
-            withCloseButton={false}
-          >
-            <Stack align="stretch" justify="center" gap="md">
-              <IconBomb size={48} color="red" />
-              <Text size="lg" fw={700} ta="center" mt="sm">
-                BOOOM!
-              </Text>
-              <Text size="lg" ta="center" mt="sm">
-                Uh-oh! You found the pirate&apos;s trap!
-              </Text>
-              <Space h="md" />
-              <Button onClick={restartGame}>Restart Game</Button>
-              <Button fullWidth mt="md" variant="default" onClick={closeModal}>
-                Close
-              </Button>
-            </Stack>
-          </Modal>
+          {/* Mantine only names a dialog from its own title, so name it here */}
+          <Modal.Root opened={isExplosion} onClose={closeModal}>
+            <Modal.Overlay />
+            <Modal.Content aria-label="Boom!">
+              <Modal.Body>
+                <Stack align="stretch" justify="center" gap="md">
+                  <IconBomb size={48} color="red" />
+                  <Text size="lg" fw={700} ta="center" mt="sm">
+                    BOOOM!
+                  </Text>
+                  <Text size="lg" ta="center" mt="sm">
+                    Uh-oh! You found the pirate&apos;s trap!
+                  </Text>
+                  <Space h="md" />
+                  <Button onClick={restartGame}>Restart Game</Button>
+                  <Button
+                    fullWidth
+                    mt="md"
+                    variant="default"
+                    onClick={closeModal}
+                  >
+                    Close
+                  </Button>
+                </Stack>
+              </Modal.Body>
+            </Modal.Content>
+          </Modal.Root>
 
           {showExplosions && (
             <>

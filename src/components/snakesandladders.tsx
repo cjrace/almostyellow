@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@mantine/hooks";
+import useGameTimers from "@/components/usegametimers";
 import {
   Badge,
   Button,
@@ -59,8 +61,8 @@ interface Player {
 
 interface PlayerListProps {
   players: Player[];
-  currentPlayer: number;
   positions: number[];
+  currentPlayer: number;
   roll: number | null; // The dice result while the current player moves
 }
 
@@ -238,6 +240,7 @@ const PlayerList: React.FC<PlayerListProps> = ({
         // Players are identified by their turn order, which never changes mid-game
         // eslint-disable-next-line @eslint-react/no-array-index-key
         key={index}
+        aria-current={currentPlayer === index ? "step" : undefined}
         mb="xs"
         gap="sm"
         wrap="nowrap"
@@ -281,6 +284,39 @@ const SnakesAndLadders = () => {
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
   const [playersOpened, setPlayersOpened] = useState(false); // Phones only
+  const reducedMotion = useReducedMotion();
+  const { after, clear } = useGameTimers();
+
+  // The buttons a keyboard user is on disappear or are disabled as the game
+  // moves on, so put focus back where they can carry on playing
+  const setupRef = useRef<HTMLInputElement>(null);
+  const rollRef = useRef<HTMLButtonElement>(null);
+  const backToSetupRef = useRef(false);
+
+  useEffect(() => {
+    if (gameInitialized && !isRolling && popupMessage === null) {
+      if (winner === null) {
+        rollRef.current?.focus();
+      } else {
+        // After a win the dice are disabled. Focus Players on phones, or
+        // Restart Game on a wider screen.
+        [
+          ...(rollRef.current?.parentElement?.querySelectorAll<HTMLButtonElement>(
+            "button:not(:disabled)",
+          ) ?? []),
+        ]
+          .find((button) => button.getClientRects().length > 0)
+          ?.focus();
+      }
+    }
+  }, [gameInitialized, isRolling, popupMessage, winner]);
+
+  useEffect(() => {
+    if (!gameInitialized && backToSetupRef.current) {
+      backToSetupRef.current = false;
+      setupRef.current?.focus();
+    }
+  }, [gameInitialized]);
 
   const initializePlayers = () => {
     // Anyone left unnamed gets a default name, and everyone gets the icon the
@@ -326,7 +362,8 @@ const SnakesAndLadders = () => {
     setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % playerPositions.length);
   };
 
-  const cycleDiceIcons = () => {
+  useEffect(() => {
+    if (!isRolling || diceResult !== null || reducedMotion) return;
     const diceIcons = [
       <IconDice1 key="dice1" />,
       <IconDice2 key="dice2" />,
@@ -341,8 +378,10 @@ const SnakesAndLadders = () => {
       count = (count + 1) % diceIcons.length;
     }, 100); // Change icon every 100ms
 
-    return intervalId;
-  };
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isRolling, diceResult, reducedMotion]);
 
   const getDiceIcon = (result: number) => {
     switch (result) {
@@ -368,21 +407,33 @@ const SnakesAndLadders = () => {
     setDiceResult(null); // Clear previous dice result
     setShowDiceResult(false); // Hide dice result
 
-    const intervalId = cycleDiceIcons(); // Start cycling dice icons
-
-    setTimeout(() => {
+    after(() => {
       const result = Math.floor(Math.random() * 6) + 1; // Roll a dice (1-6)
       setDiceResult(result);
       setShowDiceResult(true); // Show dice result
-      clearInterval(intervalId); // Stop cycling dice icons
       setRollingDiceIcon(getDiceIcon(result)); // Set final dice icon
 
-      setTimeout(() => {
+      after(() => {
         let stepsRemaining = result;
         let tempPosition = playerPositions[currentPlayer];
 
         const movePlayer = () => {
           if (stepsRemaining > 0) {
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // Keep the remaining suspense if the preference changes mid-turn.
+              const delay = stepsRemaining * 300;
+              tempPosition = Math.min(tempPosition + stepsRemaining, 100);
+              stepsRemaining = 0;
+              after(() => {
+                setPlayerPositions((positions) =>
+                  positions.map((position, index) =>
+                    index === currentPlayer ? tempPosition : position,
+                  ),
+                );
+                movePlayer();
+              }, delay);
+              return;
+            }
             stepsRemaining--;
             tempPosition = Math.min(tempPosition + 1, 100);
 
@@ -392,7 +443,7 @@ const SnakesAndLadders = () => {
               return newPositions;
             });
 
-            setTimeout(movePlayer, 300); // Continue moving with delay
+            after(movePlayer, 300); // Continue moving with delay
           } else {
             // Handle snakes and ladders after the final position is reached
             const finalPosition = tempPosition;
@@ -435,6 +486,9 @@ const SnakesAndLadders = () => {
   };
 
   const restartGame = () => {
+    clear();
+    setIsRolling(false);
+    setShowDiceResult(false);
     setPlayerPositions(Array(numPlayers).fill(0));
     setCurrentPlayer(0);
     setDiceResult(null);
@@ -449,6 +503,7 @@ const SnakesAndLadders = () => {
     }));
     setPlayers(defaultPlayers);
 
+    backToSetupRef.current = true;
     setGameInitialized(false); // Reset to show initiation step };
   };
 
@@ -459,6 +514,7 @@ const SnakesAndLadders = () => {
       <Box maw="40rem">
         {/* Form to set up the players */}
         <NumberInput
+          ref={setupRef}
           value={numPlayers}
           onChange={(value) => {
             setNumPlayers(Number(value) || 2);
@@ -554,12 +610,17 @@ const SnakesAndLadders = () => {
 
           <Flex direction={{ base: "row", sm: "column" }} gap="sm">
             <Button
+              ref={rollRef}
               onClick={rollDice}
               flex={{ base: 1, sm: "none" }}
-              disabled={!!winner || playerPositions.length === 0 || isRolling}
+              disabled={
+                winner !== null || playerPositions.length === 0 || isRolling
+              }
             >
               {isRolling
-                ? rollingDiceIcon
+                ? reducedMotion
+                  ? "Rolling..."
+                  : rollingDiceIcon
                 : `Roll Dice (${current?.name ?? ""})`}
             </Button>
             <Button
@@ -585,6 +646,7 @@ const SnakesAndLadders = () => {
           position="bottom"
           size="auto"
           title="Players"
+          closeButtonProps={{ "aria-label": "Close players" }}
           hiddenFrom="sm"
         >
           <PlayerList
@@ -641,7 +703,12 @@ const SnakesAndLadders = () => {
           </div>
         </div>
 
-        <Modal opened={!!popupMessage} onClose={closePopup} title="Game Update">
+        <Modal
+          opened={!!popupMessage}
+          onClose={closePopup}
+          title="Game Update"
+          closeButtonProps={{ "aria-label": "Close" }}
+        >
           {popupMessage}
           {winner !== null && (
             <Button onClick={restartGame} fullWidth mt="md">

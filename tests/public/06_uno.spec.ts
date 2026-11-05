@@ -5,25 +5,16 @@ for (const { path, tab } of [
   { path: "/games/uno-tracker/stats", tab: "Statistics" },
   { path: "/games/uno-tracker/history", tab: "History" },
 ]) {
-  test(`${path} is public and fits narrow and landscape screens`, async ({
-    page,
-  }) => {
+  test(`${path} is public and fits the device viewport`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Uno tracker",
     );
-    for (const size of [
-      { width: 320, height: 640 },
-      { width: 390, height: 844 },
-      { width: 844, height: 390 },
-    ]) {
-      await page.setViewportSize(size);
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= window.innerWidth,
-        ),
-      ).toBe(true);
-    }
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
     // The segmented control hides its radio inputs, so check the visible
     // labels and which radio is selected
     const tabs = page.getByRole("radiogroup", { name: "Uno pages" });

@@ -2,12 +2,17 @@ import { defineConfig, devices } from "@playwright/test";
 /* Point at the Firebase emulators, never production */
 import "./tests/test-env";
 
-/* Unit and Firebase emulator tests are run by Vitest */
+/* Vitest has separate runners for unit and Firebase tests. */
 const vitestTests = ["unit/**", "firebase/**"];
-/* The Uno scoring tests change one shared scoreboard, so only one project runs
-   them. A project's testIgnore replaces the top-level one, hence vitestTests. */
-const sharedScoreboard = [...vitestTests, "**/admin/07_uno.spec.ts"];
-/* Service-worker evaluation is only available in Chromium */
+/* Uno scoring changes one shared scoreboard, and SEO is browser-independent,
+   so only desktop Chrome runs them. Each project's testIgnore replaces the
+   top-level one, hence vitestTests. */
+const sharedScoreboard = [
+  ...vitestTests,
+  "**/admin/07_uno.spec.ts",
+  "**/public/06_seo.spec.ts",
+];
+/* Service-worker evaluation needs Chromium. */
 const serviceWorker = [...sharedScoreboard, "**/public/06_uno_offline.spec.ts"];
 
 /**
@@ -32,7 +37,7 @@ export default defineConfig({
      Open it with "pnpm exec playwright show-report". */
   reporter: [
     ["dot"],
-    ["html", { open: "never" }],
+    process.env.CI ? ["blob"] : ["html", { open: "never" }],
     ["./tests/reporters/summary.ts"],
   ],
   /* Extra slack on assertions; the default 5s races with App Router renders. */
@@ -54,24 +59,28 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       use: {
-        ...devices["Pixel 8"],
+        ...devices["Pixel 9"],
       },
       testIgnore: sharedScoreboard,
+      grepInvert: /@desktop/,
     },
     {
       name: "Google Chrome",
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",
+        viewport: { width: 1280, height: 800 },
       },
+      grepInvert: /@phone/,
     },
     /* Every browser on an iPhone uses WebKit, Chrome included */
     {
       name: "Mobile Safari",
       use: {
-        ...devices["iPhone 14"],
+        ...devices["iPhone 17"],
       },
       testIgnore: serviceWorker,
+      grepInvert: /@desktop/,
     },
   ],
 

@@ -7,7 +7,9 @@
 .screen {
   display: flex;
   flex-direction: column;
-  min-height: calc(100dvh - 2 * var(--site-frame-padding));
+  min-height: calc(
+    100dvh - var(--site-frame-padding) - var(--site-frame-bottom)
+  );
 }
 
 .screen > main,

@@ -1,0 +1,20 @@
+/* Let the big homepage buttons wrap on narrow screens rather than cut their
+   text off (WCAG 1.4.10) */
+.button {
+  display: inline-flex;
+  align-items: center;
+  height: auto;
+  min-height: var(--button-height);
+  max-width: 100%;
+  padding-block: 8px;
+}
+
+.label {
+  height: auto;
+  line-height: 1.4;
+  text-box-trim: none;
+  white-space: normal;
+  text-align: center;
+  /* Leave room for descenders when a label wraps onto another line. */
+  overflow: visible;
+}

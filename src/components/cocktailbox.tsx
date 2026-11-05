@@ -12,11 +12,17 @@ const renderRatingMoons = (rating: number) => {
     `🌝`.repeat(fullMoons) +
     (hasHalfMoon ? `🌗` : "") +
     `🌚`.repeat(emptyMoons);
-  return <span>{moonString}</span>;
+  // Screen readers would otherwise read out every moon by name
+  return (
+    <span role="img" aria-label={`Rated ${rating.toString()} out of 5`}>
+      {moonString}
+    </span>
+  );
 };
 
 // Create the design for each cocktail entry on the cocktails page
 interface Cocktail {
+  eager?: boolean;
   photoUrl: string;
   name: string;
   rating: number;
@@ -27,6 +33,7 @@ interface Cocktail {
 }
 
 const CocktailBox: React.FC<Cocktail> = ({
+  eager = false,
   photoUrl,
   name,
   rating,
@@ -36,6 +43,8 @@ const CocktailBox: React.FC<Cocktail> = ({
     <div className={styles.cocktailBox} data-testid="cocktail-card">
       <div className={styles.cocktailImageContainer}>
         <Image
+          loading={eager ? "eager" : "lazy"}
+          sizes="(max-width: 24rem) 35vw, 150px"
           aria-hidden
           src={photoUrl}
           alt={name}
