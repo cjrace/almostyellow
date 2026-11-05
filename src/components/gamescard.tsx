@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, Text, Image, Button, Center } from "@mantine/core";
+import { Card, Text, Image, Button, Flex, Group, Box } from "@mantine/core";
 
 interface GamesCardProps {
   imagePath: string;
@@ -19,46 +19,49 @@ export default function GamesCard({
   linktext,
 }: GamesCardProps) {
   return (
-    <Card
-      shadow="xs"
-      p="md"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--mantine-spacing-xs)",
-        height: "100%",
-      }}
-    >
-      <Center
-        h={{ base: "9rem", lg: "auto" }}
-        mih={{ base: "4rem", lg: "2rem" }}
-        flex={{ lg: "1 1 0" }}
-        style={{ containerType: "size" }}
+    <Card component="article" shadow="xs" p="sm" h="100%">
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        align={{ base: "stretch", md: "center" }}
+        gap="sm"
+        h="100%"
       >
-        <Image
-          aria-hidden
-          alt=""
-          src={imagePath}
-          h="100cqh"
-          mah="10rem"
-          w="auto"
-          maw="100%"
-          fit="contain"
-        />
-      </Center>
-      <div>
-        <Text fw={500}>{title}</Text>
-        <Text c="dimmed">{description}</Text>
-      </div>
-      <Button
-        variant="default"
-        component={Link}
-        size="md"
-        href={link}
-        style={{ flexShrink: 0 }}
-      >
-        Play {linktext}!
-      </Button>
+        <Group wrap="nowrap" gap="sm" flex={1} miw={0}>
+          <Image
+            aria-hidden
+            alt=""
+            src={imagePath}
+            h={40}
+            w={40}
+            fit="contain"
+            style={{ flexShrink: 0 }}
+          />
+          <Box miw={0}>
+            <Text component="h2" size="md" fw={500}>
+              {title}
+            </Text>
+            <Text
+              size="sm"
+              c="light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1))"
+            >
+              {description}
+            </Text>
+          </Box>
+        </Group>
+        <Button
+          variant="default"
+          component={Link}
+          size="sm"
+          href={link}
+          w={{ base: "100%", md: 146 }}
+          h={44}
+          px="xs"
+          style={{ flexShrink: 0 }}
+          styles={{ label: { whiteSpace: "normal" } }}
+        >
+          Play {linktext}!
+        </Button>
+      </Flex>
     </Card>
   );
 }

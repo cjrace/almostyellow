@@ -66,7 +66,11 @@ test.describe("A visitor with a short desktop window", () => {
     const play = page.getByRole("link", { name: /^Play / });
     await expect(play).toHaveCount(7);
     for (const button of await play.all()) {
-      await button.scrollIntoViewIfNeeded();
+      // Centre the target to avoid Chromium rounding a nearest-edge scroll
+      // down and leaving a fraction of its last pixel outside the viewport.
+      await button.evaluate((element) => {
+        element.scrollIntoView({ block: "center" });
+      });
       await expect(button).toBeInViewport({ ratio: 1 });
     }
     expect(
@@ -76,6 +80,61 @@ test.describe("A visitor with a short desktop window", () => {
     ).toBe(false);
   });
 });
+
+for (const viewport of [smallPhone, phone, { width: 412, height: 915 }]) {
+  test.describe(`A games visitor on a ${viewport.width.toString()}px phone`, () => {
+    test.use({ viewport });
+
+    test("sees full-width Play buttons of the same size below each card's content", async ({
+      page,
+    }) => {
+      await page.goto("/games");
+      const cards = page.locator("main article");
+      await expect(cards).toHaveCount(7);
+      await expect(cards.getByRole("heading", { level: 2 })).toHaveText([
+        "Irish Bingo",
+        "Snakes and Ladders",
+        "Suits",
+        "Uno tracker",
+        "Red or Black v1",
+        "Boom Boom Pirate",
+        "Quiz buzzer",
+      ]);
+
+      for (const scheme of ["dark", "light"]) {
+        await page.evaluate((colourScheme) => {
+          document.documentElement.setAttribute(
+            "data-mantine-color-scheme",
+            colourScheme,
+          );
+        }, scheme);
+        const sizes = [];
+        for (const card of await cards.all()) {
+          const button = card.getByRole("link", { name: /^Play / });
+          const cardBox = await card.boundingBox();
+          const buttonBox = await button.boundingBox();
+          const imageBox = await card.locator("img").boundingBox();
+          const textBox = await card.locator("p").boundingBox();
+          if (!cardBox || !buttonBox || !imageBox || !textBox)
+            throw new Error("A game card's content is missing");
+          expect(buttonBox.y).toBeGreaterThanOrEqual(
+            Math.max(imageBox.y + imageBox.height, textBox.y + textBox.height),
+          );
+          expect(cardBox.width - buttonBox.width).toBeLessThanOrEqual(32);
+          expect(buttonBox.height).toBeGreaterThanOrEqual(44);
+          sizes.push({ width: buttonBox.width, height: buttonBox.height });
+        }
+        expect(new Set(sizes.map((size) => size.width)).size).toBe(1);
+        expect(new Set(sizes.map((size) => size.height)).size).toBe(1);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth > window.innerWidth,
+          ),
+        ).toBe(false);
+      }
+    });
+  });
+}
 
 // Whether the page is taller than the window
 function pageScrolls(page: Page) {
