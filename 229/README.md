@@ -1,5 +1,7 @@
 # PR 229 comparison and checks
 
+[Latest homepage button correction, matching before/after captures and check results](button-text/README.md). The homepage after captures below now include this correction; other captures and measurements are from the earlier review described here.
+
 Before: `47631a69989be14b244b68bf114ce9e231ca831d` (main). After: `1900e70069668103e2774f799cc620f263e087b3`.
 
 The full-page pairs use the same synthetic Firebase fixtures, dark colour scheme (light for Uno) and viewports: desktop 1280 × 800, mobile 390 × 844, device scale factor 1. The badge is a deterministic copy of the vendor credit so comparisons do not depend on its network request. No production records appear. The active Snakes and Ladders game uses the same random seed.

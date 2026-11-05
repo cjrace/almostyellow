@@ -1,0 +1,656 @@
+{
+  "measurements": [
+    {
+      "browser": "Chrome",
+      "width": 320,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 300,
+          "height": 74,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "width": 320,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 300,
+          "height": 74,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "width": 390,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "width": 390,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "width": 1280,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "Chrome",
+      "width": 1280,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 320,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 300,
+          "height": 74,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 320,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 300,
+          "height": 74,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 390,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 390,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 1280,
+      "scheme": "dark",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    },
+    {
+      "browser": "WebKit",
+      "width": 1280,
+      "scheme": "light",
+      "sizes": [
+        {
+          "text": "View our games",
+          "width": 234.609375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "How we make decisions",
+          "width": 305.578125,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cocktail time!",
+          "width": 213.9375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's whisky journal",
+          "width": 278.75,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Cam's film list",
+          "width": 215.25,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        },
+        {
+          "text": "Admin stuff",
+          "width": 196.234375,
+          "height": 60,
+          "centreOffset": 0,
+          "clipped": false
+        }
+      ]
+    }
+  ],
+  "focusOrder": [
+    {
+      "name": "Skip to main content",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Unleash confetti",
+      "tag": "BUTTON",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Toggle color scheme",
+      "tag": "BUTTON",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Open GitHub repository in a new tab",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "View our games",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "How we make decisions",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Cocktail time!",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Cam's whisky journal",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Cam's film list",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "Admin stuff",
+      "tag": "A",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    }
+  ],
+  "keyboardNavigation": "passed",
+  "manualChecks": "Unavailable: interactive browser disabled in Work settings."
+}
