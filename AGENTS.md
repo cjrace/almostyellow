@@ -10,6 +10,8 @@ pnpm test-only     # The same without reformatting files or rebuilding the app
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 pnpm test:lighthouse  # Build, then Lighthouse on every public page against the Firebase emulators
+pnpm test:health   # Build, then Lighthouse and internal link/image checks against the emulators
+pnpm audit:dependencies  # Report production and development dependency advisories
 ```
 
 `pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
@@ -25,6 +27,8 @@ Playwright will not reuse a server already on port 3000, so stop `pnpm dev` firs
 Husky pre-commit hooks run Prettier automatically on staged files.
 
 CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
+
+`.github/workflows/monthly-health.yml` runs on the first of each month at 06:17 UTC and supports manual runs. It checks website quality against the Firebase fixtures and audits dependencies in separate jobs. Reports are kept for 90 days. Problems open or update one GitHub issue assigned to `cjrace`; a clean run closes it. Only runs on the default branch can change the alert issue. GitHub schedules start once the workflow is merged into the default branch; public repositories disable schedules after 60 days without repository activity. GitHub email delivery depends on the user's notification settings.
 
 `scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
 
@@ -115,7 +119,7 @@ The site aims for WCAG 2.2 AA. Every change to a page or component is checked ag
 - `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests, and Lighthouse. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
 - Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
 - `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check every page in both colour schemes, in Chrome and Mobile Chrome. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
-- `pnpm test:lighthouse` runs Lighthouse CI (`lighthouserc.cjs`) on every public page. Accessibility and SEO must score 100 and best practices 90; performance only warns. Reports are written to `.lighthouseci/`. Run it through the script, never `lhci` by hand, so the app reads from the emulators.
+- `pnpm test:health` runs the monthly website checks; `pnpm test:lighthouse` runs Lighthouse alone on demand. Lighthouse collects three samples per public page and uses median scores. Accessibility and SEO must score 100 and best practices 90; performance below 80 warns and raises the monthly alert. Reports are written to `.lighthouseci/` and `health-reports/`. Run these through the scripts, never `lhci` by hand, so the app reads from the emulators. Lighthouse is separate from `pnpm test` and PR checks; axe and the explicit SEO tests stay in the normal suite.
 - Colour contrast comes from the theme in `src/styles/acalat.tsx`: `autoContrast` picks the text colour on filled components, and `acalatCssVariables` darkens Mantine's dimmed, error and link colours. Use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
 - Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
 

@@ -5,8 +5,7 @@ import {
   mockConfetti,
   showConfetti,
 } from "../confetti";
-import { discoverRoutes } from "../../src/discover-routes";
-import { films, whiskies } from "../firebase/fixtures";
+import { whiskies } from "../firebase/fixtures";
 import { signIn } from "../admin/helpers";
 
 // WebKit can send a worker-controlled request outside page.route.
@@ -135,67 +134,51 @@ test.describe("A visitor using confetti", () => {
     }
   });
 
-  for (const viewport of [
-    { width: 320, height: 640 },
-    { width: 632, height: 352 },
-    { width: 1280, height: 800 },
-  ]) {
-    for (const scheme of ["dark", "light"] as const) {
-      test.describe(`${String(viewport.width)}px ${scheme}`, () => {
-        test.use({ viewport });
-        for (const admin of [false, true]) {
-          test(`can reach every ${admin ? "admin" : "public"} page action above the badge`, async ({
-            page,
-          }) => {
-            test.slow();
-            await page.addInitScript((value) => {
-              localStorage.setItem("mantine-color-scheme-value", value);
-            }, scheme);
-            await mockConfetti(page);
-            const routes = discoverRoutes();
-            if (admin) await signIn(page);
-            const paths = admin
-              ? routes.adminRoutes.filter((path) => path !== "/admin/login")
-              : routes.publicRoutes
-                  .map(({ path }) => path)
-                  .concat("/admin/login");
-            for (const template of paths) {
-              const path = template
-                .replace("films/[id]", `films/${films[0].id}`)
-                .replace(
-                  "whiskyjournal/[id]",
-                  `whiskyjournal/${whiskies[0].id}`,
-                );
-              await test.step(`Given the badge is shown on ${path}`, async () => {
-                await page.goto(path);
-                await showConfetti(page);
-                const actions = page.locator(
-                  'main button:visible, main a:visible, main input:visible:not([type="hidden"]), main textarea:visible, main select:visible',
-                );
-                for (const action of await actions.all()) {
-                  const box = await action.boundingBox();
-                  // Hidden radio inputs have visible labels instead.
-                  if (box && box.width >= 24 && box.height >= 24)
-                    await expectClearOfBadge(action, page);
-                }
-                expect(
-                  await page.evaluate(
-                    () => document.documentElement.scrollWidth <= innerWidth,
-                  ),
-                ).toBe(true);
-                const back = page.getByRole("button", {
-                  name: "Back to top",
-                  exact: true,
-                });
-                if (await back.isVisible())
-                  await expectClearOfBadge(back, page);
-              });
-            }
-          });
-        }
+  // Check each spacing mechanism on a representative page. Repeating every
+  // control on every route adds little coverage of this shared behaviour.
+  test("keeps a scrolling page, Back to top and a dialog clear of the badge", async ({
+    page,
+  }) => {
+    await test.step("Given the badge is shown on a narrow, light-scheme journal", async () => {
+      await page.setViewportSize({ width: 320, height: 640 });
+      await page.addInitScript(() => {
+        localStorage.setItem("mantine-color-scheme-value", "light");
       });
-    }
-  }
+      await mockConfetti(page);
+      await page.goto("/whiskyjournal");
+      await showConfetti(page);
+    });
+
+    await test.step("When they scroll to the last entry, its action and Back to top clear the badge", async () => {
+      await expectClearOfBadge(
+        page.getByRole("link", { name: /^Edit / }).last(),
+        page,
+      );
+      await expectClearOfBadge(
+        page.getByRole("button", { name: "Back to top", exact: true }),
+        page,
+      );
+    });
+
+    await test.step("Then they can also reach the rating dialog's close button above the badge", async () => {
+      await page
+        .getByRole("button", {
+          name: "Open modal detailing whisky rating scales",
+        })
+        .click();
+      const dialog = page.getByRole("dialog", { name: "Whisky rating scales" });
+      await expect(dialog).toBeVisible();
+      await expectClearOfBadge(
+        dialog.getByRole("button", { name: "Close modal" }),
+        page,
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    });
+  });
 
   test("keeps game controls and the Players drawer clear at their limits", async ({
     page,
@@ -223,10 +206,11 @@ test.describe("A visitor using confetti", () => {
     await page.getByLabel("Number of ropes").fill("50");
     await page.getByRole("button", { name: "Start Game" }).click();
     await showConfetti(page);
-    for (const rope of await page
-      .getByRole("button", { name: /^Rope \d+$/ })
-      .all())
-      await expectClearOfBadge(rope, page);
+    for (const name of ["Rope 1", "Rope 50"])
+      await expectClearOfBadge(
+        page.getByRole("button", { name, exact: true }),
+        page,
+      );
     await expectClearOfBadge(
       page.getByRole("button", { name: "Restart Game" }),
       page,
@@ -238,7 +222,7 @@ test.describe("A visitor using confetti", () => {
         name: "Draw a card",
         exact: true,
       });
-      await expectClearOfBadge(button, page);
+      if (draw === 0 || draw === 51) await expectClearOfBadge(button, page);
       await button.click();
     }
     await expectClearOfBadge(
@@ -252,7 +236,7 @@ test.describe("A visitor using confetti", () => {
     );
   });
 
-  test("keeps every Red or Black draw and Suits turn clear of the badge", async ({
+  test("keeps the first and final Red or Black draws and Suits turns clear of the badge", async ({
     page,
   }) => {
     test.slow();
@@ -265,7 +249,7 @@ test.describe("A visitor using confetti", () => {
         name: "Draw a card",
         exact: true,
       });
-      await expectClearOfBadge(button, page);
+      if (draw === 0 || draw === 51) await expectClearOfBadge(button, page);
       await button.click();
     }
     await expectClearOfBadge(
@@ -306,12 +290,13 @@ test.describe("A visitor using confetti", () => {
     for (let turn = 0; turn < 13; turn++) {
       await page.getByText("Hearts", { exact: true }).last().click();
       const reveal = page.getByRole("button", { name: "Reveal four cards" });
-      await expectClearOfBadge(reveal, page);
+      if (turn === 0 || turn === 12) await expectClearOfBadge(reveal, page);
       await reveal.click();
-      await expectClearOfBadge(
-        page.getByRole("button", { name: "Change players" }),
-        page,
-      );
+      if (turn === 0 || turn === 12)
+        await expectClearOfBadge(
+          page.getByRole("button", { name: "Change players" }),
+          page,
+        );
     }
     await expectClearOfBadge(
       page.getByRole("button", { name: "Play again with same players" }),

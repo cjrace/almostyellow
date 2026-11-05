@@ -1,4 +1,4 @@
-// Shared by scripts/e2e.mts and scripts/lighthouse.mts, which both run the app
+// Shared by the health checks, Lighthouse and manual preview. They run the app
 // against the Firebase Auth and Firestore emulators, so they never touch
 // production data or accounts.
 import { spawnSync } from "node:child_process";
@@ -77,4 +77,15 @@ export function inEmulators(script: string[]) {
     { stdio: "inherit" },
   );
   return result.status ?? 1;
+}
+
+export async function runBrowserChecks(config: string) {
+  await exitIfPortsInUse();
+  let status = process.argv.includes("--no-build")
+    ? 0
+    : run("pnpm exec next build");
+  if (status === 0) {
+    status = inEmulators(["pnpm exec playwright test --config", quote(config)]);
+  }
+  process.exit(status);
 }

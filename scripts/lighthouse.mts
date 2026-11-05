@@ -5,16 +5,6 @@
 //   node scripts/lighthouse.mts --no-build  reuse the existing .next build
 //
 // Reports are written to .lighthouseci/.
-import { exitIfPortsInUse, inEmulators, run } from "./emulators.mts";
+import { runBrowserChecks } from "./emulators.mts";
 
-const build = !process.argv.includes("--no-build");
-
-await exitIfPortsInUse();
-
-let status = build ? run("pnpm exec next build") : 0;
-if (status === 0) {
-  status = inEmulators([
-    "pnpm exec playwright test --config playwright.lighthouse.config.ts",
-  ]);
-}
-process.exit(status);
+await runBrowserChecks("playwright.lighthouse.config.ts");

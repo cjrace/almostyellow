@@ -26,7 +26,7 @@ pnpm test:e2e tests/public/06_seo.spec.ts tests/public-firestore/04_a11y.spec.ts
 
 Add `--no-build` if nothing has changed since the last build. Use `-g` to check only the affected pages, writing the route without its leading slash, such as `-g "games.uno"`, as Playwright reads a pattern starting with `/` as a regular expression. Each axe failure gives the rule, the element, its HTML and a link explaining the fix.
 
-If any public page is affected, run Lighthouse too. It takes a few minutes:
+Lighthouse runs separately in the monthly health workflow. For a change to shared layout, image delivery or page loading, run it on demand too. It takes three samples per page:
 
 ```bash
 pnpm test:lighthouse --no-build

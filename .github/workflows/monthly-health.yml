@@ -1,0 +1,94 @@
+name: Monthly health check
+
+on:
+  schedule:
+    - cron: "17 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monthly-health-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Lighthouse, internal links and images
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      performance_warning: ${{ steps.check.outputs.performance_warning }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Check the app against the Firebase fixtures
+        id: check
+        run: pnpm test:health
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: monthly-website-health
+          include-hidden-files: true
+          path: |
+            .lighthouseci/
+            health-reports/
+            test-results/health/
+          retention-days: 90
+
+  dependencies:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm audit:dependencies
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: monthly-dependency-health
+          path: health-reports/
+          retention-days: 90
+
+  alert:
+    name: Report outstanding problems
+    needs: [quality, dependencies]
+    if: ${{ always() && !cancelled() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/github-script@v9
+        env:
+          HEALTH_RESULTS: ${{ toJSON(needs) }}
+        with:
+          script: |
+            const { pathToFileURL } = require('node:url');
+            const { updateHealthIssue } = await import(pathToFileURL(`${process.cwd()}/scripts/monthly-health-alert.ts`).href);
+            await updateHealthIssue({
+              github,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              runUrl: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              runId: `${context.runId}-${process.env.GITHUB_RUN_ATTEMPT}`,
+              results: JSON.parse(process.env.HEALTH_RESULTS),
+            });

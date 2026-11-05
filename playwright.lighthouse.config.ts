@@ -5,7 +5,8 @@ import "./tests/test-env";
 // Runs Lighthouse against every public page, through scripts/lighthouse.mts.
 // Playwright seeds the emulators and starts the app, as for the other tests.
 export default defineConfig({
-  testDir: "./tests/lighthouse",
+  testDir: "./tests/health",
+  testMatch: "lighthouse.spec.ts",
   globalSetup: "./tests/global-setup.ts",
   workers: 1,
   retries: 0,

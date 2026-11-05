@@ -44,6 +44,7 @@ test-results.json
 
 # lighthouse
 /.lighthouseci/
+/health-reports/
 
 # firebase emulators
 firestore-debug.log

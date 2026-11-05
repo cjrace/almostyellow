@@ -22,6 +22,7 @@ const ignoresConfig = defineConfig([
       "playwright-report/",
       "test-results/",
       ".lighthouseci/",
+      "health-reports/",
       ".vercel/",
       "**/pnpm-*/dist/",
       // Claude Code keeps worktrees here, each with its own copy of the code

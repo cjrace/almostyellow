@@ -1,7 +1,7 @@
-// Runs every check in order, with a heading for each stage and a one-line
+// Runs the PR checks in order, with a heading for each stage and a one-line
 // result for the quiet ones (Prettier and ESLint).
 //
-//   pnpm test                  format, lint, then every test suite
+//   pnpm test                  format, lint, then the normal test suites
 //   pnpm test --no-format      leave the files as they are
 //   pnpm test-only             --no-format, and reuse the existing .next build
 //
@@ -14,7 +14,7 @@ const args = process.argv.slice(2);
 const format = !args.includes("--no-format");
 const build = !args.includes("--no-build");
 
-const stages = format ? 6 : 5;
+const stages = format ? 5 : 4;
 let stage = 0;
 let stageName = "";
 
@@ -121,8 +121,5 @@ heading(
   `End-to-end tests with Playwright (${build ? "build, then " : ""}Chrome and Safari)`,
 );
 run(`node scripts/e2e.mts${build ? "" : " --no-build"}`);
-
-heading("Accessibility and SEO checks with Lighthouse");
-run("node scripts/lighthouse.mts --no-build");
 
 console.log(`\n=== [Overall] All checks passed in ${elapsed()} ===`);
