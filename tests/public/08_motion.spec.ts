@@ -124,10 +124,28 @@ test.describe("A player who requests reduced motion", () => {
     isMobile,
   }) => {
     await page.goto("/games/snakesandladders");
-    await page.getByRole("button", { name: "Start game!" }).click();
     await page.evaluate(() => {
-      Math.random = () => 0.99;
+      // Keep square 6 clear of snakes and ladders on every restart. A random
+      // Game Update can appear after an isVisible check and block Players.
+      window.addEventListener(
+        "click",
+        (event) => {
+          if (!(event.target instanceof Element)) return;
+          const button = event.target.closest("button");
+          if (button?.textContent === "Start game!") {
+            let seed = 2;
+            Math.random = () => {
+              seed = (seed * 1664525 + 1013904223) >>> 0;
+              return seed / 4294967296;
+            };
+          } else if (button?.textContent.startsWith("Roll Dice")) {
+            Math.random = () => 0.99;
+          }
+        },
+        { capture: true },
+      );
     });
+    await page.getByRole("button", { name: "Start game!" }).click();
     await page.clock.install({ time: new Date("2026-11-05T12:00:00Z") });
     await page.clock.pauseAt(new Date("2026-11-05T12:01:00Z"));
     await page.getByRole("button", { name: /^Roll Dice/ }).click();
@@ -144,8 +162,9 @@ test.describe("A player who requests reduced motion", () => {
     await expect(page.getByTestId("board")).not.toContainText("Player 1");
     await page.clock.runFor(1);
     await expect(page.getByTestId("board")).toContainText("Player 1");
-    const update = page.getByRole("dialog", { name: "Game Update" });
-    if (await update.isVisible()) await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Game Update" })).toHaveCount(
+      0,
+    );
     if (isMobile)
       await page.getByRole("button", { name: "Players", exact: true }).click();
     await page

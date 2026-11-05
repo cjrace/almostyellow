@@ -43,6 +43,15 @@ test.describe("A visitor using confetti", () => {
     const route = await requested.promise;
 
     await page.emulateMedia({ reducedMotion: "reduce" });
+    // Wait for the browser to apply the preference before completing the
+    // download; emulateMedia can return before WebKit updates media queries.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        ),
+      )
+      .toBe(true);
     await page.evaluate(() => {
       const script = document.querySelector(
         'script[src="https://run.confettipage.com/here.js"]',
@@ -70,6 +79,13 @@ test.describe("A visitor using confetti", () => {
     );
 
     await page.emulateMedia({ reducedMotion: "no-preference" });
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        ),
+      )
+      .toBe(false);
     await page.getByRole("button", { name: "Unleash confetti" }).click();
     await expect(page.locator("html")).toHaveAttribute(
       "data-confetti-played",
