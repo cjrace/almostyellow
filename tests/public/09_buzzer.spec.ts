@@ -35,7 +35,7 @@ test.describe("Quiz host and guests", () => {
       page.getByRole("heading", { name: "Players (1/20)" }),
     ).toBeVisible();
     const context = await browser.newContext({
-      baseURL: "http://localhost:3000",
+      baseURL: testInfo.project.use.baseURL,
       viewport: testInfo.project.use.viewport,
       isMobile: testInfo.project.use.isMobile,
       hasTouch: testInfo.project.use.hasTouch,
@@ -58,10 +58,28 @@ test.describe("Quiz host and guests", () => {
           guest.getByRole("button", { name: "Buzz!", exact: true }),
         ).toBeEnabled();
         await guest.getByRole("button", { name: "Buzz!", exact: true }).focus();
-        await guest.keyboard.press("Space");
+        const cap = guest
+          .getByRole("button", { name: "Buzz!", exact: true })
+          .locator("span")
+          .first();
+        const raised = await cap.boundingBox();
+        if (!raised) throw new Error("The buzzer cap is missing");
+        await guest.keyboard.down("Space");
+        await expect
+          .poll(async () => (await cap.boundingBox())?.y ?? 0)
+          .toBeGreaterThan(raised.y + 5);
+        await guest.keyboard.up("Space");
         await expect(
           guest.getByRole("button", { name: "Buzz recorded", exact: true }),
         ).toBeVisible();
+        await guest.emulateMedia({ reducedMotion: "reduce" });
+        await expect(
+          guest
+            .getByRole("button", { name: "Buzz recorded", exact: true })
+            .locator("span")
+            .first(),
+        ).toHaveCSS("transition-duration", "0s");
+        await guest.emulateMedia({ reducedMotion: "no-preference" });
         await expect(
           page.getByRole("cell", { name: guestName, exact: true }),
         ).toBeVisible();
@@ -90,7 +108,7 @@ test.describe("Quiz host and guests", () => {
         .click();
       await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
-        guest.getByRole("cell", { name: "Guest", exact: true }),
+        guest.getByRole("cell", { name: guestName, exact: true }),
       ).toHaveCount(0);
       await page
         .getByRole("button", { name: "Open buzzing", exact: true })
@@ -126,6 +144,12 @@ test.describe("Quiz host and guests", () => {
     } finally {
       await context.close();
     }
+  });
+  test("puts the buzzer last in the games list", async ({ page }) => {
+    await page.goto("/games");
+    await expect(
+      page.getByRole("link", { name: /^Play / }).last(),
+    ).toHaveAttribute("href", "/games/buzzer");
   });
   test("fits narrow screens and zoom in both colour schemes", async ({
     page,

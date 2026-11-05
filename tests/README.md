@@ -79,4 +79,4 @@ If you write a test that imports a module like that, or one that changes `proces
 
 ## Quiz buzzer
 
-`unit/buzzer.test.ts` checks timestamp ordering. `firebase/buzzer.test.ts` exercises room transactions, concurrent players and Security Rules. `public/09_buzzer.spec.ts` runs separate host and guest browser contexts against synthetic users. See `docs/buzzer.md` for deployment and real-device performance checks.
+`unit/buzzer.test.ts` checks timestamp ordering. `firebase/buzzer.test.ts` exercises room transactions, concurrent players and Security Rules. `public/09_buzzer.spec.ts` runs separate host and guest browser contexts against synthetic users. See `docs/buzzer.md` for recovery and real-device performance checks.

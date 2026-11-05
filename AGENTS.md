@@ -37,7 +37,9 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 ## PR screenshots
 
-When a PR changes how a page looks, include before and after screenshots of each affected page at both desktop and mobile sizes in its description. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check both layouts even when the change is aimed at only one of them.
+For a new feature, show representative images of the new screens and prioritise its main interaction. Before and after images are not needed when there is no useful previous version to compare. For changes to existing screens, include matching before and after pairs where they help explain the change.
+
+Use Cam and Laura as player names in PR screenshots. Keep artificial stress-test names in automated tests rather than published screenshots. Capture full pages so overflow is visible, and include desktop and mobile views when layouts differ. Show both colour schemes or interaction states when they explain distinct behaviour.
 
 Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
@@ -87,7 +89,7 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 The buzzer at `/games/buzzer` uses protected host actions in `src/actions/buzzer.ts` and guest POST commands in `src/app/api/buzzer/route.ts`. Host actions require an authorised session and room ownership; guest commands verify Firebase ID tokens and room membership. The room transactions are in `src/rooms/service.ts`, with browser subscriptions and timestamp ordering in `src/buzzer/`. Browser writes are denied. Guest authentication persists in a named Firebase app, separate from the default admin app. Buzzes are never queued offline.
 
-Rooms expire after six hours. Authorised room creation performs bounded cleanup of expired records; there is no TTL policy. See `docs/buzzer.md` for deployment and recovery, and the buzzer unit, Firebase and browser tests for concurrency and privacy coverage.
+Rooms expire after six hours. Authorised room creation performs bounded cleanup of expired records; there is no TTL policy. See `docs/buzzer.md` for behaviour and recovery, and the buzzer unit, Firebase and browser tests for concurrency and privacy coverage.
 
 ### UI
 

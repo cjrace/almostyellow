@@ -33,13 +33,6 @@ export default function Games() {
         >
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Quiz buzzer"
-            description="Join a room and buzz in with friends."
-            link="/games/buzzer"
-            linktext="Quiz buzzer"
-          />
-          <GamesCard
-            imagePath="/images/almo-border.png"
             title="Irish Bingo"
             description="Be the first to flip all your cards and shout 'Bingo!' before anyone else. Are you feeling lucky?"
             link="/games/irishbingo"
@@ -84,6 +77,13 @@ export default function Games() {
             description="Pick your suit and reap the consequences. Another Ben Palmer special."
             link="/games/suits"
             linktext="Suits"
+          />
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Quiz buzzer"
+            description="Join a room and buzz in with friends."
+            link="/games/buzzer"
+            linktext="Quiz buzzer"
           />
         </SimpleGrid>
       </Stack>

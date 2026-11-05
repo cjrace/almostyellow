@@ -95,7 +95,7 @@ See [Uno tracker](docs/uno.md) for scoring, offline storage, historic games and 
 
 ## Quiz buzzer
 
-See [Quiz buzzer](docs/buzzer.md) for rooms, guest identities, deployment and validation.
+See [Quiz buzzer](docs/buzzer.md) for rooms, guest identities, recovery and validation.
 
 ## Deployment
 

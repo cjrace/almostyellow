@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   Title,
+  UnstyledButton,
 } from "@mantine/core";
 import { signInWithCustomToken } from "firebase/auth";
 import {
@@ -31,6 +32,7 @@ import {
   type GuestClient,
 } from "@/buzzer/client";
 import { leaderboard, type Buzz, type RoomView } from "@/buzzer/model";
+import styles from "@/styles/buzzer.module.css";
 
 export default function Buzzer({
   config,
@@ -52,6 +54,8 @@ export default function Buzzer({
   const [cached, setCached] = useState(true);
   const [online, setOnline] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [buzzing, setBuzzing] = useState(false);
+  const [pressed, setPressed] = useState(false);
   const [uncertain, setUncertain] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -231,6 +235,7 @@ export default function Buzzer({
   async function buzz() {
     if (!canBuzz) return;
     const original = room;
+    setBuzzing(true);
     await run(async () => {
       try {
         await send(client, "buzz", {
@@ -259,6 +264,7 @@ export default function Buzzer({
         }
       }
     });
+    setBuzzing(false);
   }
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -489,23 +495,48 @@ export default function Buzzer({
                 )}
                 {playerId && (
                   <>
-                    <Button
-                      autoContrast
+                    <UnstyledButton
                       ref={buzzButtonRef}
-                      size="xl"
-                      h={150}
-                      fullWidth
+                      className={styles.buzzer}
                       aria-disabled={!canBuzz}
-                      data-disabled={!canBuzz || undefined}
+                      data-pressed={pressed || buzzing || ownBuzz || undefined}
+                      onPointerDown={() => {
+                        if (canBuzz) setPressed(true);
+                      }}
+                      onPointerUp={() => {
+                        setPressed(false);
+                      }}
+                      onPointerCancel={() => {
+                        setPressed(false);
+                      }}
+                      onPointerLeave={() => {
+                        setPressed(false);
+                      }}
+                      onKeyDown={(event) => {
+                        if (
+                          canBuzz &&
+                          (event.code === "Space" || event.key === "Enter")
+                        )
+                          setPressed(true);
+                      }}
+                      onKeyUp={() => {
+                        setPressed(false);
+                      }}
+                      onBlur={() => {
+                        setPressed(false);
+                      }}
                       onClick={() => void buzz()}
                     >
-                      {" "}
-                      {ownBuzz
-                        ? "Buzz recorded"
-                        : busy
-                          ? "Confirming…"
-                          : "Buzz!"}{" "}
-                    </Button>
+                      <span className={styles.cap}>
+                        <span className={styles.label}>
+                          {ownBuzz
+                            ? "Buzz recorded"
+                            : buzzing
+                              ? "Confirming…"
+                              : "Buzz!"}
+                        </span>
+                      </span>
+                    </UnstyledButton>
                     <Text role="status">
                       {ownBuzz
                         ? `Your place: ${String(rows.find((row) => row.id === playerId)?.place ?? "pending")}.`
