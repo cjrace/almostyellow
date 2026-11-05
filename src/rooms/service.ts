@@ -6,7 +6,7 @@ import {
   type Transaction,
 } from "firebase-admin/firestore";
 import { z } from "zod";
-import { adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin";
 import { RoomError, type RoomView } from "@/buzzer/model";
 
 function transaction<T>(operation: (tx: Transaction) => Promise<T>) {
@@ -63,6 +63,16 @@ export async function cleanupRooms() {
       .limit(100)
       .get();
     if (expired.empty) continue;
+    if (collection === "roomMembers") {
+      const uids = expired.docs
+        .map((doc) => doc.get("guestUid") as string | undefined)
+        .filter((uid): uid is string => !!uid?.startsWith("buzzer-"));
+      if (uids.length) {
+        const result = await adminAuth().deleteUsers(uids);
+        if (result.failureCount)
+          throw new Error("Could not delete expired guests.");
+      }
+    }
     const batch = adminDb().batch();
     expired.docs.forEach((doc) => batch.delete(doc.ref));
     await batch.commit();
@@ -114,7 +124,11 @@ export async function createRoom(owner: string, commandId: string) {
   }
   return fail("unavailable", "Could not create a room. Try again.");
 }
-export async function joinRoom(uid: string, input: unknown) {
+export async function joinRoom(
+  uid: string,
+  input: unknown,
+  serverGuest = false,
+) {
   const { code, name } = z
     .object({ code: codeSchema, name: z.string().trim().min(1).max(30) })
     .parse(input);
@@ -154,17 +168,58 @@ export async function joinRoom(uid: string, input: unknown) {
     if (room.players.length >= 20) fail("full", "This room is full.");
     if (room.players.some((p) => p.name.toLowerCase() === name.toLowerCase()))
       fail("name_taken", "Someone is already using that name.");
+    if (serverGuest && !member) {
+      const privateRef = adminDb().doc(`roomPrivate/${code}`);
+      const privateRoom = await tx.get(privateRef);
+      const count = (privateRoom.get("guestCount") as number | undefined) ?? 0;
+      if (count >= 100)
+        fail(
+          "rate_limited",
+          "This room has reached its guest limit. Ask the host to create another room.",
+        );
+      tx.update(privateRef, { guestCount: count + 1 });
+    }
     const playerId = member?.playerId ?? randomUUID();
     tx.set(memberRef(code, uid), {
       playerId,
       status: "active",
       code,
       expiresAt: Timestamp.fromMillis(room.expiresAt),
+      ...(serverGuest ? { guestUid: uid } : {}),
     });
     // Rejoining retains the seat identifier but never restores open-round eligibility.
     tx.update(roomRef, { players: [...room.players, { id: playerId, name }] });
     return { playerId };
   });
+}
+export async function joinGuestRoom(input: unknown) {
+  const data = z
+    .object({
+      code: codeSchema,
+      name: z.string().trim().min(1).max(30),
+      secret: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict()
+    .parse(input);
+  // The random browser key is a credential. Store only its room-specific hash.
+  const uid = `buzzer-${key(`${data.code}:${data.secret}`)}`;
+  const membership = await joinRoom(uid, data, true);
+  // Membership must succeed before any Auth record is created. A retry uses
+  // the same UID if either the response or the token exchange was lost.
+  try {
+    await adminAuth().createUser({ uid });
+  } catch (error) {
+    if (!(
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "auth/uid-already-exists"
+    ))
+      throw error;
+  }
+  return {
+    ...membership,
+    token: await adminAuth().createCustomToken(uid, { buzzerRoom: data.code }),
+  };
 }
 export async function hostCommand(
   owner: string,

@@ -90,7 +90,7 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 ### Quiz buzzer (Firestore)
 
-The buzzer at `/games/buzzer` uses protected host actions in `src/actions/buzzer.ts` and guest POST commands in `src/app/api/buzzer/route.ts`. Host actions require an authorised session and room ownership; guest commands verify Firebase ID tokens and room membership. The room transactions are in `src/rooms/service.ts`, with browser subscriptions and timestamp ordering in `src/buzzer/`. Browser writes are denied. Guest authentication persists in a named Firebase app, separate from the default admin app. Buzzes are never queued offline.
+The buzzer at `/games/buzzer` uses protected host actions in `src/actions/buzzer.ts` and guest POST commands in `src/app/api/buzzer/route.ts`. Host actions require an authorised session and room ownership. Joining uses a random browser key to create a server-managed guest only after membership is accepted; leave and buzz commands verify room-scoped Firebase ID tokens and membership. Keep public Firebase sign-ups disabled. The room transactions are in `src/rooms/service.ts`, with browser subscriptions and timestamp ordering in `src/buzzer/`. Browser writes are denied. Guest authentication persists in a separate named Firebase app for each room, independent of the default admin app. Buzzes are never queued offline.
 
 Rooms expire after six hours. Authorised room creation performs bounded cleanup of expired records; there is no TTL policy. See `docs/buzzer.md` for behaviour and recovery, and the buzzer unit, Firebase and browser tests for concurrency and privacy coverage.
 

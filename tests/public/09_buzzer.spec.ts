@@ -7,17 +7,15 @@ test.describe("Quiz host and guests", () => {
   }, testInfo) => {
     test.setTimeout(60000);
     await useScheme(page, "dark");
-    await test.step("Given Firebase refuses anonymous sign-up but the host is signed in", async () => {
-      await page.route(
-        (url) => url.pathname.endsWith("/accounts:signUp"),
-        (route) =>
-          route.fulfill({
-            status: 400,
-            contentType: "application/json",
-            body: JSON.stringify({
-              error: { message: "ADMIN_ONLY_OPERATION" },
-            }),
+    await test.step("Given guest provisioning is unavailable but the host is signed in", async () => {
+      await page.route("**/api/buzzer", (route) =>
+        route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({
+            message: "Could not join the room. Try again.",
           }),
+        }),
       );
       await page.goto("/admin/login");
       await page
@@ -27,12 +25,7 @@ test.describe("Quiz host and guests", () => {
       await page.getByRole("button", { name: "Log in", exact: true }).click();
       await page.waitForURL("/");
       await page.goto("/games/buzzer");
-      const alert = page.getByRole("main").getByRole("alert");
-      await expect(alert).toContainText("auth/admin-restricted-operation");
-      await expect(alert).not.toContainText("Allow browser storage");
-      await expect(
-        page.getByRole("button", { name: "Join room", exact: true }),
-      ).toBeDisabled();
+      await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
     });
     let code = "";
     await test.step("When the host creates a room and opens and resets buzzing", async () => {
@@ -49,9 +42,13 @@ test.describe("Quiz host and guests", () => {
       await expect(
         page.getByRole("heading", { name: "Players (0/20)" }),
       ).toBeVisible();
-      await expect(
-        page.getByRole("button", { name: "Join as a player", exact: true }),
-      ).toBeDisabled();
+      await page.getByLabel("Your player name", { exact: true }).fill("Cam");
+      await page
+        .getByRole("button", { name: "Join as a player", exact: true })
+        .click();
+      await expect(page.getByRole("main").getByRole("alert")).toContainText(
+        "Could not join the room",
+      );
       await page
         .getByRole("button", { name: "Open buzzing", exact: true })
         .click();
@@ -83,26 +80,38 @@ test.describe("Quiz host and guests", () => {
       ).toBeVisible();
     });
   });
-  test("a guest sees the Firebase sign-in error instead of storage advice", async ({
+  test("a guest can retry a failed join without losing the form", async ({
     page,
   }, testInfo) => {
     await useScheme(page, "light");
-    await page.route(
-      (url) => url.pathname.endsWith("/accounts:signUp"),
-      (route) =>
-        route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({ error: { message: "OPERATION_NOT_ALLOWED" } }),
+    await page.route("**/api/buzzer", (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          message: "Could not join the room. Try again.",
         }),
+      }),
     );
     await page.goto("/games/buzzer");
+    await page.getByLabel("Room code", { exact: true }).fill("ABC234");
+    await page.getByLabel("Your name", { exact: true }).fill("Cam");
+    await page.getByRole("button", { name: "Join room", exact: true }).click();
     const alert = page.getByRole("main").getByRole("alert");
-    await expect(alert).toContainText("auth/operation-not-allowed");
+    await expect(alert).toContainText("Could not join the room");
     await expect(alert).not.toContainText("Allow browser storage");
     await expect(
       page.getByRole("button", { name: "Join room", exact: true }),
-    ).toBeDisabled();
+    ).toBeEnabled();
+    await expect(page.getByLabel("Room code", { exact: true })).toHaveValue(
+      "ABC234",
+    );
+    await expect(page.getByLabel("Your name", { exact: true })).toHaveValue(
+      "Cam",
+    );
+    await page.unroute("**/api/buzzer");
+    await page.getByRole("button", { name: "Join room", exact: true }).click();
+    await expect(alert).toContainText("This room code is not available");
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -119,7 +128,19 @@ test.describe("Quiz host and guests", () => {
     if (testInfo.project.name === "Google Chrome")
       await useScheme(page, "dark");
     const guestName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
-    await test.step("Given a guest identity exists before admin sign-in", async () => {
+    let signUps = 0;
+    await page.context().route(
+      (url) => url.pathname.endsWith("/accounts:signUp"),
+      (route) => {
+        signUps++;
+        return route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { message: "ADMIN_ONLY_OPERATION" } }),
+        });
+      },
+    );
+    await test.step("Given public sign-ups are blocked and the buzzer page is open before admin sign-in", async () => {
       await page.goto("/games/buzzer");
       await expect(
         page.getByRole("button", { name: "Join room", exact: true }),
@@ -153,6 +174,17 @@ test.describe("Quiz host and guests", () => {
       hasTouch: testInfo.project.use.hasTouch,
     });
     const guest = waitsForHydration(await context.newPage());
+    await context.route(
+      (url) => url.pathname.endsWith("/accounts:signUp"),
+      (route) => {
+        signUps++;
+        return route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { message: "ADMIN_ONLY_OPERATION" } }),
+        });
+      },
+    );
     try {
       await guest.goto(`/games/buzzer?room=${code}`);
       await guest.getByLabel("Your name", { exact: true }).fill(guestName);
@@ -215,6 +247,45 @@ test.describe("Quiz host and guests", () => {
           guest.getByRole("button", { name: "Buzz recorded", exact: true }),
         ).toBeVisible();
       });
+      await test.step("And another room in the same browser keeps its own identity", async () => {
+        const otherHost = waitsForHydration(await page.context().newPage());
+        const otherGuest = waitsForHydration(await context.newPage());
+        try {
+          await otherHost.goto("/games/buzzer");
+          await otherHost
+            .getByRole("button", { name: "Create room", exact: true })
+            .click();
+          const otherHeading = otherHost.getByRole("heading", {
+            name: /^Room /,
+          });
+          await expect(otherHeading).toBeVisible();
+          const otherCode = (await otherHeading.innerText()).slice(5);
+          await otherGuest.goto(`/games/buzzer?room=${otherCode}`);
+          await otherGuest
+            .getByLabel("Your name", { exact: true })
+            .fill("Laura");
+          await otherGuest
+            .getByRole("button", { name: "Join room", exact: true })
+            .click();
+          await expect(
+            otherGuest.getByRole("heading", { name: "Players (1/20)" }),
+          ).toBeVisible();
+          await otherGuest.reload();
+          await expect(
+            otherGuest.getByRole("heading", { name: "Players (1/20)" }),
+          ).toBeVisible();
+          await guest.reload();
+          await expect(
+            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+          ).toBeVisible();
+          await expect(
+            guest.getByRole("heading", { name: "Players (2/20)" }),
+          ).toBeVisible();
+        } finally {
+          await otherGuest.close();
+          await otherHost.close();
+        }
+      });
       if (testInfo.project.name === "Google Chrome") {
         await expectNoUnexpectedAxeViolations(page);
         await expectNoUnexpectedAxeViolations(guest);
@@ -262,6 +333,7 @@ test.describe("Quiz host and guests", () => {
       await expect(
         page.getByText("This room has ended.", { exact: true }),
       ).toBeVisible();
+      expect(signUps).toBe(0);
     } finally {
       await context.close();
     }

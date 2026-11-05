@@ -4,7 +4,7 @@ import {
   connectAuthEmulator,
   getAuth,
   initializeAuth,
-  signInAnonymously,
+  signInWithCustomToken,
 } from "firebase/auth";
 import {
   connectFirestoreEmulator,
@@ -19,10 +19,14 @@ import {
 } from "firebase/firestore";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import type { RoomView, Buzz } from "./model";
-async function initialiseGuest(config: FirebaseClientConfig) {
-  let app = getApps().find((app) => app.name === "room-guests");
+import { playerSignInError } from "./errors";
+async function initialiseGuest(config: FirebaseClientConfig, code: string) {
+  if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))
+    throw new Error("Check the room code.");
+  const appName = `room-guests-${code}`;
+  let app = getApps().find((app) => app.name === appName);
   if (!app) {
-    app = initializeApp(config, "room-guests");
+    app = initializeApp(config, appName);
     const auth = initializeAuth(app, { persistence: browserLocalPersistence });
     if (config.authEmulatorHost)
       connectAuthEmulator(auth, `http://${config.authEmulatorHost}`, {
@@ -35,21 +39,64 @@ async function initialiseGuest(config: FirebaseClientConfig) {
   }
   const auth = getAuth(app);
   await auth.authStateReady();
-  if (!auth.currentUser) await signInAnonymously(auth);
-  return { auth, db: getFirestore(app) };
+  return { auth, db: getFirestore(app), code };
 }
 export type GuestClient = Awaited<ReturnType<typeof initialiseGuest>>;
-let pending: Promise<GuestClient> | undefined;
-export function guestClient(config: FirebaseClientConfig) {
-  pending ??= initialiseGuest(config).catch((error: unknown) => {
-    pending = undefined;
+const pending = new Map<string, Promise<GuestClient>>();
+export function guestClient(config: FirebaseClientConfig, code: string) {
+  const existing = pending.get(code);
+  if (existing) return existing;
+  const result = initialiseGuest(config, code).catch((error: unknown) => {
+    pending.delete(code);
     throw error;
   });
-  return pending;
+  pending.set(code, result);
+  return result;
+}
+export async function joinGuest(
+  config: FirebaseClientConfig,
+  code: string,
+  name: string,
+) {
+  const client = await guestClient(config, code);
+  let secret: string;
+  try {
+    const storageKey = `buzzer-key-${code}`;
+    const saved = localStorage.getItem(storageKey);
+    secret =
+      saved ??
+      Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join("");
+    localStorage.setItem(storageKey, secret);
+  } catch {
+    throw new Error(
+      "Could not save your player identity. Allow browser storage and try again.",
+    );
+  }
+  const response = await fetch("/api/buzzer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "join", input: { code, name, secret } }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const result = (await response.json()) as {
+    token: string;
+    playerId: string;
+    message?: string;
+  };
+  if (!response.ok)
+    throw new Error(result.message ?? "Could not join the room. Try again.");
+  try {
+    await signInWithCustomToken(client.auth, result.token);
+  } catch (error) {
+    throw new Error(playerSignInError(error), { cause: error });
+  }
+  return { client, playerId: result.playerId };
 }
 export async function send(
   client: GuestClient,
-  action: "join" | "leave" | "buzz",
+  action: "leave" | "buzz",
   input: unknown,
 ) {
   const token = await client.auth.currentUser?.getIdToken();

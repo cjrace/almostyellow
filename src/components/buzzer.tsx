@@ -25,6 +25,7 @@ import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import { createBuzzer, controlBuzzer } from "@/actions/buzzer";
 import {
   guestClient,
+  joinGuest,
   reconcile,
   send,
   watchBuzzes,
@@ -75,7 +76,7 @@ export default function Buzzer({
   const buzzButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     let alive = true;
-    // Restoring a host's room must not depend on anonymous player sign-in.
+    // Restoring a host's room must not depend on player sign-in.
     queueMicrotask(() => {
       if (!alive) return;
       try {
@@ -97,15 +98,6 @@ export default function Buzzer({
         setError("Could not restore your saved room. Reload to try again.");
       }
     });
-    guestClient(config)
-      .then((client) => {
-        if (!alive) return;
-        setClient(client);
-        setIdentityError("");
-      })
-      .catch((error: unknown) => {
-        if (alive) setIdentityError(playerSignInError(error));
-      });
     const update = () => {
       setOnline(navigator.onLine);
     };
@@ -123,7 +115,34 @@ export default function Buzzer({
     };
   }, [config, initialCode, host]);
   useEffect(() => {
-    if (!active || (!hosting && !client)) return;
+    if (!active || !playerId) return;
+    let alive = true;
+    void guestClient(config, active)
+      .then((client) => {
+        if (!client.auth.currentUser) {
+          if (alive) {
+            setPlayerId("");
+            if (!hosting) setActive("");
+            setIdentityError(
+              "Could not restore your player identity. Join the room again.",
+            );
+          }
+          return;
+        }
+        if (alive) {
+          setClient(client);
+          setIdentityError("");
+        }
+      })
+      .catch((error: unknown) => {
+        if (alive) setIdentityError(playerSignInError(error));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [config, active, playerId, hosting]);
+  useEffect(() => {
+    if (!active || (!hosting && client?.code !== active)) return;
     let unsubscribe: (() => void) | undefined;
     let alive = true;
     async function subscribe() {
@@ -220,9 +239,10 @@ export default function Buzzer({
     }
   }
   async function join() {
-    if (!client) return;
-    const result = await send(client, "join", { code, name });
-    remember(code, result.playerId ?? "", hosting);
+    const result = await joinGuest(config, code, name);
+    setClient(result.client);
+    setIdentityError("");
+    remember(code, result.playerId, hosting);
   }
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
@@ -376,7 +396,7 @@ export default function Buzzer({
             />
             <Button
               autoContrast
-              disabled={!client || busy || !online}
+              disabled={busy || !online}
               onClick={() => void run(join)}
             >
               Join room
@@ -499,7 +519,7 @@ export default function Buzzer({
                     />
                     <Button
                       autoContrast
-                      disabled={busy || !client || !online}
+                      disabled={busy || !online}
                       onClick={() => void run(join)}
                     >
                       Join as a player

@@ -7,6 +7,7 @@ import {
   describe,
   expect,
   test,
+  vi,
 } from "vitest";
 import {
   assertFails,
@@ -24,12 +25,13 @@ import {
   where,
 } from "firebase/firestore";
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "@/firebase/admin";
+import { adminAuth, adminDb } from "@/firebase/admin";
 import {
   cleanupRooms,
   createRoom,
   hostCommand,
   joinRoom,
+  joinGuestRoom,
   playerCommand,
 } from "@/rooms/service";
 import type { RoomView } from "@/buzzer/model";
@@ -70,12 +72,175 @@ describe("Quiz rooms and concurrent players", () => {
         method: "POST",
         headers: { origin, "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "join",
+          action: "buzz",
           input: { code: "ABC234", name: "Guest" },
         }),
       });
     expect((await POST(request("https://elsewhere.example"))).status).toBe(403);
     expect((await POST(request("http://localhost"))).status).toBe(401);
+  });
+  test("server guests are created only for accepted memberships and retries recover the same seat", async () => {
+    const before = (await adminAuth().listUsers()).users.length;
+    const secret = "a".repeat(64);
+    const code = await createRoom(owner, randomUUID());
+    await expect(
+      joinGuestRoom({ code: "ABC234", name: "Cam", secret }),
+    ).rejects.toThrow("not available");
+    await expect(
+      joinGuestRoom({ code, name: "Cam", secret, uid: owner }),
+    ).rejects.toThrow();
+    expect((await adminAuth().listUsers()).users).toHaveLength(before);
+    const [first, again] = await Promise.all([
+      joinGuestRoom({ code, name: "Cam", secret }),
+      joinGuestRoom({ code, name: "Cam", secret }),
+    ]);
+    expect(again.playerId).toBe(first.playerId);
+    expect((await state(code)).players).toHaveLength(1);
+    expect((await adminAuth().listUsers()).users).toHaveLength(before + 1);
+    await expect(
+      joinGuestRoom({ code, name: "Cam", secret: "b".repeat(64) }),
+    ).rejects.toThrow("already");
+    expect((await adminAuth().listUsers()).users).toHaveLength(before + 1);
+    const exchange = await fetch(
+      `http://${assertEmulatorEnvironment().authHost}/identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=fake-api-key`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: first.token, returnSecureToken: true }),
+      },
+    );
+    expect(exchange.ok).toBe(true);
+    const { idToken } = (await exchange.json()) as { idToken: string };
+    const identity = await adminAuth().verifyIdToken(idToken, true);
+    expect(identity.buzzerRoom).toBe(code);
+    expect(
+      (await adminDb().doc(`authorisedUsers/${identity.uid}`).get()).exists,
+    ).toBe(false);
+    const otherCode = await createRoom(owner, randomUUID());
+    const other = await joinGuestRoom({ code: otherCode, name: "Cam", secret });
+    const otherUid = (
+      JSON.parse(
+        Buffer.from(other.token.split(".")[1], "base64url").toString(),
+      ) as { uid: string }
+    ).uid;
+    expect(otherUid).not.toBe(identity.uid);
+    await assertFails(
+      getDoc(
+        doc(
+          env.authenticatedContext(identity.uid).firestore(),
+          "gameRooms",
+          otherCode,
+        ),
+      ),
+    );
+    const wrongRoom = await POST(
+      new Request("http://localhost/api/buzzer", {
+        method: "POST",
+        headers: {
+          origin: "http://localhost",
+          authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "buzz",
+          input: await command(otherCode),
+        }),
+      }),
+    );
+    expect(wrongRoom.status).toBe(401);
+    await hostCommand(owner, "remove", {
+      ...(await command(code)),
+      playerId: first.playerId,
+    });
+    await expect(joinGuestRoom({ code, name: "Cam", secret })).rejects.toThrow(
+      "removed",
+    );
+  });
+  test("full, ended and expired rooms create no guests, and creation is bounded per room", async () => {
+    const code = await createRoom(owner, randomUUID());
+    await adminDb().doc(`roomPrivate/${code}`).update({ guestCount: 99 });
+    const first = await joinGuestRoom({
+      code,
+      name: "Cam",
+      secret: "a".repeat(64),
+    });
+    const before = (await adminAuth().listUsers()).users.length;
+    await expect(
+      joinGuestRoom({ code, name: "Laura", secret: "b".repeat(64) }),
+    ).rejects.toThrow("guest limit");
+    expect(
+      (await joinGuestRoom({ code, name: "Cam", secret: "a".repeat(64) }))
+        .playerId,
+    ).toBe(first.playerId);
+    const fullCode = await createRoom(owner, randomUUID());
+    for (let i = 0; i < 20; i++)
+      await joinRoom(`guest${String(i)}`, {
+        code: fullCode,
+        name: `Guest ${String(i)}`,
+      });
+    await expect(
+      joinGuestRoom({ code: fullCode, name: "Laura", secret: "b".repeat(64) }),
+    ).rejects.toThrow("full");
+    await hostCommand(owner, "end", await command(code));
+    await expect(
+      joinGuestRoom({ code, name: "Laura", secret: "b".repeat(64) }),
+    ).rejects.toThrow("ended");
+    await adminDb().doc(`gameRooms/${fullCode}`).update({ expiresAt: 0 });
+    await expect(
+      joinGuestRoom({ code: fullCode, name: "Laura", secret: "b".repeat(64) }),
+    ).rejects.toThrow("expired");
+    expect((await adminAuth().listUsers()).users).toHaveLength(before);
+  });
+  test("a failed Auth creation can retry without consuming another guest identity", async () => {
+    const code = await createRoom(owner, randomUUID());
+    const input = { code, name: "Cam", secret: "a".repeat(64) };
+    const failure = vi
+      .spyOn(adminAuth(), "createUser")
+      .mockRejectedValueOnce(new Error("Auth unavailable"));
+    try {
+      await expect(joinGuestRoom(input)).rejects.toThrow("Auth unavailable");
+    } finally {
+      failure.mockRestore();
+    }
+    const seat = (await state(code)).players[0].id;
+    expect((await joinGuestRoom(input)).playerId).toBe(seat);
+    expect(
+      (await adminDb().doc(`roomPrivate/${code}`).get()).get("guestCount"),
+    ).toBe(1);
+  });
+  test("bounded cleanup retries failed Auth deletion before removing guest records", async () => {
+    const code = await createRoom(owner, randomUUID());
+    const guest = await joinGuestRoom({
+      code,
+      name: "Cam",
+      secret: "a".repeat(64),
+    });
+    const uid = (
+      JSON.parse(
+        Buffer.from(guest.token.split(".")[1], "base64url").toString(),
+      ) as { uid: string }
+    ).uid;
+    const members = await adminDb()
+      .collection("roomMembers")
+      .where("code", "==", code)
+      .get();
+    await members.docs[0].ref.update({ expiresAt: Timestamp.fromMillis(0) });
+    const failure = vi
+      .spyOn(adminAuth(), "deleteUsers")
+      .mockRejectedValueOnce(new Error("Auth unavailable"));
+    try {
+      await expect(cleanupRooms()).rejects.toThrow("Auth unavailable");
+      expect((await members.docs[0].ref.get()).exists).toBe(true);
+    } finally {
+      failure.mockRestore();
+    }
+    await cleanupRooms();
+    await expect(adminAuth().getUser(uid)).rejects.toMatchObject({
+      code: "auth/user-not-found",
+    });
+    await expect(adminAuth().getUser(owner)).resolves.toMatchObject({
+      uid: owner,
+    });
   });
   test("closing during a buzz preserves only accepted results", async () => {
     const code = await createRoom(owner, randomUUID());

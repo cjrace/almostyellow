@@ -1,5 +1,5 @@
 import { adminAuth } from "@/firebase/admin";
-import { joinRoom, playerCommand } from "@/rooms/service";
+import { joinGuestRoom, playerCommand } from "@/rooms/service";
 import { RoomError } from "@/buzzer/model";
 import { z } from "zod";
 export async function POST(request: Request) {
@@ -8,31 +8,34 @@ export async function POST(request: Request) {
       { error: "forbidden", message: "Use this website to join." },
       { status: 403 },
     );
-  const token = request.headers
-    .get("authorization")
-    ?.match(/^Bearer (.+)$/)?.[1];
-  if (!token)
-    return Response.json(
-      { error: "unauthorised", message: "Reconnect to continue." },
-      { status: 401 },
-    );
-  let uid: string;
-  try {
-    uid = (await adminAuth().verifyIdToken(token, true)).uid;
-  } catch {
-    return Response.json(
-      { error: "unauthorised", message: "Reconnect to continue." },
-      { status: 401 },
-    );
-  }
   try {
     const { action, input } = z
       .object({ action: z.enum(["join", "leave", "buzz"]), input: z.unknown() })
       .parse(await request.json());
     if (action === "join")
-      return Response.json(await joinRoom(uid, input), {
+      return Response.json(await joinGuestRoom(input), {
         headers: { "Cache-Control": "no-store" },
       });
+    const token = request.headers
+      .get("authorization")
+      ?.match(/^Bearer (.+)$/)?.[1];
+    if (!token)
+      return Response.json(
+        { error: "unauthorised", message: "Reconnect to continue." },
+        { status: 401 },
+      );
+    let uid: string;
+    try {
+      const identity = await adminAuth().verifyIdToken(token, true);
+      const code = z.object({ code: z.string() }).parse(input).code;
+      if (identity.buzzerRoom !== code) throw new Error("Wrong room.");
+      uid = identity.uid;
+    } catch {
+      return Response.json(
+        { error: "unauthorised", message: "Reconnect to continue." },
+        { status: 401 },
+      );
+    }
     await playerCommand(uid, action, input);
     return Response.json(
       { ok: true },
