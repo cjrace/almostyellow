@@ -94,7 +94,7 @@ test.describe("Uno durable scoring", () => {
   test.describe("dialog accessibility", () => {
     test.use({ serviceWorkers: "block" });
     for (const scheme of schemes) {
-      test(`${scheme} scoring, finish and history dialogs pass accessibility checks above the badge`, async ({
+      test(`${scheme} finish and delete dialogs pass accessibility checks above the badge`, async ({
         page,
       }) => {
         test.slow();
@@ -123,18 +123,10 @@ test.describe("Uno durable scoring", () => {
         await page.emulateMedia({ reducedMotion: "no-preference" });
         await showConfetti(page);
         await page.emulateMedia({ reducedMotion: "reduce" });
-        await page
-          .getByRole("button", { name: "Scoring history", exact: true })
-          .click();
-        const history = page.getByRole("dialog", {
-          name: "Scoring history",
-          exact: true,
-        });
-        await expect(history).not.toContainText("Loading rounds…");
+        await expect(
+          page.getByRole("heading", { name: "Game history", exact: true }),
+        ).toBeVisible();
         await expectNoUnexpectedAxeViolations(page);
-        await history
-          .getByRole("button", { name: "Close scoring history" })
-          .click();
         await page.getByRole("button", { name: /^Delete game from/ }).click();
         const deleting = page.getByRole("dialog", {
           name: "Delete game?",
