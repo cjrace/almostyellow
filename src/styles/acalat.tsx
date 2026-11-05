@@ -1,4 +1,9 @@
-import { createTheme, type CSSVariablesResolver } from "@mantine/core";
+import {
+  createTheme,
+  Drawer,
+  Modal,
+  type CSSVariablesResolver,
+} from "@mantine/core";
 
 export const acalat = createTheme({
   primaryColor: "orange",
@@ -17,6 +22,16 @@ export const acalat = createTheme({
 
   // Set cursor, mainly for the checkbox list
   cursorType: "pointer",
+
+  components: {
+    // Dialog headings belong to the dialog, rather than a second page banner.
+    ModalHeader: Modal.Header.extend({
+      defaultProps: { role: "presentation" },
+    }),
+    DrawerHeader: Drawer.Header.extend({
+      defaultProps: { role: "presentation" },
+    }),
+  },
 });
 
 // Mantine's dimmed grey, error red and light-scheme links are below WCAG AA's
@@ -32,6 +47,10 @@ export const acalatCssVariables: CSSVariablesResolver = (theme) => ({
     "--mantine-color-blue-outline": theme.colors.blue[8],
     "--mantine-color-green-outline": "#2f7a3b",
     "--mantine-color-red-outline": theme.colors.red[9],
+    "--mantine-color-green-text": "#2f7a3b",
+    "--mantine-color-blue-text": theme.colors.blue[8],
+    "--mantine-color-orange-text": "#c2410c",
+    "--mantine-color-red-text": theme.colors.red[9],
   },
   dark: {
     "--mantine-color-dimmed": theme.colors.dark[1],

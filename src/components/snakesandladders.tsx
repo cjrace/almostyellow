@@ -254,10 +254,6 @@ const PlayerList: React.FC<PlayerListProps> = ({
         {icons.find((icon) => icon.id === player.icon)?.component}
         <Text truncate style={{ flex: 1 }}>
           {player.name}
-          <VisuallyHidden>
-            {positions[index] ? "" : ", not on the board yet"}
-            {currentPlayer === index ? " (your turn)" : ""}
-          </VisuallyHidden>
         </Text>
         <Text size="sm" c="dimmed">
           {positions[index] ? `Square ${String(positions[index])}` : "Start"}
@@ -612,6 +608,7 @@ const SnakesAndLadders = () => {
           position="bottom"
           size="auto"
           title="Players"
+          closeButtonProps={{ "aria-label": "Close players" }}
           hiddenFrom="sm"
         >
           <PlayerList

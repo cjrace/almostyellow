@@ -79,11 +79,39 @@ for (const scheme of schemes) {
       await expectNoAxeViolations(page);
     });
 
-    test("Snakes and Ladders meets WCAG 2.2 AA mid-game", async ({ page }) => {
+    test("Snakes and Ladders meets WCAG 2.2 AA mid-game", async ({
+      page,
+      isMobile,
+    }) => {
       await page.goto("/games/snakesandladders");
       await page.getByRole("button", { name: "Start game!" }).click();
       await expect(
-        page.getByText(/not on the board yet \(your turn\)/),
+        page.getByRole("button", { name: "Roll Dice (Player 1)" }),
+      ).toBeVisible();
+      await expectNoAxeViolations(page);
+      if (isMobile) {
+        await page
+          .getByRole("button", { name: "Players", exact: true })
+          .click();
+        const drawer = page.getByRole("dialog", { name: "Players" });
+        await expect(drawer.locator('[aria-current="step"]')).toContainText(
+          "Player 1",
+        );
+        await expectNoAxeViolations(page);
+      } else {
+        await expect(
+          page.locator('[aria-current="step"]:visible'),
+        ).toContainText("Player 1");
+      }
+    });
+
+    test("Uno sync details meet WCAG 2.2 AA", async ({ page }) => {
+      await page.goto("/games/uno-tracker");
+      await page
+        .getByRole("button", { name: "All scores saved", exact: true })
+        .click();
+      await expect(
+        page.getByRole("dialog", { name: "Sync details" }),
       ).toBeVisible();
       await expectNoAxeViolations(page);
     });
@@ -139,7 +167,10 @@ test("Keyboard focus follows the Boom Boom Pirate game", async ({ page }) => {
   await expect(page.getByLabel("Number of ropes")).toBeFocused();
 });
 
-test("Keyboard focus follows the Snakes and Ladders game", async ({ page }) => {
+test("Keyboard focus follows the Snakes and Ladders game", async ({
+  page,
+  isMobile,
+}) => {
   await useScheme(page, "dark");
   await page.goto("/games/snakesandladders");
   await page.getByRole("button", { name: "Start game!" }).focus();
@@ -168,6 +199,11 @@ test("Keyboard focus follows the Snakes and Ladders game", async ({ page }) => {
   }
   await expect(roll).toBeFocused({ timeout: 5_000 });
 
+  if (isMobile) {
+    await page.getByRole("button", { name: "Players", exact: true }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog", { name: "Players" })).toBeVisible();
+  }
   await page.getByRole("button", { name: "Restart Game" }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByLabel("Number of Players")).toBeFocused();

@@ -276,7 +276,10 @@ export default function UnoTracker() {
         ) : (
           uno.ready && (
             <Text mt="md">
-              <Anchor href="/admin/login?callbackUrl=/games/uno-tracker">
+              <Anchor
+                underline="always"
+                href="/admin/login?callbackUrl=/games/uno-tracker"
+              >
                 Sign in
               </Anchor>{" "}
               to start a game or record rounds.
