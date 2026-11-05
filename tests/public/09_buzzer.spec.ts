@@ -2,6 +2,115 @@ import { test, expect, waitsForHydration } from "../playwright";
 import { users } from "../firebase/fixtures";
 import { expectNoUnexpectedAxeViolations, useScheme } from "../axe";
 test.describe("Quiz host and guests", () => {
+  test("a signed-in host can create, restore and control a room when player sign-in fails", async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(60000);
+    await useScheme(page, "dark");
+    await test.step("Given Firebase refuses anonymous sign-up but the host is signed in", async () => {
+      await page.route(
+        (url) => url.pathname.endsWith("/accounts:signUp"),
+        (route) =>
+          route.fulfill({
+            status: 400,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: { message: "ADMIN_ONLY_OPERATION" },
+            }),
+          }),
+      );
+      await page.goto("/admin/login");
+      await page
+        .getByPlaceholder("e.g. simply@thebest.co.uk")
+        .fill(users.alice.email);
+      await page.getByPlaceholder("Enter password").fill(users.alice.password);
+      await page.getByRole("button", { name: "Log in", exact: true }).click();
+      await page.waitForURL("/");
+      await page.goto("/games/buzzer");
+      const alert = page.getByRole("main").getByRole("alert");
+      await expect(alert).toContainText("auth/admin-restricted-operation");
+      await expect(alert).not.toContainText("Allow browser storage");
+      await expect(
+        page.getByRole("button", { name: "Join room", exact: true }),
+      ).toBeDisabled();
+    });
+    let code = "";
+    await test.step("When the host creates a room and opens and resets buzzing", async () => {
+      const create = page.getByRole("button", {
+        name: "Create room",
+        exact: true,
+      });
+      await expect(create).toBeEnabled();
+      await create.focus();
+      await page.keyboard.press("Enter");
+      const heading = page.getByRole("heading", { name: /^Room / });
+      await expect(heading).toBeVisible();
+      code = (await heading.innerText()).slice(5);
+      await expect(
+        page.getByRole("heading", { name: "Players (0/20)" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Join as a player", exact: true }),
+      ).toBeDisabled();
+      await page
+        .getByRole("button", { name: "Open buzzing", exact: true })
+        .click();
+      await expect(
+        page.getByRole("button", { name: "Close buzzing", exact: true }),
+      ).toBeEnabled();
+      await page.getByRole("button", { name: "Reset", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "Open buzzing", exact: true }),
+      ).toBeEnabled();
+      if (testInfo.project.name === "Google Chrome")
+        await expectNoUnexpectedAxeViolations(page);
+    });
+    await test.step("Then a refresh restores hosting and the host can end the room", async () => {
+      await page.reload();
+      await expect(
+        page.getByRole("heading", { name: `Room ${code}`, exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Open buzzing", exact: true }),
+      ).toBeEnabled();
+      await page.getByRole("button", { name: "End room", exact: true }).click();
+      await page
+        .getByRole("dialog")
+        .getByRole("button", { name: "End room", exact: true })
+        .click();
+      await expect(
+        page.getByText("This room has ended.", { exact: true }),
+      ).toBeVisible();
+    });
+  });
+  test("a guest sees the Firebase sign-in error instead of storage advice", async ({
+    page,
+  }, testInfo) => {
+    await useScheme(page, "light");
+    await page.route(
+      (url) => url.pathname.endsWith("/accounts:signUp"),
+      (route) =>
+        route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { message: "OPERATION_NOT_ALLOWED" } }),
+        }),
+    );
+    await page.goto("/games/buzzer");
+    const alert = page.getByRole("main").getByRole("alert");
+    await expect(alert).toContainText("auth/operation-not-allowed");
+    await expect(alert).not.toContainText("Allow browser storage");
+    await expect(
+      page.getByRole("button", { name: "Join room", exact: true }),
+    ).toBeDisabled();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    if (testInfo.project.name === "Google Chrome")
+      await expectNoUnexpectedAxeViolations(page);
+  });
   test("join, buzz, refresh, reset and remove a player", async ({
     page,
     browser,

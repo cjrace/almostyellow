@@ -32,6 +32,7 @@ import {
   type GuestClient,
 } from "@/buzzer/client";
 import { leaderboard, type Buzz, type RoomView } from "@/buzzer/model";
+import { playerSignInError } from "@/buzzer/errors";
 import styles from "@/styles/buzzer.module.css";
 
 export default function Buzzer({
@@ -59,6 +60,7 @@ export default function Buzzer({
   const [uncertain, setUncertain] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [identityError, setIdentityError] = useState("");
   const [ending, setEnding] = useState(false);
   const [instructions, setInstructions] = useState(false);
   const [now, setNow] = useState(0);
@@ -73,10 +75,10 @@ export default function Buzzer({
   const buzzButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     let alive = true;
-    guestClient(config)
-      .then((client) => {
-        if (!alive) return;
-        setClient(client);
+    // Restoring a host's room must not depend on anonymous player sign-in.
+    queueMicrotask(() => {
+      if (!alive) return;
+      try {
         const saved = sessionStorage.getItem("buzzer-room");
         if (saved) {
           const membership = JSON.parse(saved) as {
@@ -91,12 +93,18 @@ export default function Buzzer({
             setHosting(membership.hosting && host);
           }
         }
+      } catch {
+        setError("Could not restore your saved room. Reload to try again.");
+      }
+    });
+    guestClient(config)
+      .then((client) => {
+        if (!alive) return;
+        setClient(client);
+        setIdentityError("");
       })
-      .catch(() => {
-        if (alive)
-          setError(
-            "Could not restore your identity. Allow browser storage and reload.",
-          );
+      .catch((error: unknown) => {
+        if (alive) setIdentityError(playerSignInError(error));
       });
     const update = () => {
       setOnline(navigator.onLine);
@@ -115,20 +123,18 @@ export default function Buzzer({
     };
   }, [config, initialCode, host]);
   useEffect(() => {
-    if (!client || !active) return;
+    if (!active || (!hosting && !client)) return;
     let unsubscribe: (() => void) | undefined;
     let alive = true;
     async function subscribe() {
-      if (!client) return;
-      let db = client.db;
       if (hosting) {
         await signInWithCustomToken(
           clientAuth(config),
           await firestoreTokenAction(),
         );
-        db = clientFirestore(config);
       }
-      if (!alive) return;
+      const db = hosting ? clientFirestore(config) : client?.db;
+      if (!db || !alive) return;
       unsubscribe = watchRoom(
         db,
         active,
@@ -158,8 +164,9 @@ export default function Buzzer({
     };
   }, [client, active, hosting, config]);
   useEffect(() => {
-    if (!client || !room || room.phase === "ended") return;
-    const db = hosting ? clientFirestore(config) : client.db;
+    if (!room || room.phase === "ended") return;
+    const db = hosting ? clientFirestore(config) : client?.db;
+    if (!db) return;
     return watchBuzzes(
       db,
       room.code,
@@ -335,6 +342,12 @@ export default function Buzzer({
           </Button>
         </Group>
         {notice && <Text role="status">{notice}</Text>}
+        {identityError && (
+          <Alert color="red" role="alert">
+            {identityError}
+            {host && " You can still create and host a room."}
+          </Alert>
+        )}
         {error && (
           <Alert color="red" role="alert">
             {error}
@@ -372,7 +385,7 @@ export default function Buzzer({
               <Button
                 autoContrast
                 variant="default"
-                disabled={busy || !client || !online}
+                disabled={busy || !online}
                 onClick={() =>
                   void run(async () => {
                     createIdRef.current ??= crypto.randomUUID();
@@ -486,7 +499,7 @@ export default function Buzzer({
                     />
                     <Button
                       autoContrast
-                      disabled={busy}
+                      disabled={busy || !client || !online}
                       onClick={() => void run(join)}
                     >
                       Join as a player
