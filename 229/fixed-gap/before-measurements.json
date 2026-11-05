@@ -1,0 +1,42 @@
+[
+  {
+    "browser": "chrome",
+    "scene": "games-desktop",
+    "width": 1280,
+    "scrollWidth": 1280,
+    "scrollHeight": 800,
+    "height": 800,
+    "paddingBottom": "20px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "chrome",
+    "scene": "irishbingo-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "10px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "chrome",
+    "scene": "snakes-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "32px",
+    "badgeHeight": 27.28125
+  },
+  {
+    "browser": "chrome",
+    "scene": "journal-dialog-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 2253,
+    "height": 640,
+    "paddingBottom": "32px",
+    "badgeHeight": 27.28125
+  }
+]

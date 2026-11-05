@@ -1,5 +1,7 @@
 # PR 229 comparison and checks
 
+[Current permanent-spacing comparison and simplified check scope](fixed-gap/README.md). The older captures and measurements below document the earlier accessibility work; the current spacing comparison shows the latest layout.
+
 [Latest homepage button correction, matching before/after captures and check results](button-text/README.md). The homepage after captures below now include this correction; other captures and measurements are from the earlier review described here.
 
 Before: `47631a69989be14b244b68bf114ce9e231ca831d` (main). After: `1900e70069668103e2774f799cc620f263e087b3`.

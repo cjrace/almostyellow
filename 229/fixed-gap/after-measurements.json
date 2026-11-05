@@ -1,0 +1,82 @@
+[
+  {
+    "browser": "chrome",
+    "scene": "games-desktop",
+    "width": 1280,
+    "scrollWidth": 1280,
+    "scrollHeight": 800,
+    "height": 800,
+    "paddingBottom": "40px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "chrome",
+    "scene": "irishbingo-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "chrome",
+    "scene": "snakes-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 27.28125
+  },
+  {
+    "browser": "chrome",
+    "scene": "journal-dialog-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 2261,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 27.28125
+  },
+  {
+    "browser": "webkit",
+    "scene": "games-desktop",
+    "width": 1280,
+    "scrollWidth": 1280,
+    "scrollHeight": 800,
+    "height": 800,
+    "paddingBottom": "40px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "webkit",
+    "scene": "irishbingo-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 0
+  },
+  {
+    "browser": "webkit",
+    "scene": "snakes-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 640,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 27.28125
+  },
+  {
+    "browser": "webkit",
+    "scene": "journal-dialog-mobile",
+    "width": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 2258,
+    "height": 640,
+    "paddingBottom": "40px",
+    "badgeHeight": 27.28125
+  }
+]
