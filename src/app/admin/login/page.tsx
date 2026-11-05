@@ -8,14 +8,21 @@ export const metadata: Metadata = {
 };
 
 // Only send the user back to a callback URL that stays within the admin
-// area, otherwise fall back to /admin. callbackUrl is attacker-controllable
+// area, or one of the two exact Uno paths, otherwise fall back to /admin.
+// callbackUrl is attacker-controllable
 // via the query string. Only the path (and query) is ever returned - the
 // host is always discarded, so this can never produce an off-origin
 // redirect even if callbackUrl points at a foreign host. We still reject
-// anything outside /admin (or the login page itself) so a stripped host
+// other paths outside /admin (or the login page itself) so a stripped host
 // doesn't leak an unrelated path.
 function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   if (!callbackUrl) return undefined;
+  if (
+    callbackUrl === "/games/uno-tracker" ||
+    callbackUrl === "/games/uno-tracker/stats" ||
+    callbackUrl === "/games/uno-tracker/history"
+  )
+    return callbackUrl;
 
   try {
     const url = new URL(callbackUrl);

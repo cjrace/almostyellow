@@ -1,0 +1,114 @@
+/* The Snakes and Ladders game. It fills the height the page leaves it
+   (cardgame.module.css's .screen) and never scrolls, so the board is sized to
+   fit the space as well as the width */
+
+.space {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-md);
+  min-height: 0;
+}
+
+.boardArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-md);
+  min-height: 0;
+}
+
+/* Phones put the controls (a Mantine Stack) under the board */
+.controls {
+  order: 1;
+}
+
+.viewMode {
+  align-self: flex-start;
+}
+
+/* A size container, so the board can be the largest square that fits. The
+   zero basis matters, as in cardgame.module.css's .table */
+.table {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 15rem;
+  container-type: size;
+}
+
+/* A square of ten by ten */
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+  width: min(100cqw, 100cqh);
+  aspect-ratio: 1;
+  border: 1px solid #ddd;
+  container-type: inline-size;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  font-size: clamp(0.7rem, 2.4cqi, 0.9rem);
+  text-align: center;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
+}
+
+.cell svg {
+  max-width: 80%;
+  max-height: 80%;
+}
+
+/* Keeps room for the "+4" badge, shown or not */
+.badgeSlot {
+  flex: none;
+  width: 2.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@mixin larger-than $mantine-breakpoint-sm {
+  /* Measure the height left for the game, so its width follows the board
+     rather than leaving the players and board at one side of a wide page. */
+  .space {
+    container-type: size;
+    min-height: 20rem;
+  }
+
+  /* The players and buttons on the left, the board on the right */
+  .game {
+    display: grid;
+    grid-template-columns: min(20rem, 35%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--mantine-spacing-xl);
+    width: min(100%, calc(100cqh + 20rem + var(--mantine-spacing-xl)));
+    margin-inline: auto;
+  }
+
+  .controls {
+    order: 0;
+    min-height: 0;
+  }
+
+  /* Ten players may not fit beside the board, so the list scrolls on its own */
+  .playerList {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

@@ -1,5 +1,6 @@
 "use client"; // needs to be for useMantineColorScheme
 
+import Link from "next/link";
 import {
   Group,
   Breadcrumbs,
@@ -28,6 +29,7 @@ interface BreadcrumbItem {
 
 interface HeaderProps {
   crumbs?: BreadcrumbItem[];
+  nativeBreadcrumbs?: boolean;
   noCrumbs?: boolean; // Put this in so we can avoid showing crumbs on home and login pages
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
@@ -37,6 +39,7 @@ interface HeaderProps {
 
 export default function Header({
   crumbs,
+  nativeBreadcrumbs = false,
   noCrumbs = false, // This needs to be set to true if you want to use any of the other buttons
   game = false,
   whiskyJournal = false,
@@ -58,11 +61,18 @@ export default function Header({
         {!noCrumbs && (
           <Group>
             <Breadcrumbs>
-              {crumbs?.map((item) => (
-                <Anchor href={item.href} key={item.href}>
-                  {item.title}
-                </Anchor>
-              ))}
+              {crumbs?.map((item) =>
+                // Native links let beforeunload protect pending changes.
+                item.href && !nativeBreadcrumbs ? (
+                  <Anchor component={Link} href={item.href} key={item.href}>
+                    {item.title}
+                  </Anchor>
+                ) : (
+                  <Anchor href={item.href} key={item.href}>
+                    {item.title}
+                  </Anchor>
+                ),
+              )}
             </Breadcrumbs>
           </Group>
         )}
@@ -71,7 +81,7 @@ export default function Header({
           <Tooltip label="Back to our homepage" openDelay={250}>
             <ActionIcon
               variant="default"
-              component="a"
+              component={Link}
               href="/"
               size="xl"
               aria-label="Back to our homepage"
@@ -87,7 +97,7 @@ export default function Header({
           <Tooltip label="Back to our games list" openDelay={250}>
             <ActionIcon
               variant="default"
-              component="a"
+              component={Link}
               href="/games"
               size="xl"
               aria-label="Back to our games list"
@@ -103,7 +113,7 @@ export default function Header({
           <Tooltip label="Back to Cam's whisky journal" openDelay={250}>
             <ActionIcon
               variant="default"
-              component="a"
+              component={Link}
               href="/whiskyjournal"
               size="xl"
               aria-label="Back to Cam's whisky journal"
@@ -119,7 +129,7 @@ export default function Header({
           <Tooltip label="Back to Cam's film list" openDelay={250}>
             <ActionIcon
               variant="default"
-              component="a"
+              component={Link}
               href="/films"
               size="xl"
               aria-label="Back to Cam's film list"

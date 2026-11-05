@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Grid,
+  Badge,
   Button,
+  Chip,
+  Drawer,
+  Fieldset,
+  Flex,
   Modal,
   Box,
   Text,
@@ -12,9 +16,9 @@ import {
   NumberInput,
   SimpleGrid,
   Group,
-  ActionIcon,
   SegmentedControl,
   Stack,
+  VisuallyHidden,
 } from "@mantine/core";
 import {
   IconQuestionMark,
@@ -39,21 +43,25 @@ import {
   PiShootingStar,
 } from "react-icons/pi";
 import playConfetti from "@/components/playconfetti";
+import layout from "@/styles/snakesandladders.module.css";
 
 interface IconSelectionProps {
+  seat: number;
   selectedIcon: string;
+  takenIcons: Set<string>; // Picked by the other players
   onChange: (value: string) => void;
 }
 
 interface Player {
   name: string;
-  icon: string;
+  icon: string; // Empty while setting up until the player picks one
 }
 
 interface PlayerListProps {
   players: Player[];
   positions: number[];
   currentPlayer: number;
+  roll: number | null; // The dice result while the current player moves
 }
 
 // Define the grid size
@@ -112,78 +120,149 @@ const generateSpecialSpaces = () => {
   return specialSpaces;
 };
 
+// One for each of the 10 players there can be, so nobody has to share
 const icons = [
-  { id: "cat", name: "Cat", component: <IconCat size={32} /> },
-  { id: "dog", name: "Dog", component: <PiDog size={32} /> },
-  { id: "fish", name: "Fish", component: <PiFishSimple size={32} /> },
-  { id: "pig", name: "Pig", component: <IconPig size={32} /> },
-  { id: "butterfly", name: "Butterfly", component: <PiButterfly size={32} /> },
-  { id: "bat", name: "Bat", component: <IconBat size={32} /> },
-  { id: "cow", name: "Cow", component: <PiCow size={32} /> },
-  { id: "rabbit", name: "Rabbit", component: <PiRabbit size={32} /> },
-  { id: "star", name: "Star", component: <PiShootingStar size={32} /> },
-  { id: "flower", name: "Flower", component: <IconFlower size={32} /> },
+  { id: "cat", label: "Cat", component: <IconCat size={32} /> },
+  { id: "dog", label: "Dog", component: <PiDog size={32} /> },
+  { id: "fish", label: "Fish", component: <PiFishSimple size={32} /> },
+  { id: "pig", label: "Pig", component: <IconPig size={32} /> },
+  {
+    id: "butterfly",
+    label: "Butterfly",
+    component: <PiButterfly size={32} />,
+  },
+  { id: "bat", label: "Bat", component: <IconBat size={32} /> },
+  { id: "cow", label: "Cow", component: <PiCow size={32} /> },
+  { id: "rabbit", label: "Rabbit", component: <PiRabbit size={32} /> },
+  { id: "star", label: "Star", component: <PiShootingStar size={32} /> },
+  { id: "flower", label: "Flower", component: <IconFlower size={32} /> },
 ];
 
-const IconSelection: React.FC<IconSelectionProps> = ({
-  selectedIcon,
-  onChange,
-}) => {
-  return (
-    <Group>
-      {icons.map((icon) => (
-        <ActionIcon
-          key={icon.id}
-          aria-label={icon.name}
-          aria-pressed={selectedIcon === icon.id}
-          onClick={() => {
-            onChange(icon.id);
-          }}
-          style={{
-            backgroundColor:
-              selectedIcon === icon.id ? "orange" : "transparent",
-            border: selectedIcon === icon.id ? "2px solid orange" : "none",
-          }}
-        >
-          {icon.component}
-        </ActionIcon>
-      ))}
-    </Group>
-  );
+// The icons players picked themselves, by seat. A pick made by a seat that was
+// then removed and added back can clash, so the earlier seat keeps it
+const pickedIcons = (players: Player[], numPlayers: number) => {
+  const used = new Set<string>();
+  return Array.from({ length: numPlayers }, (_, seat) => {
+    const picked = players.at(seat)?.icon;
+    if (!picked || used.has(picked)) return "";
+    used.add(picked);
+    return picked;
+  });
 };
 
-// Gives each player's square in words, as the board only shows it visually
+// Each player's icon: the one they picked, or else the first one nobody has
+// picked or been given, so every player starts with a different icon
+const assignIcons = (players: Player[], numPlayers: number) => {
+  const picked = pickedIcons(players, numPlayers);
+  const used = new Set(picked);
+  return picked.map((icon) => {
+    if (icon) return icon;
+    const free = icons.find((option) => !used.has(option.id))?.id ?? "cat";
+    used.add(free);
+    return free;
+  });
+};
+
+// Chips in a group are radio buttons sharing a name, so it's one tab stop and
+// the arrow keys pick an icon. Icons another player picked are disabled, and
+// the arrow keys skip them
+const IconSelection: React.FC<IconSelectionProps> = ({
+  seat,
+  selectedIcon,
+  takenIcons,
+  onChange,
+}) => (
+  <Fieldset
+    variant="unstyled"
+    legend={`Avatar for player ${(seat + 1).toString()}`}
+    styles={{
+      legend: {
+        marginBottom: "var(--mantine-spacing-xs)",
+        fontSize: "var(--mantine-font-size-xs)",
+        color: "var(--mantine-color-dimmed)",
+      },
+    }}
+  >
+    <Chip.Group value={selectedIcon} onChange={onChange}>
+      <Group gap="xs">
+        {icons.map((icon) => (
+          <Chip
+            key={icon.id}
+            name={`avatar-${seat.toString()}`}
+            value={icon.id}
+            disabled={takenIcons.has(icon.id)}
+            color="orange"
+            icon={null}
+            wrapperProps={{ title: icon.label }}
+            // A round 44px tap target holding just the icon
+            styles={{
+              label: {
+                width: "2.75rem",
+                height: "2.75rem",
+                padding: 0,
+                justifyContent: "center",
+              },
+            }}
+          >
+            <span aria-hidden style={{ display: "flex" }}>
+              {icon.component}
+            </span>
+            <VisuallyHidden>{icon.label}</VisuallyHidden>
+          </Chip>
+        ))}
+      </Group>
+    </Chip.Group>
+  </Fieldset>
+);
+
+// The space for the dice result is always there, so nothing moves when it shows
+const RollBadge: React.FC<{ roll: number | null }> = ({ roll }) => (
+  <Box className={layout.badgeSlot} aria-hidden>
+    {roll !== null && (
+      <Badge color="orange" variant="filled">
+        +{roll}
+      </Badge>
+    )}
+  </Box>
+);
+
 const PlayerList: React.FC<PlayerListProps> = ({
   players,
-  positions,
   currentPlayer,
+  positions,
+  roll,
 }) => (
   <div>
-    <Text size="xl" ta="left" mb="md" fw={700}>
-      Players
-    </Text>
     {players.map((player, index) => (
       <Group
         // Players are identified by their turn order, which never changes mid-game
         // eslint-disable-next-line @eslint-react/no-array-index-key
         key={index}
-        mb="sm"
-        w="60%"
         aria-current={currentPlayer === index ? "step" : undefined}
+        mb="xs"
+        gap="sm"
+        wrap="nowrap"
         style={{
-          border: currentPlayer === index ? "2px solid orange" : "none",
+          border:
+            currentPlayer === index
+              ? "2px solid orange"
+              : "2px solid transparent",
           borderRadius: "8px",
-          padding: "4px",
+          padding: "2px 4px",
         }}
       >
         {icons.find((icon) => icon.id === player.icon)?.component}
-        <Text>
-          {player.name},{" "}
-          {positions[index]
-            ? `square ${positions[index].toString()}`
-            : "not on the board yet"}
-          {currentPlayer === index && " (your turn)"}
+        <Text truncate style={{ flex: 1 }}>
+          {player.name}
+          <VisuallyHidden>
+            {positions[index] ? "" : ", not on the board yet"}
+            {currentPlayer === index ? " (your turn)" : ""}
+          </VisuallyHidden>
         </Text>
+        <Text size="sm" c="dimmed">
+          {positions[index] ? `Square ${String(positions[index])}` : "Start"}
+        </Text>
+        <RollBadge roll={currentPlayer === index ? roll : null} />
       </Group>
     ))}
   </div>
@@ -206,6 +285,7 @@ const SnakesAndLadders = () => {
   const [gameInitialized, setGameInitialized] = useState(false);
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
+  const [playersOpened, setPlayersOpened] = useState(false); // Phones only
 
   // The buttons a keyboard user is on disappear or are disabled as the game
   // moves on, so put focus back where they can carry on playing
@@ -227,13 +307,18 @@ const SnakesAndLadders = () => {
   }, [gameInitialized]);
 
   const initializePlayers = () => {
-    if (players.length === 0 || players.some((player) => player.name === "")) {
-      const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
-        name: `Player ${(i + 1).toString()}`,
-        icon: "user",
-      }));
-      setPlayers(defaultPlayers);
-    }
+    // Anyone left unnamed gets a default name, and everyone gets the icon the
+    // form showed, without losing the names that were filled in
+    const seatIcons = assignIcons(players, numPlayers);
+    setPlayers(
+      seatIcons.map((icon, i) => {
+        const name = players.at(i)?.name.trim() ?? "";
+        return {
+          name: name === "" ? `Player ${(i + 1).toString()}` : name,
+          icon,
+        };
+      }),
+    );
     setSpecialSpaces(generateSpecialSpaces());
     setPlayerPositions(Array(numPlayers).fill(0));
     setGameInitialized(true); // Transition to the game view
@@ -384,7 +469,7 @@ const SnakesAndLadders = () => {
     // Reset players to default names and icons
     const defaultPlayers = Array.from({ length: numPlayers }, (_, i) => ({
       name: `Player ${(i + 1).toString()}`,
-      icon: "user", // Adjust if needed
+      icon: "", // Each gets a different icon again until they pick one
     }));
     setPlayers(defaultPlayers);
 
@@ -392,151 +477,183 @@ const SnakesAndLadders = () => {
     setGameInitialized(false); // Reset to show initiation step };
   };
 
+  if (!gameInitialized) {
+    const picked = pickedIcons(players, numPlayers);
+    const seatIcons = assignIcons(players, numPlayers);
+    return (
+      <Box maw="40rem">
+        {/* Form to set up the players */}
+        <NumberInput
+          ref={setupRef}
+          value={numPlayers}
+          onChange={(value) => {
+            setNumPlayers(Number(value) || 2);
+          }}
+          label="Number of Players"
+          min={2}
+          max={10}
+          maw="12rem"
+        />
+
+        <Space h="xl" />
+
+        <SimpleGrid cols={{ base: 1, sm: 2 }}>
+          {Array.from({ length: numPlayers }, (_, seat) => seat).map((seat) => (
+            <Stack key={seat} mb="sm" gap="xs">
+              <TextInput
+                label={`Name of player ${(seat + 1).toString()}:`}
+                labelProps={{
+                  style: {
+                    margin: "0 0 0.75em 0",
+                  },
+                }}
+                value={players[seat]?.name || ""}
+                onChange={(event) => {
+                  handlePlayerSetup(
+                    seat,
+                    event.currentTarget.value,
+                    players.at(seat)?.icon ?? "",
+                  );
+                }}
+              />
+              <IconSelection
+                seat={seat}
+                selectedIcon={seatIcons[seat]}
+                takenIcons={
+                  new Set(
+                    picked.filter((icon, other) => icon && other !== seat),
+                  )
+                }
+                onChange={(icon) => {
+                  handlePlayerSetup(seat, players.at(seat)?.name ?? "", icon);
+                }}
+              />
+            </Stack>
+          ))}
+        </SimpleGrid>
+
+        <Button onClick={initializePlayers} fullWidth mt="md">
+          Start game!
+        </Button>
+      </Box>
+    );
+  }
+
+  const roll = showDiceResult ? diceResult : null;
+  const current = players.at(currentPlayer); // Undefined until set up
+
+  const restartFromDrawer = () => {
+    setPlayersOpened(false);
+    restartGame();
+  };
+
+  // The game fills the screen and never scrolls. Phones put the board above
+  // the current player, with everyone else in a drawer. Wider screens list
+  // every player beside the board
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2 }}>
-      <Box>
-        {!gameInitialized && (
-          <>
-            {/* Form to set up the players */}
-            <NumberInput
-              ref={setupRef}
-              value={numPlayers}
-              onChange={(value) => {
-                setNumPlayers(Number(value) || 2);
-              }}
-              label="Number of Players"
-              min={2}
-              max={10}
-              w="49%"
-            />
+    <div className={layout.space}>
+      <div className={layout.game}>
+        {/* Said out loud, as the badge only shows the number */}
+        <VisuallyHidden role="status">
+          {roll !== null && current
+            ? `${current.name} moves ${String(roll)} ${roll === 1 ? "place" : "places"}`
+            : ""}
+        </VisuallyHidden>
 
-            <Space h="xl" />
-
-            {Array.from({ length: numPlayers }, (_, seat) => seat).map(
-              (seat) => (
-                <Box key={seat} style={{ paddingLeft: "20px" }}>
-                  <Stack mb="sm" gap="xs">
-                    <TextInput
-                      label={`Name of player ${(seat + 1).toString()}:`}
-                      labelProps={{
-                        style: {
-                          margin: "0 0 0.75em 0",
-                        },
-                      }}
-                      value={players[seat]?.name || ""}
-                      onChange={(event) => {
-                        handlePlayerSetup(
-                          seat,
-                          event.currentTarget.value,
-                          players[seat]?.icon || "cat",
-                        );
-                      }}
-                    />
-                    <Text size="xs" c="dimmed">
-                      Choose your avatar
-                    </Text>
-                    <Group>
-                      <IconSelection
-                        selectedIcon={players[seat]?.icon || "cat"}
-                        onChange={(icon) => {
-                          handlePlayerSetup(
-                            seat,
-                            players[seat]?.name ||
-                              `Player ${(seat + 1).toString()}`,
-                            icon,
-                          );
-                        }}
-                      />
-                    </Group>
-                  </Stack>
-                </Box>
-              ),
-            )}
-
-            <Button onClick={initializePlayers} mt="sm">
-              Start game!
-            </Button>
-          </>
-        )}
-
-        {gameInitialized && (
-          <Box>
+        <Stack gap="sm" className={layout.controls}>
+          <Box visibleFrom="sm" className={layout.playerList}>
             <PlayerList
               players={players}
-              positions={playerPositions}
               currentPlayer={currentPlayer}
+              positions={playerPositions}
+              roll={roll}
             />
+          </Box>
 
-            {/* Always rendered, so screen readers announce each roll */}
-            <div role="status">
-              {showDiceResult && diceResult !== null && (
-                <Text ta="left" mt="md">
-                  {players[currentPlayer]?.name} moves {diceResult} places!
-                </Text>
-              )}
-            </div>
+          <Group hiddenFrom="sm" gap="sm" wrap="nowrap" data-testid="turn">
+            {icons.find((icon) => icon.id === current?.icon)?.component}
+            <Text fw={700} truncate style={{ flex: 1 }}>
+              {current?.name}&apos;s turn
+            </Text>
+            <RollBadge roll={roll} />
+          </Group>
 
-            <Space h="md" />
-
+          <Flex direction={{ base: "row", sm: "column" }} gap="sm">
             <Button
               ref={rollRef}
               onClick={rollDice}
-              mt="md"
-              w="50%"
+              flex={{ base: 1, sm: "none" }}
               disabled={!!winner || playerPositions.length === 0 || isRolling}
             >
               {isRolling
                 ? rollingDiceIcon
-                : `Roll Dice (${players[currentPlayer]?.name})`}
+                : `Roll Dice (${current?.name ?? ""})`}
             </Button>
-
-            <Space h="md" />
-
-            <Button onClick={restartGame} w="50%" mt="md">
+            <Button
+              hiddenFrom="sm"
+              variant="default"
+              onClick={() => {
+                setPlayersOpened(true);
+              }}
+            >
+              Players
+            </Button>
+            <Button visibleFrom="sm" variant="default" onClick={restartGame}>
               Restart Game
             </Button>
-          </Box>
-        )}
-      </Box>
+          </Flex>
+        </Stack>
 
-      <Box>
-        {gameInitialized && (
-          <>
-            <SegmentedControl
-              value={viewMode}
-              color="orange"
-              onChange={setViewMode}
-              data={[
-                { label: "Show Names", value: "names" },
-                { label: "Show Icons", value: "icons" },
-              ]}
-              mt="sm"
-            />
+        <Drawer
+          opened={playersOpened}
+          onClose={() => {
+            setPlayersOpened(false);
+          }}
+          position="bottom"
+          size="auto"
+          title="Players"
+          hiddenFrom="sm"
+        >
+          <PlayerList
+            players={players}
+            currentPlayer={currentPlayer}
+            positions={playerPositions}
+            roll={roll}
+          />
+          <Button
+            onClick={restartFromDrawer}
+            fullWidth
+            mt="md"
+            variant="default"
+          >
+            Restart Game
+          </Button>
+        </Drawer>
 
-            <Space h="xl" />
+        <div className={layout.boardArea}>
+          <SegmentedControl
+            value={viewMode}
+            color="orange"
+            onChange={setViewMode}
+            data={[
+              { label: "Show Names", value: "names" },
+              { label: "Show Icons", value: "icons" },
+            ]}
+            className={layout.viewMode}
+          />
 
-            <Grid columns={10} gap={0}>
+          <div className={layout.table}>
+            <div className={layout.board} data-testid="board">
               {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, index) => {
                 const pos = index + 1;
                 const playerAtPos = playerPositions.findIndex(
                   (playerPos) => playerPos === pos,
                 );
                 return (
-                  <Grid.Col
-                    span={1}
-                    key={pos}
-                    style={{
-                      border: "1px solid #ddd",
-                      height: "50px",
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                  <div key={pos} className={layout.cell}>
                     {playerAtPos !== -1 &&
                       (viewMode === "names" ? (
-                        <Text>{players[playerAtPos]?.name}</Text>
+                        <span>{players[playerAtPos]?.name}</span>
                       ) : (
                         icons.find(
                           (icon) => icon.id === players[playerAtPos]?.icon,
@@ -544,28 +661,28 @@ const SnakesAndLadders = () => {
                       ))}
                     {specialSpaces.has(pos) && <IconQuestionMark size={24} />}
                     {pos === 100 && <IconTrophy size={24} color="gold" />}
-                  </Grid.Col>
+                  </div>
                 );
               })}
-            </Grid>
+            </div>
+          </div>
+        </div>
 
-            <Modal
-              opened={!!popupMessage}
-              onClose={closePopup}
-              title="Game Update"
-              closeButtonProps={{ "aria-label": "Close" }}
-            >
-              {popupMessage}
-              {winner !== null && (
-                <Button onClick={restartGame} fullWidth mt="md">
-                  Restart Game
-                </Button>
-              )}
-            </Modal>
-          </>
-        )}
-      </Box>
-    </SimpleGrid>
+        <Modal
+          opened={!!popupMessage}
+          onClose={closePopup}
+          title="Game Update"
+          closeButtonProps={{ "aria-label": "Close" }}
+        >
+          {popupMessage}
+          {winner !== null && (
+            <Button onClick={restartGame} fullWidth mt="md">
+              Restart Game
+            </Button>
+          )}
+        </Modal>
+      </div>
+    </div>
   );
 };
 

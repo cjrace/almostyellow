@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page } from "../playwright";
 import { users } from "../firebase/fixtures";
 
 // Synthetic users that only exist in the Firebase Auth emulator

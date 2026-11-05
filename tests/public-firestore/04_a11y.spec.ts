@@ -1,10 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
 import { publicRoutes } from "../../src/routes";
-
-// axe finds the same problems in every browser, so Chrome and Mobile Chrome
-// are enough, and cover both the desktop and mobile layouts
-test.skip(({ browserName }) => browserName !== "chromium");
 
 for (const scheme of schemes) {
   test.describe(`${scheme} scheme`, () => {

@@ -38,7 +38,7 @@ const CocktailBox: React.FC<Cocktail> = ({
   recipe,
 }) => {
   return (
-    <div className={styles.cocktailBox}>
+    <div className={styles.cocktailBox} data-testid="cocktail-card">
       <div className={styles.cocktailImageContainer}>
         <Image
           aria-hidden

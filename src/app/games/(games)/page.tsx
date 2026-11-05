@@ -1,7 +1,8 @@
-import { SimpleGrid, Title, Space } from "@mantine/core";
+import { SimpleGrid, Stack, Title } from "@mantine/core";
 import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import GamesCard from "@/components/gamescard";
+import layout from "@/styles/cardgame.module.css";
 
 export const metadata = pageMetadata(
   "Games",
@@ -15,14 +16,17 @@ const crumbitems = [
 
 export default function Games() {
   return (
-    <>
+    <div className={layout.screen}>
       <Header crumbs={crumbitems} />
 
-      <main id="main-content">
+      <Stack component="main" id="main-content" gap="md">
         <Title>Our games</Title>
-        <Space h="xl" />
 
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, lg: 3 }}
+          spacing="lg"
+          style={{ flex: "1 1 0", gridAutoRows: "minmax(min-content, 1fr)" }}
+        >
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Irish Bingo"
@@ -49,13 +53,29 @@ export default function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Uno"
-            description="Succumb to the whims of the Uno gods, try and play your cards wisely!"
-            link="/games/uno"
-            linktext="Uno"
+            title="Uno tracker"
+            description="The whims of the Uno gods, faithfully recorded: lifetime wins, records and trends."
+            link="/games/uno-tracker"
+            linktext="Uno tracker"
+          />
+
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Red or Black v1"
+            description="Red or black? Simple but deadly. A Ben Palmer original."
+            link="/games/redorblack"
+            linktext="Red or Black v1"
+          />
+
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Suits"
+            description="Pick your suit and reap the consequences. Another Ben Palmer special."
+            link="/games/suits"
+            linktext="Suits"
           />
         </SimpleGrid>
-      </main>
-    </>
+      </Stack>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   createSessionCookie,
@@ -8,13 +8,30 @@ import {
   SESSION_DURATION_MS,
 } from "@/auth";
 
-// Only ever send people on to somewhere in the admin area. The login page
+// Return only to the admin area or the Uno pages. The login page
 // already filters callbackUrl, but this action can be called directly.
+const unoPages = [
+  "/games/uno-tracker",
+  "/games/uno-tracker/stats",
+  "/games/uno-tracker/history",
+];
 function safeRedirect(redirectTo: unknown) {
   if (typeof redirectTo !== "string") return "/";
+  if (unoPages.includes(redirectTo)) return redirectTo;
   const isAdminPath =
     redirectTo === "/admin" || redirectTo.startsWith("/admin/");
   return isAdminPath && redirectTo !== "/admin/login" ? redirectTo : "/";
+}
+
+// The cookie is Secure everywhere but on this computer. Safari won't keep a
+// Secure cookie from http://localhost, which the tests and pnpm dev use.
+// next.config.ts can go by NODE_ENV and SERVED_OVER_HTTP at build time, but
+// the tests run a production build with next start, so this checks the host
+// the request came to. Only the person sending it gets the plainer cookie
+const localHosts = ["localhost", "127.0.0.1", "[::1]"];
+async function servedFromLocalhost() {
+  const host = (await headers()).get("host") ?? "";
+  return localHosts.includes(host.replace(/:\d+$/, ""));
 }
 
 // Server actions only accept same-origin POSTs, which is the CSRF protection
@@ -27,7 +44,7 @@ export async function signInAction(idToken: unknown, redirectTo?: unknown) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, sessionCookie, {
     httpOnly: true,
-    secure: true,
+    secure: !(await servedFromLocalhost()),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_DURATION_MS / 1000,

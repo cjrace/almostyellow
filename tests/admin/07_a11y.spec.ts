@@ -1,13 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
 import { adminRoutes } from "../../src/routes";
 import { films, whiskies } from "../firebase/fixtures";
 import { signIn } from "./helpers";
-
-// axe finds the same problems in every browser, so Chrome and Mobile Chrome
-// are enough, and cover both the desktop and mobile layouts
-test.skip(({ browserName }) => browserName !== "chromium");
 
 // Fills in a fixture ID for pages with one in the path
 function url(route: string) {
@@ -35,6 +31,7 @@ for (const scheme of schemes) {
 
     // Signing in is slow, so one test looks at every page in turn
     test("Admin pages meet WCAG 2.2 AA", async ({ page }) => {
+      test.slow();
       await signIn(page);
       for (const route of adminRoutes.filter((r) => r !== "/admin/login")) {
         await test.step(route, async () => {

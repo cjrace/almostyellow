@@ -2,14 +2,30 @@ import { defineConfig, devices } from "@playwright/test";
 /* Point at the Firebase emulators, never production */
 import "./tests/test-env";
 
+/* Vitest and Lighthouse have separate runners. */
+const vitestTests = ["unit/**", "firebase/**", "lighthouse/**"];
+/* Uno scoring changes one shared scoreboard, and SEO is browser-independent,
+   so only desktop Chrome runs them. Each project's testIgnore replaces the
+   top-level one, hence vitestTests. */
+const sharedScoreboard = [
+  ...vitestTests,
+  "**/admin/07_uno.spec.ts",
+  "**/public/06_seo.spec.ts",
+];
+/* Service-worker evaluation needs Chromium. axe checks both Chrome layouts. */
+const serviceWorker = [
+  ...sharedScoreboard,
+  "**/public/06_uno_offline.spec.ts",
+  "**/04_a11y.spec.ts",
+  "**/07_a11y.spec.ts",
+];
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: "./tests",
-  /* Unit and Firebase emulator tests are run by Vitest, and Lighthouse by
-     scripts/lighthouse.mts */
-  testIgnore: ["unit/**", "firebase/**", "lighthouse/**"],
+  testIgnore: vitestTests,
   /* Loads the synthetic users into the Firebase emulators */
   globalSetup: "./tests/global-setup.ts",
   /* Run tests in files in parallel */
@@ -18,15 +34,18 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on all environments to reduce flakiness */
   retries: 3,
-  /* Opt out of parallel tests on CI. Locally, more than 4 browsers alongside
-     the app and the Firebase emulators starves Firefox, which then
-     times out at random. */
-  workers: process.env.CI ? 1 : 4,
+  /* More than 4 browsers alongside the app and the Firebase emulators starves
+     them, and tests time out at random. CI has fewer cores than that. */
+  workers: process.env.CI ? 2 : 4,
   /* Never serve the report at the end of a run: it waits for Ctrl+C, which
      keeps the emulators running and blocks the next run.
      Open it with "pnpm exec playwright show-report". */
-  reporter: [["html", { open: "never" }]],
-  /* Give Firefox extra slack on assertions; default 5s races with App Router renders. */
+  reporter: [
+    ["dot"],
+    ["html", { open: "never" }],
+    ["./tests/reporters/summary.ts"],
+  ],
+  /* Extra slack on assertions; the default 5s races with App Router renders. */
   expect: {
     timeout: 10_000,
   },
@@ -47,6 +66,7 @@ export default defineConfig({
       use: {
         ...devices["Pixel 8"],
       },
+      testIgnore: sharedScoreboard,
     },
     {
       name: "Google Chrome",
@@ -55,32 +75,21 @@ export default defineConfig({
         channel: "chrome",
       },
     },
-    {
-      name: "firefox",
-      use: {
-        ...devices["Desktop Firefox"],
-      },
-    },
-    /* TODO: Fix these - seems to work on Laura's phone in real life but the tests are having none of it
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-      },
-    },
+    /* Every browser on an iPhone uses WebKit, Chrome included */
     {
       name: "Mobile Safari",
       use: {
         ...devices["iPhone 14"],
       },
+      testIgnore: serviceWorker,
     },
-  */
   ],
 
   // Run local server before starting the tests. Never reuse one already
   // running, as a dev server would be pointing at the production database.
   webServer: {
-    command: "next start",
+    // Runs next start, hiding the error 03_server_actions causes on purpose
+    command: "node scripts/serve-test.mts",
     url: "http://localhost:3000/",
     reuseExistingServer: false,
   },

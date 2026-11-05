@@ -1,0 +1,13 @@
+diff --git a/lib/utils/patterns.js b/lib/utils/patterns.js
+index de967117f3b9e74d2de9dede9d745b3fbfe955dd..b8912c89654566e67221c61b4378b13ad2ab6ba1 100644
+--- a/lib/utils/patterns.js
++++ b/lib/utils/patterns.js
+@@ -20,7 +20,7 @@
+  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  */
+ let RE2;
+-const minimatch = require("minimatch");
++const { minimatch } = require("minimatch");
+ try {
+     RE2 = require("re2");
+ }

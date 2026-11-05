@@ -6,19 +6,102 @@
 //   node scripts/e2e.mts tests/admin       extra arguments go to Playwright
 //
 // Settings come from tests/test-env.ts.
-import { exitIfPortsInUse, inEmulators, quote, run } from "./emulators.mts";
+import { spawnSync } from "node:child_process";
+import { connect } from "node:net";
+import "../tests/test-env.ts";
 
 const args = process.argv.slice(2);
 const build = !args.includes("--no-build");
 const playwrightArgs = args.filter((arg) => arg !== "--no-build");
 
-await exitIfPortsInUse();
+// Resolves true if something is already listening on the port
+function inUse(port: number) {
+  return new Promise<boolean>((resolve) => {
+    const socket = connect({ port, host: "127.0.0.1" });
+    socket.setTimeout(1000, () => socket.destroy());
+    socket.once("connect", () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.once("error", () => resolve(false));
+  });
+}
 
-let status = build ? run("pnpm exec next build") : 0;
+// Fail early and clearly rather than part way through the run. Another copy of
+// this script or a dev server would otherwise clash.
+const needed = {
+  3000: "the app",
+  8080: "the Firestore emulator",
+  9099: "the Auth emulator",
+};
+const clashes: string[] = [];
+for (const [port, what] of Object.entries(needed)) {
+  if (await inUse(Number(port))) clashes.push(`  port ${port} (${what})`);
+}
+if (clashes.length > 0) {
+  console.error(
+    `Cannot start, these ports are already in use:\n${clashes.join("\n")}\n` +
+      "Stop whatever is using them (a dev server or another test run) and try again.",
+  );
+  process.exit(1);
+}
+
+// emulators:exec runs its script through a shell, so quote any argument that
+// is not plain, such as --project="Google Chrome". Double quotes work in both
+// cmd and sh, as long as the argument has none of its own.
+function quote(arg: string) {
+  if (/^[\w\-.:/\\=@,]+$/.test(arg)) return arg;
+  if (arg.includes('"')) {
+    console.error(`Cannot pass an argument containing a double quote: ${arg}`);
+    process.exit(1);
+  }
+  return `"${arg}"`;
+}
+
+// Next prints its whole route table, so show the output only if the build
+// fails or warns
+function buildApp() {
+  console.log("Building the app...");
+  const started = Date.now();
+  const result = spawnSync("pnpm exec next build", {
+    shell: true,
+    encoding: "utf8",
+    // The default 1 MB would fail a build that prints a lot of warnings
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const output = `${result.stdout}${result.stderr}`;
+  if (result.status !== 0) {
+    console.error(output);
+    return result.status ?? 1;
+  }
+  // Next marks most warnings with ⚠ rather than the word
+  const warnings = output.split("\n").filter((line) => /warn|⚠/i.test(line));
+  const seconds = ((Date.now() - started) / 1000).toFixed(0);
+  console.log(["Build OK (" + seconds + "s)", ...warnings].join("\n"));
+  return 0;
+}
+
+let status = build ? buildApp() : 0;
 if (status === 0) {
-  status = inEmulators([
-    "pnpm exec playwright test",
-    ...playwrightArgs.map(quote),
-  ]);
+  // emulators:exec sets the emulator hosts for Playwright and next start, and
+  // stops the emulators when the tests finish. The CLI is run with node rather
+  // than through a shell, so the script reaches it as one argument.
+  const script = ["pnpm exec playwright test", ...playwrightArgs.map(quote)];
+  const result = spawnSync(
+    process.execPath,
+    [
+      "node_modules/firebase-tools/lib/bin/firebase.js",
+      "emulators:exec",
+      "--log-verbosity",
+      "QUIET",
+      "--project",
+      process.env.FIREBASE_PROJECT_ID ?? "",
+      "--only",
+      "auth,firestore",
+      script.join(" "),
+    ],
+    { stdio: "inherit" },
+  );
+  status = result.status ?? 1;
 }
 process.exit(status);

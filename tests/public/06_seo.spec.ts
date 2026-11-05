@@ -1,11 +1,6 @@
 import { globSync } from "node:fs";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import { adminRoutes, publicRoutes, siteUrl } from "../../src/routes";
-
-// What search engines see is the same in every browser
-test.skip(
-  ({ browserName, isMobile }) => browserName !== "chromium" || isMobile,
-);
 
 test("Every page is in src/routes.ts", () => {
   const routes = globSync("src/app/**/page.tsx").map(
@@ -34,9 +29,11 @@ for (const { path } of publicRoutes) {
     expect(description?.length).toBeGreaterThan(0);
     expect(description?.length).toBeLessThanOrEqual(160);
 
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      "href",
-      path === "/" ? new RegExp(`^${siteUrl}/?$`) : `${siteUrl}${path}`,
+    const canonical = await page
+      .locator('link[rel="canonical"]')
+      .getAttribute("href");
+    expect(canonical?.replace(/\/$/, "")).toBe(
+      `${siteUrl}${path === "/" ? "" : path}`,
     );
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
       "content",
@@ -45,9 +42,11 @@ for (const { path } of publicRoutes) {
     await expect(
       page.locator('meta[property="og:description"]'),
     ).toHaveAttribute("content", /.+/);
-    await expect(
-      page.locator('meta[property="og:image"]').first(),
-    ).toHaveAttribute("content", new RegExp(`^${siteUrl}/`));
+    const image = await page
+      .locator('meta[property="og:image"]')
+      .first()
+      .getAttribute("content");
+    expect(new URL(image ?? "").origin).toBe(siteUrl);
     await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   });
 }

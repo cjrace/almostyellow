@@ -1,95 +1,104 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 import fs from "fs";
 import { films } from "../firebase/fixtures";
-import { waitForHydration } from "../hydration";
 
-test("Films Page Test", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("link", { name: "Cam's film list" }).click();
+test.describe("A visitor to the film list", () => {
+  test("sees the list and can filter it to the IMDB top 30", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "Cam's film list" }).click();
 
-  await expect(page).toHaveTitle("Films | Almost Yellow");
+    await expect(page).toHaveTitle("Films | Almost Yellow");
 
-  // Check the seeded films are loaded
-  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
-  await expect(page.locator("#main-content")).toContainText(
-    /Final Destination/,
-  );
+    // Check the seeded films are loaded
+    await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+    await expect(page.locator("#main-content")).toContainText(
+      /Final Destination/,
+    );
 
-  // Check only Seven Samurai is there after playing with filters
-  await page.getByRole("button", { name: "Sort and filter" }).click();
-  await page
-    .getByRole("combobox", { name: "IMDB top 30", exact: true })
-    .click();
-  await page.getByRole("option", { name: "Top 30", exact: true }).click();
+    // Check only Seven Samurai is there after playing with filters
+    await page.getByRole("button", { name: "Sort and filter" }).click();
+    await page
+      .getByRole("combobox", { name: "IMDB top 30", exact: true })
+      .click();
+    await page.getByRole("option", { name: "Top 30", exact: true }).click();
 
-  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
-  await expect(page.locator("#main-content")).not.toContainText(
-    /Final Destination/,
-  );
+    await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+    await expect(page.locator("#main-content")).not.toContainText(
+      /Final Destination/,
+    );
 
-  // Check both are there after clearing filters
-  await page.getByRole("button", { name: "Clear all filters" }).click();
-  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
-  await expect(page.locator("#main-content")).toContainText(
-    /Final Destination/,
-  );
-});
+    // Check both are there after clearing filters
+    await page.getByRole("button", { name: "Clear all filters" }).click();
+    await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+    await expect(page.locator("#main-content")).toContainText(
+      /Final Destination/,
+    );
+  });
 
-test("Can copy film names to clipboard", async ({ page, context }) => {
-  // Grant clipboard permissions to browser context when not in firefox
-  // firefox works without permissions, and doesn't recognise it when granted
-  const browser = context.browser();
-  if (browser && browser.browserType().name() !== "firefox") {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  }
+  test("can copy the film names", async ({ page }) => {
+    // Keeps what the page copies, as reading the real clipboard needs a
+    // permission Safari doesn't have
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        value: {
+          writeText: (text: string) => {
+            document.documentElement.dataset.copied = text;
+            return Promise.resolve();
+          },
+        },
+      });
+    });
 
-  await page.goto("/films");
-  await page
-    .getByRole("button", { name: "Copy film names to clipboard" })
-    .click();
+    await page.goto("/films");
+    await page
+      .getByRole("button", { name: "Copy film names to clipboard" })
+      .click();
 
-  const clipboardText = await page.evaluate(() =>
-    navigator.clipboard.readText(),
-  );
-  expect(clipboardText).toContain("Final Destination (2000)");
-  expect(clipboardText).toContain("Seven Samurai (1954)");
-});
+    await expect(page.locator("html[data-copied]")).toBeAttached();
+    const clipboardText = await page
+      .locator("html")
+      .getAttribute("data-copied");
+    expect(clipboardText).toContain("Final Destination (2000)");
+    expect(clipboardText).toContain("Seven Samurai (1954)");
+  });
 
-test("Download CSV and check contents", async ({ page }) => {
-  await page.goto("/films");
-  await waitForHydration(page);
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.getByRole("button", { name: "Download CSV" }).click(),
-  ]);
+  test("can download the list as a CSV", async ({ page }) => {
+    await page.goto("/films");
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByRole("button", { name: "Download CSV" }).click(),
+    ]);
 
-  const path: string | null = await download.path();
-  if (!path) throw new Error("Download path not found");
-  const csv: string = fs.readFileSync(path, "utf-8");
-  const rows: string[] = csv.split("\n");
+    const path: string | null = await download.path();
+    if (!path) throw new Error("Download path not found");
+    const csv: string = fs.readFileSync(path, "utf-8");
+    const rows: string[] = csv.split("\n");
 
-  // The header, then the films in tests/firebase/fixtures.ts. Admin tests
-  // running at the same time can add their own, so check for these rather
-  // than an exact count.
-  expect(rows[0]).toContain("Name");
-  for (const film of films) {
-    expect(rows.some((row) => row.includes(film.name))).toBe(true);
-  }
-});
+    // The header, then the films in tests/firebase/fixtures.ts. Admin tests
+    // running at the same time can add their own, so check for these rather
+    // than an exact count.
+    expect(rows[0]).toContain("Name");
+    for (const film of films) {
+      expect(rows.some((row) => row.includes(film.name))).toBe(true);
+    }
+  });
 
-test("Can search films by name", async ({ page }) => {
-  await page.goto("/films");
-  await page.fill('input[placeholder="Search film titles..."]', "Seven");
+  test("can search films by name", async ({ page }) => {
+    await page.goto("/films");
+    await page.fill('input[placeholder="Search film titles..."]', "Seven");
 
-  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
-  await expect(page.locator("#main-content")).not.toContainText(
-    /Final Destination/,
-  );
+    await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+    await expect(page.locator("#main-content")).not.toContainText(
+      /Final Destination/,
+    );
 
-  // Clear search and check both films are there
-  await page.click('button[aria-label="Clear search query"]');
-  await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
-  await expect(page.locator("#main-content")).toContainText(
-    /Final Destination/,
-  );
+    // Clear search and check both films are there
+    await page.click('button[aria-label="Clear search query"]');
+    await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);
+    await expect(page.locator("#main-content")).toContainText(
+      /Final Destination/,
+    );
+  });
 });

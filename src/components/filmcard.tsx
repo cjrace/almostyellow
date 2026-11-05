@@ -1,6 +1,7 @@
 import { Paper, Text, Badge, Group, ActionIcon, Flex } from "@mantine/core";
 import { IconChecklist, IconEyeglass, IconPencil } from "@tabler/icons-react";
 import { PiJarBold } from "react-icons/pi";
+import Link from "next/link";
 
 export interface Film {
   id: string;
@@ -32,7 +33,7 @@ export const FilmCard: React.FC<Film> = ({
           <ActionIcon
             size="lg"
             variant="default"
-            component="a"
+            component={Link}
             href={`/admin/films/${id}/edit`}
             aria-label={`Edit ${name}`}
           >

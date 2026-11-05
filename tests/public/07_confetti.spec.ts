@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../playwright";
 
 // The confetti script is large, so it should only be fetched when someone
 // asks for confetti. The request is blocked so tests never reach the site.

@@ -6,10 +6,13 @@
 pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
 pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
+pnpm test-only     # The same without reformatting files or rebuilding the app
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 pnpm test:lighthouse  # Build, then Lighthouse on every public page against the Firebase emulators
 ```
+
+`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
 
 Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
 
@@ -17,13 +20,27 @@ Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) 
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
 
-Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves Firefox and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
+Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
+
+CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
+
+`scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
+
+## Dependencies
+
+`pnpm-workspace.yaml` holds `overrides` for security fixes and `allowBuilds` for packages allowed to run install scripts. Leave them unless a bump needs the change. `patches/` patches `firebase-tools` and `superstatic` for minimatch's named export, and `tests/unit/dependency_compatibility.test.ts` checks the patches still work, so keep it passing when updating either package.
 
 ## Branch naming
 
 Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/2026-10`.
+
+## PR screenshots
+
+When a PR changes how a page looks, include before and after screenshots of each affected page at both desktop and mobile sizes in its description. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check both layouts even when the change is aimed at only one of them.
+
+Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
 ## Architecture
 
@@ -35,6 +52,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
   - `(homepage)/` — Home page (route group, no URL segment)
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
+  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits and the Uno tracker. Only Uno uses Firestore
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
@@ -56,17 +74,25 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 
 ### Cocktails (Firestore)
 
-`src/app/cocktails/page.tsx` reads the `cocktails` collection on each request with `src/services/cocktails.ts`, and passes it to the client component for filtering. There is no page for changing cocktails yet. Ratings are out of 5 in halves, and photos must be under `/images/`; `tests/firebase/rules.test.ts` checks every catalogue recipe meets the rules.
+`src/app/cocktails/page.tsx` reads the `cocktails` collection on each request with `src/services/cocktails.ts`. There is no page for changing cocktails yet. Ratings are out of 5 in halves, and photos must be under `/images/`; `tests/firebase/rules.test.ts` checks every catalogue recipe meets the rules.
 
 ### Chopin Liszt (Firestore)
 
-The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener so changes from another device appear without a refresh. The Firestore SDK shows changes at once and queues them while offline. The queue is only kept in memory, so changes not yet sent are lost if the page closes (the page asks before unloading while any are waiting), and the list needs a connection to open. The offline message also shows when the listener is serving cached data, as phones can report being online on a signal too weak to reach Firestore. The change that reaches Firestore last wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener. Changes queue in memory while offline and are lost if the page closes with some unsent, so the page asks before unloading while any are waiting. The list needs a connection to open. The offline message also shows while the listener is serving cached data, as phones can report being online on a signal too weak to reach Firestore. The last change to reach Firestore wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+
+### Uno (Firestore)
+
+The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/games/uno-tracker/history`) can be read by anyone, but only authorised users can score. Its logic is in `src/uno/` (model, controller and browser storage), and `src/services/uno.ts` holds the server actions. They use the `uno`, `unoGames` and `unoLeases` collections, which the Security Rules deny to browsers entirely. A service worker, `public/games/uno-tracker/sw.js`, caches the three pages for offline use. See `docs/uno.md` for how it works.
 
 ### UI
 
 [Mantine](https://mantine.dev/) with a custom theme (`acalat`), dark mode by default. Icons from Tabler. PostCSS is configured for Mantine via `postcss-preset-mantine`.
 
+Lay pages out with Mantine (`Stack`, `Group`, `SimpleGrid`, `Grid`). Use a CSS module only for shapes Mantine can't make, such as the square Snakes and Ladders board sized to the window. Write breakpoints as `@mixin larger-than $mantine-breakpoint-sm` or `@mixin smaller-than $mantine-breakpoint-sm`, not fixed widths, so they match Mantine's props. Games that fill exactly one screen wrap the page in `.screen` from `src/styles/cardgame.module.css` and let the game take the height left, using a size container like its `.table`, rather than subtracting fixed heights from `100dvh`.
+
 ### Tests
+
+`tests/README.md` explains the test set-up for people, including how to name tests: `test.describe` for who and where, a test name saying what they see or can do, and Given/When/Then `test.step`s for long journeys. Follow it in new tests, and update it when adding a stage or folder.
 
 Playwright E2E tests in `tests/`, split into three folders:
 
@@ -76,7 +102,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 
 They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
-Tests run against Mobile Chrome, Desktop Chrome, and Firefox (Safari/WebKit disabled).
+Tests run against Mobile Chrome, Desktop Chrome and Mobile Safari (WebKit on an iPhone 14). Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
 
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 
@@ -112,12 +138,13 @@ The `a11y-seo-check` skill in `.claude/skills/` runs all of this for a change.
 The Firebase work is tested against the local Auth and Firestore emulators, never a real project. Java 21 or later must be installed for the Firestore emulator.
 
 ```bash
-pnpm test:rules    # Security Rules tests, project demo-almostyellow
-pnpm test:ci       # Everything under tests/firebase, project demo-almostyellow-ci
-pnpm emulators     # Start the emulators by hand, for example while writing tests
+pnpm test:rules        # Security Rules tests, project demo-almostyellow
+pnpm test:firebase     # Everything under tests/firebase, project demo-almostyellow-ci
+pnpm test:firebase:run # The same against emulators you started with pnpm emulators
+pnpm emulators         # Start the emulators by hand, for example while writing tests
 ```
 
 - `firebase.json`, `firestore.rules` and `firestore.indexes.json` configure the emulators and rules.
 - `tests/firebase/fixtures.ts` holds the synthetic users and records, and `tests/firebase/seed.ts` resets the emulators to them. Seeding happens before every test, so each starts from the same data.
 - `tests/firebase/guard.ts` refuses to run unless the project is one of the two `demo-` projects, both emulator hosts are local, Security Rules are loaded and no Google or Firebase credentials are set. Its own tests are in `tests/unit/firebase_guard.test.ts`.
-- `pnpm test` and `pnpm test-only` run `pnpm test:ci` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.
+- `pnpm test` and `pnpm test-only` run `pnpm test:firebase` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.

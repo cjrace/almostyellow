@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "../playwright";
 import { getCredentials } from "./helpers";
 
 // Every test running at the same time shares the one journal, so this only
@@ -42,49 +42,53 @@ test("Can add, edit and delete a whisky", async ({ page }) => {
   test.slow();
   const name = `Test whisky ${randomUUID().slice(0, 8)}`;
 
-  await signInTo(page, "/admin/whiskyjournal/add");
-  await page.getByLabel("Name").fill(name);
-  await page.getByLabel("Distillery").fill("Test distillery");
-  await page.getByLabel("Country (plus region if Scotland)").fill("Ireland");
-  await page.getByLabel("Age").fill("12");
-  await page.getByPlaceholder("Select grain").click();
-  await page.getByRole("option", { name: "Single malt" }).click();
-  await page.getByLabel("ABV").fill("46");
-  await rate(page, 4, 2);
-  await page.getByLabel("Notes").fill("Added by a test");
-  await Promise.all([
-    page.waitForURL("/whiskyjournal"),
-    page.getByRole("button", { name: "Add whisky" }).click(),
-  ]);
+  await test.step("When a signed-in admin adds a whisky, it shows in the journal", async () => {
+    await signInTo(page, "/admin/whiskyjournal/add");
+    await page.getByLabel("Name").fill(name);
+    await page.getByLabel("Distillery").fill("Test distillery");
+    await page.getByLabel("Country (plus region if Scotland)").fill("Ireland");
+    await page.getByLabel("Age").fill("12");
+    await page.getByPlaceholder("Select grain").click();
+    await page.getByRole("option", { name: "Single malt" }).click();
+    await page.getByLabel("ABV").fill("46");
+    await rate(page, 4, 2);
+    await page.getByLabel("Notes").fill("Added by a test");
+    await Promise.all([
+      page.waitForURL("/whiskyjournal"),
+      page.getByRole("button", { name: "Add whisky" }).click(),
+    ]);
 
-  await expect(card(page, name)).toContainText("Added by a test");
-  await expect(card(page, name)).toContainText("46%");
+    await expect(card(page, name)).toContainText("Added by a test");
+    await expect(card(page, name)).toContainText("46%");
+  });
 
-  // Edit it
-  await card(page, name)
-    .getByRole("link", { name: `Edit ${name}` })
-    .click();
-  await expect(page.getByLabel("Name")).toHaveValue(name);
-  await page.getByLabel("Notes").fill("Edited by a test");
-  await Promise.all([
-    page.waitForURL("/whiskyjournal"),
-    page.getByRole("button", { name: "Update Whisky" }).click(),
-  ]);
-  await expect(card(page, name)).toContainText("Edited by a test");
+  await test.step("When they edit it, the change shows", async () => {
+    await card(page, name)
+      .getByRole("link", { name: `Edit ${name}` })
+      .click();
+    await expect(page.getByLabel("Name")).toHaveValue(name);
+    await page.getByLabel("Notes").fill("Edited by a test");
+    await Promise.all([
+      page.waitForURL("/whiskyjournal"),
+      page.getByRole("button", { name: "Update Whisky" }).click(),
+    ]);
+    await expect(card(page, name)).toContainText("Edited by a test");
+  });
 
-  // Delete it
-  await card(page, name)
-    .getByRole("link", { name: `Edit ${name}` })
-    .click();
-  await page.getByRole("button", { name: "Delete Whisky" }).click();
-  await Promise.all([
-    page.waitForURL("/whiskyjournal"),
-    page.getByRole("button", { name: "Confirm deletion" }).click(),
-  ]);
-  await expect(
-    page.getByRole("heading", { name: "Talisker 10 Year Old" }),
-  ).toBeVisible();
-  await expect(card(page, name)).toHaveCount(0);
+  await test.step("When they delete it, it is gone", async () => {
+    await card(page, name)
+      .getByRole("link", { name: `Edit ${name}` })
+      .click();
+    await page.getByRole("button", { name: "Delete Whisky" }).click();
+    await Promise.all([
+      page.waitForURL("/whiskyjournal"),
+      page.getByRole("button", { name: "Confirm deletion" }).click(),
+    ]);
+    await expect(
+      page.getByRole("heading", { name: "Talisker 10 Year Old" }),
+    ).toBeVisible();
+    await expect(card(page, name)).toHaveCount(0);
+  });
 });
 
 test("Editing a whisky that does not exist shows not found", async ({

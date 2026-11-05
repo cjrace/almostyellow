@@ -1,12 +1,13 @@
 import "@mantine/core/styles.css";
-import { ColorSchemeScript, AppShell, Anchor } from "@mantine/core";
+import { ColorSchemeScript, Anchor } from "@mantine/core";
 import ThemeProvider from "@/components/themeprovider";
+import { siteUrl } from "@/routes";
 import "@/styles/global.css";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import skip from "@/styles/skip.module.css";
-import { siteUrl } from "@/routes";
+import Hydrated from "@/components/hydrated";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -56,17 +57,15 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <AppShell
-            header={{ height: { base: 60, md: 70, lg: 80 } }}
-            padding="md"
-          >
+          <div className="site-frame">
             <Anchor href="#main-content" className={skip.skiplink}>
               Skip to main content
             </Anchor>
             {children}
-          </AppShell>
+          </div>
           <Analytics />
           <SpeedInsights />
+          <Hydrated />
         </ThemeProvider>
       </body>
     </html>

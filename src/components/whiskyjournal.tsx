@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Select,
@@ -198,7 +199,7 @@ export default function WhiskyJournal({ whiskies }: { whiskies: Whisky[] }) {
         </Group>
         <Button
           variant="default"
-          component="a"
+          component={Link}
           href="/admin/whiskyjournal/add"
           leftSection={<IconPlus />}
         >

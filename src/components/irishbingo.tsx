@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   Alert,
-  Grid,
   Button,
-  Space,
   Image,
   Box,
   Progress,
@@ -22,51 +20,68 @@ import {
   Container,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
+import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
+import layout from "@/styles/cardgame.module.css";
+import cardStyles from "@/styles/playingcard.module.css";
+import bingo from "@/styles/irishbingo.module.css";
 
+// The card grows to fill the height left above the buttons. On phones Mr.
+// Tayto calls the card from a speech bubble, in the height the text takes
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
-  <Box
-    style={{
-      border: "2px solid #ccc",
-      borderRadius: "15px",
-      padding: "1px",
-      textAlign: "center",
-      position: "relative",
-      width: "100%",
-      background: "none",
-    }}
-  >
-    <div
-      id="calling_card"
-      style={{
-        content: '""',
-        position: "absolute",
-        top: "70px",
-        left: "-10px",
-        width: "0",
-        height: "0",
-        borderTop: "10px solid transparent",
-        borderBottom: "10px solid transparent",
-        borderRight: "10px solid #ccc",
-      }}
-    ></div>
-
-    <Title mt="md" order={2}>
-      Calling..
-    </Title>
-    {/* A status is read out by screen readers whenever it changes */}
-    <Text my="md" id="latest_card" role="status">
-      {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
-    </Text>
-  </Box>
+  <>
+    <Group justify="center" gap="sm" wrap="nowrap">
+      <Image
+        hiddenFrom="sm"
+        aria-hidden
+        src="/images/tayto.png"
+        alt=""
+        h={64}
+        w="auto"
+        fit="contain"
+        data-testid="caller-mascot"
+      />
+      <Box ta="center" className={bingo.bubble}>
+        <Title
+          order={2}
+          fz={{
+            base: "var(--mantine-h3-font-size)",
+            sm: "var(--mantine-h2-font-size)",
+          }}
+        >
+          Calling..
+        </Title>
+        <Text mt={4} id="latest_card" role="status">
+          {card ? getCardName(card.suit, card.rank) : "No cards drawn yet"}
+        </Text>
+      </Box>
+    </Group>
+    <div className={`${layout.table} ${bingo.table}`} id="calling_card">
+      <div className={cardStyles.single}>
+        <PlayingCard card={card} decorative />
+      </div>
+    </div>
+  </>
 );
 
 export default function IrishBingo() {
+  usePreloadCards();
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
   const progressColor = drawnCards.length > 35 ? "red" : "";
+
+  // At one end of the deck each button goes, or disables itself, so focus
+  // moves to the other one rather than being lost. The ref is read after the
+  // render, as Draw isn't on the page while the deck is empty
+  const drawButtonRef = useRef<HTMLButtonElement>(null);
+  const shuffleButtonRef = useRef<HTMLButtonElement>(null);
+  const focusNextRef = useRef<RefObject<HTMLButtonElement | null> | null>(null);
+  useEffect(() => {
+    focusNextRef.current?.current?.focus();
+    focusNextRef.current = null;
+  }, [mainDeck]);
 
   // Function to draw a random card
   const drawCard = () => {
@@ -77,6 +92,9 @@ export default function IrishBingo() {
       // Draw the top card from the shuffled deck
       const [drawnCard, ...remainingMainDeck] = shuffledDeck;
 
+      if (remainingMainDeck.length === 0) {
+        focusNextRef.current = shuffleButtonRef;
+      }
       setDrawnCards([...drawnCards, drawnCard]);
       setLatestCard(drawnCard);
       setMainDeck(remainingMainDeck);
@@ -85,6 +103,7 @@ export default function IrishBingo() {
 
   // Reset the deck to start drawing again
   const newDeck = () => {
+    focusNextRef.current = drawButtonRef;
     setMainDeck(createCardDeck());
     setDrawnCards([]); // Clear the drawn cards as well
     setLatestCard(null); // Clear the latest card
@@ -94,10 +113,17 @@ export default function IrishBingo() {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
 
   return (
-    <Grid>
-      <Grid.Col span={12}>
+    <div className={layout.game}>
+      <div>
         <Group gap="xs">
-          <Title>Irish Bingo</Title>
+          <Title
+            fz={{
+              base: "var(--mantine-h2-font-size)",
+              sm: "var(--mantine-h1-font-size)",
+            }}
+          >
+            Irish Bingo
+          </Title>
           <Tooltip
             label="Game instructions"
             openDelay={250}
@@ -208,15 +234,12 @@ export default function IrishBingo() {
             </Modal.Body>
           </Modal.Content>
         </Modal.Root>
-      </Grid.Col>
+      </div>
 
-      <Space h="xl" />
-
-      <Grid.Col
-        span={{ base: 4, sm: 6, lg: 6 }}
-        style={{ display: "flex", justifyContent: "center" }}
-      >
-        <Box style={{ display: "flex", alignItems: "flex-start" }}>
+      {/* Phones give the card all the height left, with the buttons at the
+          bottom. Wider screens put Mr. Tayto beside it */}
+      <div className={bingo.board}>
+        <Box visibleFrom="sm" className={bingo.mascot}>
           <Image
             aria-hidden
             src="/images/tayto.png"
@@ -224,95 +247,95 @@ export default function IrishBingo() {
             fit="contain"
             h="auto"
             w="auto"
-            style={{ maxWidth: "100%", height: "auto" }}
+            maw="min(100%, 20rem)"
+            mah="24rem"
           />
         </Box>
-      </Grid.Col>
 
-      <Grid.Col span={{ base: 8, sm: 5, lg: 4 }}>
-        <CalloutBox card={latestCard} />
-        <Space h="xl" />
-        <Progress
-          // Make each draw 1/52 of the way
-          value={drawnCards.length * 1.923}
-          size="lg"
-          color={progressColor}
-          aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
-        />
-        <Text
-          mt="sm"
-          id="card_count"
-          ta="center"
-        >{`${drawnCards.length.toString()} / 52 cards`}</Text>
-        <Space h="md" />
-        <Button disabled={mainDeck.length === 0} onClick={drawCard} fullWidth>
-          Draw a card
-        </Button>
-        <Space h="md" />
-        {mainDeck.length === 0 && (
-          <>
-            <Alert title="Deck Exhausted" color="red">
-              You have drawn a full deck, please reshuffle.
-            </Alert>
-            <Space h="md" />
-          </>
-        )}
-        <Button
-          variant="default"
-          onClick={() => {
-            setModalCardOpened(true);
-          }}
-          fullWidth
-          disabled={drawnCards.length > 1 ? false : true}
-        >
-          View all called cards
-        </Button>
+        <div className={bingo.caller}>
+          <CalloutBox card={latestCard} />
+          <div className={layout.controls}>
+            <Progress
+              // Make each draw 1/52 of the way
+              value={drawnCards.length * 1.923}
+              size="lg"
+              color={progressColor}
+              aria-label="Progress bar showing number of cards drawn from a standard deck of 52"
+            />
+            {/* "Has someone won?" shares the count's row, and the alert takes
+                the Draw button's place, so the card keeps its size on phones.
+                The row is the button's height before it shows up at 10 cards,
+                so the card doesn't shrink partway through */}
+            <Group justify="center" gap="md" mih={36}>
+              <Text id="card_count">{`${drawnCards.length.toString()} / 52 cards`}</Text>
+              {drawnCards.length >= 10 && (
+                <Button
+                  variant="default"
+                  onClick={playConfetti}
+                  rightSection={<IconConfetti size={16} />}
+                >
+                  Has someone won?
+                </Button>
+              )}
+            </Group>
+            {mainDeck.length === 0 ? (
+              <Alert
+                title="Deck Exhausted: please reshuffle"
+                color="red"
+                py="xs"
+              />
+            ) : (
+              <Button ref={drawButtonRef} onClick={drawCard} fullWidth>
+                Draw a card
+              </Button>
+            )}
+            <Button
+              variant="default"
+              onClick={() => {
+                setModalCardOpened(true);
+              }}
+              fullWidth
+              disabled={drawnCards.length > 1 ? false : true}
+            >
+              View all called cards
+            </Button>
 
-        <Modal
-          opened={modalCardOpened}
-          onClose={() => {
-            setModalCardOpened(false);
-          }}
-          size="xs"
-          title="All called cards"
-          transitionProps={{
-            transition: "fade",
-            duration: 300,
-            timingFunction: "linear",
-          }}
-          closeButtonProps={{ "aria-label": "Close modal" }}
-        >
-          <List type="ordered" withPadding>
-            {drawnCards.map((card) => (
-              <List.Item key={`${card.rank}-${card.suit}`}>
-                {getCardName(card.suit, card.rank)}
-              </List.Item>
-            ))}
-          </List>
-        </Modal>
+            <Modal
+              opened={modalCardOpened}
+              onClose={() => {
+                setModalCardOpened(false);
+              }}
+              size="xs"
+              title="All called cards"
+              transitionProps={{
+                transition: "fade",
+                duration: 300,
+                timingFunction: "linear",
+              }}
+              closeButtonProps={{ "aria-label": "Close modal" }}
+            >
+              <List type="ordered" withPadding>
+                {drawnCards.map((card) => (
+                  <List.Item key={`${card.rank}-${card.suit}`}>
+                    {getCardName(card.suit, card.rank)}
+                  </List.Item>
+                ))}
+              </List>
+            </Modal>
 
-        <Space h="md" />
-
-        <Button
-          variant="default"
-          onClick={newDeck}
-          fullWidth
-          disabled={drawnCards.length > 0 ? false : true}
-        >
-          Shuffle new deck
-        </Button>
-        <Space h="md" />
-        {drawnCards.length >= 10 && (
-          <Button
-            variant="default"
-            onClick={playConfetti}
-            fullWidth
-            rightSection={<IconConfetti />}
-          >
-            Has someone won?
-          </Button>
-        )}
-      </Grid.Col>
-    </Grid>
+            <Button
+              // Once the deck runs out, shuffling is the next thing to do
+              variant={mainDeck.length === 0 ? "filled" : "default"}
+              ref={shuffleButtonRef}
+              onClick={newDeck}
+              fullWidth
+              disabled={drawnCards.length > 0 ? false : true}
+            >
+              Shuffle new deck
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

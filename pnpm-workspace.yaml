@@ -21,3 +21,14 @@ overrides:
   # jwks-rsa 4 loads the ESM-only jose 6 with require(), which fails on
   # Vercel. 3.x uses jose 4, which still has a CommonJS build.
   jwks-rsa: "3.2.2"
+  "@firebase/firestore>@grpc/grpc-js": "1.13.6"
+  "glob@>=9 <14.0.2": "14.0.2"
+  # The patches below adapt legacy callers to minimatch's named export.
+  "minimatch@<11.0.1": "11.0.1"
+  # uuid 11 retains the CommonJS entry point used by gaxios 6.
+  "uuid@9": "11.1.1"
+  "@google-cloud/pubsub>@opentelemetry/core": "2.8.0"
+
+patchedDependencies:
+  firebase-tools@15.34.1: patches/firebase-tools@15.34.1.patch
+  superstatic@10.0.0: patches/superstatic@10.0.0.patch

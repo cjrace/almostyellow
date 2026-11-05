@@ -1,11 +1,8 @@
 import Header from "@/components/header";
-import { Button, Container, Title, Text, Stack } from "@mantine/core";
-import type { Metadata } from "next";
+import ButtonLink from "@/components/buttonlink";
+import { Container, Title, Text, Stack } from "@mantine/core";
 
-export const metadata: Metadata = {
-  title: "Page not found",
-  robots: { index: false },
-};
+export const metadata = { title: "Page not found", robots: { index: false } };
 
 export default function NotFound() {
   return (
@@ -19,9 +16,7 @@ export default function NotFound() {
             <Text ta="center">
               We couldn&apos;t find the page you were looking for.
             </Text>
-            <Button href="/" component="a">
-              Return home
-            </Button>
+            <ButtonLink href="/">Return home</ButtonLink>
           </Stack>
         </Container>
       </main>

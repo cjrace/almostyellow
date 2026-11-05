@@ -66,6 +66,8 @@ export function inEmulators(script: string[]) {
     [
       "node_modules/firebase-tools/lib/bin/firebase.js",
       "emulators:exec",
+      "--log-verbosity",
+      "QUIET",
       "--project",
       process.env.FIREBASE_PROJECT_ID ?? "",
       "--only",

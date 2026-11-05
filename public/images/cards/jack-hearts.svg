@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Jack of Hearts</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<g fill="#b91c1c" color="#b91c1c" font-family="Arial, Helvetica, sans-serif">
+<text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">J</text><g transform="translate(14 57) scale(0.26)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g>
+<g transform="rotate(180 125 175)"><text x="27" y="48" font-size="40" font-weight="700" text-anchor="middle">J</text><g transform="translate(14 57) scale(0.26)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g></g>
+<g transform="translate(70 97) scale(1.1)"><path d="M8 50 Q45 8 88 50 Z"/><rect x="4" y="48" width="88" height="10" rx="4"/><path d="M58 30 Q86 -4 99 2 Q86 16 66 38 Z"/></g><g transform="translate(80 180) scale(0.9)"><path d="M50 90 C20 66 4 49 4 30 C4 15 16 5 30 5 C40 5 47 11 50 19 C53 11 60 5 70 5 C84 5 96 15 96 30 C96 49 80 66 50 90 Z"/></g>
+</g>
+</svg>

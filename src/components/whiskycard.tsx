@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { PiGrains } from "react-icons/pi";
 import { FaMapMarkerAlt } from "react-icons/fa";
+import Link from "next/link";
 import {
   IconBarrel,
   IconBuildingFactory,
@@ -54,7 +55,7 @@ export const WhiskyCard: React.FC<Whisky> = ({
           <ActionIcon
             size="lg"
             variant="default"
-            component="a"
+            component={Link}
             href={`/admin/whiskyjournal/${whisky_id}/edit`}
             aria-label={`Edit ${name}`}
           >

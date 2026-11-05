@@ -15,3 +15,8 @@ process.env.FIREBASE_AUTH_DOMAIN = "demo-almostyellow.firebaseapp.com";
 // emulators need no credentials, and tests/firebase/guard.ts refuses to run
 // if this has a value.
 process.env.FIREBASE_SERVICE_ACCOUNT_KEY = "";
+
+// The tests serve the site over http://localhost, so the build leaves out the
+// header asking browsers to switch to HTTPS (next.config.ts). Without it,
+// Safari loads nothing
+process.env.SERVED_OVER_HTTP = "true";

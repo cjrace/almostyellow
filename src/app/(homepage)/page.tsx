@@ -1,4 +1,4 @@
-import { Button, Group, Title, Space } from "@mantine/core";
+import { Group, Title, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
@@ -9,6 +9,7 @@ import {
   IconMovie,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
+import ButtonLink from "@/components/buttonlink";
 import styles from "@/styles/gradient.module.css";
 import home from "@/styles/home.module.css";
 import { siteUrl } from "@/routes";
@@ -40,86 +41,79 @@ export default function Home() {
         <Space h="xl" />
 
         <Group justify="center">
-          <Button
+          <ButtonLink
             leftSection={<IconDeviceGamepad2 />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/games"
           >
             View our games
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconMoodPuzzled />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/decisionmaker"
           >
             How we make decisions
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconCheese />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/recipes"
           >
             Our recipes
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconGlassCocktail />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/cocktails"
           >
             Cocktail time!
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconGlass />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/whiskyjournal"
           >
             Cam&apos;s whisky journal
-          </Button>
+          </ButtonLink>
 
-          <Button
+          <ButtonLink
             leftSection={<IconMovie />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/films"
           >
             Cam&apos;s film list
-          </Button>
+          </ButtonLink>
         </Group>
 
         <Space h="lg" />
 
         <Group justify="center">
-          <Button
+          <ButtonLink
             leftSection={<IconPaperclip />}
             variant="default"
-            component="a"
             size="xl"
             classNames={{ root: home.button, label: home.label }}
             href="/admin"
           >
             Admin stuff
-          </Button>
+          </ButtonLink>
         </Group>
       </main>
     </>

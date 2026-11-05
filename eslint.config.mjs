@@ -24,6 +24,9 @@ const ignoresConfig = defineConfig([
       ".lighthouseci/",
       ".vercel/",
       "**/pnpm-*/dist/",
+      // Claude Code keeps worktrees here, each with its own copy of the code
+      // and build output
+      ".claude/",
     ],
   },
 ]);
@@ -48,7 +51,7 @@ const typescriptConfig = defineConfig([
     languageOptions: {
       parser: tseslintParser,
       parserOptions: {
-        project: ["./tsconfig.json"],
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: {
           jsx: true,

@@ -69,13 +69,13 @@ The tests use fixed ports, so stop `pnpm dev` (port 3000) and `pnpm emulators` (
 ### Running one set of tests
 
 ```bash
-pnpm test:unit    # Unit tests, no Java needed
-pnpm test:rules   # Firestore Security Rules only
-pnpm test:ci      # All the Firebase emulator tests
-pnpm test:e2e     # Build, then the Playwright tests against the emulators
+pnpm test:unit     # Unit tests, no Java needed
+pnpm test:rules    # Firestore Security Rules only
+pnpm test:firebase # All the Firebase emulator tests
+pnpm test:e2e      # Build, then the Playwright tests against the emulators
 ```
 
-See [AGENTS.md](AGENTS.md) for how the test fixtures and Firebase safeguards work.
+See [tests/README.md](tests/README.md) for what each stage covers, how to read the output and how to write a test, and [AGENTS.md](AGENTS.md) for more on the test fixtures and Firebase safeguards.
 
 ### Pre-commit hooks
 
@@ -88,6 +88,10 @@ View other available commands, including for running linting, formatting (includ
 ```bash
 pnpm run
 ```
+
+## Uno
+
+See [Uno tracker](docs/uno.md) for scoring, offline storage, historic games and statistics.
 
 ## Deployment
 

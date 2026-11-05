@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
-  Grid,
   Modal,
   Text,
   NumberInput,
@@ -146,8 +145,11 @@ const BoomBoomPirate = () => {
     setGameInitialized(true);
   };
 
+  // Fewer, bigger ropes on a phone when there's room for them
+  const phoneColumns = totalRopes <= 8 ? 2 : 3;
+
   return (
-    <Box p="md" style={{ position: "relative" }}>
+    <Box p="md" className={styles.game}>
       {!gameInitialized ? (
         <Stack align="center">
           <NumberInput
@@ -170,39 +172,53 @@ const BoomBoomPirate = () => {
         </Stack>
       ) : (
         <>
-          <Grid ref={ropesRef}>
+          {/* The ropes fill the height left, with Restart at the bottom.
+              Few enough columns on a phone that "Rope 50" still fits */}
+          <div
+            ref={ropesRef}
+            className={styles.ropes}
+            style={
+              {
+                "--rope-cols-base": phoneColumns,
+                "--rope-rows-base": Math.ceil(totalRopes / phoneColumns),
+                "--rope-rows-sm": Math.ceil(totalRopes / 4),
+                "--rope-rows-md": Math.ceil(totalRopes / 6),
+              } as React.CSSProperties
+            }
+          >
             {Array.from({ length: totalRopes }, (_, rope) => rope).map(
               (rope) => (
-                <Grid.Col span={{ base: 6, xs: 4, sm: 3, md: 2 }} key={rope}>
-                  <Button
-                    data-rope={rope}
-                    aria-label={ropeLabel(rope)}
-                    leftSection={ropeIcon(rope)}
-                    variant="outline"
-                    fullWidth
-                    onClick={() => {
-                      handleRopePull(rope);
-                    }}
-                    color={ropeStates[rope] || "blue"}
-                    disabled={loadingRope !== null}
-                  >
-                    {loadingRope === rope
-                      ? (currentIcon ?? "Loading...")
-                      : `Rope ${(rope + 1).toString()}`}
-                  </Button>
-                </Grid.Col>
+                <Button
+                  key={rope}
+                  data-rope={rope}
+                  aria-label={ropeLabel(rope)}
+                  leftSection={ropeIcon(rope)}
+                  variant="outline"
+                  fullWidth
+                  h="100%"
+                  px="xs"
+                  styles={{ label: { fontSize: "var(--rope-fz)" } }}
+                  onClick={() => {
+                    handleRopePull(rope);
+                  }}
+                  color={ropeStates[rope] || "blue"}
+                  disabled={loadingRope !== null}
+                >
+                  {loadingRope === rope
+                    ? (currentIcon ?? "Loading...")
+                    : `Rope ${(rope + 1).toString()}`}
+                </Button>
               ),
             )}
-          </Grid>
+          </div>
 
-          {/* Always rendered, so screen readers announce each pull */}
-          <Text role="status" mt="md">
-            {lastPull}
-          </Text>
-
-          <Space h="xl" />
-
-          <Button onClick={restartGame} color="red">
+          <Text role="status">{lastPull}</Text>
+          <Button
+            onClick={restartGame}
+            color="red"
+            mt="md"
+            className={styles.restart}
+          >
             Restart Game
           </Button>
 
