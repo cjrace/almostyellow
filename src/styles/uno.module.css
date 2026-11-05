@@ -234,7 +234,7 @@
 @media (max-height: 500px) and (orientation: landscape) {
   .tracker {
     height: auto;
-    min-height: 0;
+    min-height: max-content;
     gap: 0.4rem;
   }
   .score {

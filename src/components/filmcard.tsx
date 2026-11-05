@@ -35,26 +35,38 @@ export const FilmCard: React.FC<Film> = ({
             variant="default"
             component={Link}
             href={`/admin/films/${id}/edit`}
-            aria-label="Edit film"
+            aria-label={`Edit ${name}`}
           >
             {<IconPencil />}
           </ActionIcon>
 
           {top_30 && (
-            <Badge color="yellow" size="lg" leftSection={<IconChecklist />}>
+            <Badge
+              color="yellow"
+              size="lg"
+              fw={400}
+              leftSection={<IconChecklist />}
+            >
               <Text display={{ base: "none", sm: "inline" }}>IMDB top 30</Text>
               <Text display={{ base: "inline", sm: "none" }}>Top 30</Text>
             </Badge>
           )}
 
           {watched && (
-            <Badge color="green" size="lg" leftSection={<IconEyeglass />}>
+            <Badge
+              role="img"
+              aria-label="Watched"
+              color="green"
+              size="lg"
+              fw={400}
+              leftSection={<IconEyeglass />}
+            >
               <Text display={{ base: "none", sm: "inline" }}>Watched</Text>
             </Badge>
           )}
 
           {not_in_jar && (
-            <Badge color="red" size="lg" leftSection={<PiJarBold />}>
+            <Badge color="red" size="lg" fw={400} leftSection={<PiJarBold />}>
               Add to jar
             </Badge>
           )}

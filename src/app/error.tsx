@@ -17,6 +17,9 @@ export default function Error({
 
   return (
     <>
+      {/* An error page is a client component, so it cannot export metadata */}
+      <title>Something went wrong | Almost Yellow</title>
+      <meta name="robots" content="noindex" />
       <Header noCrumbs={true} />
 
       <main id="main-content">

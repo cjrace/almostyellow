@@ -54,9 +54,13 @@ jobs:
         run: pnpm test:firebase
 
   e2e:
-    name: End to end tests (Playwright)
+    name: Browser tests (${{ matrix.shard }}/4)
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - uses: actions/checkout@v7
@@ -87,13 +91,62 @@ jobs:
         # Served over http://localhost, see next.config.ts and tests/test-env.ts
         env:
           SERVED_OVER_HTTP: "true"
-      - name: Run all Playwright tests against the Firebase emulators
-        run: pnpm test:e2e --no-build
+      - name: Run browser shard against the Firebase emulators
+        run: pnpm test:e2e --no-build --shard=${{ matrix.shard }}/4
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-blob-${{ matrix.shard }}
+          path: blob-report/
+          overwrite: true
+          if-no-files-found: error
+          retention-days: 30
+
+  browser-result:
+    name: End to end tests (Playwright)
+    needs: e2e
+    if: ${{ always() && !cancelled() }}
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: playwright-blob-*
+          path: all-blob-reports
+          merge-multiple: true
+      - name: Check every shard supplied a report
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for shard in 1 2 3 4; do
+            reports=(all-blob-reports/*-"$shard".zip)
+            if [ "${#reports[@]}" -ne 1 ]; then
+              echo "Expected one report from shard $shard, found ${#reports[@]}"
+              exit 1
+            fi
+          done
+      - name: Merge browser reports
+        run: pnpm exec playwright merge-reports --reporter=html,./tests/reporters/summary.ts all-blob-reports
+        env:
+          PLAYWRIGHT_HTML_OPEN: never
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
+          path: playwright-report/
+          overwrite: true
+          if-no-files-found: error
           retention-days: 30
+      - name: Require every shard to pass
+        if: ${{ always() }}
+        env:
+          SHARD_RESULT: ${{ needs.e2e.result }}
+        run: test "$SHARD_RESULT" = success

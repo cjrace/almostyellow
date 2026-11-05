@@ -1,16 +1,12 @@
 import RedOrBlack from "@/components/redorblack";
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import layout from "@/styles/cardgame.module.css";
 
-export const metadata: Metadata = {
-  title: "Red or Black v1",
-  description: "Guess the colour of the next card. A Ben Palmer original.",
-  openGraph: {
-    title: "Red or Black v1 | Almost Yellow",
-    description: "Guess the colour of the next card. A Ben Palmer original.",
-  },
-};
+export const metadata = pageMetadata(
+  "Red or Black v1",
+  "Guess the colour of the next card. A Ben Palmer original.",
+);
 
 export default function RedOrBlackPage() {
   return (

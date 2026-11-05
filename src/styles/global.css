@@ -4,9 +4,21 @@ body {
   margin: 0;
 }
 
+/* The fixed confetti credit is about 32px tall. Leave a little more room on
+   every page so controls stay reachable without measuring the vendor's DOM. */
+:root {
+  --confetti-gap: 2.5rem;
+}
+
 .site-frame {
   --site-frame-padding: 20px;
+  --site-frame-bottom: max(
+    var(--site-frame-padding),
+    env(safe-area-inset-bottom, 0px),
+    var(--confetti-gap)
+  );
   padding: var(--site-frame-padding);
+  padding-bottom: var(--site-frame-bottom);
 }
 
 @mixin smaller-than $mantine-breakpoint-sm {
@@ -14,4 +26,52 @@ body {
   .site-frame {
     --site-frame-padding: 10px;
   }
+}
+
+/* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
+html {
+  scroll-padding-top: 100px;
+  scroll-padding-bottom: var(--confetti-gap);
+}
+
+/* Give native keyboard scrolling room to bring the whole control into view.
+   Safari can otherwise leave the bottom of a textarea behind the credit. */
+.site-frame :focus {
+  scroll-margin-bottom: 50vh;
+}
+
+/* Portals live outside the page wrapper, so leave the same bottom gap there. */
+.mantine-Modal-inner {
+  padding-bottom: max(var(--modal-y-offset), var(--confetti-gap));
+}
+
+.mantine-Modal-content {
+  max-height: calc(
+    100dvh - var(--modal-y-offset) -
+      max(var(--modal-y-offset), var(--confetti-gap))
+  );
+}
+
+.mantine-Drawer-body {
+  padding-bottom: max(var(--mantine-spacing-md), var(--confetti-gap));
+}
+
+/* Show a keyboard target immediately rather than part way through sliding in. */
+[data-back-to-top]:focus-visible {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+/* The orange focus ring and focused input border are 2.6:1 on white, below
+   the 3:1 WCAG 1.4.11 asks of focus indicators, so darken them in the light
+   scheme. They are 6:1 on the dark background already. */
+[data-mantine-color-scheme="light"] .mantine-focus-auto:focus-visible,
+[data-mantine-color-scheme="light"] .mantine-focus-always:focus {
+  outline-color: #c2410c;
+}
+
+[data-mantine-color-scheme="light"] .mantine-Input-input:focus,
+[data-mantine-color-scheme="light"] .mantine-Input-input:focus-within {
+  --input-bd: #c2410c;
 }

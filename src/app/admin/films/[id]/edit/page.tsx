@@ -20,7 +20,9 @@ export default async function FilmEditPage(props: {
   return (
     <>
       <Header noCrumbs={true} filmList={true} />
-      <FilmEditServer params={{ id }} />
+      <main id="main-content">
+        <FilmEditServer params={{ id }} />
+      </main>
     </>
   );
 }

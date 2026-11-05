@@ -5,11 +5,19 @@ import { films } from "../firebase/fixtures";
 test.describe("A visitor to the film list", () => {
   test("sees the list and can filter it to the IMDB top 30", async ({
     page,
+    isMobile,
   }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Cam's film list" }).click();
 
     await expect(page).toHaveTitle("Films | Almost Yellow");
+    await expect(
+      page.getByRole("img", { name: "Watched", exact: true }).first(),
+    ).toBeVisible();
+    if (isMobile)
+      await expect(
+        page.getByText("Watched", { exact: true }).first(),
+      ).toBeHidden();
 
     // Check the seeded films are loaded
     await expect(page.locator("#main-content")).toContainText(/Seven Samurai/);

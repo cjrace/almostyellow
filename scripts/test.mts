@@ -1,7 +1,7 @@
-// Runs every check in order, with a heading for each stage and a one-line
+// Runs the PR checks in order, with a heading for each stage and a one-line
 // result for the quiet ones (Prettier and ESLint).
 //
-//   pnpm test                  format, lint, then every test suite
+//   pnpm test                  format, lint, then the normal test suites
 //   pnpm test --no-format      leave the files as they are
 //   pnpm test-only             --no-format, and reuse the existing .next build
 //

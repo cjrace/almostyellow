@@ -51,13 +51,19 @@ export const WhiskyCard: React.FC<Whisky> = ({
         <Title order={2}>{name}</Title>
 
         <Group>
-          <Rating value={rating} readOnly size="lg" />
+          <Rating
+            value={rating}
+            readOnly
+            size="lg"
+            role="img"
+            aria-label={`Rated ${String(rating)} out of 5`}
+          />
           <ActionIcon
             size="lg"
             variant="default"
             component={Link}
             href={`/admin/whiskyjournal/${whisky_id}/edit`}
-            aria-label="Edit whisky"
+            aria-label={`Edit ${name}`}
           >
             {<IconPencil />}
           </ActionIcon>
@@ -86,6 +92,8 @@ export const WhiskyCard: React.FC<Whisky> = ({
         </Badge>
 
         <Rating
+          role="img"
+          aria-label={`Price level ${String(price)} out of 3`}
           value={price}
           count={3}
           readOnly
@@ -98,7 +106,12 @@ export const WhiskyCard: React.FC<Whisky> = ({
 
       <Group justify="space-between">
         <Title order={3}>Tasting notes</Title>
-        <Text>Last edited: {last_edited.toLocaleDateString()}</Text>
+        <Text>
+          Last edited:{" "}
+          {last_edited.toLocaleDateString("en-GB", {
+            timeZone: "Europe/London",
+          })}
+        </Text>
       </Group>
 
       <Text>{notes}</Text>

@@ -2,7 +2,6 @@ import { Group, Title, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
-  IconCheese,
   IconGlassCocktail,
   IconPaperclip,
   IconGlass,
@@ -11,10 +10,23 @@ import {
 import Header from "@/components/header";
 import ButtonLink from "@/components/buttonlink";
 import styles from "@/styles/gradient.module.css";
+import home from "@/styles/home.module.css";
+import { siteUrl } from "@/routes";
+
+// Tells search engines the name of the site
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Almost Yellow",
+  url: siteUrl,
+};
 
 export default function Home() {
   return (
     <>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
       <Header noCrumbs={true} />
 
       <main id="main-content">
@@ -29,6 +41,7 @@ export default function Home() {
             leftSection={<IconDeviceGamepad2 />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/games"
           >
             View our games
@@ -38,24 +51,17 @@ export default function Home() {
             leftSection={<IconMoodPuzzled />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/decisionmaker"
           >
             How we make decisions
           </ButtonLink>
 
           <ButtonLink
-            leftSection={<IconCheese />}
-            variant="default"
-            size="xl"
-            href="/recipes"
-          >
-            Our recipes
-          </ButtonLink>
-
-          <ButtonLink
             leftSection={<IconGlassCocktail />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/cocktails"
           >
             Cocktail time!
@@ -65,6 +71,7 @@ export default function Home() {
             leftSection={<IconGlass />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/whiskyjournal"
           >
             Cam&apos;s whisky journal
@@ -74,6 +81,7 @@ export default function Home() {
             leftSection={<IconMovie />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/films"
           >
             Cam&apos;s film list
@@ -87,6 +95,7 @@ export default function Home() {
             leftSection={<IconPaperclip />}
             variant="default"
             size="xl"
+            classNames={{ root: home.button, label: home.label }}
             href="/admin"
           >
             Admin stuff

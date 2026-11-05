@@ -12,33 +12,14 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { FilmCard, Film } from "@/components/filmcard";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import BackToTop from "@/components/backtotop";
-import { readFilmList } from "@/services/filmlist";
 import { useClipboard } from "@mantine/hooks";
 import { IconCopy, IconDownload, IconX } from "@tabler/icons-react";
 
-export default function FilmList() {
+// The page reads the list on the server, so it arrives with the HTML
+export default function FilmList({ films }: { films: Film[] }) {
   const clipboard = useClipboard({ timeout: 500 });
-  const [films, setFilms] = useState<Film[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchFilms = async () => {
-      try {
-        console.log("Requesting new data");
-        const data = await readFilmList();
-        console.log("Data fetch successful");
-        setFilms(data);
-      } catch (error) {
-        console.error("Error fetching films:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    void fetchFilms();
-  }, []);
 
   const [imdbFilter, setImdbFilter] = useState<boolean | null>(null);
   const [watchedFilter, setWatchedFilter] = useState<boolean | null>(null);
@@ -103,10 +84,6 @@ export default function FilmList() {
     { value: "releaseAsc", label: "Release year ascending" },
     { value: "releaseDesc", label: "Release year descending" },
   ];
-
-  if (loading) {
-    return <Text>Fetching list...</Text>;
-  }
 
   const film_count = searchedFilmData.length;
   const watched_film_count = searchedFilmData.filter(
@@ -207,13 +184,12 @@ export default function FilmList() {
       </Accordion>
 
       <Stack mb="lg">
-        {watched_film_percentage === 100 ? (
-          <Text>All films watched!</Text>
-        ) : (
-          <Text>
-            {watched_film_count} of {film_count} films watched
-          </Text>
-        )}
+        {/* Read out as the search or filters change the results */}
+        <Text role="status">
+          {watched_film_percentage === 100
+            ? "All films watched!"
+            : `${watched_film_count.toString()} of ${film_count.toString()} films watched`}
+        </Text>
         <Progress
           aria-label="Number of films watched"
           color="orange"

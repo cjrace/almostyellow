@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { Card, Text, Image, Button, Center } from "@mantine/core";
 
 interface GamesCardProps {
@@ -31,11 +32,16 @@ export default function GamesCard({
     >
       <Center
         h={{ base: "9rem", lg: "auto" }}
-        mih="4rem"
+        mih="3rem"
         flex={{ lg: "1 1 0" }}
         style={{ containerType: "size" }}
       >
         <Image
+          component={NextImage}
+          width={1620}
+          height={2160}
+          sizes="120px"
+          style={{ aspectRatio: "3 / 4" }}
           aria-hidden
           alt=""
           src={imagePath}

@@ -1,5 +1,10 @@
 import WhiskyJournalEditServer from "@/components/whiskyjournaledit_server";
 import Header from "@/components/header";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Edit whisky",
+};
 
 export default async function WhiskyJournalEditPage(props: {
   params: Promise<{ id: string }>;
@@ -15,7 +20,9 @@ export default async function WhiskyJournalEditPage(props: {
   return (
     <>
       <Header noCrumbs={true} whiskyJournal={true} />
-      <WhiskyJournalEditServer params={{ id }} />
+      <main id="main-content">
+        <WhiskyJournalEditServer params={{ id }} />
+      </main>
     </>
   );
 }

@@ -1,17 +1,13 @@
 import { SimpleGrid, Stack, Title } from "@mantine/core";
-import { Metadata } from "next";
+import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import GamesCard from "@/components/gamescard";
 import layout from "@/styles/cardgame.module.css";
 
-export const metadata: Metadata = {
-  title: "Games",
-  description: "Our collection of online games.",
-  openGraph: {
-    title: "Games | Almost Yellow",
-    description: "Our collection of online games.",
-  },
-};
+export const metadata = pageMetadata(
+  "Games",
+  "Our collection of online games.",
+);
 
 const crumbitems = [
   { title: "Home", href: "/" },

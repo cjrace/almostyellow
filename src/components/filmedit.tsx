@@ -105,6 +105,7 @@ export const FilmListEdit = ({ filmData }: { filmData: Film }) => {
           setModalOpened(false);
         }}
         title="Confirm Deletion"
+        closeButtonProps={{ "aria-label": "Close deletion confirmation" }}
       >
         <Text>ID: {filmData.id}</Text>
         <Text>Name: {filmData.name}</Text>

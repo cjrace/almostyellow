@@ -37,7 +37,9 @@ test("Can add, edit and delete a film", async ({ page }) => {
   });
 
   await test.step("When they edit it, the change shows", async () => {
-    await card(page, name).getByRole("link", { name: "Edit film" }).click();
+    await card(page, name)
+      .getByRole("link", { name: `Edit ${name}` })
+      .click();
     await expect(page.getByLabel("Film title")).toHaveValue(name);
     await page.getByLabel("Year the film was released").fill("2001");
     await Promise.all([
@@ -48,7 +50,9 @@ test("Can add, edit and delete a film", async ({ page }) => {
   });
 
   await test.step("When they delete it, it is gone", async () => {
-    await card(page, name).getByRole("link", { name: "Edit film" }).click();
+    await card(page, name)
+      .getByRole("link", { name: `Edit ${name}` })
+      .click();
     await page.getByRole("button", { name: "Delete Film" }).click();
     await Promise.all([
       page.waitForURL("/films"),

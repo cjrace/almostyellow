@@ -1,9 +1,17 @@
-import { test, expect, waitsForHydration, type Page } from "../playwright";
+import {
+  test,
+  expect,
+  waitsForHydration,
+  devices,
+  type Page,
+} from "../playwright";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
 import { getCredentials, getSecondCredentials } from "./helpers";
 import type { LocalData } from "../../src/uno/storage";
+import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
+import { expectClearOfBadge, mockConfetti, showConfetti } from "../confetti";
 
 const SYNC = { timeout: 30_000 };
 async function signIn(page: Page, credentials = getCredentials()) {
@@ -24,6 +32,15 @@ async function openTab(page: Page, name: "Tracker" | "Statistics" | "History") {
     .getByRole("radiogroup", { name: "Uno pages" })
     .getByText(name, { exact: true })
     .click();
+  await page.waitForURL(
+    {
+      Tracker: "/games/uno-tracker",
+      Statistics: "/games/uno-tracker/stats",
+      History: "/games/uno-tracker/history",
+    }[name],
+  );
+  // These tabs load a new document, so its header must hydrate before a click.
+  await page.locator("html[data-hydrated]").waitFor({ state: "attached" });
 }
 async function start(page: Page) {
   await page.getByRole("button", { name: "Start new game" }).click();
@@ -74,6 +91,64 @@ test.describe("Uno durable scoring", () => {
       await db.recursiveDelete(db.collection(name));
   });
 
+  test.describe("dialog accessibility", () => {
+    test.use({ serviceWorkers: "block" });
+    for (const scheme of schemes) {
+      test(`${scheme} finish and delete dialogs pass accessibility checks above the badge`, async ({
+        page,
+      }) => {
+        test.slow();
+        await useScheme(page, scheme);
+        await mockConfetti(page);
+        await signIn(page);
+        await start(page);
+        await idle(page);
+        await showConfetti(page);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page
+          .getByRole("button", { name: "Finish game", exact: true })
+          .click();
+        const finish = page.getByRole("dialog", { name: "Finish this game?" });
+        await expect(finish).toBeVisible();
+        await expect(finish).toHaveCSS("opacity", "1");
+        await expectNoUnexpectedAxeViolations(page);
+        await expectClearOfBadge(
+          finish.getByRole("button", { name: "Confirm finish" }),
+          page,
+        );
+        await finish.getByRole("button", { name: "Confirm finish" }).click();
+        await expect(finish).toBeHidden();
+        await openTab(page, "History");
+        // Uno tabs do a full navigation, which removes the previous badge.
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        await showConfetti(page);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await expect(
+          page.getByRole("heading", { name: "Game history", exact: true }),
+        ).toBeVisible();
+        await expectNoUnexpectedAxeViolations(page);
+        await page.getByRole("button", { name: /^Delete game from/ }).click();
+        const deleting = page.getByRole("dialog", {
+          name: "Delete game?",
+          exact: true,
+        });
+        await expect(deleting).toBeVisible();
+        await expect(deleting).toHaveCSS("opacity", "1");
+        await page.mouse.move(0, 0);
+        await expectNoUnexpectedAxeViolations(page);
+        const deleteGame = deleting.getByRole("button", {
+          name: "Delete game",
+          exact: true,
+        });
+        await deleteGame.hover();
+        await expectNoUnexpectedAxeViolations(page);
+        await expectClearOfBadge(deleteGame, page);
+        await page.keyboard.press("Escape");
+        await expect(deleting).toBeHidden();
+      });
+    }
+  });
+
   test("offline awards and corrections survive closing and reopening, then sync once to another device", async ({
     page,
     context,
@@ -84,14 +159,14 @@ test.describe("Uno durable scoring", () => {
       await signIn(page);
       await start(page);
       await idle(page);
-      await page.setViewportSize({ width: 375, height: 740 });
+      await page.setViewportSize(devices["Pixel 9"].viewport);
       const scoringButton = await page
         .getByRole("button", { name: "Add a round for Cam" })
         .boundingBox();
       expect(scoringButton?.height).toBeGreaterThanOrEqual(56);
       expect(
         (scoringButton?.y ?? 0) + (scoringButton?.height ?? 0),
-      ).toBeLessThanOrEqual(740);
+      ).toBeLessThanOrEqual(devices["Pixel 9"].viewport.height);
       await page.screenshot({
         path: test.info().outputPath("uno-mobile.png"),
         fullPage: true,
@@ -378,12 +453,12 @@ test.describe("Uno durable scoring", () => {
     expect(await layout()).toEqual(settled);
     expect(await pillHeight()).toBe(pill);
   });
-  test("a long sync status fits a small phone without scrolling", async ({
+  test("a long sync status fits the Pixel 9 viewport without scrolling", async ({
     page,
     context,
   }) => {
     test.slow();
-    await page.setViewportSize({ width: 320, height: 640 });
+    await page.setViewportSize(devices["Pixel 9"].viewport);
     await signIn(page);
     await start(page);
     await idle(page);

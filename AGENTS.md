@@ -9,6 +9,7 @@ pnpm test          # Format + lint + unit tests + Firebase emulator tests + buil
 pnpm test-only     # The same without reformatting files or rebuilding the app
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
+pnpm serve:test    # Preview the app against Firebase emulators with synthetic fixtures
 ```
 
 `pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
@@ -23,7 +24,7 @@ Playwright will not reuse a server already on port 3000, so stop `pnpm dev` firs
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
-CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
+CI (`.github/workflows/playwright.yml`) runs format, lint and unit tests, Firebase tests, and four Playwright shards in parallel. Each shard has its own emulators and 2 workers. A final job merges their reports and requires every shard to pass. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
 
 `scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
 
@@ -37,7 +38,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 ## PR screenshots
 
-When a PR changes how a page looks, include before and after screenshots of each affected page at both desktop and mobile sizes in its description. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check both layouts even when the change is aimed at only one of them.
+For visual changes, include representative before and after screenshot pairs in the PR description. Choose pages, states and viewport sizes that show the distinct changes. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check the layouts the change affects, including desktop and mobile when behaviour differs; shared changes need representative examples of each affected layout rather than screenshots of every page.
 
 Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
@@ -89,6 +90,8 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 Lay pages out with Mantine (`Stack`, `Group`, `SimpleGrid`, `Grid`). Use a CSS module only for shapes Mantine can't make, such as the square Snakes and Ladders board sized to the window. Write breakpoints as `@mixin larger-than $mantine-breakpoint-sm` or `@mixin smaller-than $mantine-breakpoint-sm`, not fixed widths, so they match Mantine's props. Games that fill exactly one screen wrap the page in `.screen` from `src/styles/cardgame.module.css` and let the game take the height left, using a size container like its `.table`, rather than subtracting fixed heights from `100dvh`.
 
+`src/styles/global.css` reserves a permanent `2.5rem` bottom gap for the confetti credit, including in dialogs and drawers. Screen-filling games use `--site-frame-bottom` so their controls fit above it; fixed controls use `--confetti-gap`.
+
 ### Tests
 
 `tests/README.md` explains the test set-up for people, including how to name tests: `test.describe` for who and where, a test name saying what they see or can do, and Given/When/Then `test.step`s for long journeys. Follow it in new tests, and update it when adding a stage or folder.
@@ -101,11 +104,35 @@ Playwright E2E tests in `tests/`, split into three folders:
 
 They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
-Tests run against Mobile Chrome, Desktop Chrome and Mobile Safari (WebKit on an iPhone 14). Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
+Tests run against Mobile Chrome (Pixel 9), Desktop Chrome (1280×800) and Mobile Safari (iPhone 17). Phone tests use the presets' browser viewports; short-desktop checks use 1366×650. `@phone` and `@desktop` tags restrict layout-specific journeys to the appropriate projects. Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
 
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 
 Any server action that reads private data or changes data must call `requireAuth()` from `src/auth.ts` at the top, outside any try/catch. Protecting `/admin` pages in the proxy is not enough, because server actions can be called directly over HTTP. Add new protected actions to `tests/unit/services_auth.test.ts`.
+
+### Accessibility and SEO
+
+The site aims for WCAG 2.2 AA. Check the accessibility and SEO behaviour a change can affect, with coverage proportionate to its scope.
+
+- `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
+- Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
+- `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check representative page layouts and interactive states in both colour schemes, in Desktop Chrome only. Mobile journeys retain focus, accessible-name and announcement assertions. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoUnexpectedAxeViolations`.
+- Keep the original filled-control colours and white text/icons. `tests/contrast-exceptions.ts` lists the approved foreground/background pairs; `tests/axe.ts` accepts them only within filled buttons, action icons, badges and selected choices, and records each exception in the report. These combinations may fall below WCAG AA contrast requirements. Other contrast findings and accessibility rules still fail. Do not extend the exceptions without agreement. `acalatCssVariables` in `src/styles/acalat.tsx` improves dimmed, error and link colours; use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
+- Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
+
+Automated checks do not establish complete WCAG conformance. For UI changes, supplement relevant tests with a focused browser check of the changed behaviour. Report what was checked and any checks that could not run.
+
+Follow component and CSS imports to identify affected routes. A page-specific CSS module only affects the pages that use it. For shared layout, theme or component changes, run the relevant automated coverage across consumers and inspect representative pages for each distinct layout or interaction. Expand the checks when a failure or wider risk justifies it.
+
+Use `pnpm serve:test` to build and preview against the emulators with synthetic fixtures; add `--no-build` to reuse an unchanged build. Choose the checks relevant to the change:
+
+- **Controls and focus:** use the changed controls by keyboard, including focus after actions and closing dialogs.
+- **Colours:** inspect both colour schemes when changing colours, focus indicators or component appearance.
+- **Layout and typography:** check the iPhone 17 and Pixel 9 viewports and 200% zoom for clipping, overlap and horizontal overflow.
+- **Dynamic content:** check accessible names and announcements when changing dialogs, errors or results.
+- **Animation:** check reduced motion and flashing when changing effects or timing.
+
+Documentation-only changes do not need browser checks.
 
 ### Firebase emulators
 

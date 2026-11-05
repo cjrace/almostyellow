@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useMounted } from "@mantine/hooks";
 import {
   ActionIcon,
   Anchor,
@@ -28,6 +29,7 @@ export default function CardGameTitle({
   creditLink,
 }: CardGameTitleProps) {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
+  const mounted = useMounted();
 
   return (
     <>
@@ -50,7 +52,9 @@ export default function CardGameTitle({
             variant="subtle"
             size="lg"
             aria-label="Open game instructions modal"
-            onClick={() => {
+            onClick={(event) => {
+              // Safari does not focus buttons on a tap; remember this opener.
+              event.currentTarget.focus();
               setModalInstructionsOpened(true);
             }}
           >
@@ -76,6 +80,10 @@ export default function CardGameTitle({
       {/* Built from parts so Modal.Title can name the dialog without the
           default header and close button */}
       <Modal.Root
+        // Include hidden rules in server HTML, then use the normal portal.
+        keepMounted
+        withinPortal={mounted}
+        keepMountedMode={mounted ? "activity" : "display-none"}
         size="auto"
         opened={modalInstructionsOpened}
         onClose={() => {

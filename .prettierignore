@@ -4,3 +4,6 @@ coverage
 
 # Written by pnpm in its own style
 pnpm-lock.yaml
+
+# Separate checkouts must be checked and formatted on their own branches
+.worktrees/
