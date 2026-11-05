@@ -4,12 +4,18 @@ body {
   margin: 0;
 }
 
+/* The fixed confetti credit is about 32px tall. Leave a little more room on
+   every page so controls stay reachable without measuring the vendor's DOM. */
+:root {
+  --confetti-gap: 2.5rem;
+}
+
 .site-frame {
   --site-frame-padding: 20px;
   --site-frame-bottom: max(
     var(--site-frame-padding),
     env(safe-area-inset-bottom, 0px),
-    var(--confetti-clearance, 0px)
+    var(--confetti-gap)
   );
   padding: var(--site-frame-padding);
   padding-bottom: var(--site-frame-bottom);
@@ -25,24 +31,29 @@ body {
 /* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
 html {
   scroll-padding-top: 100px;
-  scroll-padding-bottom: var(--confetti-clearance, 0px);
+  scroll-padding-bottom: var(--confetti-gap);
 }
 
-/* Portals live outside the page wrapper. Leave the usual modal gap alone
-   unless the badge needs more room, and let long dialogs scroll above it. */
-html[data-confetti-badge] .mantine-Modal-inner {
-  padding-bottom: max(var(--modal-y-offset), var(--confetti-clearance));
+/* Give native keyboard scrolling room to bring the whole control into view.
+   Safari can otherwise leave the bottom of a textarea behind the credit. */
+.site-frame :focus {
+  scroll-margin-bottom: 50vh;
 }
 
-html[data-confetti-badge] .mantine-Modal-content {
+/* Portals live outside the page wrapper, so leave the same bottom gap there. */
+.mantine-Modal-inner {
+  padding-bottom: max(var(--modal-y-offset), var(--confetti-gap));
+}
+
+.mantine-Modal-content {
   max-height: calc(
     100dvh - var(--modal-y-offset) -
-      max(var(--modal-y-offset), var(--confetti-clearance))
+      max(var(--modal-y-offset), var(--confetti-gap))
   );
 }
 
-html[data-confetti-badge] .mantine-Drawer-body {
-  padding-bottom: max(var(--mantine-spacing-md), var(--confetti-clearance));
+.mantine-Drawer-body {
+  padding-bottom: max(var(--mantine-spacing-md), var(--confetti-gap));
 }
 
 /* Show a keyboard target immediately rather than part way through sliding in. */

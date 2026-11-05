@@ -42,10 +42,6 @@ playwright/.auth
 /coverage
 test-results.json
 
-# lighthouse
-/.lighthouseci/
-/health-reports/
-
 # firebase emulators
 firestore-debug.log
 firebase-debug.log

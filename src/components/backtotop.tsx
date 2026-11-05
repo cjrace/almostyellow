@@ -8,7 +8,7 @@ const BackToTop: React.FC = () => {
   const [scroll, scrollTo] = useWindowScroll();
 
   return (
-    <Affix position={{ bottom: "var(--back-to-top-bottom, 20px)", right: 20 }}>
+    <Affix position={{ bottom: "var(--confetti-gap)", right: 20 }}>
       <Transition transition="slide-up" mounted={scroll.y > 0}>
         {(transitionStyles) => (
           <Button

@@ -77,8 +77,6 @@ pnpm test:e2e      # Build, then the Playwright tests against the emulators
 
 See [tests/README.md](tests/README.md) for what each stage covers, how to read the output and how to write a test, and [AGENTS.md](AGENTS.md) for more on the test fixtures and Firebase safeguards.
 
-The separate **Monthly health check** workflow runs Lighthouse, internal link and image checks, and dependency auditing on the first of each month. It keeps reports for 90 days and assigns an issue to Cam when problems remain. It can also be started manually in GitHub Actions. See [monthly health checks](tests/README.md#monthly-health-checks) for commands and notification details.
-
 ### Pre-commit hooks
 
 [Husky](https://typicode.github.io/husky) is used to manage pre-commit hooks, currently this is used to enforce [Prettier](https://prettier.io/) formatting on all code.

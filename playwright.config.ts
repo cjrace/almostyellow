@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 /* Point at the Firebase emulators, never production */
 import "./tests/test-env";
 
-/* Vitest and the monthly health checks have separate runners. */
-const vitestTests = ["unit/**", "firebase/**", "health/**"];
+/* Vitest has separate runners for unit and Firebase tests. */
+const vitestTests = ["unit/**", "firebase/**"];
 /* Uno scoring changes one shared scoreboard, and SEO is browser-independent,
    so only desktop Chrome runs them. Each project's testIgnore replaces the
    top-level one, hence vitestTests. */

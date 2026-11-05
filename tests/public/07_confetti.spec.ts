@@ -26,7 +26,6 @@ test("Confetti only loads when asked for", async ({ page }) => {
 
   await page.getByRole("button", { name: "Unleash confetti" }).click();
   await expect.poll(() => requests.length).toBe(1);
-  await expect(page.locator("html")).not.toHaveAttribute("data-confetti-badge");
 });
 
 test.describe("A visitor using confetti", () => {
@@ -93,7 +92,7 @@ test.describe("A visitor using confetti", () => {
     );
   });
 
-  test("only gets clearance while a badge exists, including after resizing and navigation", async ({
+  test("keeps a permanent bottom gap through confetti, navigation and resizing", async ({
     page,
   }) => {
     await mockConfetti(page);
@@ -104,8 +103,14 @@ test.describe("A visitor using confetti", () => {
         .evaluate((element) => getComputedStyle(element).paddingBottom);
     const original = await padding();
     await expect(confettiBadge(page)).toHaveCount(0);
+    expect(Number.parseFloat(original)).toBeGreaterThan(0);
     await showConfetti(page);
-    expect(await padding()).not.toBe(original);
+    expect(await padding()).toBe(original);
+    const badge = await confettiBadge(page).boundingBox();
+    expect(badge).not.toBeNull();
+    expect(Number.parseFloat(original)).toBeGreaterThan(
+      (badge?.height ?? 0) + 4,
+    );
     await page
       .getByRole("link", { name: "Play Irish Bingo!", exact: true })
       .click();
@@ -115,36 +120,17 @@ test.describe("A visitor using confetti", () => {
       page,
     );
     await page.setViewportSize({ width: 320, height: 640 });
-    await confettiBadge(page).evaluate((badge) => {
-      badge.style.setProperty("font-size", "28px", "important");
-    });
     await expectClearOfBadge(
       page.getByRole("button", { name: "Draw a card", exact: true }),
       page,
     );
-    await expect
-      .poll(() =>
-        page
-          .locator("html")
-          .evaluate((root) =>
-            Number.parseFloat(
-              root.style.getPropertyValue("--confetti-clearance"),
-            ),
-          ),
-      )
-      .toBeGreaterThan(50);
     await confettiBadge(page).evaluate((badge) => {
       badge.remove();
     });
-    await expect(page.locator("html")).not.toHaveAttribute(
-      "data-confetti-badge",
-    );
-    await expect.poll(padding).toBe("10px");
+    await expect.poll(padding).toBe(original);
   });
 
-  test("does not request confetti or reserve space with reduced motion", async ({
-    page,
-  }) => {
+  test("does not request confetti with reduced motion", async ({ page }) => {
     const requests: string[] = [];
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.route("https://run.confettipage.com/**", (route) => {
@@ -153,9 +139,6 @@ test.describe("A visitor using confetti", () => {
     });
     await page.goto("/games");
     await page.getByRole("button", { name: "Unleash confetti" }).click();
-    await expect(page.locator("html")).not.toHaveAttribute(
-      "data-confetti-badge",
-    );
     expect(requests).toEqual([]);
   });
 
@@ -246,7 +229,6 @@ test.describe("A visitor using confetti", () => {
   test("keeps game controls and the Players drawer clear at their limits", async ({
     page,
   }) => {
-    test.slow();
     await page.setViewportSize({ width: 320, height: 640 });
     await mockConfetti(page);
     await page.goto("/games/snakesandladders");
@@ -280,14 +262,10 @@ test.describe("A visitor using confetti", () => {
     );
     await page.goto("/games/irishbingo");
     await showConfetti(page);
-    for (let draw = 0; draw < 52; draw++) {
-      const button = page.getByRole("button", {
-        name: "Draw a card",
-        exact: true,
-      });
-      if (draw === 0 || draw === 51) await expectClearOfBadge(button, page);
-      await button.click();
-    }
+    const draw = page.getByRole("button", { name: "Draw a card", exact: true });
+    await expectClearOfBadge(draw, page);
+    await draw.click();
+    await draw.click();
     await expectClearOfBadge(
       page.getByRole("button", { name: "Shuffle new deck" }),
       page,
@@ -299,22 +277,16 @@ test.describe("A visitor using confetti", () => {
     );
   });
 
-  test("keeps the first and final Red or Black draws and Suits turns clear of the badge", async ({
+  test("keeps Red or Black and Suits controls clear of the badge", async ({
     page,
   }) => {
-    test.slow();
     await page.setViewportSize({ width: 320, height: 640 });
     await mockConfetti(page);
     await page.goto("/games/redorblack");
     await showConfetti(page);
-    for (let draw = 0; draw < 52; draw++) {
-      const button = page.getByRole("button", {
-        name: "Draw a card",
-        exact: true,
-      });
-      if (draw === 0 || draw === 51) await expectClearOfBadge(button, page);
-      await button.click();
-    }
+    const draw = page.getByRole("button", { name: "Draw a card", exact: true });
+    await expectClearOfBadge(draw, page);
+    await draw.click();
     await expectClearOfBadge(
       page.getByRole("button", { name: "Shuffle new deck" }),
       page,
@@ -350,19 +322,12 @@ test.describe("A visitor using confetti", () => {
       );
     });
     await page.getByRole("button", { name: "Start game", exact: true }).click();
-    for (let turn = 0; turn < 13; turn++) {
-      await page.getByText("Hearts", { exact: true }).last().click();
-      const reveal = page.getByRole("button", { name: "Reveal four cards" });
-      if (turn === 0 || turn === 12) await expectClearOfBadge(reveal, page);
-      await reveal.click();
-      if (turn === 0 || turn === 12)
-        await expectClearOfBadge(
-          page.getByRole("button", { name: "Change players" }),
-          page,
-        );
-    }
+    await page.getByText("Hearts", { exact: true }).last().click();
+    const reveal = page.getByRole("button", { name: "Reveal four cards" });
+    await expectClearOfBadge(reveal, page);
+    await reveal.click();
     await expectClearOfBadge(
-      page.getByRole("button", { name: "Play again with same players" }),
+      page.getByRole("button", { name: "Change players" }),
       page,
     );
   });

@@ -84,6 +84,22 @@ function pageScrolls(page: Page) {
   );
 }
 
+async function expectAtContentBottom(
+  page: Page,
+  control: { y: number; height: number },
+) {
+  // Screen-filling controls sit above the permanent confetti gap.
+  const bottom = await page
+    .locator(".site-frame")
+    .evaluate(
+      (element) =>
+        innerHeight -
+        Number.parseFloat(getComputedStyle(element).paddingBottom),
+    );
+  expect(control.y + control.height).toBeGreaterThan(bottom - 24);
+  expect(control.y + control.height).toBeLessThanOrEqual(bottom + 1);
+}
+
 async function expectMatchingCocktailRows(page: Page) {
   const cards = page.getByTestId("cocktail-card");
   await expect(cards.first()).toBeVisible();
@@ -161,7 +177,7 @@ test.describe("A visitor on a small phone", () => {
     if (!shuffle) throw new Error("The shuffle button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(shuffle.y + shuffle.height).toBeGreaterThan(smallPhone.height - 32);
+    await expectAtContentBottom(page, shuffle);
   });
 
   test("sees the whole Uno tracker without scrolling", async ({ page }) => {
@@ -446,7 +462,7 @@ test.describe("A visitor on a phone", () => {
 
     expect(await pageScrolls(page)).toBe(false);
     expect(card.height).toBeGreaterThan(phone.height * 0.4);
-    expect(shuffle.y + shuffle.height).toBeGreaterThan(phone.height - 32);
+    await expectAtContentBottom(page, shuffle);
   });
 
   test("sees the Boom Boom Pirate ropes fill the screen", async ({ page }) => {
@@ -457,7 +473,7 @@ test.describe("A visitor on a phone", () => {
     if (!restart) throw new Error("The restart button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(restart.y + restart.height).toBeGreaterThan(phone.height - 40);
+    await expectAtContentBottom(page, restart);
     const heights = await ropes.evaluateAll((buttons) =>
       buttons.map((button) => button.getBoundingClientRect().height),
     );
@@ -513,7 +529,7 @@ test.describe("A visitor on a desktop", () => {
     if (!restart) throw new Error("The restart button is missing");
 
     expect(await pageScrolls(page)).toBe(false);
-    expect(restart.y + restart.height).toBeGreaterThan(desktop.height - 40);
+    await expectAtContentBottom(page, restart);
   });
 });
 

@@ -1,5 +1,6 @@
 import {
   createTheme,
+  defaultVariantColorsResolver,
   Drawer,
   Modal,
   type CSSVariablesResolver,
@@ -13,6 +14,15 @@ export const acalat = createTheme({
   // so text on orange, red and green meets WCAG AA's 4.5:1.
   autoContrast: true,
   luminanceThreshold: 0.18,
+
+  // An explicit red shade keeps white text readable both normally and on
+  // hover, including the darker backgrounds in the dark scheme.
+  variantColorResolver: (input) =>
+    defaultVariantColorsResolver(
+      input.variant === "filled" && input.color === "red"
+        ? { ...input, color: "red.9" }
+        : input,
+    ),
 
   // Skip transitions for anyone who has asked for less motion
   respectReducedMotion: true,

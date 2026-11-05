@@ -137,11 +137,15 @@ test.describe("Uno durable scoring", () => {
         });
         await expect(deleting).toBeVisible();
         await expect(deleting).toHaveCSS("opacity", "1");
+        await page.mouse.move(0, 0);
         await expectNoAxeViolations(page);
-        await expectClearOfBadge(
-          deleting.getByRole("button", { name: "Delete game", exact: true }),
-          page,
-        );
+        const deleteGame = deleting.getByRole("button", {
+          name: "Delete game",
+          exact: true,
+        });
+        await deleteGame.hover();
+        await expectNoAxeViolations(page);
+        await expectClearOfBadge(deleteGame, page);
         await page.keyboard.press("Escape");
         await expect(deleting).toBeHidden();
       });

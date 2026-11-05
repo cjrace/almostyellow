@@ -1,6 +1,6 @@
 # Tests
 
-`pnpm test` runs the five checks required before a change goes in, in order, and stops at the first one that fails. None of them touch the real website's data: the Firebase tests and the end-to-end tests run against local copies of Firebase (the emulators), filled with made-up records. The broader monthly health checks run separately.
+`pnpm test` runs the five checks required before a change goes in, in order, and stops at the first one that fails. None of them touch the real website's data: the Firebase tests and the end-to-end tests run against local copies of Firebase (the emulators), filled with made-up records.
 
 ## What runs, and what each stage protects
 
@@ -14,30 +14,20 @@
 
 `pnpm test-only` runs the same checks without reformatting files or rebuilding the app, which is quicker when nothing outside the tests has changed.
 
-The sitemap, page accessibility and SEO checks, and Lighthouse share `src/discover-routes.ts`. It discovers App Router pages from source, so there is no route list to update. Unit tests cover route groups, Windows paths, private folders, duplicates and unsupported public dynamic or parallel routes. The sitemap is generated at build time and omits modification dates unless real content dates are available.
-
-## Monthly health checks
-
-The **Monthly health check** GitHub Actions workflow runs automatically on the first of each month at 06:17 UTC, and has a **Run workflow** button for checks between scheduled runs. Scheduled runs start after the workflow is merged into the default branch. GitHub disables schedules in public repositories after 60 days without repository activity.
-
-- `pnpm test:health` builds the app and checks it against the Firebase fixtures. Lighthouse takes three samples of each public page, with median scores and loading measurements in the run summary. Accessibility and SEO need 100, best practices 90; performance below 80 is a warning. A separate check requests internal public links and local images. It rewrites canonical site URLs to localhost, excludes external sites and protected admin pages, and fails on unsuccessful responses or unexpected redirects.
-- `pnpm test:lighthouse` runs only the Lighthouse part. Both commands accept `--no-build` to reuse a build.
-- `pnpm audit:dependencies` checks the current lockfile for production advisories and then all advisories, including development tools. It reports dependency paths and fixed versions without changing packages. An unavailable registry is a failed check, not a clean audit. Dependabot continues to handle monthly version updates; its security alerts should remain enabled independently of this report.
-
-Website checks and dependency auditing run independently. Reports in `.lighthouseci/`, `health-reports/` and `test-results/health/` are retained as workflow artifacts for 90 days. Any failed or unfinished check, or a Lighthouse performance warning, opens or updates one issue assigned to `cjrace`. Later failing runs add a comment to notify subscribers; a clean run closes the issue. Manual runs from other branches produce reports but cannot change the alert issue. Issue notifications and failed-workflow emails follow your GitHub notification settings.
-
-Axe, keyboard journeys and the explicit SEO assertions remain in the normal PR suite. The health checks do not repeat the full browser suite.
+The sitemap, page accessibility and SEO checks share `src/discover-routes.ts`. It discovers App Router pages from source, so there is no route list to update. Unit tests cover route groups, Windows paths, private folders, duplicates and unsupported public dynamic or parallel routes. The sitemap is generated at build time and omits modification dates unless real content dates are available.
 
 ## Browser test fixtures
 
-`confetti.ts` supplies a local replacement for the confetti script. It creates the same fixed credit badge only after activation, so the layout tests can check overlap, resizing and navigation without downloading the vendor's script. Confetti tests cover representative scrolling pages, dialogs, drawers and game layouts in each browser. They check the first and final deck or grid positions; the game tests cover the turns between them.
+`confetti.ts` supplies a local replacement for the confetti script. It creates the same fixed credit badge only after activation, so the layout tests can check overlap, resizing and navigation without downloading the vendor's script. A permanent 40px bottom gap keeps controls above the badge, including in dialogs and drawers. Confetti tests cover representative scrolling pages and game layouts; the existing layout tests cover complete games with that gap always present.
 
 Instruction tests also load the game pages without JavaScript to check their rules are present but hidden, then check dialog focus after hydration. Reduced-motion tests use the browser clock to check suspense and cancellation without waiting for real turns.
+
+For a manual preview, `pnpm serve:test` uses the existing end-to-end runner to build the app, start the emulators, seed the fixtures and serve the site. Add `--no-build` to reuse an unchanged build. Stop it with Ctrl+C.
 
 ## What you need
 
 - Node and pnpm, as for the rest of the project.
-- Java 21 or later for the Firestore emulator (stages 4 and 5, and the monthly website checks). The [main README](../README.md#what-you-need-installed) says how to install it.
+- Java 21 or later for the Firestore emulator (stages 4 and 5). The [main README](../README.md#what-you-need-installed) says how to install it.
 - Ports 3000, 8080 and 9099 free, so stop `pnpm dev` and `pnpm emulators` first.
 
 ## Reading the output
@@ -61,7 +51,6 @@ To see screenshots, traces and each step of an end-to-end test, open the report 
 | `public-firestore/` | End-to-end tests of public pages that read from Firebase: the whisky journal, film list and cocktails.                      |
 | `admin/`            | End-to-end tests of the signed-in admin area, including sign-in itself.                                                     |
 | `reporters/`        | The summary printed at the end of the end-to-end stage.                                                                     |
-| `health/`           | Monthly Lighthouse and internal link/image checks, run separately from the normal suite.                                    |
 | `global-setup.ts`   | Loads the made-up users and records into the emulators before the end-to-end tests start.                                   |
 | `test-env.ts`       | Points every test at the emulators.                                                                                         |
 | `playwright.ts`     | Playwright for the end-to-end tests, with pages that wait for the site to be ready before a test types into them.           |

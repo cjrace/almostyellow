@@ -9,9 +9,7 @@ pnpm test          # Format + lint + unit tests + Firebase emulator tests + buil
 pnpm test-only     # The same without reformatting files or rebuilding the app
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
-pnpm test:lighthouse  # Build, then Lighthouse on every public page against the Firebase emulators
-pnpm test:health   # Build, then Lighthouse and internal link/image checks against the emulators
-pnpm audit:dependencies  # Report production and development dependency advisories
+pnpm serve:test    # Preview the app against Firebase emulators with synthetic fixtures
 ```
 
 `pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
@@ -28,8 +26,6 @@ Husky pre-commit hooks run Prettier automatically on staged files.
 
 CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
 
-`.github/workflows/monthly-health.yml` runs on the first of each month at 06:17 UTC and supports manual runs. It checks website quality against the Firebase fixtures and audits dependencies in separate jobs. Reports are kept for 90 days. Problems open or update one GitHub issue assigned to `cjrace`; a clean run closes it. Only runs on the default branch can change the alert issue. GitHub schedules start once the workflow is merged into the default branch; public repositories disable schedules after 60 days without repository activity. GitHub email delivery depends on the user's notification settings.
-
 `scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
 
 ## Dependencies
@@ -42,7 +38,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 ## PR screenshots
 
-For visual changes, include representative before and after screenshot pairs in the PR description. Choose pages, states and viewport sizes that show the distinct changes; separate pairs for every affected page at both desktop and mobile sizes are optional. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check all affected pages at both desktop and mobile sizes, even when only one layout needs screenshots.
+For visual changes, include representative before and after screenshot pairs in the PR description. Choose pages, states and viewport sizes that show the distinct changes. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check the layouts the change affects, including desktop and mobile when behaviour differs; shared changes need representative examples of each affected layout rather than screenshots of every page.
 
 Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
@@ -94,6 +90,8 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 
 Lay pages out with Mantine (`Stack`, `Group`, `SimpleGrid`, `Grid`). Use a CSS module only for shapes Mantine can't make, such as the square Snakes and Ladders board sized to the window. Write breakpoints as `@mixin larger-than $mantine-breakpoint-sm` or `@mixin smaller-than $mantine-breakpoint-sm`, not fixed widths, so they match Mantine's props. Games that fill exactly one screen wrap the page in `.screen` from `src/styles/cardgame.module.css` and let the game take the height left, using a size container like its `.table`, rather than subtracting fixed heights from `100dvh`.
 
+`src/styles/global.css` reserves a permanent `2.5rem` bottom gap for the confetti credit, including in dialogs and drawers. Screen-filling games use `--site-frame-bottom` so their controls fit above it; fixed controls use `--confetti-gap`.
+
 ### Tests
 
 `tests/README.md` explains the test set-up for people, including how to name tests: `test.describe` for who and where, a test name saying what they see or can do, and Given/When/Then `test.step`s for long journeys. Follow it in new tests, and update it when adding a stage or folder.
@@ -114,28 +112,27 @@ Any server action that reads private data or changes data must call `requireAuth
 
 ### Accessibility and SEO
 
-The site aims for WCAG 2.2 AA. Every change to a page or component is checked against it before committing.
+The site aims for WCAG 2.2 AA. Check the accessibility and SEO behaviour a change can affect, with coverage proportionate to its scope.
 
-- `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests, and Lighthouse. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
+- `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
 - Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
 - `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check every page in both colour schemes, in Chrome and Mobile Chrome. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
-- `pnpm test:health` runs the monthly website checks; `pnpm test:lighthouse` runs Lighthouse alone on demand. Lighthouse collects three samples per public page and uses median scores. Accessibility and SEO must score 100 and best practices 90; performance below 80 warns and raises the monthly alert. Reports are written to `.lighthouseci/` and `health-reports/`. Run these through the scripts, never `lhci` by hand, so the app reads from the emulators. Lighthouse is separate from `pnpm test` and PR checks; axe and the explicit SEO tests stay in the normal suite.
 - Colour contrast comes from the theme in `src/styles/acalat.tsx`: `autoContrast` picks the text colour on filled components, and `acalatCssVariables` darkens Mantine's dimmed, error and link colours. Use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
 - Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
 
-The automated checks find about half of WCAG problems, so whenever you run them for a change to a page or component, also check by hand in the browser. This is not optional: report the result of each check, and if one cannot be run, say which and why.
+Automated checks do not establish complete WCAG conformance. For UI changes, supplement relevant tests with a focused browser check of the changed behaviour. Report what was checked and any checks that could not run.
 
-Check the pages the change affects. A change to shared code (`src/app/layout.tsx`, `src/components/header.tsx`, `src/styles/`, the theme, or a component used on several pages) affects every page, so check them all. A change to one page or a component only it uses needs only that page, including any states the change touches, such as a dialog or a game in progress.
+Follow component and CSS imports to identify affected routes. A page-specific CSS module only affects the pages that use it. For shared layout, theme or component changes, run the relevant automated coverage across consumers and inspect representative pages for each distinct layout or interaction. Expand the checks when a failure or wider risk justifies it.
 
-Start the app with `pnpm serve:test`, which serves the last build against the emulators loaded with the test fixtures (in the desktop app, start `almostyellow-emulators` from `.claude/launch.json`). Then, on each affected page:
+Use `pnpm serve:test` to build and preview against the emulators with synthetic fixtures; add `--no-build` to reuse an unchanged build. The desktop app's `almostyellow-emulators` launch configuration uses that preview. Choose the checks relevant to the change:
 
-1. **Keyboard:** tab through the page and use every control with Enter or Space. The order makes sense, focus is always visible, nothing traps focus, and focus is never lost to the top of the page after an action, such as when a button is disabled or replaced, or a dialog closes.
-2. **Both colour schemes:** look again after using "Toggle color scheme".
-3. **Reflow and zoom:** at 320 pixels wide and at 200% zoom, nothing is cut off, overlaps or scrolls sideways.
-4. **Announcements:** results that appear without a page load are in a `role="status"` region, and dialogs have a name.
-5. **Motion:** nothing flashes more than three times a second, and animations stop under `prefers-reduced-motion`.
+- **Controls and focus:** use the changed controls by keyboard, including focus after actions and closing dialogs.
+- **Colours:** inspect both colour schemes when changing colours, focus indicators or component appearance.
+- **Layout and typography:** check narrow screens (including 320px where relevant) and 200% zoom for clipping, overlap and horizontal overflow.
+- **Dynamic content:** check accessible names and announcements when changing dialogs, errors or results.
+- **Animation:** check reduced motion and flashing when changing effects or timing.
 
-The `a11y-seo-check` skill in `.claude/skills/` runs all of this for a change.
+The `a11y-seo-check` skill in `.claude/skills/` describes this scoped routine. Documentation-only changes do not need browser checks.
 
 ### Firebase emulators
 

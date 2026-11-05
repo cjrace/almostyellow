@@ -28,10 +28,6 @@ overrides:
   # uuid 11 retains the CommonJS entry point used by gaxios 6.
   "uuid@9": "11.1.1"
   "@google-cloud/pubsub>@opentelemetry/core": "2.8.0"
-  # Puppeteer's browser helper needs proxy-agent 8; LHCI uses the same API on Node 24.
-  "@lhci/cli>proxy-agent": "8.0.2"
-  # get-uri still requests basic-ftp 5, which has no fix for GHSA-c475-qrg2-pj4r.
-  "get-uri>basic-ftp": "6.2.1"
 
 patchedDependencies:
   firebase-tools@15.34.1: patches/firebase-tools@15.34.1.patch

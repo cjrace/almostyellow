@@ -29,7 +29,6 @@ export const confettiBadge = (page: Page) =>
 export async function showConfetti(page: Page) {
   await page.getByRole("button", { name: "Unleash confetti" }).click();
   await expect(confettiBadge(page)).toBeVisible();
-  await expect(page.locator("html")).toHaveAttribute("data-confetti-badge", "");
 }
 
 export async function expectClearOfBadge(control: Locator, page: Page) {

@@ -1,9 +1,10 @@
-// Runs the Playwright tests against the Firebase Auth and Firestore emulators,
-// so they never touch production data or accounts.
+// Runs Playwright or a manual preview against the Firebase Auth and Firestore
+// emulators, so they never touch production data or accounts.
 //
 //   node scripts/e2e.mts                   build, then run every suite
 //   node scripts/e2e.mts --no-build        reuse the existing .next build
 //   node scripts/e2e.mts tests/admin       extra arguments go to Playwright
+//   node scripts/e2e.mts --serve           preview with the same test fixtures
 //
 // Settings come from tests/test-env.ts.
 import { spawnSync } from "node:child_process";
@@ -12,7 +13,10 @@ import "../tests/test-env.ts";
 
 const args = process.argv.slice(2);
 const build = !args.includes("--no-build");
-const playwrightArgs = args.filter((arg) => arg !== "--no-build");
+const serve = args.includes("--serve");
+const playwrightArgs = args.filter(
+  (arg) => arg !== "--no-build" && arg !== "--serve",
+);
 
 // Resolves true if something is already listening on the port
 function inUse(port: number) {
@@ -86,7 +90,9 @@ if (status === 0) {
   // emulators:exec sets the emulator hosts for Playwright and next start, and
   // stops the emulators when the tests finish. The CLI is run with node rather
   // than through a shell, so the script reaches it as one argument.
-  const script = ["pnpm exec playwright test", ...playwrightArgs.map(quote)];
+  const script = serve
+    ? ["node scripts/serve-test.mts --seed"]
+    : ["pnpm exec playwright test", ...playwrightArgs.map(quote)];
   const result = spawnSync(
     process.execPath,
     [
