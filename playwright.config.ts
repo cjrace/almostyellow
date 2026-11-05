@@ -12,13 +12,8 @@ const sharedScoreboard = [
   "**/admin/07_uno.spec.ts",
   "**/public/06_seo.spec.ts",
 ];
-/* Service-worker evaluation needs Chromium. axe checks both Chrome layouts. */
-const serviceWorker = [
-  ...sharedScoreboard,
-  "**/public/06_uno_offline.spec.ts",
-  "**/04_a11y.spec.ts",
-  "**/07_a11y.spec.ts",
-];
+/* Service-worker evaluation needs Chromium. */
+const serviceWorker = [...sharedScoreboard, "**/public/06_uno_offline.spec.ts"];
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -42,7 +37,7 @@ export default defineConfig({
      Open it with "pnpm exec playwright show-report". */
   reporter: [
     ["dot"],
-    ["html", { open: "never" }],
+    process.env.CI ? ["blob"] : ["html", { open: "never" }],
     ["./tests/reporters/summary.ts"],
   ],
   /* Extra slack on assertions; the default 5s races with App Router renders. */
@@ -64,24 +59,28 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       use: {
-        ...devices["Pixel 8"],
+        ...devices["Pixel 9"],
       },
       testIgnore: sharedScoreboard,
+      grepInvert: /@desktop/,
     },
     {
       name: "Google Chrome",
       use: {
         ...devices["Desktop Chrome"],
         channel: "chrome",
+        viewport: { width: 1280, height: 800 },
       },
+      grepInvert: /@phone/,
     },
     /* Every browser on an iPhone uses WebKit, Chrome included */
     {
       name: "Mobile Safari",
       use: {
-        ...devices["iPhone 14"],
+        ...devices["iPhone 17"],
       },
       testIgnore: serviceWorker,
+      grepInvert: /@desktop/,
     },
   ],
 

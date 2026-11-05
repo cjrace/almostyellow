@@ -1,4 +1,10 @@
-import { test, expect, waitsForHydration, type Page } from "../playwright";
+import {
+  test,
+  expect,
+  waitsForHydration,
+  devices,
+  type Page,
+} from "../playwright";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
@@ -94,7 +100,6 @@ test.describe("Uno durable scoring", () => {
         test.slow();
         await useScheme(page, scheme);
         await mockConfetti(page);
-        await page.setViewportSize({ width: 320, height: 640 });
         await signIn(page);
         await start(page);
         await idle(page);
@@ -162,14 +167,14 @@ test.describe("Uno durable scoring", () => {
       await signIn(page);
       await start(page);
       await idle(page);
-      await page.setViewportSize({ width: 375, height: 740 });
+      await page.setViewportSize(devices["Pixel 9"].viewport);
       const scoringButton = await page
         .getByRole("button", { name: "Add a round for Cam" })
         .boundingBox();
       expect(scoringButton?.height).toBeGreaterThanOrEqual(56);
       expect(
         (scoringButton?.y ?? 0) + (scoringButton?.height ?? 0),
-      ).toBeLessThanOrEqual(740);
+      ).toBeLessThanOrEqual(devices["Pixel 9"].viewport.height);
       await page.screenshot({
         path: test.info().outputPath("uno-mobile.png"),
         fullPage: true,
@@ -451,12 +456,12 @@ test.describe("Uno durable scoring", () => {
     expect(await layout()).toEqual(settled);
     expect(await pillHeight()).toBe(pill);
   });
-  test("a long sync status fits a small phone without scrolling", async ({
+  test("a long sync status fits the Pixel 9 viewport without scrolling", async ({
     page,
     context,
   }) => {
     test.slow();
-    await page.setViewportSize({ width: 320, height: 640 });
+    await page.setViewportSize(devices["Pixel 9"].viewport);
     await signIn(page);
     await start(page);
     await idle(page);

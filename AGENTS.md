@@ -24,7 +24,7 @@ Playwright will not reuse a server already on port 3000, so stop `pnpm dev` firs
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
-CI (`.github/workflows/playwright.yml`) runs the same stages as three parallel jobs: format check, lint and unit tests; the Firebase emulator tests; and Playwright with 2 workers. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
+CI (`.github/workflows/playwright.yml`) runs format, lint and unit tests, Firebase tests, and four Playwright shards in parallel. Each shard has its own emulators and 2 workers. A final job merges their reports and requires every shard to pass. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
 
 `scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
 
@@ -104,7 +104,7 @@ Playwright E2E tests in `tests/`, split into three folders:
 
 They run against the synthetic records and users in `tests/firebase/fixtures.ts` (cocktails come from `tests/firebase/cocktails.ts`), which `tests/global-setup.ts` loads into the Firebase emulators. Some tests assert exact counts, so update them alongside the fixtures.
 
-Tests run against Mobile Chrome, Desktop Chrome and Mobile Safari (WebKit on an iPhone 14). Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
+Tests run against Mobile Chrome (Pixel 9), Desktop Chrome (1280×800) and Mobile Safari (iPhone 17). Phone tests use the presets' browser viewports; short-desktop checks use 1366×650. `@phone` and `@desktop` tags restrict layout-specific journeys to the appropriate projects. Firefox isn't tested. Specs import `test` and `expect` from `tests/playwright.ts`, whose pages wait after `goto` and `reload` for `src/components/hydrated.tsx` to mark the page as hydrated, as WebKit wipes anything typed before then. Links between pages use Next.js `Link` for the same reason. Chopin Liszt's breadcrumbs use native links so its pending-change warning can stop navigation. Two things only differ on `localhost`, because WebKit won't use HTTPS-only settings over plain HTTP: the CSP's `upgrade-insecure-requests` is left out of `pnpm dev` and of builds with `SERVED_OVER_HTTP=true`, which `tests/test-env.ts` and the CI build set (`next.config.ts`), and the session cookie isn't `Secure` (`src/actions/signInAction.ts`).
 
 Vitest unit tests live in `tests/unit/` and mock Firestore and auth.
 
@@ -116,7 +116,7 @@ The site aims for WCAG 2.2 AA. Check the accessibility and SEO behaviour a chang
 
 - `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
 - Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
-- `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check every page in both colour schemes, in Chrome and Mobile Chrome. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
+- `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check representative page layouts and interactive states in both colour schemes, in Desktop Chrome only. Mobile journeys retain focus, accessible-name and announcement assertions. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
 - Colour contrast comes from the theme in `src/styles/acalat.tsx`: `autoContrast` picks the text colour on filled components, and `acalatCssVariables` darkens Mantine's dimmed, error and link colours. Use theme colours and `c="dimmed"` rather than hard-coded greys or oranges.
 - Icon-only buttons need an `aria-label`. Clickable things must be real buttons or links. Never show meaning by colour alone, keep controls at least 24 by 24 pixels, underline links inside paragraphs, and announce results that appear without a page load (`role="status"` or `aria-live`). A Mantine `Modal` without a `title` needs `Modal.Root` and `<Modal.Content aria-label="...">`, as in `src/components/whiskyjournal.tsx`.
 
@@ -128,7 +128,7 @@ Use `pnpm serve:test` to build and preview against the emulators with synthetic 
 
 - **Controls and focus:** use the changed controls by keyboard, including focus after actions and closing dialogs.
 - **Colours:** inspect both colour schemes when changing colours, focus indicators or component appearance.
-- **Layout and typography:** check narrow screens (including 320px where relevant) and 200% zoom for clipping, overlap and horizontal overflow.
+- **Layout and typography:** check the iPhone 17 and Pixel 9 viewports and 200% zoom for clipping, overlap and horizontal overflow.
 - **Dynamic content:** check accessible names and announcements when changing dialogs, errors or results.
 - **Animation:** check reduced motion and flashing when changing effects or timing.
 

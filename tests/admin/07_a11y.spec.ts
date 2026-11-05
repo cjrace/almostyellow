@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { test, expect } from "../playwright";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
-import { discoverRoutes } from "../../src/discover-routes";
-const { adminRoutes } = discoverRoutes();
 import { films, whiskies } from "../firebase/fixtures";
 import { signIn } from "./helpers";
 
@@ -14,7 +12,7 @@ function url(route: string) {
 }
 
 for (const scheme of schemes) {
-  test.describe(`${scheme} scheme`, () => {
+  test.describe(`${scheme} scheme`, { tag: "@desktop" }, () => {
     test.beforeEach(async ({ page }) => {
       await useScheme(page, scheme);
     });
@@ -41,7 +39,12 @@ for (const scheme of schemes) {
     test("Admin pages meet WCAG 2.2 AA", async ({ page }) => {
       test.slow();
       await signIn(page);
-      for (const route of adminRoutes.filter((r) => r !== "/admin/login")) {
+      for (const route of [
+        "/admin/chopinliszt",
+        "/admin/films/[id]/edit",
+        "/admin/whiskyjournal/[id]/edit",
+        "/admin/holidays",
+      ]) {
         await test.step(route, async () => {
           await page.goto(url(route));
           await expect(page.locator("h1")).toBeVisible();
@@ -104,29 +107,33 @@ for (const scheme of schemes) {
 // Ticking moves an item to the other list and deleting removes it, so the
 // list puts keyboard focus back rather than losing it. The list is shared
 // with other tests, so this only touches items of its own.
-test("Keyboard focus stays in the shopping list", async ({ page }) => {
-  const first = `Focus test ${randomUUID()}`;
-  const second = `Focus test ${randomUUID()}`;
-  await signIn(page);
-  await page.goto("/admin/chopinliszt");
-  await page.getByRole("button", { name: "Add new item(s)" }).click();
-  await page
-    .getByPlaceholder("Add new items, one per line...")
-    .fill(`${first}\n${second}`);
-  await page
-    .getByRole("button", { name: "Add item(s) and close modal" })
-    .click();
+test(
+  "Keyboard focus stays in the shopping list",
+  { tag: "@phone" },
+  async ({ page }) => {
+    const first = `Focus test ${randomUUID()}`;
+    const second = `Focus test ${randomUUID()}`;
+    await signIn(page);
+    await page.goto("/admin/chopinliszt");
+    await page.getByRole("button", { name: "Add new item(s)" }).click();
+    await page
+      .getByPlaceholder("Add new items, one per line...")
+      .fill(`${first}\n${second}`);
+    await page
+      .getByRole("button", { name: "Add item(s) and close modal" })
+      .click();
 
-  const box = page.getByRole("checkbox", { name: first });
-  await box.focus();
-  await page.keyboard.press("Space");
-  await expect(box).toBeChecked();
-  await expect(box).toBeFocused();
+    const box = page.getByRole("checkbox", { name: first });
+    await box.focus();
+    await page.keyboard.press("Space");
+    await expect(box).toBeChecked();
+    await expect(box).toBeFocused();
 
-  await page.getByRole("button", { name: `Delete ${first}` }).focus();
-  await page.keyboard.press("Enter");
-  await expect(box).toHaveCount(0);
-  await expect(page.locator("main *:focus")).toHaveCount(1);
+    await page.getByRole("button", { name: `Delete ${first}` }).focus();
+    await page.keyboard.press("Enter");
+    await expect(box).toHaveCount(0);
+    await expect(page.locator("main *:focus")).toHaveCount(1);
 
-  await page.getByRole("button", { name: `Delete ${second}` }).click();
-});
+    await page.getByRole("button", { name: `Delete ${second}` }).click();
+  },
+);

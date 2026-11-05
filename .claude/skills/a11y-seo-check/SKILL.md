@@ -15,7 +15,7 @@ New public routes need discovery and page metadata. Documentation-only changes d
 
 ## 2. Run relevant tests
 
-Use the existing tests for the changed behaviour. Accessibility and SEO specs can be run together:
+Use the existing tests for the changed behaviour. Axe scans cover representative desktop layouts and states in both schemes; mobile journeys check focus, names and announcements without repeating the full scans. Accessibility and SEO specs can be run together:
 
 ```bash
 pnpm test:e2e tests/public/06_seo.spec.ts tests/public-firestore/04_a11y.spec.ts tests/admin/07_a11y.spec.ts
@@ -29,7 +29,7 @@ Use `pnpm serve:test` for a preview with synthetic Firebase fixtures, or add `--
 
 - Controls and focus: use changed controls by keyboard and check focus after actions, including closing dialogs.
 - Colours: inspect both schemes when appearance, contrast or focus indicators change.
-- Layout and text: inspect affected desktop and phone layouts, including 320px and 200% zoom where relevant.
+- Layout and text: inspect affected desktop and phone layouts, using iPhone 17 and Pixel 9 for phones, plus 200% zoom where relevant.
 - Dynamic content: check names and announcements for changed dialogs, errors and results.
 - Motion: check reduced motion and flashing when effects or timing change.
 
