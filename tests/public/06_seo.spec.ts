@@ -1,20 +1,8 @@
-import { globSync } from "node:fs";
 import { test, expect } from "../playwright";
-import { adminRoutes, publicRoutes, siteUrl } from "../../src/routes";
+import { siteUrl } from "../../src/routes";
+import { discoverRoutes } from "../../src/discover-routes";
 
-test("Every page is in src/routes.ts", () => {
-  const routes = globSync("src/app/**/page.tsx").map(
-    (file) =>
-      file
-        .replaceAll("\\", "/")
-        .replace(/^src\/app/, "")
-        .replace(/\/page\.tsx$/, "")
-        // Route groups such as (homepage) are not part of the URL
-        .replaceAll(/\/\([^)]+\)/g, "") || "/",
-  );
-  const listed = [...publicRoutes.map(({ path }) => path), ...adminRoutes];
-  expect(routes.toSorted()).toEqual(listed.toSorted());
-});
+const { publicRoutes } = discoverRoutes();
 
 for (const { path } of publicRoutes) {
   test(`${path} can be found and shared`, async ({ page }) => {
@@ -91,6 +79,7 @@ test("The sitemap lists every public page and nothing else", async ({
   request,
 }) => {
   const sitemap = await (await request.get("/sitemap.xml")).text();
+  expect(sitemap).not.toMatch(/<lastmod>|<priority>|<changefreq>/);
   const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(
     ([, url]) => url,
   );

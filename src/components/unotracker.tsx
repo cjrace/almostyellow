@@ -181,7 +181,7 @@ export default function UnoTracker() {
                         fullWidth
                         className={styles.add}
                         disabled={!uno.canScore}
-                        aria-label={`Add a round for ${names[player]}`}
+                        aria-label={`Add a round for ${names[player]}: +1`}
                         onClick={() => {
                           void uno.score(player, 1);
                         }}
@@ -193,7 +193,7 @@ export default function UnoTracker() {
                         variant="subtle"
                         className={styles.correct}
                         disabled={!uno.canScore || game[player] <= 0}
-                        aria-label={`Remove a round for ${names[player]}`}
+                        aria-label={`Remove a round for ${names[player]}: −1`}
                         onClick={() => {
                           void uno.score(player, -1);
                         }}

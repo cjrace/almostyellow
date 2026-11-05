@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "@mantine/hooks";
+import useGameTimers from "@/components/usegametimers";
 import {
   Box,
   Button,
@@ -42,6 +44,8 @@ const BoomBoomPirate = () => {
   const [showExplosions, setShowExplosions] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false); // New state for game initialization
   const [lastPull, setLastPull] = useState("");
+  const reducedMotion = useReducedMotion();
+  const { after, clear } = useGameTimers();
 
   // The ropes are disabled while one is pulled, and the setup screen comes and
   // goes, so put focus back where a keyboard user can carry on playing
@@ -66,39 +70,37 @@ const BoomBoomPirate = () => {
     }
   }, [gameInitialized, loadingRope, isExplosion]);
 
-  const ropeIcons = [
-    <IconSquare key="square" />,
-    <IconSquareCheck key="check" />,
-    <IconSquareX key="x" />,
-  ];
-
-  const cycleIcons = () => {
+  useEffect(() => {
+    if (loadingRope === null || reducedMotion) return;
+    const ropeIcons = [
+      <IconSquare key="square" />,
+      <IconSquareCheck key="check" />,
+      <IconSquareX key="x" />,
+    ];
     let count = 0;
     const intervalId = setInterval(() => {
       setCurrentIcon(ropeIcons[count]);
       count = (count + 1) % ropeIcons.length;
     }, 100); // Change icon every 100ms
 
-    return intervalId;
-  };
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [loadingRope, reducedMotion]);
 
   const handleRopePull = (index: number) => {
     if (ropeStates[index]) return; // Skip if already clicked
 
     ropeToFocusRef.current = index;
     setLoadingRope(index);
-    const intervalId = cycleIcons(); // Start cycling icons
-
-    setTimeout(() => {
-      clearInterval(intervalId); // Stop cycling icons
+    after(() => {
       if (index === explosionRope) {
         setIsExplosion(true);
         setRopeStates((prevState) => ({ ...prevState, [index]: "red" }));
         setLastPull(`Rope ${(index + 1).toString()} was the trap. Boom!`);
-        setShowExplosions(true); // Show explosion animation
-        setTimeout(() => {
+        setShowExplosions(!reducedMotion);
+        after(() => {
           setShowExplosions(false);
-          setIsExplosion(true); // Show modal after explosions
         }, 1500); // Hide explosion after animation
       } else {
         setRopeStates((prevState) => ({ ...prevState, [index]: "green" }));
@@ -129,6 +131,8 @@ const BoomBoomPirate = () => {
   };
 
   const restartGame = () => {
+    clear();
+    setShowExplosions(false);
     backToSetupRef.current = true;
     setGameInitialized(false); // Go back to initiation page
     setExplosionRope(generateRandomRope(totalRopes)); // Generate a new random rope for explosion
@@ -149,7 +153,11 @@ const BoomBoomPirate = () => {
   const phoneColumns = totalRopes <= 8 ? 2 : 3;
 
   return (
-    <Box p="md" className={styles.game}>
+    <Box
+      p="md"
+      className={styles.game}
+      data-setup={!gameInitialized || undefined}
+    >
       {!gameInitialized ? (
         <Stack align="center">
           <NumberInput
@@ -205,7 +213,9 @@ const BoomBoomPirate = () => {
                   disabled={loadingRope !== null}
                 >
                   {loadingRope === rope
-                    ? (currentIcon ?? "Loading...")
+                    ? reducedMotion
+                      ? "Loading..."
+                      : (currentIcon ?? "Loading...")
                     : `Rope ${(rope + 1).toString()}`}
                 </Button>
               ),

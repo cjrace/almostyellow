@@ -10,4 +10,6 @@
 .label {
   white-space: normal;
   text-align: center;
+  /* Mantine's 1em line box clips the tails of letters such as g and y. */
+  overflow: visible;
 }

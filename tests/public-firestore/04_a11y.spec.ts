@@ -1,6 +1,7 @@
 import { test, expect } from "../playwright";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
-import { publicRoutes } from "../../src/routes";
+import { discoverRoutes } from "../../src/discover-routes";
+const { publicRoutes } = discoverRoutes();
 
 for (const scheme of schemes) {
   test.describe(`${scheme} scheme`, () => {
@@ -52,6 +53,16 @@ for (const scheme of schemes) {
         dialog: "Irish Bingo instructions",
       },
       {
+        path: "/games/redorblack",
+        button: "Open game instructions modal",
+        dialog: "Red or Black v1 instructions",
+      },
+      {
+        path: "/games/suits",
+        button: "Open game instructions modal",
+        dialog: "Suits instructions",
+      },
+      {
         path: "/whiskyjournal",
         button: "Open modal detailing whisky rating scales",
         dialog: "Whisky rating scales",
@@ -64,6 +75,50 @@ for (const scheme of schemes) {
         await expectNoAxeViolations(page);
       });
     }
+
+    test("Called cards and catalogue values have accessible text", async ({
+      page,
+      isMobile,
+    }) => {
+      await page.goto("/games/irishbingo");
+      await page
+        .getByRole("button", { name: "Draw a card", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Draw a card", exact: true })
+        .click();
+      await page.getByRole("button", { name: "View all called cards" }).click();
+      await expect(
+        page
+          .getByRole("dialog", { name: "All called cards" })
+          .getByRole("listitem"),
+      ).toHaveCount(2);
+      await expectNoAxeViolations(page);
+      await page.goto("/games/redorblack");
+      await page
+        .getByRole("button", { name: "Draw a card", exact: true })
+        .click();
+      await page.getByRole("button", { name: "View all drawn cards" }).click();
+      await expect(
+        page.getByRole("dialog", { name: "All drawn cards" }),
+      ).toBeVisible();
+      await expectNoAxeViolations(page);
+      await page.goto("/whiskyjournal");
+      await expect(
+        page.getByRole("img", { name: "Rated 5 out of 5", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("img", { name: "Price level 3 out of 3", exact: true }),
+      ).toBeVisible();
+      await page.goto("/films");
+      await expect(
+        page.getByRole("img", { name: "Watched", exact: true }).first(),
+      ).toBeVisible();
+      if (isMobile)
+        await expect(
+          page.getByText("Watched", { exact: true }).first(),
+        ).toBeHidden();
+    });
 
     test("Boom Boom Pirate meets WCAG 2.2 AA mid-game", async ({ page }) => {
       await page.goto("/games/boomboompirate");
@@ -114,6 +169,60 @@ for (const scheme of schemes) {
         page.getByRole("dialog", { name: "Sync details" }),
       ).toBeVisible();
       await expectNoAxeViolations(page);
+    });
+
+    test("Suits end-game confirmation meets WCAG 2.2 AA", async ({ page }) => {
+      await page.goto("/games/suits");
+      await page
+        .getByRole("button", { name: "Start game", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Change players", exact: true })
+        .click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expectNoAxeViolations(page);
+    });
+
+    test("Snakes and Ladders game update meets WCAG 2.2 AA", async ({
+      page,
+    }) => {
+      await page.goto("/games/snakesandladders");
+      await page.evaluate(() => {
+        window.addEventListener(
+          "click",
+          (event) => {
+            if (
+              !(event.target instanceof Element) ||
+              event.target.closest("button")?.textContent !== "Start game!"
+            )
+              return;
+            let calls = 0;
+            let seed = 74;
+            Math.random = () => {
+              calls++;
+              if (calls === 1) return 0;
+              if (calls === 2) return 87.1 / 97;
+              seed = (seed * 1664525 + 1013904223) >>> 0;
+              return seed / 4294967296;
+            };
+          },
+          { capture: true },
+        );
+      });
+      await page.getByRole("button", { name: "Start game!" }).click();
+      await page.evaluate(() => {
+        Math.random = () => 0.2;
+      });
+      await page.getByRole("button", { name: /^Roll Dice/ }).click();
+      const update = page.getByRole("dialog", { name: "Game Update" });
+      await expect(update).toContainText("landed on a ladder", {
+        timeout: 7000,
+      });
+      await expectNoAxeViolations(page);
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByRole("button", { name: /^Roll Dice/ }),
+      ).toBeFocused();
     });
   });
 }

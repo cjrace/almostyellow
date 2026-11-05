@@ -48,7 +48,13 @@ export const FilmCard: React.FC<Film> = ({
           )}
 
           {watched && (
-            <Badge color="green" size="lg" leftSection={<IconEyeglass />}>
+            <Badge
+              role="img"
+              aria-label="Watched"
+              color="green"
+              size="lg"
+              leftSection={<IconEyeglass />}
+            >
               <Text display={{ base: "none", sm: "inline" }}>Watched</Text>
             </Badge>
           )}

@@ -22,6 +22,7 @@ const renderRatingMoons = (rating: number) => {
 
 // Create the design for each cocktail entry on the cocktails page
 interface Cocktail {
+  eager?: boolean;
   photoUrl: string;
   name: string;
   rating: number;
@@ -32,6 +33,7 @@ interface Cocktail {
 }
 
 const CocktailBox: React.FC<Cocktail> = ({
+  eager = false,
   photoUrl,
   name,
   rating,
@@ -41,6 +43,8 @@ const CocktailBox: React.FC<Cocktail> = ({
     <div className={styles.cocktailBox} data-testid="cocktail-card">
       <div className={styles.cocktailImageContainer}>
         <Image
+          loading={eager ? "eager" : "lazy"}
+          sizes="(max-width: 24rem) 35vw, 150px"
           aria-hidden
           src={photoUrl}
           alt={name}

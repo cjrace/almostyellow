@@ -361,7 +361,9 @@ for (const [where, viewport, buttons] of [
         await page.locator("label").filter({ hasText: "Hearts" }).click();
         await expect(reveal).toBeEnabled();
         if (turn === 13) {
-          await expect(page.getByText("Final turn")).toBeInViewport({
+          await expect(
+            page.getByText("Final turn counts double", { exact: true }),
+          ).toBeInViewport({
             ratio: 1,
           });
         }

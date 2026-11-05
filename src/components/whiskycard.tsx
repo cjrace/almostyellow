@@ -51,7 +51,13 @@ export const WhiskyCard: React.FC<Whisky> = ({
         <Title order={2}>{name}</Title>
 
         <Group>
-          <Rating value={rating} readOnly size="lg" />
+          <Rating
+            value={rating}
+            readOnly
+            size="lg"
+            role="img"
+            aria-label={`Rated ${String(rating)} out of 5`}
+          />
           <ActionIcon
             size="lg"
             variant="default"
@@ -86,6 +92,8 @@ export const WhiskyCard: React.FC<Whisky> = ({
         </Badge>
 
         <Rating
+          role="img"
+          aria-label={`Price level ${String(price)} out of 3`}
           value={price}
           count={3}
           readOnly

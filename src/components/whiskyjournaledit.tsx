@@ -106,6 +106,7 @@ export const WhiskyJournalEdit = ({ whiskyData }: { whiskyData: Whisky }) => {
           setModalOpened(false);
         }}
         title="Confirm Deletion"
+        closeButtonProps={{ "aria-label": "Close deletion confirmation" }}
       >
         <Text>Whisky ID: {whiskyData.whisky_id}</Text>
         <Text>Name: {whiskyData.name}</Text>

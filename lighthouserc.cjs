@@ -1,5 +1,5 @@
 // Lighthouse CI settings, used by tests/lighthouse/lighthouse.spec.ts. The URLs
-// come from src/routes.ts. Run it with pnpm test:lighthouse, never by hand, so
+// come from src/discover-routes.ts. Run it with pnpm test:lighthouse, never by hand, so
 // it reads from the Firebase emulators.
 module.exports = {
   ci: {

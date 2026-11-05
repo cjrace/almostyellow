@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { test, expect } from "@playwright/test";
-import { publicRoutes } from "../../src/routes";
+import { discoverRoutes } from "../../src/discover-routes";
+const { publicRoutes } = discoverRoutes();
 
 // Lighthouse opens its own Chrome, so this only needs the app Playwright has
 // started. The scores it must reach are in lighthouserc.cjs.

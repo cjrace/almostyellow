@@ -6,7 +6,13 @@ body {
 
 .site-frame {
   --site-frame-padding: 20px;
+  --site-frame-bottom: max(
+    var(--site-frame-padding),
+    env(safe-area-inset-bottom, 0px),
+    var(--confetti-clearance, 0px)
+  );
   padding: var(--site-frame-padding);
+  padding-bottom: var(--site-frame-bottom);
 }
 
 @mixin smaller-than $mantine-breakpoint-sm {
@@ -19,6 +25,31 @@ body {
 /* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
 html {
   scroll-padding-top: 100px;
+  scroll-padding-bottom: var(--confetti-clearance, 0px);
+}
+
+/* Portals live outside the page wrapper. Leave the usual modal gap alone
+   unless the badge needs more room, and let long dialogs scroll above it. */
+html[data-confetti-badge] .mantine-Modal-inner {
+  padding-bottom: max(var(--modal-y-offset), var(--confetti-clearance));
+}
+
+html[data-confetti-badge] .mantine-Modal-content {
+  max-height: calc(
+    100dvh - var(--modal-y-offset) -
+      max(var(--modal-y-offset), var(--confetti-clearance))
+  );
+}
+
+html[data-confetti-badge] .mantine-Drawer-body {
+  padding-bottom: max(var(--mantine-spacing-md), var(--confetti-clearance));
+}
+
+/* Show a keyboard target immediately rather than part way through sliding in. */
+[data-back-to-top]:focus-visible {
+  transform: none !important;
+  opacity: 1 !important;
+  transition: none !important;
 }
 
 /* The orange focus ring and focused input border are 2.6:1 on white, below

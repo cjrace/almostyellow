@@ -15,6 +15,10 @@
 
 `pnpm test-only` runs the same checks without reformatting files or rebuilding the app, which is quicker when nothing outside the tests has changed.
 
+The sitemap, page accessibility and SEO checks, and Lighthouse share `src/discover-routes.ts`. It discovers App Router pages from source, so there is no route list to update. Unit tests cover route groups, Windows paths, private folders, duplicates and unsupported public dynamic or parallel routes. The sitemap is generated at build time and omits modification dates unless real content dates are available.
+
+`confetti.ts` supplies a local replacement for the confetti script. It creates the same fixed credit badge only after activation, so the layout tests can check overlap, resizing and navigation without downloading the vendor's script. Instruction tests also load the game pages without JavaScript to check their rules are present but hidden, then check dialog focus after hydration. Reduced-motion tests use the browser clock to check suspense and cancellation without waiting for real turns.
+
 ## What you need
 
 - Node and pnpm, as for the rest of the project.

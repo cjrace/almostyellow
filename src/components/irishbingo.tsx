@@ -1,6 +1,8 @@
 "use client";
 
 import { type RefObject, useEffect, useRef, useState } from "react";
+import { useMounted } from "@mantine/hooks";
+import NextImage from "next/image";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
   Alert,
@@ -32,6 +34,11 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   <>
     <Group justify="center" gap="sm" wrap="nowrap">
       <Image
+        component={NextImage}
+        width={444}
+        height={441}
+        sizes="65px"
+        style={{ aspectRatio: "444 / 441" }}
         hiddenFrom="sm"
         aria-hidden
         src="/images/tayto.png"
@@ -65,6 +72,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
 );
 
 export default function IrishBingo() {
+  const mounted = useMounted();
   usePreloadCards();
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
@@ -134,7 +142,8 @@ export default function IrishBingo() {
               variant="subtle"
               size="lg"
               aria-label="Open game instructions modal"
-              onClick={() => {
+              onClick={(event) => {
+                event.currentTarget.focus();
                 setModalInstructionsOpened(true);
               }}
             >
@@ -145,6 +154,10 @@ export default function IrishBingo() {
 
         {/* Mantine only names a dialog from its own title, so name it here */}
         <Modal.Root
+          // Include hidden rules in server HTML, then use the normal portal.
+          keepMounted
+          withinPortal={mounted}
+          keepMountedMode={mounted ? "activity" : "display-none"}
           size="auto"
           opened={modalInstructionsOpened}
           onClose={() => {
@@ -241,12 +254,17 @@ export default function IrishBingo() {
       <div className={bingo.board}>
         <Box visibleFrom="sm" className={bingo.mascot}>
           <Image
+            component={NextImage}
+            width={444}
+            height={441}
+            sizes="(min-width: 48em) 320px, 1px"
+            style={{ aspectRatio: "444 / 441" }}
             aria-hidden
             src="/images/tayto.png"
             alt="Mr. Tayto"
             fit="contain"
             h="auto"
-            w="auto"
+            w="100%"
             maw="min(100%, 20rem)"
             mah="24rem"
           />

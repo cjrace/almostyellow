@@ -6,7 +6,7 @@ import layout from "@/styles/cardgame.module.css";
 
 export const metadata = pageMetadata(
   "Snakes and Ladders",
-  "There are snakes, there are ladders, what more could you want?",
+  "Play Snakes and Ladders together on one screen. Choose names and avatars for 2 to 10 players, roll the dice and race to square 100.",
 );
 
 export default function SnakesAndLaddersPage() {

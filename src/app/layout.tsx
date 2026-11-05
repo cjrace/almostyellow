@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import skip from "@/styles/skip.module.css";
 import Hydrated from "@/components/hydrated";
+import ConfettiClearance from "@/components/confetticlearance";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -66,6 +67,7 @@ export default function RootLayout({
           <Analytics />
           <SpeedInsights />
           <Hydrated />
+          <ConfettiClearance />
         </ThemeProvider>
       </body>
     </html>

@@ -376,6 +376,7 @@ const ChopinLiszt = ({
         title="Add new items"
       >
         <Textarea
+          aria-label="New items, one per line"
           data-autofocus
           placeholder="Add new items, one per line..."
           description={
@@ -406,7 +407,7 @@ const ChopinLiszt = ({
         <Button
           mt="md"
           onClick={addItems}
-          aria-label="Add items and close modal"
+          aria-label="Add item(s) and close modal"
         >
           Add item(s)
         </Button>
@@ -422,7 +423,7 @@ const ChopinLiszt = ({
         </ShowAfterDelay>
       )}
 
-      <Button id="add-items" onClick={open}>
+      <Button id="add-items" onClick={open} data-pending={unsaved || undefined}>
         Add new item(s)
       </Button>
       <Space h="xl" />

@@ -4,6 +4,8 @@ import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
 import { getCredentials, getSecondCredentials } from "./helpers";
 import type { LocalData } from "../../src/uno/storage";
+import { expectNoAxeViolations, schemes, useScheme } from "../axe";
+import { expectClearOfBadge, mockConfetti, showConfetti } from "../confetti";
 
 const SYNC = { timeout: 30_000 };
 async function signIn(page: Page, credentials = getCredentials()) {
@@ -72,6 +74,69 @@ test.describe("Uno durable scoring", () => {
     const db = getFirestore(getApps()[0] ?? initializeApp({ projectId }));
     for (const name of ["uno", "unoGames", "unoLeases"])
       await db.recursiveDelete(db.collection(name));
+  });
+
+  test.describe("dialog accessibility", () => {
+    test.use({ serviceWorkers: "block" });
+    for (const scheme of schemes) {
+      test(`${scheme} scoring, finish and history dialogs meet WCAG 2.2 AA above the badge`, async ({
+        page,
+      }) => {
+        test.slow();
+        await useScheme(page, scheme);
+        await mockConfetti(page);
+        await page.setViewportSize({ width: 320, height: 640 });
+        await signIn(page);
+        await start(page);
+        await idle(page);
+        await showConfetti(page);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page
+          .getByRole("button", { name: "Finish game", exact: true })
+          .click();
+        const finish = page.getByRole("dialog", { name: "Finish this game?" });
+        await expect(finish).toBeVisible();
+        await expect(finish).toHaveCSS("opacity", "1");
+        await expectNoAxeViolations(page);
+        await expectClearOfBadge(
+          finish.getByRole("button", { name: "Confirm finish" }),
+          page,
+        );
+        await finish.getByRole("button", { name: "Confirm finish" }).click();
+        await expect(finish).toBeHidden();
+        await openTab(page, "History");
+        // Uno tabs do a full navigation, which removes the previous badge.
+        await page.emulateMedia({ reducedMotion: "no-preference" });
+        await showConfetti(page);
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page
+          .getByRole("button", { name: "Scoring history", exact: true })
+          .click();
+        const history = page.getByRole("dialog", {
+          name: "Scoring history",
+          exact: true,
+        });
+        await expect(history).not.toContainText("Loading rounds…");
+        await expectNoAxeViolations(page);
+        await history
+          .getByRole("button", { name: "Close scoring history" })
+          .click();
+        await page.getByRole("button", { name: /^Delete game from/ }).click();
+        const deleting = page.getByRole("dialog", {
+          name: "Delete game?",
+          exact: true,
+        });
+        await expect(deleting).toBeVisible();
+        await expect(deleting).toHaveCSS("opacity", "1");
+        await expectNoAxeViolations(page);
+        await expectClearOfBadge(
+          deleting.getByRole("button", { name: "Delete game", exact: true }),
+          page,
+        );
+        await page.keyboard.press("Escape");
+        await expect(deleting).toBeHidden();
+      });
+    }
   });
 
   test("offline awards and corrections survive closing and reopening, then sync once to another device", async ({

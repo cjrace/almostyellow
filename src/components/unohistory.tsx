@@ -326,6 +326,7 @@ export default function UnoHistory() {
                     )}
                   </Text>
                   <Badge
+                    c={g.winner === "draw" ? "dimmed" : undefined}
                     variant={g.winner === "draw" ? "outline" : "filled"}
                     color={
                       g.winner === "draw"

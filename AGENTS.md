@@ -112,7 +112,7 @@ Any server action that reads private data or changes data must call `requireAuth
 
 The site aims for WCAG 2.2 AA. Every change to a page or component is checked against it before committing.
 
-- Every page is listed in `src/routes.ts`, which feeds the sitemap and the checks below. `tests/public/06_seo.spec.ts` fails if a `page.tsx` is missing from it.
+- `src/discover-routes.ts` discovers `src/app/**/page.tsx` for the static sitemap, accessibility and SEO tests, and Lighthouse. Route groups are removed, private folders are ignored and `/admin` stays out of the sitemap. Public dynamic, parallel or intercepting pages need an explicit discovery policy before they can be added. `src/routes.ts` only holds the browser-safe site URL.
 - Public pages use `pageMetadata(title, description)` from `src/metadata.ts`, so each has its own title, description, Open Graph tags and share image. The root layout sets the canonical URL, and `src/app/admin/layout.tsx` keeps admin pages out of search engines.
 - `tests/axe.ts` runs axe (the engine behind the axe DevTools extension) with the WCAG 2.2 AA tags. `tests/public-firestore/04_a11y.spec.ts` and `tests/admin/07_a11y.spec.ts` check every page in both colour schemes, in Chrome and Mobile Chrome. When you add a dialog, menu or other state that only appears after a click, add a test that opens it and calls `expectNoAxeViolations`.
 - `pnpm test:lighthouse` runs Lighthouse CI (`lighthouserc.cjs`) on every public page. Accessibility and SEO must score 100 and best practices 90; performance only warns. Reports are written to `.lighthouseci/`. Run it through the script, never `lhci` by hand, so the app reads from the emulators.

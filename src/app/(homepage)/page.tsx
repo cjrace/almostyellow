@@ -2,7 +2,6 @@ import { Group, Title, Space } from "@mantine/core";
 import {
   IconDeviceGamepad2,
   IconMoodPuzzled,
-  IconCheese,
   IconGlassCocktail,
   IconPaperclip,
   IconGlass,
@@ -59,16 +58,6 @@ export default function Home() {
             href="/decisionmaker"
           >
             How we make decisions
-          </ButtonLink>
-
-          <ButtonLink
-            leftSection={<IconCheese />}
-            variant="default"
-            size="xl"
-            classNames={{ root: home.button, label: home.label }}
-            href="/recipes"
-          >
-            Our recipes
           </ButtonLink>
 
           <ButtonLink

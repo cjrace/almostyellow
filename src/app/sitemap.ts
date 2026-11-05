@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
-import { publicRoutes, siteUrl } from "@/routes";
+import { siteUrl } from "@/routes";
+import { discoverRoutes } from "@/discover-routes";
+
+export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return publicRoutes.map(({ path, changeFrequency, priority }) => ({
+  return discoverRoutes().publicRoutes.map(({ path }) => ({
     url: `${siteUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency,
-    priority,
   }));
 }

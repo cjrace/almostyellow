@@ -9,12 +9,12 @@ The rules are in the "Accessibility and SEO" section of AGENTS.md. This is the r
 
 ## 1. Work out which pages the change affects
 
-Run `git diff main --name-only` and map each changed file to the routes that show it, using `src/routes.ts`.
+Run `git diff main --name-only` and map each changed file to the routes that show it, using the pages discovered by `src/discover-routes.ts`.
 
 - **Shared code means every page:** `src/app/layout.tsx`, `src/components/header.tsx`, anything in `src/styles/`, the theme, or a component used on several pages (search `src/` for its imports).
 - **One page means that page only:** a page, or a component only it uses. Include any states the change touches, such as a dialog, a form error or a game in progress.
 
-If the change adds a page, check that it is in `src/routes.ts` and that a public page uses `pageMetadata` from `src/metadata.ts`.
+If the change adds a page, check that discovery includes it and that a public page uses `pageMetadata` from `src/metadata.ts`. Discovery rejects public dynamic, parallel and intercepting pages until their URLs have an explicit policy.
 
 ## 2. Run the automated checks
 

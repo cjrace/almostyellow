@@ -33,7 +33,9 @@ export async function expectNoAxeViolations(page: Page, { soft = false } = {}) {
     // The confetti comes from a third-party script we cannot change
     .exclude("#confettipage-canvas")
     .exclude("body > canvas")
-    .exclude('a[href$="confettipage.com"]')
+    .exclude(
+      'a[href="https://confettipage.com"], a[href="https://confettipage.com/"]',
+    )
     .analyze();
   const problems = results.violations.flatMap((violation) =>
     violation.nodes.map(

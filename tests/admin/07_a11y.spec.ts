@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { test, expect } from "../playwright";
 import { expectNoAxeViolations, schemes, useScheme } from "../axe";
-import { adminRoutes } from "../../src/routes";
+import { discoverRoutes } from "../../src/discover-routes";
+const { adminRoutes } = discoverRoutes();
 import { films, whiskies } from "../firebase/fixtures";
 import { signIn } from "./helpers";
 
@@ -25,7 +26,14 @@ for (const scheme of schemes) {
       await expect(page.locator("h1")).toBeVisible();
       await expectNoAxeViolations(page, { soft: true });
 
+      await page
+        .getByPlaceholder("e.g. simply@thebest.co.uk")
+        .fill("missing@example.com");
+      await page.getByPlaceholder("Enter password").fill("invalid-password");
       await page.getByRole("button", { name: "Log in" }).click();
+      await expect(page.locator("main").getByRole("alert")).toHaveText(
+        "Invalid credentials.",
+      );
       await expectNoAxeViolations(page);
     });
 
@@ -40,6 +48,55 @@ for (const scheme of schemes) {
           await expectNoAxeViolations(page, { soft: true });
         });
       }
+    });
+
+    test("Deletion confirmations have named controls and return focus", async ({
+      page,
+    }) => {
+      await signIn(page);
+      for (const [route, button] of [
+        [`/admin/films/${films[0].id}/edit`, "Delete Film"],
+        [`/admin/whiskyjournal/${whiskies[0].id}/edit`, "Delete Whisky"],
+      ]) {
+        await page.goto(route);
+        const trigger = page.getByRole("button", { name: button, exact: true });
+        await trigger.focus();
+        await page.keyboard.press("Enter");
+        const dialog = page.getByRole("dialog", { name: "Confirm Deletion" });
+        await expect(dialog).toBeVisible();
+        await expect(
+          dialog.getByRole("button", { name: "Close deletion confirmation" }),
+        ).toBeVisible();
+        await expectNoAxeViolations(page);
+        await page.keyboard.press("Escape");
+        await expect(dialog).toBeHidden();
+        await expect(trigger).toBeFocused();
+      }
+    });
+
+    test("Shopping list add dialog meets WCAG 2.2 AA with an input error", async ({
+      page,
+    }) => {
+      await signIn(page);
+      await page.goto("/admin/chopinliszt");
+      const trigger = page.getByRole("button", { name: "Add new item(s)" });
+      await trigger.click();
+      await expect(
+        page.getByRole("dialog", { name: "Add new items" }),
+      ).toBeVisible();
+      await expectNoAxeViolations(page);
+      await page
+        .getByPlaceholder("Add new items, one per line...")
+        .fill("x".repeat(501));
+      await page
+        .getByRole("button", { name: "Add item(s) and close modal" })
+        .click();
+      await expect(
+        page.getByText(/Each item must be .* characters or fewer/),
+      ).toBeVisible();
+      await expectNoAxeViolations(page);
+      await page.keyboard.press("Escape");
+      await expect(trigger).toBeFocused();
     });
   });
 }
@@ -56,7 +113,9 @@ test("Keyboard focus stays in the shopping list", async ({ page }) => {
   await page
     .getByPlaceholder("Add new items, one per line...")
     .fill(`${first}\n${second}`);
-  await page.getByRole("button", { name: "Add items and close modal" }).click();
+  await page
+    .getByRole("button", { name: "Add item(s) and close modal" })
+    .click();
 
   const box = page.getByRole("checkbox", { name: first });
   await box.focus();
