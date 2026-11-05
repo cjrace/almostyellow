@@ -106,7 +106,12 @@ export const WhiskyCard: React.FC<Whisky> = ({
 
       <Group justify="space-between">
         <Title order={3}>Tasting notes</Title>
-        <Text>Last edited: {last_edited.toLocaleDateString()}</Text>
+        <Text>
+          Last edited:{" "}
+          {last_edited.toLocaleDateString("en-GB", {
+            timeZone: "Europe/London",
+          })}
+        </Text>
       </Group>
 
       <Text>{notes}</Text>

@@ -42,7 +42,7 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 ## PR screenshots
 
-When a PR changes how a page looks, include before and after screenshots of each affected page at both desktop and mobile sizes in its description. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check both layouts even when the change is aimed at only one of them.
+For visual changes, include representative before and after screenshot pairs in the PR description. Choose pages, states and viewport sizes that show the distinct changes; separate pairs for every affected page at both desktop and mobile sizes are optional. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check all affected pages at both desktop and mobile sizes, even when only one layout needs screenshots.
 
 Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 

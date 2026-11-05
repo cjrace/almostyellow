@@ -26,6 +26,15 @@ async function openTab(page: Page, name: "Tracker" | "Statistics" | "History") {
     .getByRole("radiogroup", { name: "Uno pages" })
     .getByText(name, { exact: true })
     .click();
+  await page.waitForURL(
+    {
+      Tracker: "/games/uno-tracker",
+      Statistics: "/games/uno-tracker/stats",
+      History: "/games/uno-tracker/history",
+    }[name],
+  );
+  // These tabs load a new document, so its header must hydrate before a click.
+  await page.locator("html[data-hydrated]").waitFor({ state: "attached" });
 }
 async function start(page: Page) {
   await page.getByRole("button", { name: "Start new game" }).click();

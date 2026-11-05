@@ -44,8 +44,11 @@ async function confettiPage() {
 export default function playConfetti() {
   // Confetti is only decoration, so skip it for anyone who has asked for less
   // motion
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (reducedMotion.matches) return;
   confettiPage()
-    .then((page) => page?.play())
+    .then((page) => {
+      if (!reducedMotion.matches) page?.play();
+    })
     .catch(() => undefined);
 }

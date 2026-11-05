@@ -3,6 +3,28 @@ import fs from "fs";
 import { whiskies } from "../firebase/fixtures";
 
 test.describe("A visitor to the whisky journal", () => {
+  for (const [locale, timezoneId] of [
+    ["en-US", "America/Los_Angeles"],
+    ["ja-JP", "Pacific/Kiritimati"],
+  ]) {
+    test.describe(`${locale} in ${timezoneId}`, () => {
+      test.use({ locale, timezoneId });
+
+      test("sees the same UK dates before and after hydration", async ({
+        page,
+      }) => {
+        const errors: string[] = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        const response = await page.goto("/whiskyjournal");
+        expect(await response?.text()).toContain("24/11/2024");
+        await expect(
+          page.getByText("Last edited: 24/11/2024", { exact: true }),
+        ).toHaveCount(whiskies.length);
+        expect(errors).toEqual([]);
+      });
+    });
+  }
+
   test("sees the journal and can filter it by distillery", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Cam's whisky journal" }).click();

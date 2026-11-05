@@ -1,4 +1,4 @@
-import { test, expect } from "../playwright";
+import { test, expect, type Route } from "../playwright";
 import {
   confettiBadge,
   expectClearOfBadge,
@@ -30,6 +30,53 @@ test("Confetti only loads when asked for", async ({ page }) => {
 });
 
 test.describe("A visitor using confetti", () => {
+  test("honours reduced motion enabled while the script downloads", async ({
+    page,
+  }) => {
+    const requested = Promise.withResolvers<Route>();
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.route("https://run.confettipage.com/**", (route) => {
+      requested.resolve(route);
+    });
+    await page.goto("/games");
+    await page.getByRole("button", { name: "Unleash confetti" }).click();
+    const route = await requested.promise;
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.evaluate(() => {
+      const script = document.querySelector(
+        'script[src="https://run.confettipage.com/here.js"]',
+      );
+      if (!script) throw new Error("The confetti download did not start.");
+      // Wait past the load handler and its promises before checking playback.
+      script.addEventListener("load", () => {
+        requestAnimationFrame(() => {
+          document.documentElement.dataset.confettiLoaded = "true";
+        });
+      });
+    });
+    await route.fulfill({
+      contentType: "application/javascript",
+      body: `window.ConfettiPage = { play() {
+        document.documentElement.dataset.confettiPlayed = 'true';
+      }};`,
+    });
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-confetti-loaded",
+      "true",
+    );
+    await expect(page.locator("html")).not.toHaveAttribute(
+      "data-confetti-played",
+    );
+
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.getByRole("button", { name: "Unleash confetti" }).click();
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-confetti-played",
+      "true",
+    );
+  });
+
   test("only gets clearance while a badge exists, including after resizing and navigation", async ({
     page,
   }) => {
