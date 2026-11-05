@@ -12,7 +12,6 @@ import {
   result,
   ScoreEventSchema,
   type Board,
-  type EventHistory,
   type Game,
   type Lease,
   type UnoState,
@@ -58,25 +57,6 @@ export async function readUnoState(): Promise<UnoState> {
 export async function readUnoVersion(): Promise<number> {
   const board = await boardRef().get();
   return board.exists ? (board.get("version") as number) : 0;
-}
-
-export async function readUnoHistory(gameId: string): Promise<EventHistory[]> {
-  Id.parse(gameId);
-  const events = await gameRef(gameId)
-    .collection("events")
-    .orderBy("receivedAt")
-    .get();
-  // Account identifiers and scoring leases are never part of the public response.
-  return events.docs.map((doc) => {
-    const data = doc.data() as EventHistory;
-    return {
-      id: doc.id,
-      player: data.player,
-      delta: data.delta,
-      createdAt: data.createdAt,
-      receivedAt: doc.get("receivedAt") as number,
-    };
-  });
 }
 
 export async function startUnoGame(): Promise<UnoState> {

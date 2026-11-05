@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActionIcon,
   Alert,
@@ -17,7 +17,6 @@ import {
   Title,
 } from "@mantine/core";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
-import { readUnoHistory } from "@/services/uno";
 import { UnoHeader, UnoOfflineShell } from "@/components/unotracker";
 import {
   compareGames,
@@ -25,7 +24,6 @@ import {
   HistoricGameSchema,
   names,
   statistics,
-  type EventHistory,
   type Game,
 } from "@/uno/model";
 import { useUno } from "@/uno/useUno";
@@ -52,17 +50,7 @@ export default function UnoHistory() {
   const [notes, setNotes] = useState("");
   const [winnerFilter, setWinnerFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
-  const [selected, setSelected] = useState<Game | null>(null);
-  const [events, setEvents] = useState<EventHistory[] | null>(null);
-  const [historyError, setHistoryError] = useState("");
   const entryIdRef = useRef<string | null>(null);
-  const historyRequestRef = useRef(0);
-  useEffect(
-    () => () => {
-      historyRequestRef.current++;
-    },
-    [],
-  );
   const summary = uno.state ? statistics(uno.state) : null;
   const games =
     summary?.games
@@ -144,27 +132,6 @@ export default function UnoHistory() {
       );
     } finally {
       setSaving(false);
-    }
-  }
-  async function openHistory(game: Game) {
-    const request = ++historyRequestRef.current;
-    setSelected(game);
-    setEvents(null);
-    setHistoryError("");
-    if (!uno.online) {
-      setHistoryError(
-        "Reconnect to inspect the scoring history. Saved game totals are shown above.",
-      );
-      return;
-    }
-    try {
-      const history = await readUnoHistory(game.id);
-      if (request === historyRequestRef.current) setEvents(history);
-    } catch {
-      if (request !== historyRequestRef.current) return;
-      setHistoryError(
-        "Could not load scoring history. Close this window and try again.",
-      );
     }
   }
   return (
@@ -387,24 +354,11 @@ export default function UnoHistory() {
                     Result amended after offline rounds synced.
                   </Text>
                 )}
-                <div className={styles.entryFoot}>
-                  <Text size="sm" c="dimmed">
-                    <span className={styles.nowrap}>{g.rounds} rounds</span>
-                    {" · "}
-                    <span className={styles.nowrap}>
-                      {g.margin} point margin
-                    </span>
-                  </Text>
-                  <Button
-                    variant="subtle"
-                    size="compact-sm"
-                    onClick={() => {
-                      void openHistory(g);
-                    }}
-                  >
-                    Scoring history
-                  </Button>
-                </div>
+                <Text size="sm" c="dimmed">
+                  <span className={styles.nowrap}>{g.rounds} rounds</span>
+                  {" · "}
+                  <span className={styles.nowrap}>{g.margin} point margin</span>
+                </Text>
               </Paper>
             ))}
             {!games.length && (
@@ -427,11 +381,8 @@ export default function UnoHistory() {
             <Text fw={700}>{gameDescription(deleting)}</Text>
             <Text size="sm" mt="xs">
               This removes the game from the history and statistics, and takes
-              its round wins off the lifetime totals.
-              {deleting.source === "live"
-                ? " Its scoring history is deleted too."
-                : ""}{" "}
-              It cannot be undone, but you can add it again as a historic game.
+              its round wins off the lifetime totals. It cannot be undone, but
+              you can add it again as a historic game.
             </Text>
             {deleteError && (
               <Alert color="orange" role="alert" mt="sm">
@@ -459,46 +410,6 @@ export default function UnoHistory() {
                 Delete game
               </Button>
             </Group>
-          </>
-        )}
-      </Modal>
-      <Modal
-        opened={!!selected}
-        onClose={() => {
-          historyRequestRef.current++;
-          setSelected(null);
-        }}
-        title="Scoring history"
-        closeButtonProps={{ "aria-label": "Close scoring history" }}
-        centered
-      >
-        {selected && (
-          <>
-            <Text fw={700}>{gameDescription(selected)}</Text>
-            {selected.notes && <Text>{selected.notes}</Text>}
-            {historyError ? (
-              <Alert color="orange">{historyError}</Alert>
-            ) : events === null ? (
-              <Text>Loading rounds…</Text>
-            ) : !events.length ? (
-              <Text>
-                {selected.source === "historic"
-                  ? "Historic totals were entered together; individual rounds were not recorded."
-                  : "No rounds recorded."}
-              </Text>
-            ) : (
-              <ol>
-                {events.map((e) => (
-                  <li key={e.id}>
-                    {names[e.player]} {e.delta > 0 ? "+1" : "−1"} ·{" "}
-                    {new Date(e.createdAt).toLocaleString("en-GB")}
-                    <Text size="xs">
-                      Synced {new Date(e.receivedAt).toLocaleString("en-GB")}
-                    </Text>
-                  </li>
-                ))}
-              </ol>
-            )}
           </>
         )}
       </Modal>

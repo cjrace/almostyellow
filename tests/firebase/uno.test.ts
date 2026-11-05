@@ -14,7 +14,6 @@ const {
   finishUnoGame,
   readUnoState,
   readUnoVersion,
-  readUnoHistory,
   addHistoricUnoGame,
   deleteUnoGame,
   updateHistoricUnoGame,
@@ -66,10 +65,16 @@ describe("Uno scoring transactions", () => {
       rounds: 2,
       winner: "draw",
     });
-    const history = await readUnoHistory(gameId);
-    expect(history).toHaveLength(4);
-    expect(history[0]).not.toHaveProperty("accountId");
-    expect(history[0]).not.toHaveProperty("leaseId");
+    const recorded = await adminDb()
+      .doc(`unoGames/${gameId}`)
+      .collection("events")
+      .get();
+    expect(recorded.size).toBe(4);
+    for (const event of events) {
+      expect(
+        recorded.docs.find((doc) => doc.id === event.id)?.data(),
+      ).toMatchObject(event);
+    }
   });
   test("preserves concurrent points from separate authorised accounts", async () => {
     const { gameId, event } = await setup();
