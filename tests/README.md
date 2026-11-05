@@ -76,3 +76,7 @@ Unit and Firebase tests describe the code rather than a person (`describe("signI
 The Vitest configs set `isolate: false`, so test files that run in the same worker share imported modules instead of loading them again. That is much faster, but a module that keeps state (a cached Firebase app or Firestore instance, a channel, a list filled at import time) keeps it from one file to the next. `src/firebase/client.ts` and `src/uno/browser.ts` do this today, and no test imports them. The Admin SDK app in `src/firebase/admin.ts` is shared too, which is safe because every Firebase test uses the same demo project.
 
 If you write a test that imports a module like that, or one that changes `process.env`, either put things back in an `afterEach` or set `isolate: true` in that Vitest config. A sign something is leaking is a test that fails only in the full run. To check, run `pnpm exec vitest run --sequence.shuffle` a few times, which mixes up the order of files and tests.
+
+## Quiz buzzer
+
+`unit/buzzer.test.ts` checks timestamp ordering. `firebase/buzzer.test.ts` exercises room transactions, concurrent players and Security Rules. `public/09_buzzer.spec.ts` runs separate host and guest browser contexts against synthetic users. See `docs/buzzer.md` for deployment and real-device performance checks.

@@ -27,10 +27,17 @@ export default function Games() {
         <Title>Our games</Title>
 
         <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
+          cols={{ base: 1, sm: 2, lg: 4 }}
           spacing="lg"
           style={{ flex: "1 1 0", gridAutoRows: "minmax(min-content, 1fr)" }}
         >
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Quiz buzzer"
+            description="Join a room and buzz in with friends."
+            link="/games/buzzer"
+            linktext="Quiz buzzer"
+          />
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Irish Bingo"

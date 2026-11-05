@@ -14,12 +14,12 @@ for (const viewport of [
   test.describe(`A visitor with a ${viewport.width.toString()} by ${viewport.height.toString()} desktop window`, () => {
     test.use({ viewport });
 
-    test("sees all six games and their Play buttons without scrolling", async ({
+    test("sees all seven games and their Play buttons without scrolling", async ({
       page,
     }) => {
       await page.goto("/games");
       const play = page.getByRole("link", { name: /^Play / });
-      await expect(play).toHaveCount(6);
+      await expect(play).toHaveCount(7);
       for (const button of await play.all()) {
         await expect(button).toBeInViewport({ ratio: 1 });
       }
@@ -64,7 +64,7 @@ test.describe("A visitor with a short desktop window", () => {
     await page.goto("/games");
     expect(await pageScrolls(page)).toBe(true);
     const play = page.getByRole("link", { name: /^Play / });
-    await expect(play).toHaveCount(6);
+    await expect(play).toHaveCount(7);
     for (const button of await play.all()) {
       await button.scrollIntoViewIfNeeded();
       await expect(button).toBeInViewport({ ratio: 1 });

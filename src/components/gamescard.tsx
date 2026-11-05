@@ -31,7 +31,7 @@ export default function GamesCard({
     >
       <Center
         h={{ base: "9rem", lg: "auto" }}
-        mih="4rem"
+        mih={{ base: "4rem", lg: "2rem" }}
         flex={{ lg: "1 1 0" }}
         style={{ containerType: "size" }}
       >
