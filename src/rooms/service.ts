@@ -15,6 +15,9 @@ function transaction<T>(operation: (tx: Transaction) => Promise<T>) {
 
 const id = z.uuid();
 const codeSchema = z.string().regex(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
+export const joinInputSchema = z
+  .object({ code: codeSchema, name: z.string().trim().min(1).max(30) })
+  .strict();
 export const commandSchema = z.object({
   code: codeSchema,
   commandId: id,
@@ -192,17 +195,14 @@ export async function joinRoom(
     return { playerId };
   });
 }
-export async function joinGuestRoom(input: unknown) {
-  const data = z
-    .object({
-      code: codeSchema,
-      name: z.string().trim().min(1).max(30),
-      secret: z.string().regex(/^[a-f0-9]{64}$/),
-    })
-    .strict()
-    .parse(input);
-  // The random browser key is a credential. Store only its room-specific hash.
-  const uid = `buzzer-${key(`${data.code}:${data.secret}`)}`;
+export async function joinGuestRoom(input: unknown, secret: string) {
+  const data = joinInputSchema.parse(input);
+  z.string()
+    .regex(/^[a-f0-9]{64}$/)
+    .parse(secret);
+  // Store only a room-specific hash. The prefix retires local-storage keys
+  // from the previous flow, even if someone copies one into a cookie.
+  const uid = `buzzer-${key(`cookie:${data.code}:${secret}`)}`;
   const membership = await joinRoom(uid, data, true);
   // Membership must succeed before any Auth record is created. A retry uses
   // the same UID if either the response or the token exchange was lost.

@@ -1,8 +1,10 @@
+import { randomBytes } from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
 import { adminAuth } from "@/firebase/admin";
-import { joinGuestRoom, playerCommand } from "@/rooms/service";
+import { joinGuestRoom, joinInputSchema, playerCommand } from "@/rooms/service";
 import { RoomError } from "@/buzzer/model";
 import { z } from "zod";
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   if (request.headers.get("origin") !== new URL(request.url).origin)
     return Response.json(
       { error: "forbidden", message: "Use this website to join." },
@@ -12,10 +14,35 @@ export async function POST(request: Request) {
     const { action, input } = z
       .object({ action: z.enum(["join", "leave", "buzz"]), input: z.unknown() })
       .parse(await request.json());
-    if (action === "join")
-      return Response.json(await joinGuestRoom(input), {
+    if (action === "join") {
+      const data = joinInputSchema.parse(input);
+      const cookieName = `buzzer-guest-${data.code}`;
+      const secret = request.cookies.get(cookieName)?.value;
+      if (!secret || !/^[a-f0-9]{64}$/.test(secret)) {
+        // Confirm that the browser keeps the credential before allocating a
+        // seat. Retrying the join then needs no key in JavaScript or its body.
+        const response = NextResponse.json(
+          { retry: true },
+          {
+            headers: { "Cache-Control": "no-store" },
+          },
+        );
+        const local = ["localhost", "127.0.0.1", "[::1]"].includes(
+          request.nextUrl.hostname,
+        );
+        response.cookies.set(cookieName, randomBytes(32).toString("hex"), {
+          httpOnly: true,
+          secure: !local,
+          sameSite: "strict",
+          path: "/api/buzzer",
+          maxAge: 6 * 60 * 60,
+        });
+        return response;
+      }
+      return Response.json(await joinGuestRoom(data, secret), {
         headers: { "Cache-Control": "no-store" },
       });
+    }
     const token = request.headers
       .get("authorization")
       ?.match(/^Bearer (.+)$/)?.[1];

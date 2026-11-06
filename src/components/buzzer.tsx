@@ -25,6 +25,7 @@ import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import { createBuzzer, controlBuzzer } from "@/actions/buzzer";
 import {
   guestClient,
+  clearLegacyGuestKeys,
   joinGuest,
   reconcile,
   send,
@@ -79,6 +80,11 @@ export default function Buzzer({
     // Restoring a host's room must not depend on player sign-in.
     queueMicrotask(() => {
       if (!alive) return;
+      try {
+        clearLegacyGuestKeys();
+      } catch {
+        // A storage restriction must not prevent restoring a host's room.
+      }
       try {
         const saved = sessionStorage.getItem("buzzer-room");
         if (saved) {

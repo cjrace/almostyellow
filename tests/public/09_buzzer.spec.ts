@@ -2,6 +2,64 @@ import { test, expect, waitsForHydration } from "../playwright";
 import { users } from "../firebase/fixtures";
 import { expectNoUnexpectedAxeViolations, useScheme } from "../axe";
 test.describe("Quiz host and guests", () => {
+  test("removes legacy recovery keys and asks existing guests to rejoin", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("buzzer-key-ABC234", "a".repeat(64));
+      localStorage.setItem("buzzer-test-preference", "keep");
+      sessionStorage.setItem(
+        "buzzer-room",
+        JSON.stringify({
+          code: "ABC234",
+          playerId: "old-seat",
+          hosting: false,
+        }),
+      );
+    });
+    await page.goto("/games/buzzer");
+    await expect(page.getByRole("main").getByRole("alert")).toContainText(
+      "Join the room again",
+    );
+    await expect(
+      page.getByRole("button", { name: "Join room", exact: true }),
+    ).toBeEnabled();
+    await expect(page.getByLabel("Room code", { exact: true })).toHaveValue(
+      "ABC234",
+    );
+    expect(
+      await page.evaluate(() => localStorage.getItem("buzzer-key-ABC234")),
+    ).toBeNull();
+    expect(
+      await page.evaluate(() => localStorage.getItem("buzzer-test-preference")),
+    ).toBe("keep");
+  });
+  test("explains blocked cookies after two attempts and sends no recovery key in the body", async ({
+    page,
+  }) => {
+    const inputs: unknown[] = [];
+    await page.route("**/api/buzzer", (route) => {
+      inputs.push((route.request().postDataJSON() as { input: unknown }).input);
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ retry: true }),
+      });
+    });
+    await page.goto("/games/buzzer?room=ABC234");
+    await page.getByLabel("Your name", { exact: true }).fill("Cam");
+    await page.getByRole("button", { name: "Join room", exact: true }).click();
+    await expect(page.getByRole("main").getByRole("alert")).toContainText(
+      "Allow cookies for this website",
+    );
+    expect(inputs).toEqual([
+      { code: "ABC234", name: "Cam" },
+      { code: "ABC234", name: "Cam" },
+    ]);
+    await expect(
+      page.getByRole("button", { name: "Join room", exact: true }),
+    ).toBeEnabled();
+  });
   test("a signed-in host can create, restore and control a room when player sign-in fails", async ({
     page,
   }, testInfo) => {
@@ -123,11 +181,18 @@ test.describe("Quiz host and guests", () => {
   test("join, buzz, refresh, reset and remove a player", async ({
     page,
     browser,
+    browserName,
   }, testInfo) => {
     test.setTimeout(90000);
     if (testInfo.project.name === "Google Chrome")
       await useScheme(page, "dark");
     const guestName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
+    // Windows WebKit reports None even for Strict cookies. Check the response
+    // header as well; Playwright's browsercontext-cookies tests cover this limit.
+    const storedSameSite =
+      browserName === "webkit" && process.platform === "win32"
+        ? "None"
+        : "Strict";
     let signUps = 0;
     await page.context().route(
       (url) => url.pathname.endsWith("/accounts:signUp"),
@@ -188,12 +253,34 @@ test.describe("Quiz host and guests", () => {
     try {
       await guest.goto(`/games/buzzer?room=${code}`);
       await guest.getByLabel("Your name", { exact: true }).fill(guestName);
+      const cookieResponse = guest.waitForResponse(
+        (response) => new URL(response.url()).pathname === "/api/buzzer",
+      );
       await guest
         .getByRole("button", { name: "Join room", exact: true })
         .click();
       await expect(
         guest.getByRole("heading", { name: "Players (2/20)" }),
       ).toBeVisible();
+      expect(await (await cookieResponse).headerValue("set-cookie")).toContain(
+        "SameSite=strict",
+      );
+      const roomCookie = (await context.cookies()).find(
+        (cookie) => cookie.name === `buzzer-guest-${code}`,
+      );
+      expect(roomCookie).toMatchObject({
+        httpOnly: true,
+        sameSite: storedSameSite,
+        secure: false,
+        path: "/api/buzzer",
+      });
+      expect(
+        await guest.evaluate(() =>
+          Object.keys(localStorage).filter((key) =>
+            key.startsWith("buzzer-key-"),
+          ),
+        ),
+      ).toEqual([]);
       await test.step("When the host opens buzzing and the guest presses Space", async () => {
         await page
           .getByRole("button", { name: "Open buzzing", exact: true })
@@ -270,6 +357,15 @@ test.describe("Quiz host and guests", () => {
           await expect(
             otherGuest.getByRole("heading", { name: "Players (1/20)" }),
           ).toBeVisible();
+          const otherCookie = (await context.cookies()).find(
+            (cookie) => cookie.name === `buzzer-guest-${otherCode}`,
+          );
+          expect(otherCookie).toMatchObject({
+            httpOnly: true,
+            sameSite: storedSameSite,
+            path: "/api/buzzer",
+          });
+          expect(otherCookie?.value).not.toBe(roomCookie?.value);
           await otherGuest.reload();
           await expect(
             otherGuest.getByRole("heading", { name: "Players (1/20)" }),

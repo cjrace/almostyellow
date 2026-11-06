@@ -23,7 +23,7 @@ import { playerSignInError } from "./errors";
 async function initialiseGuest(config: FirebaseClientConfig, code: string) {
   if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))
     throw new Error("Check the room code.");
-  const appName = `room-guests-${code}`;
+  const appName = `room-guests-cookie-${code}`;
   let app = getApps().find((app) => app.name === appName);
   if (!app) {
     app = initializeApp(config, appName);
@@ -53,38 +53,42 @@ export function guestClient(config: FirebaseClientConfig, code: string) {
   pending.set(code, result);
   return result;
 }
+export function clearLegacyGuestKeys() {
+  for (const storageKey of Object.keys(localStorage)) {
+    if (/^buzzer-key-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(storageKey))
+      localStorage.removeItem(storageKey);
+  }
+}
 export async function joinGuest(
   config: FirebaseClientConfig,
   code: string,
   name: string,
 ) {
   const client = await guestClient(config, code);
-  let secret: string;
-  try {
-    const storageKey = `buzzer-key-${code}`;
-    const saved = localStorage.getItem(storageKey);
-    secret =
-      saved ??
-      Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
-        byte.toString(16).padStart(2, "0"),
-      ).join("");
-    localStorage.setItem(storageKey, secret);
-  } catch {
-    throw new Error(
-      "Could not save your player identity. Allow browser storage and try again.",
-    );
-  }
-  const response = await fetch("/api/buzzer", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "join", input: { code, name, secret } }),
-    signal: AbortSignal.timeout(10000),
-  });
-  const result = (await response.json()) as {
+  const request = () =>
+    fetch("/api/buzzer", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "join", input: { code, name } }),
+      signal: AbortSignal.timeout(10000),
+    });
+  interface Result {
+    retry?: boolean;
     token: string;
     playerId: string;
     message?: string;
-  };
+  }
+  let response = await request();
+  let result = (await response.json()) as Result;
+  if (response.ok && result.retry) {
+    response = await request();
+    result = (await response.json()) as Result;
+    if (response.ok && result.retry)
+      throw new Error(
+        "Player sign-in needs cookies. Allow cookies for this website and try again.",
+      );
+  }
   if (!response.ok)
     throw new Error(result.message ?? "Could not join the room. Try again.");
   try {

@@ -1,4 +1,5 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
+import { NextRequest } from "next/server";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import {
   afterAll,
@@ -31,7 +32,7 @@ import {
   createRoom,
   hostCommand,
   joinRoom,
-  joinGuestRoom,
+  joinGuestRoom as provisionGuest,
   playerCommand,
 } from "@/rooms/service";
 import type { RoomView } from "@/buzzer/model";
@@ -53,6 +54,15 @@ beforeEach(async () => {
   await resetAndSeed();
 });
 const owner = users.alice.uid;
+function joinGuestRoom(input: {
+  code: string;
+  name: string;
+  secret: string;
+  uid?: string;
+}) {
+  const { secret, ...data } = input;
+  return provisionGuest(data, secret);
+}
 async function state(code: string) {
   return (await adminDb().doc(`gameRooms/${code}`).get()).data() as RoomView;
 }
@@ -68,7 +78,7 @@ async function command(code: string) {
 describe("Quiz rooms and concurrent players", () => {
   test("guest endpoints refuse missing credentials and cross-origin requests", async () => {
     const request = (origin: string) =>
-      new Request("http://localhost/api/buzzer", {
+      new NextRequest("http://localhost/api/buzzer", {
         method: "POST",
         headers: { origin, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,6 +88,91 @@ describe("Quiz rooms and concurrent players", () => {
       });
     expect((await POST(request("https://elsewhere.example"))).status).toBe(403);
     expect((await POST(request("http://localhost"))).status).toBe(401);
+  });
+  test("room cookies are HttpOnly, host-only, restricted to the API and confirmed before allocating guests", async () => {
+    const code = await createRoom(owner, randomUUID());
+    const before = (await adminAuth().listUsers()).users.length;
+    const request = (
+      origin: string,
+      cookie?: string,
+      input: unknown = { code, name: "Cam" },
+    ) =>
+      new NextRequest(`${origin}/api/buzzer`, {
+        method: "POST",
+        headers: {
+          origin,
+          "Content-Type": "application/json",
+          ...(cookie ? { cookie } : {}),
+        },
+        body: JSON.stringify({ action: "join", input }),
+      });
+    const first = await POST(request("https://example.test"));
+    expect(await first.json()).toEqual({ retry: true });
+    const header = first.headers.get("set-cookie") ?? "";
+    expect(header).toMatch(new RegExp(`^buzzer-guest-${code}=[a-f0-9]{64};`));
+    expect(header).toContain("HttpOnly");
+    expect(header).toContain("Secure");
+    expect(header).toContain("SameSite=strict");
+    expect(header).toContain("Path=/api/buzzer");
+    expect(header).toContain("Max-Age=21600");
+    expect(header).not.toContain("Domain=");
+    expect(first.headers.get("cache-control")).toBe("no-store");
+    expect((await state(code)).players).toHaveLength(0);
+    expect((await adminAuth().listUsers()).users).toHaveLength(before);
+    const cookie = header.split(";")[0];
+    const accepted = await POST(request("https://example.test", cookie));
+    expect(accepted.status).toBe(200);
+    const membership = (await accepted.json()) as {
+      playerId: string;
+      token: string;
+    };
+    expect(membership).not.toHaveProperty("secret");
+    const retry = await POST(request("https://example.test", cookie));
+    expect(((await retry.json()) as { playerId: string }).playerId).toBe(
+      membership.playerId,
+    );
+    expect((await state(code)).players).toHaveLength(1);
+    expect((await adminAuth().listUsers()).users).toHaveLength(before + 1);
+    const otherCode = await createRoom(owner, randomUUID());
+    const other = await POST(
+      request("https://example.test", cookie, {
+        code: otherCode,
+        name: "Laura",
+      }),
+    );
+    expect(await other.json()).toEqual({ retry: true });
+    expect(other.headers.get("set-cookie")).toMatch(
+      new RegExp(`^buzzer-guest-${otherCode}=`),
+    );
+    expect((await state(otherCode)).players).toHaveLength(0);
+    const forged = await POST(
+      request("https://example.test", undefined, {
+        code,
+        name: "Laura",
+        secret: "a".repeat(64),
+      }),
+    );
+    expect(forged.status).toBe(400);
+    expect(forged.headers.has("set-cookie")).toBe(false);
+    const local = await POST(request("http://localhost"));
+    expect(local.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(local.headers.get("set-cookie")).not.toContain("Secure");
+  });
+  test("cookie credentials cannot recover a legacy local-storage identity", async () => {
+    const code = await createRoom(owner, randomUUID());
+    const secret = "a".repeat(64);
+    const legacyUid = `buzzer-${createHash("sha256").update(`${code}:${secret}`).digest("hex")}`;
+    await adminAuth().createUser({ uid: legacyUid });
+    const legacy = await joinRoom(legacyUid, { code, name: "Legacy" }, true);
+    const current = await joinGuestRoom({ code, name: "Cam", secret });
+    const uid = (
+      JSON.parse(
+        Buffer.from(current.token.split(".")[1], "base64url").toString(),
+      ) as { uid: string }
+    ).uid;
+    expect(uid).not.toBe(legacyUid);
+    expect(current.playerId).not.toBe(legacy.playerId);
+    expect((await state(code)).players).toHaveLength(2);
   });
   test("server guests are created only for accepted memberships and retries recover the same seat", async () => {
     const before = (await adminAuth().listUsers()).users.length;
@@ -134,7 +229,7 @@ describe("Quiz rooms and concurrent players", () => {
       ),
     );
     const wrongRoom = await POST(
-      new Request("http://localhost/api/buzzer", {
+      new NextRequest("http://localhost/api/buzzer", {
         method: "POST",
         headers: {
           origin: "http://localhost",
