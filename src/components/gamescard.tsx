@@ -58,7 +58,7 @@ export default function GamesCard({
                 {title}
               </Text>
               {experimental && (
-                <Badge variant="outline" size="sm">
+                <Badge variant="default" size="sm">
                   Experimental
                 </Badge>
               )}
