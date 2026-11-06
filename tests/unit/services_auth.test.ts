@@ -37,6 +37,7 @@ function databaseUsed() {
 
 import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import { createBuzzer, controlBuzzer } from "@/actions/buzzer";
+import { createUnoRoom, controlUno } from "@/actions/unoroom";
 import * as uno from "@/services/uno";
 import * as filmlist from "@/services/filmlist";
 import * as whiskyjournal from "@/services/whiskyjournal";
@@ -143,6 +144,8 @@ describe("Uno authentication", () => {
   it.each([
     ["createBuzzer", () => createBuzzer(fakeId)],
     ["controlBuzzer", () => controlBuzzer("reset", {})],
+    ["createUnoRoom", () => createUnoRoom(fakeId)],
+    ["controlUno", () => controlUno("start", {})],
     ["startUnoGame", () => uno.startUnoGame()],
     ["openUnoScoring", () => uno.openUnoScoring(fakeId)],
     ["syncUnoEvents", () => uno.syncUnoEvents([])],
