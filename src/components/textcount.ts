@@ -53,7 +53,7 @@ export function countCodeUnits(text: string): number {
 export const countingMethods = [
   {
     value: "unicode",
-    label: "Unicode-aware (recommended)",
+    label: "Unicode-aware",
     name: "Unicode-aware",
     needsSegmenter: true,
     words: countUnicodeWords,

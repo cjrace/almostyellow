@@ -59,7 +59,7 @@ export default function CountingMethodInfo({
         </Table>
         <Stack gap="xs">
           <Title order={3} size="h5">
-            Unicode-aware (recommended)
+            Unicode-aware
           </Title>
           <Text>
             Recognises individual words within &quot;mother-in-law&quot;,
