@@ -31,7 +31,6 @@ import { firestoreTokenAction } from "@/actions/firestoreTokenAction";
 import { createBuzzer, controlBuzzer } from "@/actions/buzzer";
 import {
   guestClient,
-  clearLegacyGuestKeys,
   joinGuest,
   reconcile,
   send,
@@ -93,11 +92,6 @@ export default function Buzzer({
     // Restoring a host's room must not depend on player sign-in.
     queueMicrotask(() => {
       if (!alive) return;
-      try {
-        clearLegacyGuestKeys();
-      } catch {
-        // A storage restriction must not prevent restoring a host's room.
-      }
       try {
         const saved = sessionStorage.getItem("buzzer-room");
         if (saved) {
@@ -496,7 +490,7 @@ export default function Buzzer({
                   autoCorrect="off"
                   spellCheck={false}
                   value={code}
-                  maxLength={6}
+                  maxLength={4}
                   onChange={(event) => {
                     setCode(
                       event.currentTarget.value
@@ -593,6 +587,10 @@ export default function Buzzer({
                 aria-disabled={!canBuzz}
                 aria-keyshortcuts="Space"
                 data-pressed={pressed || buzzing || ownBuzz || undefined}
+                data-unavailable={
+                  (!ownBuzz && !buzzing && (!online || cached || uncertain)) ||
+                  undefined
+                }
                 onPointerDown={() => {
                   if (canBuzz) setPressed(true);
                 }}
@@ -786,23 +784,25 @@ export default function Buzzer({
           returnFocus={false}
           closeButtonProps={{ "aria-label": "Cancel ending the room" }}
         >
-          <Text>Everyone will lose access to gameplay.</Text>
-          <Button
-            autoContrast
-            color="red.9"
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                await control("end");
-                setEnding(false);
-                requestAnimationFrame(() => {
-                  leaveRef.current?.focus();
-                });
-              })
-            }
-          >
-            End room
-          </Button>
+          <Stack gap="md" align="flex-start" pt="xs">
+            <Text>Everyone will lose access to gameplay.</Text>
+            <Button
+              autoContrast
+              color="red.9"
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  await control("end");
+                  setEnding(false);
+                  requestAnimationFrame(() => {
+                    leaveRef.current?.focus();
+                  });
+                })
+              }
+            >
+              End room
+            </Button>
+          </Stack>
         </Modal>
         <Modal.Root
           keepMounted

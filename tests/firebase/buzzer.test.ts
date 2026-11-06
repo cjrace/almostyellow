@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import {
@@ -83,7 +83,7 @@ describe("Quiz rooms and concurrent players", () => {
         headers: { origin, "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "buzz",
-          input: { code: "ABC234", name: "Guest" },
+          input: { code: "ABC2", name: "Guest" },
         }),
       });
     expect((await POST(request("https://elsewhere.example"))).status).toBe(403);
@@ -158,28 +158,12 @@ describe("Quiz rooms and concurrent players", () => {
     expect(local.headers.get("set-cookie")).toContain("HttpOnly");
     expect(local.headers.get("set-cookie")).not.toContain("Secure");
   });
-  test("cookie credentials cannot recover a legacy local-storage identity", async () => {
-    const code = await createRoom(owner, randomUUID());
-    const secret = "a".repeat(64);
-    const legacyUid = `buzzer-${createHash("sha256").update(`${code}:${secret}`).digest("hex")}`;
-    await adminAuth().createUser({ uid: legacyUid });
-    const legacy = await joinRoom(legacyUid, { code, name: "Legacy" }, true);
-    const current = await joinGuestRoom({ code, name: "Cam", secret });
-    const uid = (
-      JSON.parse(
-        Buffer.from(current.token.split(".")[1], "base64url").toString(),
-      ) as { uid: string }
-    ).uid;
-    expect(uid).not.toBe(legacyUid);
-    expect(current.playerId).not.toBe(legacy.playerId);
-    expect((await state(code)).players).toHaveLength(2);
-  });
   test("server guests are created only for accepted memberships and retries recover the same seat", async () => {
     const before = (await adminAuth().listUsers()).users.length;
     const secret = "a".repeat(64);
     const code = await createRoom(owner, randomUUID());
     await expect(
-      joinGuestRoom({ code: "ABC234", name: "Cam", secret }),
+      joinGuestRoom({ code: "ABC2", name: "Cam", secret }),
     ).rejects.toThrow("not available");
     await expect(
       joinGuestRoom({ code, name: "Cam", secret, uid: owner }),
@@ -381,29 +365,6 @@ describe("Quiz rooms and concurrent players", () => {
     await hostCommand(owner, "reset", reset);
     expect((await state(code)).round).toBe(round);
   });
-  test("guests can join new four-character codes and existing six-character rooms", async () => {
-    const code = await createRoom(owner, randomUUID());
-    const legacyCode = "ABC234";
-    await adminDb()
-      .doc(`gameRooms/${legacyCode}`)
-      .set({ ...(await state(code)), code: legacyCode });
-    const privateData = (
-      await adminDb().doc(`roomPrivate/${code}`).get()
-    ).data();
-    if (!privateData) throw new Error("The test room has no owner.");
-    await adminDb().doc(`roomPrivate/${legacyCode}`).set(privateData);
-    for (const roomCode of [code, legacyCode]) {
-      const guest = await joinGuestRoom({
-        code: roomCode,
-        name: "Cam",
-        secret: "a".repeat(64),
-      });
-      expect((await state(roomCode)).players).toEqual([
-        { id: guest.playerId, name: "Cam" },
-      ]);
-      await hostCommand(owner, "reset", await command(roomCode));
-    }
-  });
   test("admits at most twenty players and records each simultaneous buzz once", async () => {
     const code = await createRoom(owner, randomUUID());
     const joins = await Promise.allSettled(
@@ -485,18 +446,6 @@ describe("Quiz rooms and concurrent players", () => {
     );
     await playerCommand("first", "buzz", await command(code));
   });
-  test.each(["ready", "closed"])(
-    "existing %s rooms accept buzzes immediately",
-    async (phase) => {
-      const code = await createRoom(owner, randomUUID());
-      await adminDb().doc(`gameRooms/${code}`).update({ phase, eligible: [] });
-      await joinRoom("guest", { code, name: "Cam" });
-      await playerCommand("guest", "buzz", await command(code));
-      await hostCommand(owner, "reset", await command(code));
-      expect((await state(code)).phase).toBe("open");
-      await playerCommand("guest", "buzz", await command(code));
-    },
-  );
   test("removed players cannot rejoin and their buzz remains recorded", async () => {
     const code = await createRoom(owner, randomUUID());
     const member = await joinRoom("guest", { code, name: "Guest" });

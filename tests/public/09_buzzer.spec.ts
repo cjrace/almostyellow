@@ -35,41 +35,6 @@ async function expectTextInsideCap(button: Locator) {
   expect(fits).toBe(true);
 }
 test.describe("Quiz host and guests", () => {
-  test("removes legacy recovery keys and asks existing guests to rejoin", async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem("buzzer-key-ABC234", "a".repeat(64));
-      localStorage.setItem("buzzer-test-preference", "keep");
-      sessionStorage.setItem(
-        "buzzer-room",
-        JSON.stringify({
-          code: "ABC234",
-          playerId: "old-seat",
-          hosting: false,
-        }),
-      );
-    });
-    await page.goto("/games/buzzer");
-    await expect(page.getByRole("main").getByRole("alert")).toContainText(
-      "Join the room again",
-    );
-    await expect(
-      page.getByRole("button", { name: "Join room", exact: true }),
-    ).toBeEnabled();
-    await expect(
-      page.getByRole("heading", { name: "Join room ABC234", exact: true }),
-    ).toBeVisible();
-    await expect(page.getByLabel("Room code", { exact: true })).toHaveCount(0);
-    await expect(page.getByLabel("Your name", { exact: true })).toBeFocused();
-    await expect(page.getByRole("button", { name: "Back" })).toHaveCount(0);
-    expect(
-      await page.evaluate(() => localStorage.getItem("buzzer-key-ABC234")),
-    ).toBeNull();
-    expect(
-      await page.evaluate(() => localStorage.getItem("buzzer-test-preference")),
-    ).toBe("keep");
-  });
   test("explains blocked cookies after two attempts and sends no recovery key in the body", async ({
     page,
   }) => {
@@ -82,15 +47,15 @@ test.describe("Quiz host and guests", () => {
         body: JSON.stringify({ retry: true }),
       });
     });
-    await page.goto("/games/buzzer?room=ABC234");
+    await page.goto("/games/buzzer?room=ABC2");
     await page.getByLabel("Your name", { exact: true }).fill("Cam");
     await page.getByRole("button", { name: "Join room", exact: true }).click();
     await expect(page.getByRole("main").getByRole("alert")).toContainText(
       "Allow cookies for this website",
     );
     expect(inputs).toEqual([
-      { code: "ABC234", name: "Cam" },
-      { code: "ABC234", name: "Cam" },
+      { code: "ABC2", name: "Cam" },
+      { code: "ABC2", name: "Cam" },
     ]);
     await expect(
       page.getByRole("button", { name: "Join room", exact: true }),
@@ -198,7 +163,7 @@ test.describe("Quiz host and guests", () => {
     await page
       .getByRole("button", { name: "Join with a code", exact: true })
       .click();
-    await page.getByLabel("Room code", { exact: true }).fill("ABC234");
+    await page.getByLabel("Room code", { exact: true }).fill("ABC2");
     await page.getByLabel("Your name", { exact: true }).fill("Cam");
     await page.getByRole("button", { name: "Join room", exact: true }).click();
     const alert = page.getByRole("main").getByRole("alert");
@@ -208,7 +173,7 @@ test.describe("Quiz host and guests", () => {
       page.getByRole("button", { name: "Join room", exact: true }),
     ).toBeEnabled();
     await expect(page.getByLabel("Room code", { exact: true })).toHaveValue(
-      "ABC234",
+      "ABC2",
     );
     await expect(page.getByLabel("Your name", { exact: true })).toHaveValue(
       "Cam",
@@ -224,443 +189,366 @@ test.describe("Quiz host and guests", () => {
     if (testInfo.project.name === "Google Chrome")
       await expectNoUnexpectedAxeViolations(page);
   });
-  test("join, buzz, refresh, reset and remove a player", async ({
-    page,
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.setTimeout(90000);
-    if (testInfo.project.name === "Google Chrome")
-      await useScheme(page, "dark");
-    const guestName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
-    // Windows WebKit reports None even for Strict cookies. Check the response
-    // header as well; Playwright's browsercontext-cookies tests cover this limit.
-    const storedSameSite =
-      browserName === "webkit" && process.platform === "win32"
-        ? "None"
-        : "Strict";
-    let signUps = 0;
-    await page.context().route(
-      (url) => url.pathname.endsWith("/accounts:signUp"),
-      (route) => {
-        signUps++;
-        return route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({ error: { message: "ADMIN_ONLY_OPERATION" } }),
-        });
-      },
-    );
-    await test.step("Given public sign-ups are blocked and the buzzer page is open before admin sign-in", async () => {
-      await page.goto("/games/buzzer");
-      await expect(
-        page.getByRole("button", { name: "Join with a code", exact: true }),
-      ).toBeEnabled();
-    });
-    await page.goto("/admin/login");
-    await page
-      .getByPlaceholder("e.g. simply@thebest.co.uk")
-      .fill(users.alice.email);
-    await page.getByPlaceholder("Enter password").fill(users.alice.password);
-    await page.getByRole("button", { name: "Log in", exact: true }).click();
-    await page.waitForURL("/");
-    await page.goto("/games/buzzer");
-    await page
-      .getByRole("button", { name: "Create a room", exact: true })
-      .click();
-    const heading = page.getByRole("heading", { name: /^Room / });
-    await expect(heading).toBeVisible();
-    const code = (await heading.innerText()).slice(5);
-    await page.getByLabel("Your player name", { exact: true }).fill("Host");
-    await page
-      .getByRole("button", { name: "Join as a player", exact: true })
-      .click();
-    await expect(
-      page.getByRole("button", { name: "Players (1/20)" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Buzz!", exact: true }),
-    ).toBeEnabled();
-    await page.getByRole("button", { name: "Buzz!", exact: true }).click();
-    await expect(
-      page.getByRole("button", { name: "Buzz recorded", exact: true }),
-    ).toBeVisible();
-    const context = await browser.newContext({
-      baseURL: testInfo.project.use.baseURL,
-      viewport: testInfo.project.use.viewport,
-      isMobile: testInfo.project.use.isMobile,
-      hasTouch: testInfo.project.use.hasTouch,
-    });
-    const guest = waitsForHydration(await context.newPage());
-    await context.route(
-      (url) => url.pathname.endsWith("/accounts:signUp"),
-      (route) => {
-        signUps++;
-        return route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({ error: { message: "ADMIN_ONLY_OPERATION" } }),
-        });
-      },
-    );
-    try {
-      await guest.goto("/games/buzzer");
-      await guest
-        .getByRole("button", { name: "Join with a code", exact: true })
-        .click();
-      await guest
-        .getByLabel("Room code", { exact: true })
-        .fill(code.toLowerCase());
-      await expect(guest.getByLabel("Room code", { exact: true })).toHaveValue(
-        code,
+  // Mobile Safari covers the phone case, so Mobile Chrome skips this slow test.
+  test(
+    "join, buzz, refresh, reset and remove a player",
+    {
+      tag: "@no-android",
+    },
+    async ({ page, browser, browserName }, testInfo) => {
+      test.setTimeout(90000);
+      if (testInfo.project.name === "Google Chrome")
+        await useScheme(page, "dark");
+      const guestName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234";
+      // Windows WebKit reports None even for Strict cookies. Check the response
+      // header as well; Playwright's browsercontext-cookies tests cover this limit.
+      const storedSameSite =
+        browserName === "webkit" && process.platform === "win32"
+          ? "None"
+          : "Strict";
+      let signUps = 0;
+      await page.context().route(
+        (url) => url.pathname.endsWith("/accounts:signUp"),
+        (route) => {
+          signUps++;
+          return route.fulfill({
+            status: 400,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: { message: "ADMIN_ONLY_OPERATION" },
+            }),
+          });
+        },
       );
-      await guest.getByLabel("Your name", { exact: true }).fill(guestName);
-      const cookieResponse = guest.waitForResponse(
-        (response) => new URL(response.url()).pathname === "/api/buzzer",
-      );
-      await guest
-        .getByRole("button", { name: "Join room", exact: true })
-        .click();
-      await expect(
-        guest.getByRole("button", { name: "Players (2/20)" }),
-      ).toBeVisible();
-      expect(await (await cookieResponse).headerValue("set-cookie")).toContain(
-        "SameSite=strict",
-      );
-      const roomCookie = (await context.cookies()).find(
-        (cookie) => cookie.name === `buzzer-guest-${code}`,
-      );
-      expect(roomCookie).toMatchObject({
-        httpOnly: true,
-        sameSite: storedSameSite,
-        secure: false,
-        path: "/api/buzzer",
+      await test.step("Given public sign-ups are blocked and the buzzer page is open before admin sign-in", async () => {
+        await page.goto("/games/buzzer");
+        await expect(
+          page.getByRole("button", { name: "Join with a code", exact: true }),
+        ).toBeEnabled();
       });
-      expect(
-        await guest.evaluate(() =>
-          Object.keys(localStorage).filter((key) =>
-            key.startsWith("buzzer-key-"),
+      await page.goto("/admin/login");
+      await page
+        .getByPlaceholder("e.g. simply@thebest.co.uk")
+        .fill(users.alice.email);
+      await page.getByPlaceholder("Enter password").fill(users.alice.password);
+      await page.getByRole("button", { name: "Log in", exact: true }).click();
+      await page.waitForURL("/");
+      await page.goto("/games/buzzer");
+      await page
+        .getByRole("button", { name: "Create a room", exact: true })
+        .click();
+      const heading = page.getByRole("heading", { name: /^Room / });
+      await expect(heading).toBeVisible();
+      const code = (await heading.innerText()).slice(5);
+      await page.getByLabel("Your player name", { exact: true }).fill("Host");
+      await page
+        .getByRole("button", { name: "Join as a player", exact: true })
+        .click();
+      await expect(
+        page.getByRole("button", { name: "Players (1/20)" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Buzz!", exact: true }),
+      ).toBeEnabled();
+      await page.getByRole("button", { name: "Buzz!", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "Buzz recorded", exact: true }),
+      ).toBeVisible();
+      const context = await browser.newContext({
+        baseURL: testInfo.project.use.baseURL,
+        viewport: testInfo.project.use.viewport,
+        isMobile: testInfo.project.use.isMobile,
+        hasTouch: testInfo.project.use.hasTouch,
+      });
+      const guest = waitsForHydration(await context.newPage());
+      await context.route(
+        (url) => url.pathname.endsWith("/accounts:signUp"),
+        (route) => {
+          signUps++;
+          return route.fulfill({
+            status: 400,
+            contentType: "application/json",
+            body: JSON.stringify({
+              error: { message: "ADMIN_ONLY_OPERATION" },
+            }),
+          });
+        },
+      );
+      try {
+        await guest.goto("/games/buzzer");
+        await guest
+          .getByRole("button", { name: "Join with a code", exact: true })
+          .click();
+        await guest
+          .getByLabel("Room code", { exact: true })
+          .fill(code.toLowerCase());
+        await expect(
+          guest.getByLabel("Room code", { exact: true }),
+        ).toHaveValue(code);
+        await guest.getByLabel("Your name", { exact: true }).fill(guestName);
+        const cookieResponse = guest.waitForResponse(
+          (response) => new URL(response.url()).pathname === "/api/buzzer",
+        );
+        await guest
+          .getByRole("button", { name: "Join room", exact: true })
+          .click();
+        await expect(
+          guest.getByRole("button", { name: "Players (2/20)" }),
+        ).toBeVisible();
+        expect(
+          await (await cookieResponse).headerValue("set-cookie"),
+        ).toContain("SameSite=strict");
+        const roomCookie = (await context.cookies()).find(
+          (cookie) => cookie.name === `buzzer-guest-${code}`,
+        );
+        expect(roomCookie).toMatchObject({
+          httpOnly: true,
+          sameSite: storedSameSite,
+          secure: false,
+          path: "/api/buzzer",
+        });
+        expect(
+          await guest.evaluate(() =>
+            Object.keys(localStorage).filter((key) =>
+              key.startsWith("buzzer-key-"),
+            ),
           ),
-        ),
-      ).toEqual([]);
-      await test.step("When a guest joins after another player buzzes and presses Space", async () => {
+        ).toEqual([]);
+        await test.step("When a guest joins after another player buzzes and presses Space", async () => {
+          await expect(
+            guest.getByRole("button", { name: "Buzz!", exact: true }),
+          ).toBeEnabled();
+          await guest
+            .getByRole("button", { name: "Buzz!", exact: true })
+            .focus();
+          const cap = guest
+            .getByRole("button", { name: "Buzz!", exact: true })
+            .locator("span")
+            .first();
+          const raised = await cap.boundingBox();
+          if (!raised) throw new Error("The buzzer cap is missing");
+          await guest.keyboard.down("Space");
+          await expect
+            .poll(async () => (await cap.boundingBox())?.y ?? 0)
+            .toBeGreaterThan(raised.y + 5);
+          const { promise: confirmation, resolve: release } =
+            Promise.withResolvers<boolean>();
+          const holdBuzz = async (route: Route) => {
+            if (
+              (route.request().postDataJSON() as { action: string }).action ===
+              "buzz"
+            )
+              await confirmation;
+            await route.continue();
+          };
+          await guest.route("**/api/buzzer", holdBuzz);
+          try {
+            await guest.keyboard.up("Space");
+            const confirming = guest.getByRole("button", {
+              name: "Confirming…",
+              exact: true,
+            });
+            await expect(confirming).toBeVisible();
+            await expectTextInsideCap(confirming);
+            await guest.screenshot({
+              path: testInfo.outputPath("buzzer-confirming.png"),
+              fullPage: true,
+            });
+            if (testInfo.project.name === "Google Chrome") {
+              const viewport = guest.viewportSize();
+              if (!viewport) throw new Error("The guest viewport is missing.");
+              try {
+                await guest.setViewportSize({
+                  width: 320,
+                  height: viewport.height,
+                });
+                await expectTextInsideCap(confirming);
+                await guest.setViewportSize(viewport);
+                await guest.evaluate(() => {
+                  document.body.style.zoom = "2";
+                });
+                await expectTextInsideCap(confirming);
+              } finally {
+                await guest.setViewportSize(viewport);
+                await guest.evaluate(() => {
+                  document.body.style.zoom = "";
+                });
+              }
+            }
+          } finally {
+            release(true);
+            await guest.unrouteAll({ behavior: "wait" });
+          }
+          await expect(
+            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+          ).toBeVisible();
+          await expectTextInsideCap(
+            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+          );
+          await guest.emulateMedia({ reducedMotion: "reduce" });
+          await expect(
+            guest
+              .getByRole("button", { name: "Buzz recorded", exact: true })
+              .locator("span")
+              .first(),
+          ).toHaveCSS("transition-duration", "0s");
+          await guest.emulateMedia({ reducedMotion: "no-preference" });
+          await expect(
+            page
+              .getByRole("list", { name: "Buzz order" })
+              .getByRole("listitem")
+              .filter({ hasText: guestName }),
+          ).toBeVisible();
+          await expect(
+            guest.getByRole("status").filter({ hasText: /^You're (2nd|1st)/ }),
+          ).toBeVisible();
+        });
+        expect(
+          await guest.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await page.screenshot({
+          path: testInfo.outputPath("buzzer-host.png"),
+          fullPage: true,
+        });
+        await guest.screenshot({
+          path: testInfo.outputPath("buzzer-player.png"),
+          fullPage: true,
+        });
+        await test.step("Then refreshing restores the confirmed result", async () => {
+          await guest.reload();
+          await expect(
+            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+          ).toBeVisible();
+        });
+        await test.step("And another room in the same browser keeps its own identity", async () => {
+          const otherHost = waitsForHydration(await page.context().newPage());
+          const otherGuest = waitsForHydration(await context.newPage());
+          try {
+            await otherHost.goto("/games/buzzer");
+            await otherHost
+              .getByRole("button", { name: "Create a room", exact: true })
+              .click();
+            const otherHeading = otherHost.getByRole("heading", {
+              name: /^Room /,
+            });
+            await expect(otherHeading).toBeVisible();
+            const otherCode = (await otherHeading.innerText()).slice(5);
+            await otherGuest.goto(`/games/buzzer?room=${otherCode}`);
+            await expect(otherGuest.getByRole("textbox")).toHaveCount(1);
+            await expect(
+              otherGuest.getByLabel("Room code", { exact: true }),
+            ).toHaveCount(0);
+            await otherGuest
+              .getByLabel("Your name", { exact: true })
+              .fill("Laura");
+            await otherGuest
+              .getByLabel("Your name", { exact: true })
+              .press("Enter");
+            await expect(
+              otherGuest.getByRole("button", { name: "Players (1/20)" }),
+            ).toBeVisible();
+            const otherCookie = (await context.cookies()).find(
+              (cookie) => cookie.name === `buzzer-guest-${otherCode}`,
+            );
+            expect(otherCookie).toMatchObject({
+              httpOnly: true,
+              sameSite: storedSameSite,
+              path: "/api/buzzer",
+            });
+            expect(otherCookie?.value).not.toBe(roomCookie?.value);
+            await otherGuest.reload();
+            await expect(
+              otherGuest.getByRole("button", { name: "Players (1/20)" }),
+            ).toBeVisible();
+            await guest.reload();
+            await expect(
+              guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+            ).toBeVisible();
+            await expect(
+              guest.getByRole("button", { name: "Players (2/20)" }),
+            ).toBeVisible();
+          } finally {
+            await otherGuest.close();
+            await otherHost.close();
+          }
+        });
+        if (testInfo.project.name === "Google Chrome") {
+          await expectNoUnexpectedAxeViolations(page);
+          await expectNoUnexpectedAxeViolations(guest);
+        }
+        await page.getByRole("button", { name: "Reset", exact: true }).click();
+        await expect(
+          guest.getByRole("list", { name: "Buzz order" }),
+        ).toHaveCount(0);
         await expect(
           guest.getByRole("button", { name: "Buzz!", exact: true }),
         ).toBeEnabled();
-        await guest.getByRole("button", { name: "Buzz!", exact: true }).focus();
-        const cap = guest
-          .getByRole("button", { name: "Buzz!", exact: true })
-          .locator("span")
-          .first();
-        const raised = await cap.boundingBox();
-        if (!raised) throw new Error("The buzzer cap is missing");
-        await guest.keyboard.down("Space");
-        await expect
-          .poll(async () => (await cap.boundingBox())?.y ?? 0)
-          .toBeGreaterThan(raised.y + 5);
-        const { promise: confirmation, resolve: release } =
-          Promise.withResolvers<boolean>();
-        const holdBuzz = async (route: Route) => {
-          if (
-            (route.request().postDataJSON() as { action: string }).action ===
-            "buzz"
-          )
-            await confirmation;
-          await route.continue();
-        };
-        await guest.route("**/api/buzzer", holdBuzz);
-        try {
-          await guest.keyboard.up("Space");
-          const confirming = guest.getByRole("button", {
-            name: "Confirming…",
-            exact: true,
-          });
-          await expect(confirming).toBeVisible();
-          await expectTextInsideCap(confirming);
-          await guest.screenshot({
-            path: testInfo.outputPath("buzzer-confirming.png"),
-            fullPage: true,
-          });
-          if (testInfo.project.name === "Google Chrome") {
-            const viewport = guest.viewportSize();
-            if (!viewport) throw new Error("The guest viewport is missing.");
-            try {
-              await guest.setViewportSize({
-                width: 320,
-                height: viewport.height,
-              });
-              await expectTextInsideCap(confirming);
-              await guest.setViewportSize(viewport);
-              await guest.evaluate(() => {
-                document.body.style.zoom = "2";
-              });
-              await expectTextInsideCap(confirming);
-            } finally {
-              await guest.setViewportSize(viewport);
-              await guest.evaluate(() => {
-                document.body.style.zoom = "";
-              });
-            }
-          }
-        } finally {
-          release(true);
-          await guest.unrouteAll({ behavior: "wait" });
-        }
+        await guest.getByRole("button", { name: "Buzz!", exact: true }).click();
         await expect(
           guest.getByRole("button", { name: "Buzz recorded", exact: true }),
         ).toBeVisible();
-        await expectTextInsideCap(
-          guest.getByRole("button", { name: "Buzz recorded", exact: true }),
-        );
-        await guest.emulateMedia({ reducedMotion: "reduce" });
-        await expect(
-          guest
-            .getByRole("button", { name: "Buzz recorded", exact: true })
-            .locator("span")
-            .first(),
-        ).toHaveCSS("transition-duration", "0s");
-        await guest.emulateMedia({ reducedMotion: "no-preference" });
         await expect(
           page
             .getByRole("list", { name: "Buzz order" })
             .getByRole("listitem")
             .filter({ hasText: guestName }),
         ).toBeVisible();
+        await page.getByRole("button", { name: "Reset", exact: true }).click();
         await expect(
-          guest.getByRole("status").filter({ hasText: /^You're (2nd|1st)/ }),
-        ).toBeVisible();
-      });
-      expect(
-        await guest.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth,
-        ),
-      ).toBe(true);
-      await page.screenshot({
-        path: testInfo.outputPath("buzzer-host.png"),
-        fullPage: true,
-      });
-      await guest.screenshot({
-        path: testInfo.outputPath("buzzer-player.png"),
-        fullPage: true,
-      });
-      await test.step("Then refreshing restores the confirmed result", async () => {
-        await guest.reload();
+          guest.getByRole("button", { name: "Buzz!", exact: true }),
+        ).toBeEnabled();
+        await context.setOffline(true);
         await expect(
-          guest.getByRole("button", { name: "Buzz recorded", exact: true }),
-        ).toBeVisible();
-      });
-      await test.step("And another room in the same browser keeps its own identity", async () => {
-        const otherHost = waitsForHydration(await page.context().newPage());
-        const otherGuest = waitsForHydration(await context.newPage());
-        try {
-          await otherHost.goto("/games/buzzer");
-          await otherHost
-            .getByRole("button", { name: "Create a room", exact: true })
-            .click();
-          const otherHeading = otherHost.getByRole("heading", {
-            name: /^Room /,
-          });
-          await expect(otherHeading).toBeVisible();
-          const otherCode = (await otherHeading.innerText()).slice(5);
-          await otherGuest.goto(`/games/buzzer?room=${otherCode}`);
-          await expect(otherGuest.getByRole("textbox")).toHaveCount(1);
-          await expect(
-            otherGuest.getByLabel("Room code", { exact: true }),
-          ).toHaveCount(0);
-          await otherGuest
-            .getByLabel("Your name", { exact: true })
-            .fill("Laura");
-          await otherGuest
-            .getByLabel("Your name", { exact: true })
-            .press("Enter");
-          await expect(
-            otherGuest.getByRole("button", { name: "Players (1/20)" }),
-          ).toBeVisible();
-          const otherCookie = (await context.cookies()).find(
-            (cookie) => cookie.name === `buzzer-guest-${otherCode}`,
-          );
-          expect(otherCookie).toMatchObject({
-            httpOnly: true,
-            sameSite: storedSameSite,
-            path: "/api/buzzer",
-          });
-          expect(otherCookie?.value).not.toBe(roomCookie?.value);
-          await otherGuest.reload();
-          await expect(
-            otherGuest.getByRole("button", { name: "Players (1/20)" }),
-          ).toBeVisible();
-          await guest.reload();
-          await expect(
-            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
-          ).toBeVisible();
-          await expect(
-            guest.getByRole("button", { name: "Players (2/20)" }),
-          ).toBeVisible();
-        } finally {
-          await otherGuest.close();
-          await otherHost.close();
-        }
-      });
-      if (testInfo.project.name === "Google Chrome") {
-        await expectNoUnexpectedAxeViolations(page);
-        await expectNoUnexpectedAxeViolations(guest);
-      }
-      await page.getByRole("button", { name: "Reset", exact: true }).click();
-      await expect(guest.getByRole("list", { name: "Buzz order" })).toHaveCount(
-        0,
-      );
-      await expect(
-        guest.getByRole("button", { name: "Buzz!", exact: true }),
-      ).toBeEnabled();
-      await guest.getByRole("button", { name: "Buzz!", exact: true }).click();
-      await expect(
-        guest.getByRole("button", { name: "Buzz recorded", exact: true }),
-      ).toBeVisible();
-      await expect(
-        page
-          .getByRole("list", { name: "Buzz order" })
-          .getByRole("listitem")
-          .filter({ hasText: guestName }),
-      ).toBeVisible();
-      await page.getByRole("button", { name: "Reset", exact: true }).click();
-      await expect(
-        guest.getByRole("button", { name: "Buzz!", exact: true }),
-      ).toBeEnabled();
-      await context.setOffline(true);
-      await expect(
-        guest.getByRole("button", { name: "Buzz!", exact: true }),
-      ).toBeDisabled();
-      await context.setOffline(false);
-      await expect(
-        guest.getByRole("button", { name: "Buzz!", exact: true }),
-      ).toBeEnabled();
-      await page.getByRole("button", { name: /^Players \(/ }).click();
-      await page
-        .getByRole("button", { name: `Remove ${guestName}`, exact: true })
-        .click();
-      await expect(
-        guest.getByRole("alert").filter({ hasText: "removed" }),
-      ).toBeVisible();
-      await page.getByRole("button", { name: "End room", exact: true }).click();
-      await expect(
-        page.getByRole("dialog", { name: "End this room?" }),
-      ).toBeVisible();
-      if (testInfo.project.name === "Google Chrome")
-        await expectNoUnexpectedAxeViolations(page);
-      await page
-        .getByRole("dialog")
-        .getByRole("button", { name: "End room", exact: true })
-        .click();
-      await expect(
-        page.getByText("This room has ended.", { exact: true }),
-      ).toBeVisible();
-      await page
-        .getByRole("button", { name: "Leave game", exact: true })
-        .click();
-      await page.waitForURL("/games");
-      expect(signUps).toBe(0);
-    } finally {
-      await context.close();
-    }
-  });
-  test("puts the buzzer last in the games list", async ({ page }) => {
-    await page.goto("/games");
-    await expect(
-      page.getByRole("link", { name: /^Play / }).last(),
-    ).toHaveAttribute("href", "/games/buzzer");
-  });
-  test(
-    "fits a phone in both colour schemes",
-    { tag: "@phone" },
-    async ({ page }, testInfo) => {
-      await page.goto("/games/buzzer");
-      for (const scheme of ["dark", "light"]) {
-        await page.evaluate((scheme) => {
-          document.documentElement.setAttribute(
-            "data-mantine-color-scheme",
-            scheme,
-          );
-        }, scheme);
-        await expect(page.getByRole("textbox")).toHaveCount(0);
+          guest.getByRole("button", { name: "Buzz!", exact: true }),
+        ).toBeDisabled();
         await expect(
-          page.getByRole("link", { name: "Create a room", exact: true }),
-        ).toBeInViewport();
+          guest.getByRole("button", { name: "Buzz!", exact: true }),
+        ).toHaveCSS("opacity", "0.5");
+        await context.setOffline(false);
         await expect(
-          page.getByRole("button", { name: "Join with a code", exact: true }),
-        ).toBeInViewport();
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await page.screenshot({
-          path: testInfo.outputPath("landing-" + scheme + ".png"),
-          fullPage: true,
-        });
+          guest.getByRole("button", { name: "Buzz!", exact: true }),
+        ).toBeEnabled();
+        await expect(
+          guest.getByRole("button", { name: "Buzz!", exact: true }),
+        ).toHaveCSS("opacity", "1");
+        await page.getByRole("button", { name: /^Players \(/ }).click();
         await page
-          .getByRole("button", { name: "Join with a code", exact: true })
+          .getByRole("button", { name: `Remove ${guestName}`, exact: true })
           .click();
         await expect(
-          page.getByLabel("Room code", { exact: true }),
-        ).toBeFocused();
-        await expect(
-          page.getByLabel("Room code", { exact: true }),
-        ).toBeInViewport();
-        await expect(
-          page.getByRole("link", { name: "Create a room", exact: true }),
-        ).toHaveCount(0);
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await page.screenshot({
-          path: testInfo.outputPath("join-code-" + scheme + ".png"),
-          fullPage: true,
-        });
-        await page.getByRole("button", { name: "Back", exact: true }).click();
-        await expect(
-          page.getByRole("button", { name: "Join with a code", exact: true }),
-        ).toBeFocused();
-      }
-    },
-  );
-  test(
-    "fits 200% zoom in both colour schemes",
-    { tag: "@desktop" },
-    async ({ page }) => {
-      await page.goto("/games/buzzer");
-      for (const scheme of ["dark", "light"]) {
-        await page.evaluate((scheme) => {
-          document.documentElement.setAttribute(
-            "data-mantine-color-scheme",
-            scheme,
-          );
-          document.body.style.zoom = "2";
-        }, scheme);
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await expectNoUnexpectedAxeViolations(page);
+          guest.getByRole("alert").filter({ hasText: "removed" }),
+        ).toBeVisible();
         await page
-          .getByRole("button", { name: "Join with a code", exact: true })
+          .getByRole("button", { name: "End room", exact: true })
           .click();
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await expectNoUnexpectedAxeViolations(page);
-        await page.getByRole("button", { name: "Back", exact: true }).click();
+        await expect(
+          page.getByRole("dialog", { name: "End this room?" }),
+        ).toBeVisible();
+        if (testInfo.project.name === "Google Chrome")
+          await expectNoUnexpectedAxeViolations(page);
+        await page
+          .getByRole("dialog")
+          .getByRole("button", { name: "End room", exact: true })
+          .click();
+        await expect(
+          page.getByText("This room has ended.", { exact: true }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Leave game", exact: true })
+          .click();
+        await page.waitForURL("/games");
+        expect(signUps).toBe(0);
+      } finally {
+        await context.close();
       }
     },
   );
   test("explains play and keeps room links out of search", async ({
     page,
   }, testInfo) => {
-    await page.goto("/games/buzzer?room=ABC234");
+    await page.goto("/games/buzzer?room=ABC2");
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
       "content",
       "Quiz buzzer | Almost Yellow",

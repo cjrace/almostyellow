@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { isRoomCode, leaderboard, ordinal } from "@/buzzer/model";
+import { playerSignInError } from "@/buzzer/errors";
 
 describe("Ordinals", () => {
   test.each([
@@ -16,15 +17,11 @@ describe("Ordinals", () => {
     expect(ordinal(place)).toBe(text);
   });
 });
-import { playerSignInError } from "@/buzzer/errors";
 
 describe("Room codes", () => {
-  test.each(["K7M4", "2345", "ABCD", "ABC234"])(
-    "accepts new or existing room code %s",
-    (code) => {
-      expect(isRoomCode(code)).toBe(true);
-    },
-  );
+  test.each(["K7M4", "2345", "ABCD"])("accepts room code %s", (code) => {
+    expect(isRoomCode(code)).toBe(true);
+  });
   test.each([
     "",
     "ABC",

@@ -69,12 +69,26 @@
   cursor: default;
 }
 
+/* Offline, reconnecting or unconfirmed: fade and grey the button so it reads
+   as unavailable. A recorded buzz keeps its full colour. */
+.buzzer {
+  transition:
+    opacity 200ms ease-out,
+    filter 200ms ease-out;
+}
+
+.buzzer[data-unavailable] {
+  opacity: 0.5;
+  filter: grayscale(0.85);
+}
+
 .buzzer:focus-visible {
   outline: 3px solid var(--mantine-color-text);
   outline-offset: 5px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .buzzer,
   .cap {
     transition: none;
   }

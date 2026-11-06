@@ -52,12 +52,6 @@ export function guestClient(config: FirebaseClientConfig, code: string) {
   pending.set(code, result);
   return result;
 }
-export function clearLegacyGuestKeys() {
-  for (const storageKey of Object.keys(localStorage)) {
-    if (/^buzzer-key-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(storageKey))
-      localStorage.removeItem(storageKey);
-  }
-}
 export async function joinGuest(
   config: FirebaseClientConfig,
   code: string,

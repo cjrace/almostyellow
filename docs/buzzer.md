@@ -1,12 +1,12 @@
 # Quiz buzzer
 
-An authorised host chooses Create a room at `/games/buzzer` for up to 20 players. Sign-in returns to the buzzer if needed. Creating a room automatically generates a four-character code using letters and numbers, with ambiguous characters left out. A shared link opens directly at name entry; Join with a code is a fallback for guests entering the code manually. Guests need no account. Existing six-character codes continue to work until their rooms expire.
+An authorised host chooses Create a room at `/games/buzzer` for up to 20 players. Sign-in returns to the buzzer if needed. Creating a room automatically generates a four-character code using letters and numbers, with ambiguous characters left out. A shared link opens directly at name entry; Join with a code is a fallback for guests entering the code manually. Guests need no account.
 
 Players see the buzz button first, with their place beneath it ("You're 2nd, 84 ms behind first"), then the buzz order and a collapsed player list. The host gets Reset, Copy join link and End room in one row above the results. A single Leave game button frees a player's seat and returns to the games page; a host who leaves keeps the room open and returns to it in the same tab until it ends or expires.
 
 The host can join as a player too. Buzzing is always open, including for players who join mid-question. Each player can buzz once per question. Reset clears the results and immediately starts the next question; leaving and rejoining does not give a player another buzz in the same question. Rooms end after six hours or when the host ends them.
 
-Rooms created with the earlier open/close controls also allow buzzing immediately. Their old phase and eligibility fields no longer restrict players. Reset advances the round as usual, so delayed requests from an earlier question cannot enter the new results.
+Reset advances the round, so delayed requests from an earlier question cannot enter the new results.
 
 ## Recovery and maintenance
 
@@ -15,8 +15,6 @@ Hosting uses the existing authorised session. Player sign-in is separate: a fail
 Keep user self-service account creation disabled in Firebase Authentication. Joining uses the Admin SDK to create a guest record only after the room accepts membership, then signs the browser in with a custom token. The Anonymous provider is not needed. See [Firebase custom tokens](https://firebase.google.com/docs/auth/admin/create-custom-tokens).
 
 Each room has a separate guest identity and named Firebase app, independent of admin sign-in and other rooms. The server creates a random 256-bit recovery key in a host-only, HttpOnly cookie, limited to `/api/buzzer` for six hours with `SameSite=Strict` and `Secure` except on localhost. JavaScript never receives that key; only its room-specific hash reaches Firestore. The browser confirms it can return the cookie before a join allocates a seat, so blocked cookies create no guest records. Firebase authentication persists across refreshes; deleting browser storage loses that identity. Leaving frees a place, and the host can remove unwanted entries. A recorded buzz remains in the current results after a player leaves.
-
-Guests from the earlier local-storage flow must rejoin once. The buzzer removes the old recovery keys on opening, and those keys cannot recover their previous seats. If their old name still occupies a seat, the host can remove that entry before they rejoin.
 
 A room admits at most 20 active players and creates at most 100 guest identities over its lifetime. Existing guests can retry or rejoin after that creation limit; a host can create another room if necessary. Guest tokens grant access through room membership, never the authorised-user allowlist.
 
