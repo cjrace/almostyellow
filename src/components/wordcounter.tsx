@@ -201,6 +201,16 @@ export default function WordCounter() {
               color="red"
               variant="light"
               fullWidth
+              // The light variant is a dark maroon in dark mode, so use the
+              // brighter filled red there.
+              style={{
+                "--button-bg":
+                  "light-dark(var(--mantine-color-red-light), var(--mantine-color-red-8))",
+                "--button-hover":
+                  "light-dark(var(--mantine-color-red-light-hover), var(--mantine-color-red-9))",
+                "--button-color":
+                  "light-dark(var(--mantine-color-red-light-color), var(--mantine-color-white))",
+              }}
               onClick={() => {
                 setText("");
                 setSelection(null);
