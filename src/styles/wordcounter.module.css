@@ -1,0 +1,35 @@
+/* Phones read top to bottom: method, text, counts. From md the method and
+   counts share a column beside the text, which Mantine's Grid can't do. */
+.layout {
+  display: grid;
+  gap: var(--mantine-spacing-lg);
+}
+
+.method {
+  grid-area: method;
+}
+
+.editor {
+  grid-area: editor;
+}
+
+.counts {
+  grid-area: counts;
+}
+
+.layout {
+  grid-template-areas:
+    "method"
+    "editor"
+    "counts";
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .layout {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "editor method"
+      "editor counts";
+  }
+}

@@ -11,7 +11,6 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Grid,
   Group,
   NativeSelect,
   Paper,
@@ -24,6 +23,7 @@ import {
 } from "@mantine/core";
 import { useDebouncedValue } from "@mantine/hooks";
 import { IconInfoCircle } from "@tabler/icons-react";
+import styles from "@/styles/wordcounter.module.css";
 import CountingMethodInfo from "@/components/countingmethodinfo";
 import {
   countText,
@@ -42,12 +42,26 @@ function describeCounts(counts: TextCounts) {
 function Counts({
   title,
   counts,
+  highlighted,
+  desktopOnly = false,
 }: {
   title: string;
   counts: TextCounts | null;
+  // Shown in brackets after each count on phones, where there is no separate
+  // box for the selected text.
+  highlighted?: TextCounts | null;
+  desktopOnly?: boolean;
 }) {
   return (
-    <Paper component="section" aria-label={title} withBorder p="lg" radius="md">
+    <Paper
+      component="section"
+      aria-label={title}
+      withBorder
+      p="lg"
+      radius="md"
+      style={{ flex: 1 }}
+      visibleFrom={desktopOnly ? "md" : undefined}
+    >
       <Title order={2} size="h4" mb="sm">
         {title}
       </Title>
@@ -68,6 +82,13 @@ function Counts({
               }}
             >
               {counts?.[kind] ?? "—"}
+              {highlighted && (
+                <Text component="span" inherit c="dimmed" hiddenFrom="md">
+                  {" "}
+                  (<VisuallyHidden>selected </VisuallyHidden>
+                  {highlighted[kind]})
+                </Text>
+              )}
             </Text>
           </div>
         ))}
@@ -131,37 +152,6 @@ export default function WordCounter() {
 
   return (
     <Stack gap="lg">
-      <Group gap="xs" align="flex-end" wrap="nowrap" maw={420}>
-        <NativeSelect
-          label="Counting method"
-          value={method}
-          onChange={(event) => {
-            setMethod(event.currentTarget.value as CountingMethod);
-          }}
-          style={{ flex: 1, minWidth: 0 }}
-          size="md"
-        >
-          {countingMethods.map((preset) => (
-            <option
-              key={preset.value}
-              value={preset.value}
-              disabled={preset.needsSegmenter && segmentationSupported !== true}
-            >
-              {preset.label}
-            </option>
-          ))}
-        </NativeSelect>
-        <ActionIcon
-          aria-label="About counting methods"
-          variant="subtle"
-          size="lg"
-          onClick={() => {
-            setInfoOpened(true);
-          }}
-        >
-          <IconInfoCircle aria-hidden />
-        </ActionIcon>
-      </Group>
       {segmentationSupported === false && (
         <Alert
           title="Your browser does not support Unicode segmentation"
@@ -172,9 +162,44 @@ export default function WordCounter() {
           methods.
         </Alert>
       )}
-      <Grid gap="lg">
-        <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack gap="xs">
+      <div className={styles.layout}>
+        <div className={styles.method}>
+          <Group gap="xs" align="flex-end" wrap="nowrap" maw={420}>
+            <NativeSelect
+              label="Counting method"
+              value={method}
+              onChange={(event) => {
+                setMethod(event.currentTarget.value as CountingMethod);
+              }}
+              style={{ flex: 1, minWidth: 0 }}
+              size="md"
+            >
+              {countingMethods.map((preset) => (
+                <option
+                  key={preset.value}
+                  value={preset.value}
+                  disabled={
+                    preset.needsSegmenter && segmentationSupported !== true
+                  }
+                >
+                  {preset.label}
+                </option>
+              ))}
+            </NativeSelect>
+            <ActionIcon
+              aria-label="About counting methods"
+              variant="subtle"
+              size="lg"
+              onClick={() => {
+                setInfoOpened(true);
+              }}
+            >
+              <IconInfoCircle aria-hidden />
+            </ActionIcon>
+          </Group>
+        </div>
+        <div className={styles.editor}>
+          <Stack gap="xs" h="100%">
             <Textarea
               ref={editorRef}
               label="Your text"
@@ -195,7 +220,12 @@ export default function WordCounter() {
               size="md"
               rows={10}
               resize="vertical"
-              styles={{ input: { minHeight: 220 } }}
+              // Grow to match the column beside it on desktop.
+              style={{ flex: 1, display: "flex", flexDirection: "column" }}
+              styles={{
+                wrapper: { flex: 1 },
+                input: { height: "100%", minHeight: 220 },
+              }}
             />
             <Button
               color="red"
@@ -220,19 +250,19 @@ export default function WordCounter() {
               Clear text
             </Button>
           </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, md: 4 }}>
-          <Stack gap="md">
-            <Counts title="Whole text" counts={whole} />
-            <Counts title="Selected text" counts={selected} />
+        </div>
+        <div className={styles.counts}>
+          <Stack gap="md" h="100%">
+            <Counts title="Whole text" counts={whole} highlighted={selected} />
+            <Counts title="Selected text" counts={selected} desktopOnly />
             {!selection && (
               <Text size="sm" c="dimmed">
                 Highlight text in the editor to see its counts.
               </Text>
             )}
           </Stack>
-        </Grid.Col>
-      </Grid>
+        </div>
+      </div>
       <VisuallyHidden role="status" aria-atomic="true">
         {announcement}
       </VisuallyHidden>
