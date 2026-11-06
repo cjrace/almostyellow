@@ -7,11 +7,11 @@ export async function createBuzzer(commandId: string) {
   return createRoom(uid, commandId);
 }
 export async function controlBuzzer(
-  action: "open" | "close" | "reset" | "remove" | "end",
+  action: "reset" | "remove" | "end",
   input: unknown,
 ) {
   const { uid } = await requireAuth();
-  if (!["open", "close", "reset", "remove", "end"].includes(action))
+  if (!["reset", "remove", "end"].includes(action))
     throw new Error("Unknown room command.");
   try {
     await hostCommand(uid, action, input);

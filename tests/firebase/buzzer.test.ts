@@ -337,30 +337,35 @@ describe("Quiz rooms and concurrent players", () => {
       uid: owner,
     });
   });
-  test("closing during a buzz preserves only accepted results", async () => {
+  test("resetting during a buzz keeps old requests out of the new results", async () => {
     const code = await createRoom(owner, randomUUID());
     await joinRoom("racer", { code, name: "Racer" });
-    await hostCommand(owner, "open", await command(code));
     const input = await command(code);
-    const [buzz, close] = await Promise.allSettled([
+    const [buzz, reset] = await Promise.allSettled([
       playerCommand("racer", "buzz", input),
-      hostCommand(owner, "close", input),
+      hostCommand(owner, "reset", input),
     ]);
-    expect(close.status).toBe("fulfilled");
-    expect((await state(code)).phase).toBe("closed");
+    expect(reset.status).toBe("fulfilled");
+    const next = await command(code);
+    expect(next.round).not.toBe(input.round);
+    expect((await state(code)).phase).toBe("open");
     const count = (
       await adminDb().collection("roomBuzzes").where("code", "==", code).get()
     ).size;
     expect(count).toBe(buzz.status === "fulfilled" ? 1 : 0);
-    if (count) await playerCommand("racer", "buzz", input);
-    else
-      await expect(playerCommand("racer", "buzz", input)).rejects.toThrow(
-        "closed",
-      );
-    await hostCommand(owner, "reset", await command(code));
     await expect(playerCommand("racer", "buzz", input)).rejects.toThrow(
       "finished",
     );
+    await playerCommand("racer", "buzz", next);
+    expect(
+      (
+        await adminDb()
+          .collection("roomBuzzes")
+          .where("code", "==", code)
+          .where("round", "==", next.round)
+          .get()
+      ).size,
+    ).toBe(1);
   });
   test("create retries return one room and host commands require its owner", async () => {
     const id = randomUUID();
@@ -368,7 +373,7 @@ describe("Quiz rooms and concurrent players", () => {
     expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
     expect(await createRoom(owner, id)).toBe(code);
     await expect(
-      hostCommand(users.bob.uid, "open", await command(code)),
+      hostCommand(users.bob.uid, "reset", await command(code)),
     ).rejects.toThrow("host");
     const reset = await command(code);
     await hostCommand(owner, "reset", reset);
@@ -396,7 +401,6 @@ describe("Quiz rooms and concurrent players", () => {
       expect((await state(roomCode)).players).toEqual([
         { id: guest.playerId, name: "Cam" },
       ]);
-      await hostCommand(owner, "open", await command(roomCode));
       await hostCommand(owner, "reset", await command(roomCode));
     }
   });
@@ -410,7 +414,6 @@ describe("Quiz rooms and concurrent players", () => {
     expect(joins.filter((join) => join.status === "fulfilled")).toHaveLength(
       20,
     );
-    await hostCommand(owner, "open", await command(code));
     const input = await command(code);
     const started = Date.now();
     const times = await Promise.all(
@@ -456,34 +459,50 @@ describe("Quiz rooms and concurrent players", () => {
       },
     );
   }, 60000);
-  test("late joins and leave/rejoin cannot enter an open round", async () => {
+  test("new arrivals buzz immediately and rejoining cannot add a second buzz", async () => {
     const code = await createRoom(owner, randomUUID());
-    await joinRoom("first", { code, name: "First" });
-    await hostCommand(owner, "open", await command(code));
+    expect((await state(code)).phase).toBe("open");
+    expect(await state(code)).not.toHaveProperty("eligible");
+    const first = await joinRoom("first", { code, name: "First" });
+    await playerCommand("first", "buzz", await command(code));
     await joinRoom("late", { code, name: "Late" });
-    await expect(
-      playerCommand("late", "buzz", await command(code)),
-    ).rejects.toThrow("next question");
+    await playerCommand("late", "buzz", await command(code));
     await playerCommand("first", "leave", await command(code));
-    await joinRoom("first", { code, name: "First" });
-    await expect(
-      playerCommand("first", "buzz", await command(code)),
-    ).rejects.toThrow("next question");
+    expect(await joinRoom("first", { code, name: "First" })).toEqual(first);
+    await playerCommand("first", "buzz", await command(code));
+    expect(
+      (await adminDb().collection("roomBuzzes").where("code", "==", code).get())
+        .size,
+    ).toBe(2);
+    await joinRoom("returning", { code, name: "Returning" });
+    await playerCommand("returning", "leave", await command(code));
+    await joinRoom("returning", { code, name: "Returning" });
+    await playerCommand("returning", "buzz", await command(code));
     const old = await command(code);
     await hostCommand(owner, "reset", old);
-    await hostCommand(owner, "open", await command(code));
     await expect(playerCommand("first", "buzz", old)).rejects.toThrow(
       "finished",
     );
     await playerCommand("first", "buzz", await command(code));
   });
+  test.each(["ready", "closed"])(
+    "existing %s rooms accept buzzes immediately",
+    async (phase) => {
+      const code = await createRoom(owner, randomUUID());
+      await adminDb().doc(`gameRooms/${code}`).update({ phase, eligible: [] });
+      await joinRoom("guest", { code, name: "Cam" });
+      await playerCommand("guest", "buzz", await command(code));
+      await hostCommand(owner, "reset", await command(code));
+      expect((await state(code)).phase).toBe("open");
+      await playerCommand("guest", "buzz", await command(code));
+    },
+  );
   test("removed players cannot rejoin and their buzz remains recorded", async () => {
     const code = await createRoom(owner, randomUUID());
     const member = await joinRoom("guest", { code, name: "Guest" });
     await expect(joinRoom("other", { code, name: " guest " })).rejects.toThrow(
       "already",
     );
-    await hostCommand(owner, "open", await command(code));
     await playerCommand("guest", "buzz", await command(code));
     await hostCommand(owner, "remove", {
       ...(await command(code)),
@@ -505,7 +524,6 @@ describe("Quiz rooms and concurrent players", () => {
     await assertSucceeds(getDoc(doc(guest, "gameRooms", code)));
     await assertFails(getDoc(doc(outsider, "gameRooms", code)));
     await assertFails(setDoc(doc(guest, "gameRooms", code), { phase: "open" }));
-    await hostCommand(owner, "open", await command(code));
     const old = await command(code);
     await playerCommand("guest", "buzz", old);
     const results = () =>

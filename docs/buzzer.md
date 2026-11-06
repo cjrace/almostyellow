@@ -2,7 +2,9 @@
 
 An authorised host chooses Create a room at `/games/buzzer` for up to 20 players. Sign-in returns to the buzzer if needed. Creating a room automatically generates a four-character code using letters and numbers, with ambiguous characters left out. A shared link opens directly at name entry; Join with a code is a fallback for guests entering the code manually. Guests need no account. Existing six-character codes continue to work until their rooms expire.
 
-The host can join as a player too. Open buzzing for each question; close it to freeze results, or reset to prepare the next question. Late joiners wait until the next question. Rooms end after six hours or when the host ends them.
+The host can join as a player too. Buzzing is always open, including for players who join mid-question. Each player can buzz once per question. Reset clears the results and immediately starts the next question; leaving and rejoining does not give a player another buzz in the same question. Rooms end after six hours or when the host ends them.
+
+Rooms created with the earlier open/close controls also allow buzzing immediately. Their old phase and eligibility fields no longer restrict players. Reset advances the round as usual, so delayed requests from an earlier question cannot enter the new results.
 
 ## Recovery and maintenance
 

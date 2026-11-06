@@ -124,7 +124,7 @@ test.describe("Quiz host and guests", () => {
       await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
     });
     let code = "";
-    await test.step("When the host creates a room and opens and resets buzzing", async () => {
+    await test.step("When the host creates an open room and resets buzzing", async () => {
       await expect(page.getByRole("textbox")).toHaveCount(0);
       const create = page.getByRole("button", {
         name: "Create a room",
@@ -153,15 +153,12 @@ test.describe("Quiz host and guests", () => {
       await expect(page.getByRole("main").getByRole("alert")).toContainText(
         "Could not join the room",
       );
-      await page
-        .getByRole("button", { name: "Open buzzing", exact: true })
-        .click();
       await expect(
-        page.getByRole("button", { name: "Close buzzing", exact: true }),
-      ).toBeEnabled();
+        page.getByText("Buzzing is open.", { exact: true }),
+      ).toBeVisible();
       await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
-        page.getByRole("button", { name: "Open buzzing", exact: true }),
+        page.getByRole("button", { name: "Reset", exact: true }),
       ).toBeEnabled();
       if (testInfo.project.name === "Google Chrome")
         await expectNoUnexpectedAxeViolations(page);
@@ -172,7 +169,7 @@ test.describe("Quiz host and guests", () => {
         page.getByRole("heading", { name: `Room ${code}`, exact: true }),
       ).toBeVisible();
       await expect(
-        page.getByRole("button", { name: "Open buzzing", exact: true }),
+        page.getByRole("button", { name: "Reset", exact: true }),
       ).toBeEnabled();
       await page.getByRole("button", { name: "End room", exact: true }).click();
       await page
@@ -281,6 +278,10 @@ test.describe("Quiz host and guests", () => {
     await expect(
       page.getByRole("heading", { name: "Players (1/20)" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "Buzz!", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Buzz recorded", exact: true }),
+    ).toBeVisible();
     const context = await browser.newContext({
       baseURL: testInfo.project.use.baseURL,
       viewport: testInfo.project.use.viewport,
@@ -339,10 +340,7 @@ test.describe("Quiz host and guests", () => {
           ),
         ),
       ).toEqual([]);
-      await test.step("When the host opens buzzing and the guest presses Space", async () => {
-        await page
-          .getByRole("button", { name: "Open buzzing", exact: true })
-          .click();
+      await test.step("When a guest joins after another player buzzes and presses Space", async () => {
         await expect(
           guest.getByRole("button", { name: "Buzz!", exact: true }),
         ).toBeEnabled();
@@ -498,16 +496,21 @@ test.describe("Quiz host and guests", () => {
         await expectNoUnexpectedAxeViolations(page);
         await expectNoUnexpectedAxeViolations(guest);
       }
-      await page
-        .getByRole("button", { name: "Close buzzing", exact: true })
-        .click();
       await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
         guest.getByRole("cell", { name: guestName, exact: true }),
       ).toHaveCount(0);
-      await page
-        .getByRole("button", { name: "Open buzzing", exact: true })
-        .click();
+      await expect(
+        guest.getByRole("button", { name: "Buzz!", exact: true }),
+      ).toBeEnabled();
+      await guest.getByRole("button", { name: "Buzz!", exact: true }).click();
+      await expect(
+        guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: guestName, exact: true }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
         guest.getByRole("button", { name: "Buzz!", exact: true }),
       ).toBeEnabled();

@@ -114,10 +114,9 @@ export async function createRoom(owner: string, commandId: string) {
         code,
         round: randomUUID(),
         version: 0,
-        phase: "ready",
+        phase: "open",
         expiresAt,
         players: [],
-        eligible: [],
         cleanupAt: expiry,
       });
       tx.create(adminDb().doc(`roomPrivate/${code}`), {
@@ -194,7 +193,7 @@ export async function joinRoom(
       expiresAt: Timestamp.fromMillis(room.expiresAt),
       ...(serverGuest ? { guestUid: uid } : {}),
     });
-    // Rejoining retains the seat identifier but never restores open-round eligibility.
+    // Rejoining retains the seat identifier, including any buzz this round.
     tx.update(roomRef, { players: [...room.players, { id: playerId, name }] });
     return { playerId };
   });
@@ -227,7 +226,7 @@ export async function joinGuestRoom(input: unknown, secret: string) {
 }
 export async function hostCommand(
   owner: string,
-  action: "open" | "close" | "reset" | "remove" | "end",
+  action: "reset" | "remove" | "end",
   input: unknown,
 ) {
   const data = commandSchema.extend({ playerId: id.optional() }).parse(input);
@@ -252,18 +251,9 @@ export async function hostCommand(
     if (room.round !== data.round || room.version !== data.version)
       fail("stale", "The room changed. Review it and try again.");
     const next: Partial<RoomView> = { version: room.version + 1 };
-    if (action === "open") {
-      if (room.phase !== "ready")
-        fail("closed", "Reset before opening another round.");
+    if (action === "reset") {
       next.phase = "open";
-      next.eligible = room.players.map((p) => p.id);
-    } else if (action === "close") {
-      if (room.phase !== "open") fail("closed", "Buzzing is not open.");
-      next.phase = "closed";
-    } else if (action === "reset") {
-      next.phase = "ready";
       next.round = randomUUID();
-      next.eligible = [];
     } else if (action === "end") next.phase = "ended";
     else {
       if (!data.playerId) fail("invalid", "Choose a player.");
@@ -275,7 +265,6 @@ export async function hostCommand(
       );
       members.docs.forEach((doc) => tx.update(doc.ref, { status: "removed" }));
       next.players = room.players.filter((p) => p.id !== data.playerId);
-      next.eligible = room.eligible.filter((p) => p !== data.playerId);
     }
     tx.update(roomRef, next);
     tx.create(receiptRef, {
@@ -316,7 +305,6 @@ export async function playerCommand(
       tx.update(membershipRef, { status: "left" });
       tx.update(roomRef, {
         players: room.players.filter((p) => p.id !== member.playerId),
-        eligible: room.eligible.filter((p) => p !== member.playerId),
       });
       return;
     }
@@ -324,9 +312,6 @@ export async function playerCommand(
       `roomBuzzes/${data.code}_${data.round}_${member.playerId}`,
     );
     if ((await tx.get(buzzRef)).exists) return;
-    if (room.phase !== "open") fail("closed", "Buzzing is closed.");
-    if (!room.eligible.includes(member.playerId))
-      fail("waiting", "Wait for the next question.");
     const player = room.players.find((p) => p.id === member.playerId);
     if (!player) fail("removed", "You are no longer in this room.");
     tx.create(buzzRef, {

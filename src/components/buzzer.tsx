@@ -265,12 +265,10 @@ export default function Buzzer({
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
   const ownBuzz = buzzes.some((buzz) => buzz.id === playerId);
-  const eligible = !!room?.eligible.includes(playerId);
   const canBuzz =
     !!client &&
     !!room &&
-    room.phase === "open" &&
-    eligible &&
+    room.players.some((player) => player.id === playerId) &&
     !ownBuzz &&
     !busy &&
     !uncertain &&
@@ -342,12 +340,10 @@ export default function Buzzer({
     };
   }, [canBuzz, ending, instructions]);
   async function control(
-    action: "open" | "close" | "reset" | "remove" | "end",
+    action: "reset" | "remove" | "end",
     removeId?: string,
   ) {
     if (!room || busy || cached) return;
-    if (action === "open" && room.phase !== "ready") return;
-    if (action === "close" && room.phase !== "open") return;
     const result = await controlBuzzer(action, {
       code: room.code,
       round: room.round,
@@ -539,11 +535,7 @@ export default function Buzzer({
                   : "This room has ended."
                 : !online || cached
                   ? "Reconnecting — buzzing is unavailable."
-                  : room?.phase === "open"
-                    ? "Buzzing is open."
-                    : room?.phase === "closed"
-                      ? "Buzzing is closed."
-                      : "Waiting for the host to open buzzing."}
+                  : "Buzzing is open."}
             </Text>
             {room && !ended && (
               <>
@@ -551,36 +543,9 @@ export default function Buzzer({
                   <Group>
                     <Button
                       autoContrast
-                      aria-disabled={busy || cached || room.phase !== "ready"}
-                      data-disabled={
-                        busy || cached || room.phase !== "ready" || undefined
-                      }
-                      onClick={() => void run(() => control("open"))}
-                    >
-                      Open buzzing
-                    </Button>
-                    <Button
-                      autoContrast
-                      aria-disabled={busy || cached || room.phase !== "open"}
-                      data-disabled={
-                        busy || cached || room.phase !== "open" || undefined
-                      }
-                      onClick={() => void run(() => control("close"))}
-                    >
-                      Close buzzing
-                    </Button>
-                    <Button
-                      autoContrast
-                      variant="default"
                       aria-disabled={busy || cached}
                       data-disabled={busy || cached || undefined}
-                      onClick={() =>
-                        void run(async () => {
-                          await control("reset");
-                          setBuzzes([]);
-                          setUncertain(false);
-                        })
-                      }
+                      onClick={() => void run(() => control("reset"))}
                     >
                       Reset
                     </Button>
@@ -663,9 +628,7 @@ export default function Buzzer({
                     <Text role="status">
                       {ownBuzz
                         ? `Your place: ${String(rows.find((row) => row.id === playerId)?.place ?? "pending")}.`
-                        : room.phase === "open" && !eligible
-                          ? "You will play from the next question."
-                          : "Use the button or press Space."}
+                        : "Use the button or press Space."}
                     </Text>
                     {uncertain && (
                       <Button
@@ -860,14 +823,14 @@ export default function Buzzer({
                 </Modal.Title>
                 <Stack>
                   <Text>
-                    The host opens buzzing for each question. Buzz once;
-                    everyone sees the confirmed order. Buzzing stays open until
-                    the host closes it. Reset prepares the next question.
+                    Buzz once per question; everyone sees the confirmed order.
+                    Buzzing is always open. The host resets the results for the
+                    next question.
                   </Text>
                   <Text>
-                    Players joining an open question wait for the next one.
-                    Exactly equal recorded times share a place. Network and
-                    processing delays can affect close finishes.
+                    You can buzz as soon as you join. Exactly equal recorded
+                    times share a place. Network and processing delays can
+                    affect close finishes.
                   </Text>
                   <Text>
                     Stay connected: buzzes are never queued offline. Refresh

@@ -7,7 +7,7 @@ export function isRoomCode(code: string) {
   }
   return true;
 }
-export type Phase = "ready" | "open" | "closed" | "ended";
+export type Phase = "open" | "ended";
 export interface Player {
   id: string;
   name: string;
@@ -19,7 +19,6 @@ export interface RoomView {
   phase: Phase;
   expiresAt: number;
   players: Player[];
-  eligible: string[];
 }
 export interface Buzz {
   id: string;

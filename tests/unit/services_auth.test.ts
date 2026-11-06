@@ -142,7 +142,7 @@ describe("firestoreTokenAction", () => {
 describe("Uno authentication", () => {
   it.each([
     ["createBuzzer", () => createBuzzer(fakeId)],
-    ["controlBuzzer", () => controlBuzzer("open", {})],
+    ["controlBuzzer", () => controlBuzzer("reset", {})],
     ["startUnoGame", () => uno.startUnoGame()],
     ["openUnoScoring", () => uno.openUnoScoring(fakeId)],
     ["syncUnoEvents", () => uno.syncUnoEvents([])],
