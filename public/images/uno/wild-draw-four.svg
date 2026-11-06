@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Wild Draw Four</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<rect x="14" y="14" width="222" height="322" rx="12" fill="#171717"/>
+<defs><clipPath id="oval"><ellipse cx="125" cy="175" rx="70" ry="108" transform="rotate(-18 125 175)"/></clipPath></defs>
+<g clip-path="url(#oval)"><path d="M125 175 L125 30 L270 30 L270 175 Z" fill="#d62828"/><path d="M125 175 L270 175 L270 330 L125 330 Z" fill="#1f5fd1"/><path d="M125 175 L125 330 L-20 330 L-20 175 Z" fill="#2a9d4a"/><path d="M125 175 L-20 175 L-20 30 L125 30 Z" fill="#f5c518"/></g>
+<ellipse cx="125" cy="175" rx="70" ry="108" transform="rotate(-18 125 175)" fill="none" stroke="#ffffff" stroke-width="6"/>
+<text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">WILD +4</text>
+<g transform="rotate(180 125 175)"><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">WILD +4</text></g>
+<text x="125" y="204" font-size="80" text-anchor="middle" fill="#171717" stroke="#ffffff" stroke-width="8" paint-order="stroke" font-family="Arial, Helvetica, sans-serif" font-weight="700">+4</text>
+</svg>

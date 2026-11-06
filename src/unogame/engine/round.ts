@@ -55,7 +55,9 @@ export type Command =
     }
   | { type: "draw"; player: string }
   | { type: "keep"; player: string }
-  | { type: "catchUno"; player: string };
+  | { type: "catchUno"; player: string }
+  // Says Uno after playing down to one card, while the window is still open
+  | { type: "sayUno"; player: string };
 
 // `cards` are only for the player concerned; see publicEvent in views.ts.
 export type RoundEvent =
@@ -89,6 +91,7 @@ export type ErrorCode =
   | "must_play_or_keep"
   | "nothing_drawn"
   | "no_uno_window"
+  | "nothing_to_declare"
   | "cannot_catch_self"
   | "uno_protected";
 
@@ -106,6 +109,7 @@ const messages: Record<ErrorCode, string> = {
   must_play_or_keep: "Play the card you drew or keep it.",
   nothing_drawn: "You have not drawn a card.",
   no_uno_window: "There is nobody to catch.",
+  nothing_to_declare: "You have no Uno to say right now.",
   cannot_catch_self: "You cannot catch yourself.",
   uno_protected: "That player still has time to say Uno.",
 };
@@ -283,6 +287,15 @@ export function applyCommand(
   const state = structuredClone(previous);
   const events: RoundEvent[] = [];
   const player = command.player;
+
+  if (command.type === "sayUno") {
+    // Allowed at any time until the next draw or play, even after the
+    // protected time, so saying it beats a catch that has not happened yet
+    if (state.uno?.player !== player) return reject("nothing_to_declare");
+    state.uno = null;
+    events.push({ type: "uno-declared", player });
+    return { ok: true, state, events };
+  }
 
   if (command.type === "catchUno") {
     const window = state.uno;

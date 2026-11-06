@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Green Skip</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<rect x="14" y="14" width="222" height="322" rx="12" fill="#2a9d4a"/>
+<ellipse cx="125" cy="175" rx="70" ry="108" transform="rotate(-18 125 175)" fill="#ffffff"/>
+<g color="#ffffff" transform="translate(21 45) scale(0.34)"><circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="12"/><line x1="23" y1="23" x2="77" y2="77" stroke="currentColor" stroke-width="12"/></g><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">GREEN</text>
+<g transform="rotate(180 125 175)"><g color="#ffffff" transform="translate(21 45) scale(0.34)"><circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="12"/><line x1="23" y1="23" x2="77" y2="77" stroke="currentColor" stroke-width="12"/></g><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">GREEN</text></g>
+<g color="#166534" transform="translate(79 129) scale(0.92)"><circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="12"/><line x1="23" y1="23" x2="77" y2="77" stroke="currentColor" stroke-width="12"/></g>
+</svg>

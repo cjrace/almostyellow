@@ -878,3 +878,60 @@ describe("purity and views", () => {
     expect(shown).toEqual({ type: "drew", player: "a", count: 1 });
   });
 });
+
+describe("saying Uno after the play", () => {
+  const exposed = () =>
+    play(
+      rig({
+        hands: { a: ["R1", "R2"], b: ["R3", "B4"], c: ["R4"] },
+        top: "R5",
+        stock: ["G1", "G2", "G3", "G4"],
+      }),
+      "a",
+      0,
+      {},
+      at(10_000),
+    ).state;
+
+  it("closes the window, inside the protected time or after it", () => {
+    for (const now of [10_500, 10_000 + UNO_PROTECTION_MS + 5000]) {
+      const { state, events } = run(
+        exposed(),
+        { type: "sayUno", player: "a" },
+        at(now),
+      );
+      expect(state.uno).toBeNull();
+      expect(events).toEqual([{ type: "uno-declared", player: "a" }]);
+      // Nobody can catch a declared player, and the turn is unchanged
+      expect(state.current).toBe(exposed().current);
+      expect(
+        errorOf(state, { type: "catchUno", player: "b" }, at(now + 10_000)),
+      ).toBe("no_uno_window");
+    }
+  });
+
+  it("only works for the player on one card, before the next draw or play", () => {
+    const state = exposed();
+    expect(errorOf(state, { type: "sayUno", player: "b" }, at(11_000))).toBe(
+      "nothing_to_declare",
+    );
+    const { state: afterDraw } = run(
+      state,
+      { type: "draw", player: "b" },
+      at(11_000),
+    );
+    expect(
+      errorOf(afterDraw, { type: "sayUno", player: "a" }, at(12_000)),
+    ).toBe("nothing_to_declare");
+    expect(errorOf(state, { type: "sayUno", player: "zed" })).toBe(
+      "unknown_player",
+    );
+  });
+
+  it("is rejected when nothing needs declaring", () => {
+    const state = rig({ hands: { a: ["R1", "R2"], b: ["R3"] }, top: "R5" });
+    expect(errorOf(state, { type: "sayUno", player: "a" })).toBe(
+      "nothing_to_declare",
+    );
+  });
+});
