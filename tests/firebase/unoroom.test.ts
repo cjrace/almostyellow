@@ -81,7 +81,7 @@ async function table(players: number) {
 }
 async function host(
   code: string,
-  action: "start" | "remove" | "end",
+  action: "start" | "remove" | "end" | "abandon",
   extra: object = {},
 ) {
   const current = await room(code);
@@ -277,20 +277,80 @@ describe("Uno rooms", () => {
     ).rejects.toThrow("nobody to catch");
   });
 
-  test("seated players cannot leave or be removed mid-round, others can", async () => {
-    const { code, seated } = await started(2);
-    const late = await joinRoom("late", { code, name: "Late" }, false, "uno");
+  test("a player who leaves mid-round takes their cards out of play and the round goes on", async () => {
+    const { code, seated } = await started(3);
+    const before = await secretState(code);
+    const leaver = seated[1];
     const current = await room(code);
-    await expect(
-      unoPlayerCommand(seated[0].uid, "leave", {
-        code,
-        round: current.round,
-        commandId: randomUUID(),
-      }),
-    ).rejects.toThrow("round finishes");
-    await expect(
-      host(code, "remove", { playerId: seated[1].playerId }),
-    ).rejects.toThrow("Wait for the round");
+    await unoPlayerCommand(leaver.uid, "leave", {
+      code,
+      round: current.round,
+      commandId: randomUUID(),
+    });
+    const after = await secretState(code);
+    expect(after.phase).toBe("playing");
+    expect(after.players).not.toContain(leaver.playerId);
+    expect(after.players).toHaveLength(2);
+    // Every card is still somewhere
+    const ids = (state: RoundState) =>
+      [...state.stock, ...state.discard, ...Object.values(state.hands).flat()]
+        .map((c) => c.id)
+        .sort((x, y) => x - y);
+    expect(ids(after)).toEqual(ids(before));
+    const published = await room(code);
+    expect(published.players.map((p) => p.id)).not.toContain(leaver.playerId);
+    expect(published.view?.players).toHaveLength(2);
+    expect(published.events).toEqual([
+      { type: "left", player: leaver.playerId },
+    ]);
+    expect(await hand(code, leaver.playerId)).toBeUndefined();
+    expect(published.version).toBe(current.version + 1);
+    // A retry of the same command changes nothing more
+    const commandId = randomUUID();
+    await unoPlayerCommand(seated[2].uid, "leave", {
+      code,
+      round: current.round,
+      commandId,
+    });
+    await unoPlayerCommand(seated[2].uid, "leave", {
+      code,
+      round: current.round,
+      commandId,
+    });
+    expect((await room(code)).version).toBe(published.version + 1);
+  });
+
+  test("the last player left in a round wins it, and it is scored once", async () => {
+    const { code, seated } = await started(2);
+    const current = await room(code);
+    await unoPlayerCommand(seated[0].uid, "leave", {
+      code,
+      round: current.round,
+      commandId: randomUUID(),
+    });
+    const finished = await room(code);
+    expect(finished.stage).toBe("finished");
+    expect(finished.view?.outcome).toEqual({
+      type: "win",
+      winner: seated[1].playerId,
+    });
+    expect(finished.scores[seated[1].playerId]).toBe(1);
+    const result = await adminDb()
+      .doc(`roomResults/${code}_${current.round}`)
+      .get();
+    expect(result.exists).toBe(true);
+    expect((await secretState(code)).phase).toBe("finished");
+  });
+
+  test("the host can remove a player mid-round, and others can still join and leave", async () => {
+    const { code, seated } = await started(3);
+    const late = await joinRoom("late", { code, name: "Late" }, false, "uno");
+    await host(code, "remove", { playerId: seated[0].playerId });
+    const state = await secretState(code);
+    expect(state.players).not.toContain(seated[0].playerId);
+    expect(await hand(code, seated[0].playerId)).toBeUndefined();
+    const current = await room(code);
+    expect(current.players.map((p) => p.id)).toContain(late.playerId);
     await unoPlayerCommand("late", "leave", {
       code,
       round: current.round,
@@ -299,6 +359,47 @@ describe("Uno rooms", () => {
     expect((await room(code)).players.map((p) => p.id)).not.toContain(
       late.playerId,
     );
+    // The removed player can no longer act
+    await expect(
+      unoPlayerCommand(seated[0].uid, "draw", {
+        code,
+        round: current.round,
+        commandId: randomUUID(),
+      }),
+    ).rejects.toThrow("no longer in this room");
+  });
+
+  test("the host can end a round early, scores stay, and the next one can start", async () => {
+    const { code, seated } = await started(2);
+    await host(code, "abandon");
+    const abandoned = await room(code);
+    expect(abandoned.stage).toBe("finished");
+    expect(abandoned.view?.outcome).toEqual({ type: "abandoned" });
+    expect(abandoned.scores).toEqual({});
+    expect(abandoned.events).toEqual([{ type: "abandoned" }]);
+    await expect(host(code, "abandon")).rejects.toThrow("no round");
+    await expect(
+      unoPlayerCommand(seated[0].uid, "draw", {
+        code,
+        round: abandoned.round,
+        commandId: randomUUID(),
+      }),
+    ).rejects.toThrow("no round");
+    await host(code, "start");
+    expect((await room(code)).stage).toBe("playing");
+  });
+
+  test("only the host can end a round", async () => {
+    const { code } = await started(2);
+    const current = await room(code);
+    await expect(
+      controlUnoRoom("player0", "abandon", {
+        code,
+        round: current.round,
+        version: current.version,
+        commandId: randomUUID(),
+      }),
+    ).rejects.toThrow("do not host");
   });
 
   test("a won round scores, is kept for a week, and the next starts a seat later", async () => {

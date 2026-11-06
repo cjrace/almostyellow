@@ -74,6 +74,12 @@ export function announceEvents(
       case "blocked":
         sentences.push("Nobody can move, so the round ends with no winner.");
         break;
+      case "left":
+        sentences.push(`${who(event.player)} left the game.`);
+        break;
+      case "abandoned":
+        sentences.push("The host ended the round.");
+        break;
     }
   }
   return sentences.join(" ");

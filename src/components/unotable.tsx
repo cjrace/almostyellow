@@ -68,7 +68,9 @@ export default function UnoTable({
       ? view.outcome.winner === me
         ? "You won the round"
         : `${names[view.outcome.winner]} won the round`
-      : "Nobody can move, so nobody wins"
+      : view.outcome?.type === "abandoned"
+        ? "The host ended the round"
+        : "Nobody can move, so nobody wins"
     : myTurn
       ? "Your turn"
       : `${names[view.currentPlayer]}'s turn`;

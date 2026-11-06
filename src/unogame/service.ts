@@ -15,12 +15,15 @@ import {
 } from "@/rooms/service";
 import { colours } from "./engine/cards";
 import {
+  abandonRound,
   applyCommand,
+  removePlayer,
   MAX_PLAYERS,
   MIN_PLAYERS,
   nextStartingIndex,
   startRound,
   type Command,
+  type Result,
   type RoundState,
 } from "./engine/round";
 import { privateView, publicEvent, publicView } from "./engine/views";
@@ -85,6 +88,63 @@ function handDocument(
     expiresAt: room.expiresAt,
     ...privateView(state, playerId),
   };
+}
+
+// Publishes what an engine result changed: the room's public view, the hands
+// that differ, and a result record once the round is over. The caller has done
+// all of its reads, since a transaction may not read after it writes.
+function commitRound(
+  tx: FirebaseFirestore.Transaction,
+  room: UnoRoom,
+  secret: PrivateUno,
+  previous: RoundState,
+  result: Extract<Result, { ok: true }>,
+  changes: Partial<UnoRoom> = {},
+) {
+  const next = result.state;
+  const finished = next.phase === "finished";
+  const scores = { ...room.scores };
+  if (next.outcome?.type === "win")
+    scores[next.outcome.winner] = (scores[next.outcome.winner] ?? 0) + 1;
+  tx.update(adminDb().doc(`gameRooms/${room.code}`), {
+    ...changes,
+    version: room.version + 1,
+    stage: finished ? "finished" : "playing",
+    scores,
+    view: publicView(next),
+    events: result.events.map(publicEvent),
+  });
+  tx.update(adminDb().doc(`roomPrivate/${room.code}`), { state: next });
+  const uids = secret.seatUids ?? {};
+  // Only rewrite the hands that changed, including whose turn it is
+  for (const id of next.players) {
+    const view = privateView(next, id);
+    if (
+      JSON.stringify(privateView(previous, id)) !== JSON.stringify(view) &&
+      uids[id]
+    )
+      tx.set(handRef(room.code, id), handDocument(room, next, id, uids[id]));
+  }
+  // Someone who has left no longer has a hand to publish
+  for (const id of previous.players)
+    if (!next.players.includes(id)) tx.delete(handRef(room.code, id));
+  if (finished)
+    tx.create(adminDb().doc(`roomResults/${room.code}_${room.round}`), {
+      code: room.code,
+      game: "uno",
+      round: room.round,
+      outcome: next.outcome,
+      seats: room.seats,
+      names: room.names,
+      scores,
+      finishedAt: FieldValue.serverTimestamp(),
+      expiresAt: Timestamp.fromMillis(Date.now() + RESULT_RETENTION_MS),
+    });
+}
+
+function engineResult(result: Result): Extract<Result, { ok: true }> {
+  if (!result.ok) throw new RoomError(result.error.code, result.error.message);
+  return result;
 }
 
 export async function startUnoRound(
@@ -162,7 +222,7 @@ export async function startUnoRound(
 
 export async function controlUnoRoom(
   owner: string,
-  action: "start" | "remove" | "end",
+  action: "start" | "remove" | "end" | "abandon",
   input: unknown,
 ): Promise<void> {
   if (action === "start") return startUnoRound(owner, input);
@@ -186,14 +246,27 @@ export async function controlUnoRoom(
     live(room);
     if (room.round !== data.round || room.version !== data.version)
       fail("stale", "The room changed. Review it and try again.");
+    const secret = privateDoc.data() as PrivateUno;
+    const state = secret.state;
+    const inRound = room.stage === "playing" ? state : undefined;
+    if (action === "abandon") {
+      if (!inRound)
+        return fail("not_playing", "There is no round being played.");
+      commitRound(
+        tx,
+        room,
+        secret,
+        inRound,
+        engineResult(abandonRound(inRound)),
+      );
+      tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+      return;
+    }
     const next: Partial<UnoRoom> = { version: room.version + 1 };
     if (action === "end") next.phase = "ended";
     else {
       if (!data.playerId) fail("invalid", "Choose a player.");
-      // Taking a player out of a round that is being played would need the
-      // engine to forget their hand, so wait for the round to finish
-      if (room.stage === "playing" && room.seats.includes(data.playerId))
-        fail("in_round", "Wait for the round to finish.");
+      const playerId = data.playerId;
       const members = await tx.get(
         adminDb()
           .collection("roomMembers")
@@ -201,7 +274,25 @@ export async function controlUnoRoom(
           .where("playerId", "==", data.playerId),
       );
       members.docs.forEach((doc) => tx.update(doc.ref, { status: "removed" }));
-      next.players = room.players.filter((p) => p.id !== data.playerId);
+      next.players = room.players.filter((p) => p.id !== playerId);
+      // A player in the round takes their cards back out of play
+      if (inRound?.players.includes(playerId)) {
+        commitRound(
+          tx,
+          room,
+          secret,
+          inRound,
+          engineResult(
+            removePlayer(inRound, playerId, {
+              now: Date.now(),
+              shuffle: secureShuffle,
+            }),
+          ),
+          { players: next.players },
+        );
+        tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+        return;
+      }
     }
     tx.update(roomRef, next);
     tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
@@ -264,12 +355,29 @@ export async function unoPlayerCommand(
     if (member?.status !== "active")
       fail("removed", "You are no longer in this room.");
     if (action === "leave") {
-      if (room.stage === "playing" && room.seats.includes(member.playerId))
-        fail("in_round", "You can leave when the round finishes.");
+      const secret = privateDoc.data() as PrivateUno | undefined;
+      const state = secret?.state;
+      const players = room.players.filter((p) => p.id !== member.playerId);
       tx.update(memberRef(data.code, uid), { status: "left" });
-      tx.update(roomRef, {
-        players: room.players.filter((p) => p.id !== member.playerId),
-      });
+      if (
+        secret &&
+        state?.phase === "playing" &&
+        state.players.includes(member.playerId)
+      )
+        commitRound(
+          tx,
+          room,
+          secret,
+          state,
+          engineResult(
+            removePlayer(state, member.playerId, {
+              now: Date.now(),
+              shuffle: secureShuffle,
+            }),
+          ),
+          { players },
+        );
+      else tx.update(roomRef, { players });
       tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
       return;
     }
@@ -291,42 +399,7 @@ export async function unoPlayerCommand(
     if (!result.ok)
       throw new RoomError(result.error.code, result.error.message);
 
-    const next = result.state;
-    const finished = next.phase === "finished";
-    const scores = { ...room.scores };
-    if (next.outcome?.type === "win")
-      scores[next.outcome.winner] = (scores[next.outcome.winner] ?? 0) + 1;
-    const version = room.version + 1;
-    tx.update(roomRef, {
-      version,
-      stage: finished ? "finished" : "playing",
-      scores,
-      view: publicView(next),
-      events: result.events.map(publicEvent),
-    });
-    tx.update(privateRef, { state: next });
-    const uids = secret.seatUids ?? {};
-    // Only rewrite the hands that changed, including whose turn it is
-    for (const id of next.players) {
-      const view = privateView(next, id);
-      if (
-        JSON.stringify(privateView(state, id)) !== JSON.stringify(view) &&
-        uids[id]
-      )
-        tx.set(handRef(room.code, id), handDocument(room, next, id, uids[id]));
-    }
-    if (finished)
-      tx.create(adminDb().doc(`roomResults/${room.code}_${room.round}`), {
-        code: room.code,
-        game: "uno",
-        round: room.round,
-        outcome: next.outcome,
-        seats: room.seats,
-        names: room.names,
-        scores,
-        finishedAt: FieldValue.serverTimestamp(),
-        expiresAt: Timestamp.fromMillis(Date.now() + RESULT_RETENTION_MS),
-      });
+    commitRound(tx, room, secret, state, result);
     tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
   });
 }

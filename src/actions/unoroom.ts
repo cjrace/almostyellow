@@ -10,11 +10,11 @@ export async function createUnoRoom(commandId: string) {
 }
 
 export async function controlUno(
-  action: "start" | "remove" | "end",
+  action: "start" | "remove" | "end" | "abandon",
   input: unknown,
 ) {
   const { uid } = await requireAuth();
-  if (!["start", "remove", "end"].includes(action))
+  if (!["start", "remove", "end", "abandon"].includes(action))
     throw new Error("Unknown room command.");
   try {
     await controlUnoRoom(uid, action, input);
