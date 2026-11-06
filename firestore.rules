@@ -133,6 +133,19 @@ service cloud.firestore {
     match /unoGames/{id}/{document=**} { allow read, write: if false; }
     match /unoLeases/{id} { allow read, write: if false; }
 
+    function roomAccess(code) {
+      let room = get(/databases/$(database)/documents/gameRooms/$(code)).data;
+      return request.auth != null && room.expiresAt > request.time.toMillis()
+        && ((isAuthorized() && get(/databases/$(database)/documents/roomPrivate/$(code)).data.owner == request.auth.uid)
+        || (get(/databases/$(database)/documents/roomMembers/$(code + '_' + request.auth.uid)).data.status == 'active' && get(/databases/$(database)/documents/roomMembers/$(code + '_' + request.auth.uid)).data.expiresAt.toMillis() == room.expiresAt));
+    }
+    match /gameRooms/{code} { allow read: if roomAccess(code); allow write: if false; }
+    match /roomBuzzes/{id} {
+      allow read: if roomAccess(resource.data.code)
+        && get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.phase != 'ended'
+        && resource.data.round == get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.round;
+      allow write: if false;
+    }
     // The allowlist is managed with the Admin SDK only, which bypasses rules
     match /authorisedUsers/{uid} {
       allow read, write: if false;

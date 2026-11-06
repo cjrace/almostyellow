@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 // Only send the user back to a callback URL that stays within the admin
-// area, or one of the two exact Uno paths, otherwise fall back to /admin.
+// area, or one of the exact game paths below.
 // callbackUrl is attacker-controllable
 // via the query string. Only the path (and query) is ever returned - the
 // host is always discarded, so this can never produce an off-origin
@@ -20,7 +20,8 @@ function sanitizeCallbackUrl(callbackUrl: string | undefined) {
   if (
     callbackUrl === "/games/uno-tracker" ||
     callbackUrl === "/games/uno-tracker/stats" ||
-    callbackUrl === "/games/uno-tracker/history"
+    callbackUrl === "/games/uno-tracker/history" ||
+    callbackUrl === "/games/buzzer"
   )
     return callbackUrl;
 

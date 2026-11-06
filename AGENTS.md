@@ -38,7 +38,11 @@ Use `deps/YYYY-MM` for monthly dependency update branches, for example `deps/202
 
 ## PR screenshots
 
-For visual changes, include representative before and after screenshot pairs in the PR description. Choose pages, states and viewport sizes that show the distinct changes. Use the same viewport and page state for each pair, and capture the full page so overflow is visible. Check the layouts the change affects, including desktop and mobile when behaviour differs; shared changes need representative examples of each affected layout rather than screenshots of every page.
+For a new feature, show representative images of the new screens and prioritise its main interaction. Before and after images are not needed when there is no useful previous version to compare. For changes to existing screens, include matching before and after pairs where they help explain the change.
+
+Use Cam and Laura as player names in PR screenshots. Keep artificial stress-test names in automated tests rather than published screenshots. Capture full pages so overflow is visible, and include desktop and mobile views when layouts differ. Show both colour schemes or interaction states when they explain distinct behaviour.
+
+Choose pages, states and viewport sizes that show the distinct changes. Use the same viewport and page state for each before and after pair. Shared changes need representative examples of each affected layout rather than screenshots of every page.
 
 Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a folder named after the PR number, and are linked as `https://raw.githubusercontent.com/cjrace/almostyellow/pr-assets/<PR number>/<file>`. Never commit them to the PR's own branch or `main`, and don't make a new branch for each PR. If `pr-assets` has gone, make it again as a branch with no code, holding only the folders and a short README.
 
@@ -52,7 +56,7 @@ Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a fo
   - `(homepage)/` — Home page (route group, no URL segment)
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
-  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits and the Uno tracker. Only Uno uses Firestore
+  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits, the Uno tracker and the quiz buzzer. Uno and the buzzer use Firestore
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
@@ -83,6 +87,12 @@ The shopping list reads and writes the `shoppingItems` collection straight from 
 ### Uno (Firestore)
 
 The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/games/uno-tracker/history`) can be read by anyone, but only authorised users can score. Its logic is in `src/uno/` (model, controller and browser storage), and `src/services/uno.ts` holds the server actions. They use the `uno`, `unoGames` and `unoLeases` collections, which the Security Rules deny to browsers entirely. A service worker, `public/games/uno-tracker/sw.js`, caches the three pages for offline use. See `docs/uno.md` for how it works.
+
+### Quiz buzzer (Firestore)
+
+The buzzer at `/games/buzzer` uses protected host actions in `src/actions/buzzer.ts` and guest POST commands in `src/app/api/buzzer/route.ts`. Host actions require an authorised session and room ownership. Joining uses a server-issued, room-specific HttpOnly cookie to create a guest only after membership is accepted; leave and buzz commands verify room-scoped Firebase ID tokens and membership. Keep public Firebase sign-ups disabled. The room transactions are in `src/rooms/service.ts`, with browser subscriptions and timestamp ordering in `src/buzzer/`. Browser writes are denied. Guest authentication persists in a separate named Firebase app for each room, independent of the default admin app. Buzzes are never queued offline.
+
+Rooms expire after six hours. Authorised room creation performs bounded cleanup of expired records; there is no TTL policy. See `docs/buzzer.md` for behaviour and recovery, and the buzzer unit, Firebase and browser tests for concurrency and privacy coverage.
 
 ### UI
 

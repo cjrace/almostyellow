@@ -4,6 +4,7 @@ import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 const publicRoutes = [
   "/",
   "/games",
+  "/games/buzzer",
   "/decisionmaker",
   "/whiskyjournal",
   "/films",
@@ -122,6 +123,11 @@ for (const scheme of schemes) {
     });
 
     for (const { path, button, dialog } of [
+      {
+        path: "/games/buzzer",
+        button: "Open game instructions modal",
+        dialog: "Quiz buzzer instructions",
+      },
       {
         path: "/games/irishbingo",
         button: "Open game instructions modal",

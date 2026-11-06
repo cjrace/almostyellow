@@ -93,6 +93,10 @@ pnpm run
 
 See [Uno tracker](docs/uno.md) for scoring, offline storage, historic games and statistics.
 
+## Quiz buzzer
+
+See [Quiz buzzer](docs/buzzer.md) for rooms, guest identities, recovery and validation.
+
 ## Deployment
 
 This site is deployed to the following places using [Vercel](https://vercel.com/), deploys are triggered from pushes to the `main` branch.
