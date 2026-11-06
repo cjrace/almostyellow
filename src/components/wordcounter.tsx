@@ -161,7 +161,7 @@ export default function WordCounter() {
   }, []);
 
   return (
-    <Stack gap="lg">
+    <Stack gap="lg" className={styles.root}>
       {segmentationSupported === false && (
         <Alert
           title="Your browser does not support Unicode segmentation"

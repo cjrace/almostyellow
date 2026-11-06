@@ -69,3 +69,36 @@
     gap: var(--mantine-spacing-md);
   }
 }
+
+/* On phones the text box takes the height left on the screen, below the
+   heading and above the counts, clear of the confetti credit like the games. */
+@mixin smaller-than $mantine-breakpoint-md {
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(
+      100dvh - var(--site-frame-padding) - var(--site-frame-bottom)
+    );
+  }
+
+  .main,
+  .root {
+    flex: 1;
+  }
+
+  .layout {
+    flex: 1;
+    grid-template-rows: auto 1fr auto;
+  }
+}
+
+/* Mantine's gap prop can't change with screen size, so set its variable. */
+.main {
+  --stack-gap: var(--mantine-spacing-sm);
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .main {
+    --stack-gap: var(--mantine-spacing-lg);
+  }
+}

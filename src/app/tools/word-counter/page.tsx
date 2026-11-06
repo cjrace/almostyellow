@@ -3,6 +3,7 @@ import { IconLock } from "@tabler/icons-react";
 import Header from "@/components/header";
 import WordCounter from "@/components/wordcounter";
 import { pageMetadata } from "@/metadata";
+import styles from "@/styles/wordcounter.module.css";
 
 export const metadata = pageMetadata(
   "Word and character counter",
@@ -11,12 +12,12 @@ export const metadata = pageMetadata(
 
 export default function WordCounterPage() {
   return (
-    <>
+    <div className={styles.page}>
       <Header noCrumbs tools />
       <Stack
         component="main"
         id="main-content"
-        gap={{ base: "sm", md: "lg" }}
+        className={styles.main}
         maw={1200}
         mx="auto"
       >
@@ -35,6 +36,6 @@ export default function WordCounterPage() {
         </Stack>
         <WordCounter />
       </Stack>
-    </>
+    </div>
   );
 }
