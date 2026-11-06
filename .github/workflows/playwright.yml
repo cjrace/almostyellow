@@ -50,6 +50,13 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # firebase-tools downloads the Firestore emulator on first use. The key
+      # follows the lockfile, so a new firebase-tools fetches a fresh copy.
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-emulators-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run Security Rules and seeding tests against the emulators
         run: pnpm test:firebase
 
@@ -57,6 +64,12 @@ jobs:
     name: Browser tests (${{ matrix.shard }}/4)
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    # Playwright's own image has the browsers and their system packages
+    # already installed. Keep the tag in step with @playwright/test in
+    # package.json, or the browsers will not be found.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -77,8 +90,17 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Install Playwright with deps
-        run: pnpm exec playwright install --with-deps chromium webkit
+      # The "Google Chrome" project uses real Chrome, which the image lacks
+      # (the runner has it, but the container does not)
+      - name: Install Google Chrome
+        run: pnpm exec playwright install chrome
+      # firebase-tools downloads the Firestore emulator on first use. The key
+      # follows the lockfile, so a new firebase-tools fetches a fresh copy.
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-emulators-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Cache Next.js build artifacts
         uses: actions/cache@v6
         with:
