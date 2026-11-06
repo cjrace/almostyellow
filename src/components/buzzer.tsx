@@ -63,9 +63,9 @@ export default function Buzzer({
   const [room, setRoom] = useState<RoomView | null>(null);
   const [buzzes, setBuzzes] = useState<Buzz[]>([]);
   const [cached, setCached] = useState(true);
-  // True once the server has confirmed the room, so the first connection is
-  // not reported as a lost one.
-  const [synced, setSynced] = useState(false);
+  // The room the server has confirmed, so the first connection is not reported
+  // as a lost one.
+  const [syncedRoom, setSyncedRoom] = useState("");
   const [online, setOnline] = useState(true);
   const [busy, setBusy] = useState(false);
   const [buzzing, setBuzzing] = useState(false);
@@ -162,7 +162,6 @@ export default function Buzzer({
     if (!active || (!hosting && client?.code !== active)) return;
     let unsubscribe: (() => void) | undefined;
     let alive = true;
-    setSynced(false);
     async function subscribe() {
       if (hosting) {
         await signInWithCustomToken(
@@ -183,7 +182,7 @@ export default function Buzzer({
           }
           setRoom(next);
           setCached(cached);
-          if (!cached) setSynced(true);
+          if (!cached) setSyncedRoom(active);
         },
         () => {
           setCached(true);
@@ -294,7 +293,7 @@ export default function Buzzer({
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
   const ownBuzz = buzzes.some((buzz) => buzz.id === playerId);
-  const connecting = !synced && cached && online;
+  const connecting = syncedRoom !== active && cached && online;
   const canBuzz =
     !!client &&
     !!room &&
