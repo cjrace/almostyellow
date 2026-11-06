@@ -1,6 +1,39 @@
-import { test, expect, waitsForHydration } from "../playwright";
+import {
+  test,
+  expect,
+  waitsForHydration,
+  type Locator,
+  type Route,
+} from "../playwright";
 import { users } from "../firebase/fixtures";
 import { expectNoUnexpectedAxeViolations, useScheme } from "../axe";
+
+async function expectTextInsideCap(button: Locator) {
+  const fits = await button.evaluate((button) => {
+    const cap = button.firstElementChild;
+    const label = cap?.firstElementChild;
+    if (!(cap instanceof HTMLElement) || !(label instanceof HTMLElement))
+      throw new Error("The buzzer label is missing.");
+    const bounds = cap.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const insideCircle = Array.from(range.getClientRects()).every((line) =>
+      [
+        [line.left, line.top],
+        [line.right, line.top],
+        [line.left, line.bottom],
+        [line.right, line.bottom],
+      ].every(
+        ([x, y]) =>
+          ((x - bounds.left - bounds.width / 2) / (bounds.width / 2)) ** 2 +
+            ((y - bounds.top - bounds.height / 2) / (bounds.height / 2)) ** 2 <=
+          1,
+      ),
+    );
+    return insideCircle && label.scrollWidth <= label.clientWidth;
+  });
+  expect(fits).toBe(true);
+}
 test.describe("Quiz host and guests", () => {
   test("removes legacy recovery keys and asks existing guests to rejoin", async ({
     page,
@@ -324,10 +357,60 @@ test.describe("Quiz host and guests", () => {
         await expect
           .poll(async () => (await cap.boundingBox())?.y ?? 0)
           .toBeGreaterThan(raised.y + 5);
-        await guest.keyboard.up("Space");
+        const { promise: confirmation, resolve: release } =
+          Promise.withResolvers<boolean>();
+        const holdBuzz = async (route: Route) => {
+          if (
+            (route.request().postDataJSON() as { action: string }).action ===
+            "buzz"
+          )
+            await confirmation;
+          await route.continue();
+        };
+        await guest.route("**/api/buzzer", holdBuzz);
+        try {
+          await guest.keyboard.up("Space");
+          const confirming = guest.getByRole("button", {
+            name: "Confirming…",
+            exact: true,
+          });
+          await expect(confirming).toBeVisible();
+          await expectTextInsideCap(confirming);
+          await guest.screenshot({
+            path: testInfo.outputPath("buzzer-confirming.png"),
+            fullPage: true,
+          });
+          if (testInfo.project.name === "Google Chrome") {
+            const viewport = guest.viewportSize();
+            if (!viewport) throw new Error("The guest viewport is missing.");
+            try {
+              await guest.setViewportSize({
+                width: 320,
+                height: viewport.height,
+              });
+              await expectTextInsideCap(confirming);
+              await guest.setViewportSize(viewport);
+              await guest.evaluate(() => {
+                document.body.style.zoom = "2";
+              });
+              await expectTextInsideCap(confirming);
+            } finally {
+              await guest.setViewportSize(viewport);
+              await guest.evaluate(() => {
+                document.body.style.zoom = "";
+              });
+            }
+          }
+        } finally {
+          release(true);
+          await guest.unrouteAll({ behavior: "wait" });
+        }
         await expect(
           guest.getByRole("button", { name: "Buzz recorded", exact: true }),
         ).toBeVisible();
+        await expectTextInsideCap(
+          guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+        );
         await guest.emulateMedia({ reducedMotion: "reduce" });
         await expect(
           guest
@@ -557,7 +640,9 @@ test.describe("Quiz host and guests", () => {
       }
     },
   );
-  test("explains play and keeps room links out of search", async ({ page }) => {
+  test("explains play and keeps room links out of search", async ({
+    page,
+  }, testInfo) => {
     await page.goto("/games/buzzer?room=ABC234");
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
       "content",
@@ -567,13 +652,37 @@ test.describe("Quiz host and guests", () => {
       "content",
       /noindex/,
     );
-    await page
-      .getByRole("button", { name: "Instructions", exact: true })
-      .click();
+    const information = page.getByRole("button", {
+      name: "Open game instructions modal",
+      exact: true,
+    });
+    await information.focus();
+    await page.keyboard.press("Enter");
     await expect(page.getByRole("dialog")).toContainText(
       "Network and processing delays",
     );
+    await expect(page.getByRole("dialog")).toHaveCSS("opacity", "1");
+    await page.screenshot({
+      path: testInfo.outputPath("instructions.png"),
+      fullPage: true,
+    });
+    await page
+      .getByRole("button", { name: "Close instructions modal", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(information).toBeFocused();
+    await information.click();
+    await expect(
+      page.getByRole("dialog", { name: "Quiz buzzer instructions" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: "Close instructions modal",
+        exact: true,
+      }),
+    ).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(information).toBeFocused();
   });
 });

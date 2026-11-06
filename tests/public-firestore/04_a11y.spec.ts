@@ -107,7 +107,7 @@ for (const scheme of schemes) {
     for (const { path, button, dialog } of [
       {
         path: "/games/buzzer",
-        button: "Instructions",
+        button: "Open game instructions modal",
         dialog: "Quiz buzzer instructions",
       },
       {

@@ -1,9 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useMounted } from "@mantine/hooks";
+import { IconInfoCircle } from "@tabler/icons-react";
 import {
+  ActionIcon,
   Alert,
   Button,
+  Center,
   Container,
   Group,
   List,
@@ -13,6 +17,7 @@ import {
   Text,
   TextInput,
   Title,
+  Tooltip,
   UnstyledButton,
 } from "@mantine/core";
 import { signInWithCustomToken } from "firebase/auth";
@@ -68,6 +73,7 @@ export default function Buzzer({
   const [identityError, setIdentityError] = useState("");
   const [ending, setEnding] = useState(false);
   const [instructions, setInstructions] = useState(false);
+  const mounted = useMounted();
   const [now, setNow] = useState(0);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const roomTitleRef = useRef<HTMLHeadingElement>(null);
@@ -359,19 +365,35 @@ export default function Buzzer({
   return (
     <Container size="sm">
       <Stack gap="md">
-        <Group justify="space-between">
-          <Title ref={titleRef} tabIndex={-1}>
-            Quiz buzzer
-          </Title>
-          <Button
-            autoContrast
-            variant="default"
-            onClick={() => {
-              setInstructions(true);
+        <Group gap="xs">
+          <Title
+            ref={titleRef}
+            tabIndex={-1}
+            fz={{
+              base: "var(--mantine-h2-font-size)",
+              sm: "var(--mantine-h1-font-size)",
             }}
           >
-            Instructions
-          </Button>
+            Quiz buzzer
+          </Title>
+          <Tooltip
+            label="Game instructions"
+            openDelay={250}
+            position="right"
+            offset={5}
+          >
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open game instructions modal"
+              onClick={(event) => {
+                event.currentTarget.focus();
+                setInstructions(true);
+              }}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
         </Group>
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
@@ -814,32 +836,60 @@ export default function Buzzer({
             End room
           </Button>
         </Modal>
-        <Modal
+        <Modal.Root
+          keepMounted
+          withinPortal={mounted}
+          keepMountedMode={mounted ? "activity" : "display-none"}
+          size="auto"
           opened={instructions}
           onClose={() => {
             setInstructions(false);
           }}
-          title="Quiz buzzer instructions"
-          closeButtonProps={{ "aria-label": "Close instructions" }}
+          transitionProps={{
+            transition: "fade",
+            duration: 300,
+            timingFunction: "linear",
+          }}
         >
-          <Stack>
-            <Text>
-              The host opens buzzing for each question. Buzz once; everyone sees
-              the confirmed order. Buzzing stays open until the host closes it.
-              Reset prepares the next question.
-            </Text>
-            <Text>
-              Players joining an open question wait for the next one. Exactly
-              equal recorded times share a place. Network and processing delays
-              can affect close finishes.
-            </Text>
-            <Text>
-              Stay connected: buzzes are never queued offline. Refresh restores
-              your place in this browser; deleting browser storage loses your
-              identity. Rooms last six hours.
-            </Text>
-          </Stack>
-        </Modal>
+          <Modal.Overlay backgroundOpacity={0.75} blur={3} />
+          <Modal.Content>
+            <Modal.Body>
+              <Container>
+                <Modal.Title fz="h2" fw={700} lh="h2" mb="sm">
+                  Quiz buzzer instructions
+                </Modal.Title>
+                <Stack>
+                  <Text>
+                    The host opens buzzing for each question. Buzz once;
+                    everyone sees the confirmed order. Buzzing stays open until
+                    the host closes it. Reset prepares the next question.
+                  </Text>
+                  <Text>
+                    Players joining an open question wait for the next one.
+                    Exactly equal recorded times share a place. Network and
+                    processing delays can affect close finishes.
+                  </Text>
+                  <Text>
+                    Stay connected: buzzes are never queued offline. Refresh
+                    restores your place in this browser; deleting browser
+                    storage loses your identity. Rooms last six hours.
+                  </Text>
+                </Stack>
+                <Center>
+                  <Button
+                    variant="subtle"
+                    mt="md"
+                    onClick={() => {
+                      setInstructions(false);
+                    }}
+                  >
+                    Close instructions modal
+                  </Button>
+                </Center>
+              </Container>
+            </Modal.Body>
+          </Modal.Content>
+        </Modal.Root>
       </Stack>
     </Container>
   );

@@ -1,5 +1,6 @@
 .buzzer {
   display: block;
+  container-type: inline-size;
   width: min(100%, 20rem);
   aspect-ratio: 1;
   margin: 0.75rem auto 0.5rem;
@@ -20,6 +21,7 @@
 
 .cap {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   width: 100%;
   height: 100%;
@@ -43,8 +45,11 @@
 }
 
 .label {
-  max-width: 80%;
-  font-size: clamp(1.5rem, 6vw, 2.5rem);
+  width: 80%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  font-size: clamp(1.5rem, 10cqi, 2.5rem);
   font-weight: 900;
   line-height: 1.15;
   text-align: center;
