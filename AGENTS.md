@@ -31,7 +31,7 @@ CI (`.github/workflows/playwright.yml`) runs format, lint and unit tests, Fireba
 
 ## Dependencies
 
-`pnpm-workspace.yaml` holds `overrides` for security fixes and `allowBuilds` for packages allowed to run install scripts. Leave them unless a bump needs the change. `patches/` patches `firebase-tools` and `superstatic` for minimatch's named export, and `tests/unit/dependency_compatibility.test.ts` checks the patches still work, so keep it passing when updating either package.
+`pnpm-workspace.yaml` holds `overrides` for security fixes and `allowBuilds` for packages allowed to run install scripts. Leave them unless a bump needs the change. `patches/` patches `firebase-tools` and `superstatic` for minimatch's named export, and `tests/unit/dependency_compatibility.test.ts` checks the patches still work, so keep it passing when updating either package. The CI browser shards run in the `mcr.microsoft.com/playwright` image, whose tag (for example `v1.64.1-noble`) must match the `@playwright/test` version in `package.json`. When bumping `@playwright/test`, change the tag in `.github/workflows/playwright.yml` in the same PR, and check the tag exists on MCR. Dependabot does not update it.
 
 ## Branch naming
 
