@@ -63,6 +63,9 @@ export default function Buzzer({
   const [room, setRoom] = useState<RoomView | null>(null);
   const [buzzes, setBuzzes] = useState<Buzz[]>([]);
   const [cached, setCached] = useState(true);
+  // True once the server has confirmed the room, so the first connection is
+  // not reported as a lost one.
+  const [synced, setSynced] = useState(false);
   const [online, setOnline] = useState(true);
   const [busy, setBusy] = useState(false);
   const [buzzing, setBuzzing] = useState(false);
@@ -159,6 +162,7 @@ export default function Buzzer({
     if (!active || (!hosting && client?.code !== active)) return;
     let unsubscribe: (() => void) | undefined;
     let alive = true;
+    setSynced(false);
     async function subscribe() {
       if (hosting) {
         await signInWithCustomToken(
@@ -179,6 +183,7 @@ export default function Buzzer({
           }
           setRoom(next);
           setCached(cached);
+          if (!cached) setSynced(true);
         },
         () => {
           setCached(true);
@@ -289,6 +294,7 @@ export default function Buzzer({
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
   const ownBuzz = buzzes.some((buzz) => buzz.id === playerId);
+  const connecting = !synced && cached && online;
   const canBuzz =
     !!client &&
     !!room &&
@@ -582,7 +588,8 @@ export default function Buzzer({
                 data-pressed={pressed || buzzing || ownBuzz || undefined}
                 data-unavailable={
                   ownBuzz ||
-                  (!buzzing && (!online || cached || uncertain)) ||
+                  (!buzzing &&
+                    (!online || (cached && !connecting) || uncertain)) ||
                   undefined
                 }
                 onPointerDown={() => {
@@ -628,13 +635,15 @@ export default function Buzzer({
                 ? expired
                   ? "This room has expired."
                   : "This room has ended."
-                : !online || cached
-                  ? "Reconnecting — buzzing is unavailable."
-                  : ownRow
-                    ? `You're ${ordinal(ownRow.place)}${ownRow.gap > 0 ? `, ${String(ownRow.gap)} ms behind first` : ""}.`
-                    : ownBuzz
-                      ? "Buzz recorded."
-                      : ""}
+                : connecting
+                  ? "Connecting…"
+                  : !online || cached
+                    ? "Reconnecting — buzzing is unavailable."
+                    : ownRow
+                      ? `You're ${ordinal(ownRow.place)}${ownRow.gap > 0 ? `, ${String(ownRow.gap)} ms behind first` : ""}.`
+                      : ownBuzz
+                        ? "Buzz recorded."
+                        : ""}
             </Text>
             {room && !ended && playerId && !ownBuzz && (
               <Text visibleFrom="sm" c="dimmed" size="sm" ta="center">
