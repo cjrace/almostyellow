@@ -24,3 +24,15 @@ Playing down to one card with `declareUno` opens no window. Without it, the play
 ### Known limits
 
 There are no turn timers. A player who stops responding holds up the table until the host abandons the round (added in a later stage).
+
+## Cards and table components
+
+- `scripts/generate-uno-svgs.mts` writes 54 faces to `public/images/uno`, in the same 5:7 style as the playing cards. Coloured faces spell their colour at the top and bottom and in the image title. The back is the existing Mr Tayto card. Run it again after changing the design.
+- `src/unogame/cards.ts` names cards and finds their images. The playing-card API is untouched.
+- Components in `src/components/`: `unocard` (images and card buttons), `unohand`, `unoopponents`, `unocolourpicker`, `unoscoreboard` and `unotable`, which composes them. They show a published view and report choices; they never change the game. Styles are in `src/styles/unotable.module.css`.
+- Unplayable cards stay focusable and are marked `aria-disabled`, with the reason in their name. Playable cards also stand higher in the hand, and the player to move has a thicker border and the word "Playing", so nothing depends on colour. The colour in play has a shape as well as a colour.
+- A large hand scrolls sideways inside its own list. The page never scrolls sideways.
+
+### Preview page
+
+`/admin/unopreview` (signed-in only, so outside the sitemap and search) shows synthetic tables built from real engine states in `src/unogame/preview.ts`: two and ten players, long names, a large hand, catching Uno and a finished round. Choosing a card only reports the choice. It is temporary and goes when the playable table replaces it.

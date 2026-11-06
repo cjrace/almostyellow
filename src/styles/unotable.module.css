@@ -1,0 +1,232 @@
+/* The Uno table fills the screen like the other card games (see
+   cardgame.module.css). Opponents, the piles and the hand each get their own
+   area, and a large hand scrolls inside its area rather than the page. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-sm);
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  margin-top: var(--mantine-spacing-md);
+  min-width: 0;
+}
+
+.heading {
+  overflow-wrap: anywhere;
+}
+
+/* Players other than you: one scrolling row on phones, wrapping on wider
+   screens */
+.opponents {
+  display: flex;
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.opponent {
+  flex: 0 0 auto;
+  width: 10.5rem;
+  min-width: 0;
+  padding: var(--mantine-spacing-xs);
+  border: 2px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-md);
+}
+
+/* The player whose turn it is also gets a thicker border and the word
+   "Playing", so it never relies on colour */
+.opponent[data-current] {
+  border-color: var(--mantine-color-orange-6);
+  border-width: 4px;
+  padding: calc(var(--mantine-spacing-xs) - 2px);
+}
+
+.name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin larger-than $mantine-breakpoint-sm {
+  .opponents {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+/* A size container, so the piles take the height that is left */
+.table {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 11rem;
+  container-type: size;
+}
+
+.piles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-md);
+  height: min(100cqh, 20rem);
+  max-width: 100cqw;
+}
+
+.pile {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 5 / 7;
+  min-width: 0;
+}
+
+.pileButton {
+  display: block;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  border-radius: 6%;
+}
+
+.pileButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.pileImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6%;
+}
+
+/* The card count sits in a box on the pile, so it does not depend on the
+   colours of the card behind it */
+.count {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 6%;
+  margin-inline: auto;
+  width: fit-content;
+  padding: 2px 10px;
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  border: 2px solid var(--mantine-color-default-border);
+  font-weight: 700;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--mantine-color-text);
+  vertical-align: -0.15rem;
+}
+
+/* Each colour also has its own shape */
+.swatch[data-colour="red"] {
+  background: #d62828;
+  border-radius: 50%;
+}
+
+.swatch[data-colour="yellow"] {
+  background: #f5c518;
+  border-radius: 2px;
+}
+
+.swatch[data-colour="green"] {
+  background: #2a9d4a;
+  border-radius: 50% 0 50% 0;
+}
+
+.swatch[data-colour="blue"] {
+  background: #1f5fd1;
+  border-radius: 2px;
+  transform: rotate(45deg) scale(0.85);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+/* The hand has its own scrolling area. Playable cards stand up from the rest,
+   so playability is also shown by position, not only by being brighter */
+.hand {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin: 0;
+  padding: 14px 4px 6px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+.handCard {
+  flex: 0 0 auto;
+  width: clamp(3.6rem, min(17vw, 13dvh), 6.5rem);
+  scroll-snap-align: start;
+}
+
+.cardButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border-radius: 6%;
+  transition: transform 0.15s;
+}
+
+.cardButton[data-playable] {
+  transform: translateY(-10px);
+}
+
+.cardButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.cardButton[aria-disabled="true"] img {
+  opacity: 0.7;
+}
+
+.cardButton[data-drawn] {
+  outline: 4px solid var(--mantine-color-orange-6);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardButton {
+    transition: none;
+  }
+}
+
+/* The buttons are the colours themselves, with Mantine's usual white text. The
+   shape stays, in white, so each colour is still more than a fill */
+.picker .swatch[data-colour] {
+  background: #fff;
+  border-color: #fff;
+}
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-xs);
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  .picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board {
+    margin-top: var(--mantine-spacing-xs);
+  }
+}

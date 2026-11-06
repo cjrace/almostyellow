@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Yellow Reverse</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<rect x="14" y="14" width="222" height="322" rx="12" fill="#f5c518"/>
+<ellipse cx="125" cy="175" rx="70" ry="108" transform="rotate(-18 125 175)" fill="#ffffff"/>
+<g color="#171717" transform="translate(21 45) scale(0.34)"><path d="M30 92 L30 42 L14 42 L40 8 L66 42 L50 42 L50 92 Z" fill="currentColor"/><path d="M70 8 L70 58 L86 58 L60 92 L34 58 L50 58 L50 8 Z" fill="currentColor" transform="translate(20 0)"/></g><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-weight="700">YELLOW</text>
+<g transform="rotate(180 125 175)"><g color="#171717" transform="translate(21 45) scale(0.34)"><path d="M30 92 L30 42 L14 42 L40 8 L66 42 L50 42 L50 92 Z" fill="currentColor"/><path d="M70 8 L70 58 L86 58 L60 92 L34 58 L50 58 L50 8 Z" fill="currentColor" transform="translate(20 0)"/></g><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#171717" font-family="Arial, Helvetica, sans-serif" font-weight="700">YELLOW</text></g>
+<g color="#7a5600" transform="translate(79 129) scale(0.92)"><path d="M30 92 L30 42 L14 42 L40 8 L66 42 L50 42 L50 92 Z" fill="currentColor"/><path d="M70 8 L70 58 L86 58 L60 92 L34 58 L50 58 L50 8 Z" fill="currentColor" transform="translate(20 0)"/></g>
+</svg>

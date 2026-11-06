@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350" role="img">
+<title>Blue 5</title>
+<rect x="2" y="2" width="246" height="346" rx="16" fill="#ffffff" stroke="#a3a3a3" stroke-width="3"/>
+<rect x="14" y="14" width="222" height="322" rx="12" fill="#1f5fd1"/>
+<ellipse cx="125" cy="175" rx="70" ry="108" transform="rotate(-18 125 175)" fill="#ffffff"/>
+<text x="38" y="76" font-size="44" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">5</text><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">BLUE</text>
+<g transform="rotate(180 125 175)"><text x="38" y="76" font-size="44" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">5</text><text x="125" y="42" font-size="20" letter-spacing="3" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700">BLUE</text></g>
+<text x="125" y="217" font-size="118" text-anchor="middle" fill="#1e40af" font-family="Arial, Helvetica, sans-serif" font-weight="700">5</text>
+</svg>
