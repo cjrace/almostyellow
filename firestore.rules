@@ -146,6 +146,15 @@ service cloud.firestore {
         && resource.data.round == get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.round;
       allow write: if false;
     }
+    // A player's own Uno hand. The full round and everyone else's hand stay
+    // on the server.
+    match /roomHands/{id} {
+      allow read: if request.auth != null
+        && resource.data.uid == request.auth.uid
+        && roomAccess(resource.data.code)
+        && get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.phase != 'ended';
+      allow write: if false;
+    }
     // The allowlist is managed with the Admin SDK only, which bypasses rules
     match /authorisedUsers/{uid} {
       allow read, write: if false;

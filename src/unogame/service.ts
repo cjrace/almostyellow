@@ -1,0 +1,332 @@
+import "server-only";
+import { randomUUID } from "node:crypto";
+import { Timestamp, FieldValue } from "firebase-admin/firestore";
+import { z } from "zod";
+import { adminDb } from "@/firebase/admin";
+import { gameOf, RoomError, type RoomView } from "@/buzzer/model";
+import {
+  fail,
+  key,
+  live,
+  memberRef,
+  transaction,
+  commandSchema,
+  type Member,
+} from "@/rooms/service";
+import { colours } from "./engine/cards";
+import {
+  applyCommand,
+  MAX_PLAYERS,
+  MIN_PLAYERS,
+  nextStartingIndex,
+  startRound,
+  type Command,
+  type RoundState,
+} from "./engine/round";
+import { privateView, publicEvent, publicView } from "./engine/views";
+import { RESULT_RETENTION_MS, type UnoHand, type UnoRoom } from "./room";
+import { secureShuffle } from "./shuffle";
+
+// All of the game's rules are in the engine. This file decides who may ask
+// for what, runs the engine inside a transaction, and publishes the results:
+// the public view for the room, and each player's own hand for them alone.
+
+interface PrivateUno {
+  owner: string;
+  expiresAt: Timestamp;
+  state?: RoundState | null;
+  // Who sits where in the current round, to publish each hand to its owner
+  seatUids?: Record<string, string>;
+  starter?: string | null;
+}
+
+export const unoPlayerActions = [
+  "leave",
+  "play",
+  "draw",
+  "keep",
+  "catch",
+  "sayUno",
+] as const;
+type UnoPlayerAction = (typeof unoPlayerActions)[number];
+
+// Only a catch has to name the version of the table it was made against.
+// Everything else is checked by the engine against the real state.
+const playerSchema = commandSchema.extend({
+  version: z.number().int().nonnegative().optional(),
+});
+const playSchema = playerSchema.extend({
+  cardId: z.number().int().min(0).max(107),
+  colour: z.enum(colours).optional(),
+  declareUno: z.boolean().optional(),
+});
+
+const handRef = (code: string, playerId: string) =>
+  adminDb().doc(`roomHands/${code}_${playerId}`);
+const expiryOf = (room: RoomView) => Timestamp.fromMillis(room.expiresAt);
+function unoRoom(data: FirebaseFirestore.DocumentData | undefined): UnoRoom {
+  if (!data) return fail("invalid", "This room is not available.");
+  const room = data as UnoRoom;
+  if (gameOf(room) !== "uno") fail("invalid", "This is not an Uno room.");
+  return room;
+}
+
+function handDocument(
+  room: UnoRoom,
+  state: RoundState,
+  playerId: string,
+  uid: string,
+): UnoHand {
+  return {
+    code: room.code,
+    playerId,
+    uid,
+    round: room.round,
+    expiresAt: room.expiresAt,
+    ...privateView(state, playerId),
+  };
+}
+
+export async function startUnoRound(
+  owner: string,
+  input: unknown,
+): Promise<void> {
+  const data = commandSchema.parse(input);
+  await transaction(async (tx) => {
+    const roomRef = adminDb().doc(`gameRooms/${data.code}`);
+    const privateRef = adminDb().doc(`roomPrivate/${data.code}`);
+    const receiptRef = adminDb().doc(
+      `roomCommands/${key(`${owner}:${data.commandId}`)}`,
+    );
+    const [snapshot, privateDoc, receipt, members] = await Promise.all([
+      tx.get(roomRef),
+      tx.get(privateRef),
+      tx.get(receiptRef),
+      tx.get(
+        adminDb()
+          .collection("roomMembers")
+          .where("code", "==", data.code)
+          .where("status", "==", "active"),
+      ),
+    ]);
+    const secret = privateDoc.data() as PrivateUno | undefined;
+    if (secret?.owner !== owner)
+      fail("forbidden", "You do not host this room.");
+    if (receipt.exists) return;
+    const room = unoRoom(snapshot.data());
+    live(room);
+    if (room.round !== data.round || room.version !== data.version)
+      fail("stale", "The room changed. Review it and try again.");
+    if (room.stage === "playing")
+      fail("in_round", "A round is already being played.");
+    if (room.players.length < MIN_PLAYERS)
+      fail("too_few", `A round needs at least ${String(MIN_PLAYERS)} players.`);
+    if (room.players.length > MAX_PLAYERS)
+      fail("full", `A round has at most ${String(MAX_PLAYERS)} players.`);
+
+    const uids: Record<string, string> = {};
+    for (const doc of members.docs) {
+      const member = doc.data() as Member;
+      if (member.uid) uids[member.playerId] = member.uid;
+    }
+    const seats = room.players.map((p) => p.id);
+    if (seats.some((id) => !uids[id]))
+      fail("unavailable", "A player needs to reconnect. Try again.");
+
+    const state = startRound({
+      players: seats,
+      startingIndex: nextStartingIndex(seats, secret.starter ?? null),
+      shuffle: secureShuffle,
+    });
+    const next: UnoRoom = {
+      ...room,
+      round: randomUUID(),
+      version: room.version + 1,
+      stage: "playing",
+      seats,
+      names: Object.fromEntries(room.players.map((p) => [p.id, p.name])),
+      view: publicView(state),
+      events: [],
+    };
+    tx.set(roomRef, next);
+    tx.update(privateRef, {
+      state,
+      seatUids: uids,
+      starter: seats[state.current],
+    });
+    for (const id of seats)
+      tx.set(handRef(room.code, id), handDocument(next, state, id, uids[id]));
+    tx.create(receiptRef, { code: room.code, expiresAt: expiryOf(room) });
+  });
+}
+
+export async function controlUnoRoom(
+  owner: string,
+  action: "start" | "remove" | "end",
+  input: unknown,
+): Promise<void> {
+  if (action === "start") return startUnoRound(owner, input);
+  const data = commandSchema
+    .extend({ playerId: z.uuid().optional() })
+    .parse(input);
+  await transaction(async (tx) => {
+    const roomRef = adminDb().doc(`gameRooms/${data.code}`);
+    const receiptRef = adminDb().doc(
+      `roomCommands/${key(`${owner}:${data.commandId}`)}`,
+    );
+    const [privateDoc, snapshot, receipt] = await Promise.all([
+      tx.get(adminDb().doc(`roomPrivate/${data.code}`)),
+      tx.get(roomRef),
+      tx.get(receiptRef),
+    ]);
+    if (!privateDoc.exists || (privateDoc.data() as PrivateUno).owner !== owner)
+      fail("forbidden", "You do not host this room.");
+    if (receipt.exists) return;
+    const room = unoRoom(snapshot.data());
+    live(room);
+    if (room.round !== data.round || room.version !== data.version)
+      fail("stale", "The room changed. Review it and try again.");
+    const next: Partial<UnoRoom> = { version: room.version + 1 };
+    if (action === "end") next.phase = "ended";
+    else {
+      if (!data.playerId) fail("invalid", "Choose a player.");
+      // Taking a player out of a round that is being played would need the
+      // engine to forget their hand, so wait for the round to finish
+      if (room.stage === "playing" && room.seats.includes(data.playerId))
+        fail("in_round", "Wait for the round to finish.");
+      const members = await tx.get(
+        adminDb()
+          .collection("roomMembers")
+          .where("code", "==", data.code)
+          .where("playerId", "==", data.playerId),
+      );
+      members.docs.forEach((doc) => tx.update(doc.ref, { status: "removed" }));
+      next.players = room.players.filter((p) => p.id !== data.playerId);
+    }
+    tx.update(roomRef, next);
+    tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+  });
+}
+
+function toCommand(
+  action: Exclude<UnoPlayerAction, "leave">,
+  player: string,
+  input: unknown,
+): Command {
+  switch (action) {
+    case "play": {
+      const data = playSchema.parse(input);
+      return {
+        type: "play",
+        player,
+        cardId: data.cardId,
+        ...(data.colour ? { colour: data.colour } : {}),
+        ...(data.declareUno ? { declareUno: true } : {}),
+      };
+    }
+    case "draw":
+      return { type: "draw", player };
+    case "keep":
+      return { type: "keep", player };
+    case "catch":
+      return { type: "catchUno", player };
+    case "sayUno":
+      return { type: "sayUno", player };
+  }
+}
+
+export async function unoPlayerCommand(
+  uid: string,
+  action: UnoPlayerAction,
+  input: unknown,
+): Promise<void> {
+  const data = (action === "play" ? playSchema : playerSchema).parse(input);
+  // Catching names no one, so it must say which table it was made against
+  if (action === "catch" && data.version === undefined)
+    throw new z.ZodError([]);
+  await transaction(async (tx) => {
+    const roomRef = adminDb().doc(`gameRooms/${data.code}`);
+    const privateRef = adminDb().doc(`roomPrivate/${data.code}`);
+    const receiptRef = adminDb().doc(
+      `roomCommands/${key(`${uid}:${data.commandId}`)}`,
+    );
+    const [snapshot, membership, receipt, privateDoc] = await Promise.all([
+      tx.get(roomRef),
+      tx.get(memberRef(data.code, uid)),
+      tx.get(receiptRef),
+      tx.get(privateRef),
+    ]);
+    // A retry of a command that already went through changes nothing
+    if (receipt.exists) return;
+    const room = unoRoom(snapshot.data());
+    live(room);
+    const member = membership.data() as Member | undefined;
+    if (member?.status !== "active")
+      fail("removed", "You are no longer in this room.");
+    if (action === "leave") {
+      if (room.stage === "playing" && room.seats.includes(member.playerId))
+        fail("in_round", "You can leave when the round finishes.");
+      tx.update(memberRef(data.code, uid), { status: "left" });
+      tx.update(roomRef, {
+        players: room.players.filter((p) => p.id !== member.playerId),
+      });
+      tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+      return;
+    }
+    if (room.stage !== "playing")
+      fail("not_playing", "There is no round being played.");
+    if (data.round !== room.round) fail("stale", "That round has finished.");
+    if (action === "catch" && data.version !== room.version)
+      fail("stale", "The table changed. Check it and try again.");
+    const secret = privateDoc.data() as PrivateUno | undefined;
+    const state = secret?.state;
+    if (!secret || !state)
+      return fail("unavailable", "The round is not ready.");
+
+    const result = applyCommand(
+      state,
+      toCommand(action, member.playerId, input),
+      { now: Date.now(), shuffle: secureShuffle },
+    );
+    if (!result.ok)
+      throw new RoomError(result.error.code, result.error.message);
+
+    const next = result.state;
+    const finished = next.phase === "finished";
+    const scores = { ...room.scores };
+    if (next.outcome?.type === "win")
+      scores[next.outcome.winner] = (scores[next.outcome.winner] ?? 0) + 1;
+    const version = room.version + 1;
+    tx.update(roomRef, {
+      version,
+      stage: finished ? "finished" : "playing",
+      scores,
+      view: publicView(next),
+      events: result.events.map(publicEvent),
+    });
+    tx.update(privateRef, { state: next });
+    const uids = secret.seatUids ?? {};
+    // Only rewrite the hands that changed, including whose turn it is
+    for (const id of next.players) {
+      const view = privateView(next, id);
+      if (
+        JSON.stringify(privateView(state, id)) !== JSON.stringify(view) &&
+        uids[id]
+      )
+        tx.set(handRef(room.code, id), handDocument(room, next, id, uids[id]));
+    }
+    if (finished)
+      tx.create(adminDb().doc(`roomResults/${room.code}_${room.round}`), {
+        code: room.code,
+        game: "uno",
+        round: room.round,
+        outcome: next.outcome,
+        seats: room.seats,
+        names: room.names,
+        scores,
+        finishedAt: FieldValue.serverTimestamp(),
+        expiresAt: Timestamp.fromMillis(Date.now() + RESULT_RETENTION_MS),
+      });
+    tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+  });
+}

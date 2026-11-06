@@ -36,3 +36,15 @@ There are no turn timers. A player who stops responding holds up the table until
 ### Preview page
 
 `/admin/unopreview` (signed-in only, so outside the sitemap and search) shows synthetic tables built from real engine states in `src/unogame/preview.ts`: two and ten players, long names, a large hand, catching Uno and a finished round. Choosing a card only reports the choice. It is temporary and goes when the playable table replaces it.
+
+## Game service
+
+Uno rooms share the buzzer's room code, join limits, expiry and cleanup (`src/rooms/service.ts`), told apart by a `game` field on the room (`buzzer` when missing). A room holds two to ten Uno players, or twenty for the buzzer, and each game refuses the other's rooms and commands. Sign-in is separate: Uno guests have `uno-` identities, an `unoRoom` token claim and a `uno-guest-<code>` cookie limited to `/api/uno`, so a buzzer sign-in does nothing in an Uno room, or the other way round.
+
+Everything is decided on the server in `src/unogame/service.ts`, which runs the engine inside a Firestore transaction:
+
+- **Lobby.** Joining adds a name to the room's player list. The host starts a round from the lobby (or after a finished round) with at least two players. Starting seats everyone listed, deals, and picks the seat after the previous starter. People who join mid-round wait for the next one.
+- **Commands.** `/api/uno` takes `play`, `draw`, `keep`, `catch`, `sayUno` and `leave`, each with a `commandId`. A repeated command id changes nothing. The engine decides whether a move is legal, so most commands do not need the table's version. `catch` does, because it names nobody and could otherwise land on a different player than the one the catcher saw.
+- **What is stored.** `gameRooms/{code}` is public to the room: the stage, seats, names, round scores, the public view and the latest events. `roomPrivate/{code}` holds the full round (stock order and every hand) and is never readable by browsers. `roomHands/{code}_{playerId}` is one player's hand and playable cards, readable only by that player while they are in the room. Only hands that changed are rewritten.
+- **Leaving.** Seated players cannot leave or be removed while a round is being played, since the engine cannot yet drop a hand. Anyone else can. Abandoning a round comes with the room lifecycle work.
+- **Retention.** A room and its hands expire six hours after it opens. A finished round also writes `roomResults/{code}_{round}`, kept for seven days after the round, so the winner and scores outlive the room.
