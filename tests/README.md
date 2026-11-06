@@ -96,17 +96,6 @@ If you write a test that imports a module like that, or one that changes `proces
 
 `public/09_word_counter.spec.ts` checks navigation, selection, method changes, compatibility messaging and offline use. Privacy checks look for distinctive input in request URLs, headers, bodies, browser logs and browser storage, and verify that reloading clears the editor. The counter does not load Vercel Analytics or Speed Insights on a direct visit. Send-time filters also exclude counter events when those scripts were loaded on another page. Browser tests exercise both filters after client navigation. Accessibility checks cover results and the information modal in both colour schemes.
 
-## CI shards and coverage consolidation
+## CI shards
 
 GitHub Actions runs four browser shards in parallel, with two workers and separate Firebase emulators per shard. Each runner installs dependencies and builds the app. Playwright's blob reports are merged into one HTML report and summary; the overall browser check fails if a shard fails or its report is missing. Locally, `pnpm test` still runs the complete suite and writes the usual HTML report.
-
-| Previous coverage                                                      | Retained coverage                                                                                                                                                   |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full decks replayed for functional tests and several viewport variants | One complete Irish Bingo and Red or Black journey per phone: card uniqueness, images/counts, history, exhaustion, focus and reset, with layout checks at milestones |
-| Full Suits games at four phone sizes, plus a separate functional game  | One seeded game per phone: scoring, player rotation, keyboard/button input, safe rounds, final turn, game over and replay, with geometry and touch-target checks    |
-| Instructions opened again in a separate hydrated-page test             | Content, Escape/close behaviour and restored focus in each mobile game suite; one server-HTML check per game in Desktop Chrome                                      |
-| Every explicit viewport run in all three browser projects              | Phone layouts on iPhone 17 and Pixel 9; representative desktop checks only in Desktop Chrome                                                                        |
-| 320px, older phones, landscape and additional desktop widths/heights   | Retired in favour of the two phone presets and 1280×800 / 1366×650 desktop sizes                                                                                    |
-| Full page-by-scheme accessibility matrix in two Chrome projects        | Representative public layouts, five admin layouts and distinct interactive states in Desktop Chrome, in both schemes; mobile focus and announcement checks retained |
-
-Authentication, authorisation, Uno scoring and Chopin Liszt synchronisation scenarios retain their existing failure cases. Uno's shared-scoreboard suite remains sequential and Desktop Chrome-only; its narrow status check uses the Pixel 9 viewport. Rule combinations remain covered by the fast unit tests rather than additional browser game replays.
