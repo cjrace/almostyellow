@@ -45,7 +45,7 @@ test.describe("A visitor on the word counter", () => {
       "false",
     );
     await expect(page.getByLabel("Your text")).not.toHaveAttribute("maxlength");
-    await page.getByRole("link", { name: "Tools", exact: true }).click();
+    await page.getByRole("link", { name: "Back to our tools list" }).click();
     await expect(page).toHaveURL("/tools");
   });
 
@@ -116,29 +116,6 @@ test.describe("A visitor on the word counter", () => {
     await expect(page.getByRole("status")).toContainText(
       "Whole text: 1 word, 5 characters.",
     );
-  });
-
-  test("can set a word limit without restricting their text", async ({
-    page,
-  }) => {
-    await page.goto("/tools/word-counter");
-    await expect(page.getByLabel("Word limit", { exact: true })).toBeHidden();
-    await page.getByLabel("Set a word limit").check();
-    await page.getByLabel("Word limit", { exact: true }).fill("3");
-    await page.getByLabel("Your text").fill(example);
-    await expect(
-      page.getByText("1 word over the limit", { exact: true }),
-    ).toBeVisible();
-    await page
-      .getByLabel("Counting method", { exact: true })
-      .selectOption("whitespace");
-    await expect(
-      page.getByText("0 words remaining", { exact: true }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "Clear text" }).click();
-    await expect(
-      page.getByText("3 words remaining", { exact: true }),
-    ).toBeVisible();
   });
 
   test("can read the worked example and close its keyboard-accessible modal", async ({
@@ -262,7 +239,7 @@ test.describe("A visitor on the word counter", () => {
       ).not.toContain(marker);
       await page.reload();
       await expect(page.getByLabel("Your text")).toHaveValue("");
-      await page.getByRole("link", { name: "Tools", exact: true }).click();
+      await page.getByRole("link", { name: "Back to our tools list" }).click();
       const captured = JSON.stringify({
         requests,
         logs,
@@ -311,7 +288,7 @@ test.describe("A visitor on the word counter", () => {
       { current: null, counter: null },
       { current: null, counter: null },
     ]);
-    await page.getByRole("link", { name: "Tools", exact: true }).click();
+    await page.getByRole("link", { name: "Back to our tools list" }).click();
     await expect(page).toHaveURL("/tools");
     for (const result of await checkCallbacks()) {
       expect(result.current).not.toBeNull();

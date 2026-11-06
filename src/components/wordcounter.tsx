@@ -11,11 +11,9 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Checkbox,
   Grid,
   Group,
   NativeSelect,
-  NumberInput,
   Paper,
   SimpleGrid,
   Stack,
@@ -86,8 +84,6 @@ export default function WordCounter() {
     end: number;
   } | null>(null);
   const [infoOpened, setInfoOpened] = useState(false);
-  const [limitEnabled, setLimitEnabled] = useState(false);
-  const [limit, setLimit] = useState<string | number>(500);
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const segmentationSupported = useSyncExternalStore<boolean | null>(
     subscribe,
@@ -108,18 +104,8 @@ export default function WordCounter() {
         : null,
     [text, method, selection, supported],
   );
-  const remaining =
-    limitEnabled && typeof limit === "number" && whole
-      ? limit - whole.words
-      : null;
-  const limitMessage =
-    remaining === null
-      ? ""
-      : remaining >= 0
-        ? `${remaining.toString()} ${remaining === 1 ? "word" : "words"} remaining`
-        : `${Math.abs(remaining).toString()} ${remaining === -1 ? "word" : "words"} over the limit`;
   const summary = whole
-    ? `Whole text: ${describeCounts(whole)}. ${selected ? `Selected text: ${describeCounts(selected)}.` : "No text selected."} ${limitMessage}`
+    ? `Whole text: ${describeCounts(whole)}. ${selected ? `Selected text: ${describeCounts(selected)}.` : "No text selected."}`
     : "Choose a supported counting method.";
   // Announce only after a pause; visible counts still update on every edit.
   const [announcement] = useDebouncedValue(summary, 800);
@@ -167,8 +153,8 @@ export default function WordCounter() {
         </NativeSelect>
         <ActionIcon
           aria-label="About counting methods"
-          variant="default"
-          size={42}
+          variant="subtle"
+          size="lg"
           onClick={() => {
             setInfoOpened(true);
           }}
@@ -212,9 +198,9 @@ export default function WordCounter() {
               styles={{ input: { minHeight: 220 } }}
             />
             <Button
-              variant="subtle"
-              size="sm"
-              w="fit-content"
+              color="red"
+              variant="light"
+              fullWidth
               onClick={() => {
                 setText("");
                 setSelection(null);
@@ -233,35 +219,6 @@ export default function WordCounter() {
               <Text size="sm" c="dimmed">
                 Highlight text in the editor to see its counts.
               </Text>
-            )}
-            <Checkbox
-              label="Set a word limit"
-              checked={limitEnabled}
-              onChange={(event) => {
-                setLimitEnabled(event.currentTarget.checked);
-              }}
-            />
-            {limitEnabled && (
-              <Stack gap="xs">
-                <NumberInput
-                  label="Word limit"
-                  value={limit}
-                  onChange={setLimit}
-                  min={0}
-                  max={Number.MAX_SAFE_INTEGER}
-                  allowDecimal={false}
-                  allowNegative={false}
-                  hideControls
-                  size="md"
-                />
-                <Text
-                  size="sm"
-                  c={remaining !== null && remaining < 0 ? "red" : undefined}
-                >
-                  {limitMessage ||
-                    "Enter a word limit to see how many words remain."}
-                </Text>
-              </Stack>
             )}
           </Stack>
         </Grid.Col>

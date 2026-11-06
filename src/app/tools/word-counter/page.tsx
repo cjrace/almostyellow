@@ -12,12 +12,7 @@ export const metadata = pageMetadata(
 export default function WordCounterPage() {
   return (
     <>
-      <Header
-        crumbs={[
-          { title: "Home", href: "/" },
-          { title: "Tools", href: "/tools" },
-        ]}
-      />
+      <Header noCrumbs tools />
       <Stack component="main" id="main-content" gap="lg" maw={1200} mx="auto">
         <Stack gap="xs">
           <Title>Word &amp; character counter</Title>

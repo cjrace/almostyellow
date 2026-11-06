@@ -12,12 +12,7 @@ export const metadata = pageMetadata(
 export default function ToolsPage() {
   return (
     <>
-      <Header
-        crumbs={[
-          { title: "Home", href: "/" },
-          { title: "Tools", href: "" },
-        ]}
-      />
+      <Header noCrumbs homeOnly />
       <Stack component="main" id="main-content" gap="xl">
         <Title>Tools</Title>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">

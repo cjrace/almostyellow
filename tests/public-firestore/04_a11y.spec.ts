@@ -76,14 +76,12 @@ for (const scheme of schemes) {
       });
     }
 
-    test("Word counter results, word limit and method information pass accessibility checks", async ({
+    test("Word counter results and method information pass accessibility checks", async ({
       page,
     }) => {
       await page.goto("/tools/word-counter");
       await page.getByLabel("Your text").fill("My mother-in-law 👩‍💻");
       await page.getByLabel("Your text").press("ControlOrMeta+a");
-      await page.getByLabel("Set a word limit").check();
-      await page.getByLabel("Word limit", { exact: true }).fill("2");
       await expectNoUnexpectedAxeViolations(page);
       await page
         .getByRole("button", { name: "About counting methods" })
