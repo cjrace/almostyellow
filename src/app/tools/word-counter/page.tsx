@@ -13,9 +13,17 @@ export default function WordCounterPage() {
   return (
     <>
       <Header noCrumbs tools />
-      <Stack component="main" id="main-content" gap="lg" maw={1200} mx="auto">
+      <Stack
+        component="main"
+        id="main-content"
+        gap={{ base: "sm", md: "lg" }}
+        maw={1200}
+        mx="auto"
+      >
         <Stack gap="xs">
-          <Title>Word and character counter</Title>
+          <Title fz={{ base: "1.75rem", md: undefined }}>
+            Word and character counter
+          </Title>
           <Group gap="xs" wrap="nowrap" align="flex-start">
             <IconLock
               size={20}

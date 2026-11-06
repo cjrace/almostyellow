@@ -2,7 +2,7 @@
    counts share a column beside the text, which Mantine's Grid can't do. */
 .layout {
   display: grid;
-  gap: var(--mantine-spacing-xl);
+  gap: var(--mantine-spacing-md);
 }
 
 .method {
@@ -32,5 +32,40 @@
     grid-template-areas:
       "editor method"
       "editor counts";
+  }
+}
+
+/* Phones are short of height, so the text box is modest, and the three counts
+   sit side by side with their labels above. */
+.input {
+  min-height: 120px;
+}
+
+.countList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+}
+
+.count {
+  min-width: 0;
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .input {
+    min-height: 220px;
+  }
+
+  .countList {
+    grid-template-columns: 1fr;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .count {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--mantine-spacing-md);
   }
 }

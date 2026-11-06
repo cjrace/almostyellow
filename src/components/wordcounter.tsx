@@ -64,23 +64,17 @@ function Counts({
       component="section"
       aria-label={title}
       withBorder
-      p="lg"
+      p={{ base: "sm", md: "lg" }}
       radius="md"
       style={{ flex: 1 }}
       visibleFrom={desktopOnly ? "md" : undefined}
     >
-      <Title order={2} size="h4" mb="sm">
+      <Title order={2} size="h4" mb={{ base: 6, md: "sm" }}>
         {title}
       </Title>
-      <Stack component="dl" gap="xs" m={0}>
+      <dl className={styles.countList}>
         {rows.map(([kind, label]) => (
-          <Group
-            key={kind}
-            justify="space-between"
-            align="baseline"
-            wrap="nowrap"
-            gap="md"
-          >
+          <div key={kind} className={styles.count}>
             <Text component="dt" size="sm" c="dimmed">
               {label}
             </Text>
@@ -88,6 +82,7 @@ function Counts({
               component="dd"
               m={0}
               size="1.5rem"
+              lh={1.2}
               fw={600}
               style={{
                 fontVariantNumeric: "tabular-nums",
@@ -103,9 +98,9 @@ function Counts({
                 </Text>
               )}
             </Text>
-          </Group>
+          </div>
         ))}
-      </Stack>
+      </dl>
     </Paper>
   );
 }
@@ -237,14 +232,15 @@ export default function WordCounter() {
               autoCorrect="off"
               autoCapitalize="off"
               size="md"
-              rows={10}
+              rows={5}
               resize="vertical"
               // Grow to match the column beside it on desktop.
               style={{ flex: 1, display: "flex", flexDirection: "column" }}
+              classNames={{ input: styles.input }}
               styles={{
                 description: { marginBottom: "var(--mantine-spacing-sm)" },
                 wrapper: { flex: 1 },
-                input: { height: "100%", minHeight: 220 },
+                input: { height: "100%" },
               }}
             />
             <Button
