@@ -1,7 +1,7 @@
 "use client";
 
 import { Anchor, Modal, Stack, Table, Text, Title } from "@mantine/core";
-import { countText, countingMethods } from "@/lib/text-count";
+import { countText, countingMethods } from "@/components/textcount";
 
 const example = "My mother-in-law 👩‍💻";
 

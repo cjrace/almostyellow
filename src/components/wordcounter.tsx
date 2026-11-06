@@ -31,7 +31,7 @@ import {
   supportsSegmentation,
   type CountingMethod,
   type TextCounts,
-} from "@/lib/text-count";
+} from "@/components/textcount";
 
 const subscribe = () => () => undefined;
 

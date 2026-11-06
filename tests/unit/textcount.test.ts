@@ -3,7 +3,7 @@ import {
   countText,
   supportsSegmentation,
   type CountingMethod,
-} from "../../src/lib/text-count";
+} from "../../src/components/textcount";
 
 afterEach(() => vi.unstubAllGlobals());
 
