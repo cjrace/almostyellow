@@ -48,3 +48,16 @@ Everything is decided on the server in `src/unogame/service.ts`, which runs the 
 - **What is stored.** `gameRooms/{code}` is public to the room: the stage, seats, names, round scores, the public view and the latest events. `roomPrivate/{code}` holds the full round (stock order and every hand) and is never readable by browsers. `roomHands/{code}_{playerId}` is one player's hand and playable cards, readable only by that player while they are in the room. Only hands that changed are rewritten.
 - **Leaving.** Seated players cannot leave or be removed while a round is being played, since the engine cannot yet drop a hand. Anyone else can. Abandoning a round comes with the room lifecycle work.
 - **Retention.** A room and its hands expire six hours after it opens. A finished round also writes `roomResults/{code}_{round}`, kept for seven days after the round, so the winner and scores outlive the room.
+
+## Playing online
+
+`/games/uno` (`src/components/uno.tsx`) is the page for playing a round. It mirrors the buzzer: an authorised host creates a room, then everyone joins from a link or a four-character code. The host plays too, so they enter a name like anyone else.
+
+- **Lobby.** Everyone sees the player list. The host copies the join link, removes players, starts the round (two or more players) or ends the room.
+- **Table.** Seated players get `UnoTable`, fed by two listeners: the room document and their own hand document. Choosing a card, drawing, keeping, saying Uno and catching become commands to `/api/uno`. `catch` also sends the table version it was made against. Someone who joins mid-round waits for the next one.
+- **Lost replies.** A command that gets no answer is sent once more with the same command id, which the server applies at most once. If that also fails, the player is told to look at the table before trying again. Moves are refused while offline or while the listener is serving cached data.
+- **Announcements.** `src/unogame/announce.ts` turns the room's public events into sentences for the live region, and adds whose turn it is. It only ever sees public events.
+- **After a round.** The room shows who won and the scoreboard. The host can play again, which deals a new round and moves the first turn on one seat. Abandoning a round and the rest of the lifecycle are still to come.
+- **Reloading.** The tab remembers the room, and the Firebase sign-in keeps the seat. A host's saved room only gives host controls while the host is signed in.
+
+The Playwright journey (`tests/admin/09_unoplay.spec.ts`) cannot know the random deal, so it draws once, then uses the Admin SDK against the emulator to leave one player on a last matching card and plays it. Playing every kind of card is covered by the engine tests.

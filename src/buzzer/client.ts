@@ -18,11 +18,19 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import type { FirebaseClientConfig } from "@/firebase/client";
-import { isRoomCode, type RoomView, type Buzz } from "./model";
+import { isRoomCode, type Game, type RoomView, type Buzz } from "./model";
 import { playerSignInError } from "./errors";
-async function initialiseGuest(config: FirebaseClientConfig, code: string) {
+// Each game signs in separately, so a room code reused by the other game
+// never finds an old sign-in. The buzzer keeps its original app names.
+const appNameFor = (code: string, game: Game) =>
+  game === "buzzer" ? `room-guests-cookie-${code}` : `${game}-guests-${code}`;
+async function initialiseGuest(
+  config: FirebaseClientConfig,
+  code: string,
+  game: Game,
+) {
   if (!isRoomCode(code)) throw new Error("Check the room code.");
-  const appName = `room-guests-cookie-${code}`;
+  const appName = appNameFor(code, game);
   let app = getApps().find((app) => app.name === appName);
   if (!app) {
     app = initializeApp(config, appName);
@@ -42,24 +50,30 @@ async function initialiseGuest(config: FirebaseClientConfig, code: string) {
 }
 export type GuestClient = Awaited<ReturnType<typeof initialiseGuest>>;
 const pending = new Map<string, Promise<GuestClient>>();
-export function guestClient(config: FirebaseClientConfig, code: string) {
-  const existing = pending.get(code);
+export function guestClient(
+  config: FirebaseClientConfig,
+  code: string,
+  game: Game = "buzzer",
+) {
+  const id = appNameFor(code, game);
+  const existing = pending.get(id);
   if (existing) return existing;
-  const result = initialiseGuest(config, code).catch((error: unknown) => {
-    pending.delete(code);
+  const result = initialiseGuest(config, code, game).catch((error: unknown) => {
+    pending.delete(id);
     throw error;
   });
-  pending.set(code, result);
+  pending.set(id, result);
   return result;
 }
 export async function joinGuest(
   config: FirebaseClientConfig,
   code: string,
   name: string,
+  game: Game = "buzzer",
 ) {
-  const client = await guestClient(config, code);
+  const client = await guestClient(config, code, game);
   const request = () =>
-    fetch("/api/buzzer", {
+    fetch(`/api/${game}`, {
       method: "POST",
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
@@ -91,21 +105,32 @@ export async function joinGuest(
   }
   return { client, playerId: result.playerId };
 }
+// The request never got an answer, so it may or may not have been applied
+export class NetworkError extends Error {}
 export async function send(
   client: GuestClient,
-  action: "leave" | "buzz",
+  action: string,
   input: unknown,
+  game: Game = "buzzer",
 ) {
   const token = await client.auth.currentUser?.getIdToken();
-  const response = await fetch("/api/buzzer", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token ?? ""}`,
-    },
-    body: JSON.stringify({ action, input }),
-    signal: AbortSignal.timeout(10000),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`/api/${game}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token ?? ""}`,
+      },
+      body: JSON.stringify({ action, input }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch (error) {
+    throw new NetworkError(
+      error instanceof Error ? error.message : "Could not reach the server.",
+      { cause: error },
+    );
+  }
   const result = (await response.json()) as {
     playerId?: string;
     message?: string;
