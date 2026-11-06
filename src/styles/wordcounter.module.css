@@ -48,7 +48,16 @@
   margin: 0;
 }
 
+/* Labels wrap onto different numbers of lines, so each count spans the same
+   two rows and the numbers line up across the columns. */
+.countList {
+  grid-template-rows: auto auto;
+}
+
 .count {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
   min-width: 0;
 }
 
@@ -58,11 +67,14 @@
   }
 
   .countList {
+    grid-template-rows: none;
     grid-template-columns: 1fr;
     gap: var(--mantine-spacing-xs);
   }
 
   .count {
+    grid-row: auto;
+    grid-template-rows: none;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
