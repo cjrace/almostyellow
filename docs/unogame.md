@@ -31,7 +31,7 @@ There are no turn timers. A player who stops responding holds up the table until
 - `src/unogame/cards.ts` names cards and finds their images. The playing-card API is untouched.
 - Components in `src/components/`: `unocard` (images and card buttons), `unohand`, `unoopponents`, `unocolourpicker`, `unoscoreboard` and `unotable`, which composes them. They show a published view and report choices; they never change the game. Styles are in `src/styles/unotable.module.css`.
 - Unplayable cards stay focusable and are marked `aria-disabled`, with the reason in their name. Playable cards also stand higher in the hand, and the player to move has a thicker border and the word "Playing", so nothing depends on colour. The colour in play has a shape as well as a colour.
-- A large hand scrolls sideways inside its own list. The page never scrolls sideways.
+- Your hand is an overlapping fan (`src/unogame/handlayout.ts`) that always fits the width it has, so there is no scrolling. Each card keeps its top-left corner showing. If even the narrowest strips would not fit, the hand wraps into rows, each overlapping the one above with its top strip showing. The focused or hovered card comes to the front.
 
 ### Preview page
 

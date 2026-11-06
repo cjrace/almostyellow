@@ -1,6 +1,6 @@
 /* The Uno table fills the screen like the other card games (see
    cardgame.module.css). Opponents, the piles and the hand each get their own
-   area, and a large hand scrolls inside its area rather than the page. */
+   area, and a large hand fans out to fit its width rather than scrolling. */
 
 .board {
   display: flex;
@@ -158,23 +158,25 @@
   gap: var(--mantine-spacing-sm);
 }
 
-/* The hand has its own scrolling area. Playable cards stand up from the rest,
-   so playability is also shown by position, not only by being brighter */
+/* The hand is a fan: each card is placed by UnoHand so the whole hand fits the
+   width, with every top-left corner showing. Playable cards stand up from the
+   rest, so playability is also shown by position, not only by being brighter.
+   The focused or hovered card comes to the front. */
 .hand {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
+  position: relative;
   margin: 0;
-  padding: 14px 4px 6px;
+  padding: 0;
   list-style: none;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
 }
 
 .handCard {
-  flex: 0 0 auto;
-  width: clamp(3.6rem, min(17vw, 13dvh), 6.5rem);
-  scroll-snap-align: start;
+  position: absolute;
+}
+
+/* Only focus brings a card to the front. Hovering lifts it instead, so a
+   pointer never covers the strip of the card beside it. */
+.handCard:focus-within {
+  z-index: 5;
 }
 
 .cardButton {
@@ -187,6 +189,10 @@
 
 .cardButton[data-playable] {
   transform: translateY(-10px);
+}
+
+.cardButton[data-playable]:hover {
+  transform: translateY(-16px);
 }
 
 .cardButton[aria-disabled="true"] {

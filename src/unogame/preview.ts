@@ -2,7 +2,12 @@
 // states, dealt with a fixed shuffle, so the views have exactly the shape the
 // server will publish. Nothing here is used in play.
 import { buildDeck } from "./engine/cards";
-import { startRound, type RoundState, type Shuffle } from "./engine/round";
+import {
+  playableCards,
+  startRound,
+  type RoundState,
+  type Shuffle,
+} from "./engine/round";
 import { privateView, publicView } from "./engine/views";
 
 export type PreviewScenario =
@@ -12,6 +17,8 @@ export type PreviewScenario =
   | "large-hand"
   | "wild-colour"
   | "catch-uno"
+  | "two-cards"
+  | "say-uno"
   | "round-over";
 
 export const previewScenarios: { value: PreviewScenario; label: string }[] = [
@@ -20,6 +27,8 @@ export const previewScenarios: { value: PreviewScenario; label: string }[] = [
   { value: "long-names", label: "Long names" },
   { value: "large-hand", label: "Large hand" },
   { value: "catch-uno", label: "Catch Uno" },
+  { value: "two-cards", label: "Two cards left" },
+  { value: "say-uno", label: "Say Uno" },
   { value: "round-over", label: "Round over" },
 ];
 
@@ -75,7 +84,10 @@ export interface PreviewTable {
 
 export function buildPreview(scenario: PreviewScenario): PreviewTable {
   const count =
-    scenario === "two-players" || scenario === "round-over"
+    scenario === "two-players" ||
+    scenario === "round-over" ||
+    scenario === "two-cards" ||
+    scenario === "say-uno"
       ? 2
       : scenario === "ten-players"
         ? 10
@@ -99,6 +111,19 @@ export function buildPreview(scenario: PreviewScenario): PreviewTable {
     state.stock.push(...spare);
     state.uno = { player: other, protectedUntil: 0 };
     state.current = 0;
+  }
+  if (scenario === "two-cards" || scenario === "say-uno") {
+    // Keeps a playable card first, so there is a move to make
+    const hand = state.hands[me];
+    const playable = playableCards(state, me)[0] ?? hand[0];
+    const rest = hand.filter((c) => c.id !== playable.id);
+    const keep = scenario === "two-cards" ? [playable, rest[0]] : [playable];
+    state.stock.push(...hand.filter((c) => !keep.includes(c)));
+    state.hands[me] = keep;
+    if (scenario === "say-uno") {
+      state.uno = { player: me, protectedUntil: 0 };
+      state.current = 1;
+    }
   }
   if (scenario === "round-over") {
     const spare = state.hands[ids[1]].splice(0);

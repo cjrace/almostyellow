@@ -3,6 +3,39 @@ import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 import { previewScenarios } from "../../src/unogame/preview";
 import { signIn } from "./helpers";
 
+// The hand never scrolls, and the top-left corner of every card is the
+// frontmost thing at that spot, so no card is covered
+async function expectWholeHandShowing(page: Page) {
+  const result = await page.evaluate(() => {
+    const list = document.querySelector('ul[aria-label^="Your hand"]');
+    if (!list) return { error: "no hand" };
+    const buttons = [...list.querySelectorAll("button")];
+    const bounds = list.getBoundingClientRect();
+    const covered: string[] = [];
+    let outside = 0;
+    for (const button of buttons) {
+      // elementFromPoint only sees what is on screen
+      button.scrollIntoView({ block: "nearest" });
+      const box = button.getBoundingClientRect();
+      if (box.left < bounds.left - 1 || box.right > bounds.right + 1) outside++;
+      const x = box.left + box.width * 0.1;
+      const y = box.top + box.height * 0.1;
+      const top = document.elementFromPoint(x, y)?.closest("button");
+      if (top !== button) covered.push(button.getAttribute("aria-label") ?? "");
+    }
+    return {
+      scrolls: list.scrollWidth > list.clientWidth,
+      outside,
+      covered,
+      cards: buttons.length,
+    };
+  });
+  expect(result).toMatchObject({ scrolls: false, outside: 0, covered: [] });
+}
+
+// Cards overlap in the fan, so tap the corner strip that is always showing
+const CORNER = { x: 8, y: 8 };
+
 async function openPreview(page: Page, scenario: string) {
   await signIn(page);
   await page.goto("/admin/unopreview");
@@ -70,7 +103,7 @@ test.describe("Admin looking at the Uno table preview", () => {
       .first();
     await expect(blocked).toHaveAttribute("aria-disabled", "true");
     // Playwright waits for aria-disabled buttons to be enabled, so force it
-    await blocked.click({ force: true });
+    await blocked.click({ force: true, position: CORNER });
     await expect(
       page.getByRole("status").filter({ hasText: "You chose" }),
     ).toHaveCount(0);
@@ -81,6 +114,49 @@ test.describe("Admin looking at the Uno table preview", () => {
     await expect(
       page.getByRole("status").filter({ hasText: "You chose to draw a card." }),
     ).toHaveCount(1);
+  });
+
+  test("Uno is a button, pressed before the play or right after it", async ({
+    page,
+  }) => {
+    await openPreview(page, "two-players");
+    await expect(
+      page.getByRole("button", { name: "Say Uno!" }),
+    ).toHaveAttribute("aria-disabled", "true");
+    await expect(
+      page.getByRole("button", { name: "Say Uno!" }),
+    ).toHaveAccessibleDescription(
+      "Saying Uno only matters when you play down to one card.",
+    );
+
+    await test.step("Given two cards left, when I say Uno before playing", async () => {
+      await page.getByLabel("Scenario").selectOption("two-cards");
+      const say = page.getByRole("button", { name: "Say Uno!" });
+      await expect(say).toHaveAttribute("aria-disabled", "false");
+      await say.click();
+      await expect(
+        page.getByRole("button", { name: "Uno said" }),
+      ).toHaveAttribute("aria-disabled", "true");
+      await page
+        .getByRole("list", { name: /^Your hand/ })
+        .getByRole("button", { name: /, play$/ })
+        .first()
+        .click({ position: CORNER });
+      const picker = page.getByRole("group", { name: /Choose a colour/ });
+      if (await picker.isVisible())
+        await picker.getByRole("button", { name: "Red" }).click();
+      await expect(
+        page.getByRole("status").filter({ hasText: "You chose" }),
+      ).toHaveText(/, saying Uno\.$/);
+    });
+
+    await test.step("Given I forgot, when I say Uno right after playing", async () => {
+      await page.getByLabel("Scenario").selectOption("say-uno");
+      await page.getByRole("button", { name: "Say Uno!" }).click();
+      await expect(
+        page.getByRole("status").filter({ hasText: "You said Uno." }),
+      ).toHaveCount(1);
+    });
   });
 
   test("Players, piles and turn are named for screen readers", async ({
@@ -107,7 +183,7 @@ test.describe("Admin looking at the Uno table preview", () => {
     ).toHaveAttribute("aria-disabled", "true");
   });
 
-  test("Large hands and long names scroll inside their own areas", async ({
+  test("A large hand fans out to fit, with every corner showing", async ({
     page,
   }) => {
     await openPreview(page, "large-hand");
@@ -126,9 +202,7 @@ test.describe("Admin looking at the Uno table preview", () => {
     await page.getByLabel("Scenario").selectOption("large-hand");
     const hand = page.getByRole("list", { name: /^Your hand, 5\d cards$/ });
     await expect(hand).toBeVisible();
-    expect(await hand.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(
-      true,
-    );
+    await expectWholeHandShowing(page);
   });
 
   test("Stays inside a 320 pixel wide screen and at 200% zoom", async ({
@@ -148,6 +222,7 @@ test.describe("Admin looking at the Uno table preview", () => {
           overflow,
           `${value} overflows at ${String(width)} pixels`,
         ).toBeLessThanOrEqual(0);
+        await expectWholeHandShowing(page);
       }
     }
   });
@@ -165,7 +240,7 @@ for (const scheme of schemes) {
       test("Every layout and state passes accessibility checks", async ({
         page,
       }) => {
-        test.slow();
+        test.setTimeout(240_000);
         await openPreview(page, "two-players");
         for (const { value, label } of previewScenarios) {
           await test.step(label, async () => {
@@ -179,7 +254,7 @@ for (const scheme of schemes) {
           await page
             .getByRole("button", { name: "Wild Draw Four, play" })
             .first()
-            .click();
+            .click({ position: CORNER });
           await expect(
             page.getByRole("group", {
               name: "Choose a colour for your wild card",

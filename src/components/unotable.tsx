@@ -5,7 +5,6 @@ import {
   Button,
   Group,
   Modal,
-  Switch,
   Text,
   Title,
   VisuallyHidden,
@@ -37,6 +36,8 @@ interface UnoTableProps {
   onDraw: () => void;
   onKeep: () => void;
   onCatch: () => void;
+  // Says Uno after playing down to one card, while the window is open
+  onSayUno: () => void;
 }
 
 // The table for one round. It shows a published view and reports what the
@@ -52,8 +53,10 @@ export default function UnoTable({
   onDraw,
   onKeep,
   onCatch,
+  onSayUno,
 }: UnoTableProps) {
   const [wild, setWild] = useState<Card | null>(null);
+  // Uno said before playing the second-last card, sent with that play
   const [declareUno, setDeclareUno] = useState(false);
   const [scoresOpen, setScoresOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -97,6 +100,18 @@ export default function UnoTable({
   );
   const catchable = view.uno && view.uno.player !== me ? view.uno.player : null;
   const handSize = mine.hand.length;
+  // After playing down to one card without saying it, Uno can still be said
+  // until the next draw or play. With two cards it can be said in advance.
+  const unoWindowMine = view.uno?.player === me;
+  const canSayUno = unoWindowMine || (myTurn && handSize === 2 && !declareUno);
+  const unoLabel = declareUno ? "Uno said" : "Say Uno!";
+  const unoReason = unoWindowMine
+    ? "Say it now, before anyone catches you."
+    : declareUno
+      ? "It will count when you play your next card."
+      : handSize === 2 && myTurn
+        ? "Say it before you play your second-last card, or right after."
+        : "Saying Uno only matters when you play down to one card.";
 
   const play = (card: Card, colour?: Colour) => {
     onPlay(card.id, colour, declareUno);
@@ -199,24 +214,28 @@ export default function UnoTable({
                 Catch {names[catchable]} for Uno
               </Button>
             ) : null}
-            <Switch
-              label="Say Uno with my next card"
-              checked={declareUno}
-              disabled={!myTurn || handSize !== 2}
-              onChange={(event) => {
-                setDeclareUno(event.currentTarget.checked);
-              }}
+            {/* Stays focusable when it cannot be used, so its reason can be
+                read; it is one-way, so it is a button and not a switch */}
+            <Button
+              variant="default"
+              aria-disabled={!canSayUno}
+              data-disabled={!canSayUno || undefined}
               aria-describedby="uno_declare_reason"
-            />
+              onClick={() => {
+                if (!canSayUno) return;
+                if (unoWindowMine) onSayUno();
+                else setDeclareUno(true);
+              }}
+            >
+              {unoLabel}
+            </Button>
           </div>
         )}
         <Text size="sm" c="dimmed" id="uno_draw_reason">
           {drawReason}
         </Text>
         <Text size="sm" c="dimmed" id="uno_declare_reason">
-          {handSize === 2
-            ? "Switch this on before playing your second-last card."
-            : "Saying Uno only matters when you play down to one card."}
+          {unoReason}
         </Text>
 
         <UnoHand

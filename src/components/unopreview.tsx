@@ -51,6 +51,9 @@ export default function UnoPreview() {
         onCatch={() => {
           setMessage("You caught a player for Uno.");
         }}
+        onSayUno={() => {
+          setMessage("You said Uno.");
+        }}
       />
     </Stack>
   );
