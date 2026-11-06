@@ -142,6 +142,9 @@ function commitRound(
     });
 }
 
+const takePlayerOut = (state: RoundState, playerId: string) =>
+  removePlayer(state, playerId, { now: Date.now(), shuffle: secureShuffle });
+
 function engineResult(result: Result): Extract<Result, { ok: true }> {
   if (!result.ok) throw new RoomError(result.error.code, result.error.message);
   return result;
@@ -282,12 +285,7 @@ export async function controlUnoRoom(
           room,
           secret,
           inRound,
-          engineResult(
-            removePlayer(inRound, playerId, {
-              now: Date.now(),
-              shuffle: secureShuffle,
-            }),
-          ),
+          engineResult(takePlayerOut(inRound, playerId)),
           { players: next.players },
         );
         tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
@@ -369,12 +367,7 @@ export async function unoPlayerCommand(
           room,
           secret,
           state,
-          engineResult(
-            removePlayer(state, member.playerId, {
-              now: Date.now(),
-              shuffle: secureShuffle,
-            }),
-          ),
+          engineResult(takePlayerOut(state, member.playerId)),
           { players },
         );
       else tx.update(roomRef, { players });

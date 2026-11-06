@@ -493,7 +493,7 @@ export default function Uno({
                 ref={leaveRef}
                 disabled={busy}
                 onClick={() => {
-                  if (inRound) setLeaving(true);
+                  if (inRound || (hosting && room && !ended)) setLeaving(true);
                   else void run(leave);
                 }}
               >
@@ -654,15 +654,24 @@ export default function Uno({
             leaveRef.current?.focus();
           });
         }}
-        title="Leave this round?"
+        title={inRound ? "Leave this round?" : "Leave the room?"}
         returnFocus={false}
         closeButtonProps={{ "aria-label": "Stay in the game" }}
       >
         <Stack gap="md" align="flex-start" pt="xs">
-          <Text>
-            Your cards go back into the draw pile and the round carries on
-            without you. You can join again for the next round.
-          </Text>
+          {inRound && (
+            <Text>
+              Your cards go back into the draw pile and the round carries on
+              without you. You can join again for the next round.
+            </Text>
+          )}
+          {hosting && (
+            <Text>
+              You host this room. If you leave, nobody can end the round or the
+              room, and you will not get the host controls back. Use End room to
+              finish the game for everyone instead.
+            </Text>
+          )}
           <Button
             color="red.9"
             disabled={busy}

@@ -270,6 +270,11 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
     });
 
     await test.step("When the host ends the round", async () => {
+      await page.getByRole("button", { name: "Leave game" }).click();
+      const warning = page.getByRole("dialog", { name: "Leave this round?" });
+      await expect(warning).toContainText("You host this room");
+      await page.keyboard.press("Escape");
+      await expect(warning).toBeHidden();
       await page
         .getByRole("button", { name: "End round", exact: true })
         .click();
