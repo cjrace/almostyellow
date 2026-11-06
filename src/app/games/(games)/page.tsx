@@ -22,11 +22,7 @@ export default function Games() {
       <Stack component="main" id="main-content" gap="md">
         <Title>Our games</Title>
 
-        <SimpleGrid
-          cols={{ base: 1, sm: 2, lg: 3 }}
-          spacing="lg"
-          style={{ flex: "1 1 0", gridAutoRows: "minmax(min-content, 1fr)" }}
-        >
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
           <GamesCard
             imagePath="/images/almo-border.png"
             title="Irish Bingo"
@@ -45,10 +41,10 @@ export default function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Boom Boom Pirate"
-            description="... ... BOOM!"
-            link="/games/boomboompirate"
-            linktext="Boom Boom Pirate"
+            title="Suits"
+            description="Pick your suit and reap the consequences. Another Ben Palmer special."
+            link="/games/suits"
+            linktext="Suits"
           />
 
           <GamesCard
@@ -69,10 +65,17 @@ export default function Games() {
 
           <GamesCard
             imagePath="/images/almo-border.png"
-            title="Suits"
-            description="Pick your suit and reap the consequences. Another Ben Palmer special."
-            link="/games/suits"
-            linktext="Suits"
+            title="Boom Boom Pirate"
+            description="... ... BOOM!"
+            link="/games/boomboompirate"
+            linktext="Boom Boom Pirate"
+          />
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Quiz buzzer"
+            description="Join a room and buzz in with friends."
+            link="/games/buzzer"
+            linktext="Quiz buzzer"
           />
         </SimpleGrid>
       </Stack>

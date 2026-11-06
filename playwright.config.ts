@@ -62,7 +62,7 @@ export default defineConfig({
         ...devices["Pixel 9"],
       },
       testIgnore: sharedScoreboard,
-      grepInvert: /@desktop/,
+      grepInvert: /@desktop|@no-android/,
     },
     {
       name: "Google Chrome",
