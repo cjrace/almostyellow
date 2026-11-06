@@ -5,7 +5,7 @@ import WordCounter from "@/components/wordcounter";
 import { pageMetadata } from "@/metadata";
 
 export const metadata = pageMetadata(
-  "Word & character counter",
+  "Word and character counter",
   "Count words and characters, compare counting methods and check selected text. Your text stays in your browser.",
 );
 
@@ -15,7 +15,7 @@ export default function WordCounterPage() {
       <Header noCrumbs tools />
       <Stack component="main" id="main-content" gap="lg" maw={1200} mx="auto">
         <Stack gap="xs">
-          <Title>Word &amp; character counter</Title>
+          <Title>Word and character counter</Title>
           <Group gap="xs" wrap="nowrap" align="flex-start">
             <IconLock
               size={20}

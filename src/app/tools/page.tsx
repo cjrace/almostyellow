@@ -20,7 +20,7 @@ export default function ToolsPage() {
             <Stack align="flex-start">
               <IconTextSize size={32} aria-hidden />
               <Title order={2} size="h3">
-                Word &amp; character counter
+                Word and character counter
               </Title>
               <Text c="dimmed">
                 Count words and characters instantly, compare counting methods

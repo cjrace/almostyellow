@@ -2,7 +2,7 @@
    counts share a column beside the text, which Mantine's Grid can't do. */
 .layout {
   display: grid;
-  gap: var(--mantine-spacing-lg);
+  gap: var(--mantine-spacing-xl);
 }
 
 .method {
@@ -26,6 +26,7 @@
 
 @mixin larger-than $mantine-breakpoint-md {
   .layout {
+    gap: var(--mantine-spacing-lg);
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas:

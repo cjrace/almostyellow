@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -12,9 +13,9 @@ import {
   Alert,
   Button,
   Group,
+  Input,
   NativeSelect,
   Paper,
-  SimpleGrid,
   Stack,
   Text,
   Textarea,
@@ -36,8 +37,14 @@ import {
 const subscribe = () => () => undefined;
 
 function describeCounts(counts: TextCounts) {
-  return `${counts.words.toString()} ${counts.words === 1 ? "word" : "words"}, ${counts.characters.toString()} ${counts.characters === 1 ? "character" : "characters"}`;
+  return `${counts.words.toString()} ${counts.words === 1 ? "word" : "words"}, ${counts.characters.toString()} characters with spaces, ${counts.charactersWithoutSpaces.toString()} without spaces`;
 }
+
+const rows = [
+  ["words", "Words"],
+  ["characters", "Characters with spaces"],
+  ["charactersWithoutSpaces", "Characters without spaces"],
+] as const;
 
 function Counts({
   title,
@@ -65,16 +72,22 @@ function Counts({
       <Title order={2} size="h4" mb="sm">
         {title}
       </Title>
-      <SimpleGrid cols={2} component="dl" m={0}>
-        {(["words", "characters"] as const).map((kind) => (
-          <div key={kind}>
+      <Stack component="dl" gap="xs" m={0}>
+        {rows.map(([kind, label]) => (
+          <Group
+            key={kind}
+            justify="space-between"
+            align="baseline"
+            wrap="nowrap"
+            gap="md"
+          >
             <Text component="dt" size="sm" c="dimmed">
-              {kind === "words" ? "Words" : "Characters"}
+              {label}
             </Text>
             <Text
               component="dd"
               m={0}
-              size="2rem"
+              size="1.5rem"
               fw={600}
               style={{
                 fontVariantNumeric: "tabular-nums",
@@ -90,9 +103,9 @@ function Counts({
                 </Text>
               )}
             </Text>
-          </div>
+          </Group>
         ))}
-      </SimpleGrid>
+      </Stack>
     </Paper>
   );
 }
@@ -106,6 +119,7 @@ export default function WordCounter() {
   } | null>(null);
   const [infoOpened, setInfoOpened] = useState(false);
   const editorRef = useRef<HTMLTextAreaElement>(null);
+  const methodId = useId();
   const segmentationSupported = useSyncExternalStore<boolean | null>(
     subscribe,
     supportsSegmentation,
@@ -115,7 +129,8 @@ export default function WordCounter() {
   const whole = useMemo(() => {
     // Text starts empty. Wait for browser support before running an engine
     // during hydration, including on browsers without Intl.Segmenter.
-    if (segmentationSupported === null) return { words: 0, characters: 0 };
+    if (segmentationSupported === null)
+      return { words: 0, characters: 0, charactersWithoutSpaces: 0 };
     return supported ? countText(text, method) : null;
   }, [text, method, supported, segmentationSupported]);
   const selected = useMemo(
@@ -164,14 +179,28 @@ export default function WordCounter() {
       )}
       <div className={styles.layout}>
         <div className={styles.method}>
-          <Group gap="xs" align="flex-end" wrap="nowrap" maw={420}>
+          <Stack gap="xs" maw={420}>
+            <Group gap={4} wrap="nowrap">
+              <Input.Label htmlFor={methodId} size="md">
+                Counting method
+              </Input.Label>
+              <ActionIcon
+                aria-label="About counting methods"
+                variant="subtle"
+                size="md"
+                onClick={() => {
+                  setInfoOpened(true);
+                }}
+              >
+                <IconInfoCircle size={20} aria-hidden />
+              </ActionIcon>
+            </Group>
             <NativeSelect
-              label="Counting method"
+              id={methodId}
               value={method}
               onChange={(event) => {
                 setMethod(event.currentTarget.value as CountingMethod);
               }}
-              style={{ flex: 1, minWidth: 0 }}
               size="md"
             >
               {countingMethods.map((preset) => (
@@ -186,17 +215,7 @@ export default function WordCounter() {
                 </option>
               ))}
             </NativeSelect>
-            <ActionIcon
-              aria-label="About counting methods"
-              variant="subtle"
-              size="lg"
-              onClick={() => {
-                setInfoOpened(true);
-              }}
-            >
-              <IconInfoCircle aria-hidden />
-            </ActionIcon>
-          </Group>
+          </Stack>
         </div>
         <div className={styles.editor}>
           <Stack gap="xs" h="100%">
@@ -223,6 +242,7 @@ export default function WordCounter() {
               // Grow to match the column beside it on desktop.
               style={{ flex: 1, display: "flex", flexDirection: "column" }}
               styles={{
+                description: { marginBottom: "var(--mantine-spacing-sm)" },
                 wrapper: { flex: 1 },
                 input: { height: "100%", minHeight: 220 },
               }}
@@ -255,11 +275,6 @@ export default function WordCounter() {
           <Stack gap="md" h="100%">
             <Counts title="Whole text" counts={whole} highlighted={selected} />
             <Counts title="Selected text" counts={selected} desktopOnly />
-            {!selection && (
-              <Text size="sm" c="dimmed">
-                Highlight text in the editor to see its counts.
-              </Text>
-            )}
           </Stack>
         </div>
       </div>

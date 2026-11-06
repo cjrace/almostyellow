@@ -16,29 +16,41 @@ async function expectCounts(
   region: Locator,
   words: string,
   characters: string,
+  withoutSpaces: string,
 ) {
   await expect(region.locator("dd")).toHaveText([
     withSelection(words),
     withSelection(characters),
+    withSelection(withoutSpaces),
   ]);
 }
 
 // Desktop has a box for the selected text; phones show it in brackets after
 // the whole-text counts, and only while something is highlighted.
-async function expectSelected(page: Page, words: string, characters: string) {
+async function expectSelected(
+  page: Page,
+  words: string,
+  characters: string,
+  withoutSpaces: string,
+) {
   const box = selected(page);
   if (await box.isVisible()) {
-    await expect(box.locator("dd")).toHaveText([words, characters]);
+    await expect(box.locator("dd")).toHaveText([
+      words,
+      characters,
+      withoutSpaces,
+    ]);
     return;
   }
   const counts = whole(page).locator("dd");
   if (words === "—") {
-    await expect(counts).toHaveText([/^\d+$/, /^\d+$/]);
+    await expect(counts).toHaveText([/^\d+$/, /^\d+$/, /^\d+$/]);
     return;
   }
   await expect(counts).toHaveText([
     new RegExp(`\\(selected ${words}\\)$`),
     new RegExp(`\\(selected ${characters}\\)$`),
+    new RegExp(`\\(selected ${withoutSpaces}\\)$`),
   ]);
 }
 
@@ -63,10 +75,10 @@ test.describe("A visitor on the word counter", () => {
     await page.getByRole("link", { name: "Open word counter" }).click();
     await expect(page).toHaveURL("/tools/word-counter");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Word & character counter",
+      "Word and character counter",
     );
-    await expectCounts(whole(page), "0", "0");
-    await expectSelected(page, "—", "—");
+    await expectCounts(whole(page), "0", "0", "0");
+    await expectSelected(page, "—", "—", "—");
     await expect(page.getByLabel("Your text")).toHaveAttribute(
       "spellcheck",
       "false",
@@ -85,18 +97,18 @@ test.describe("A visitor on the word counter", () => {
     await test.step("Given text with a highlighted emoji", async () => {
       await page.goto("/tools/word-counter");
       await editor.fill(example);
-      await expectCounts(whole(page), "4", "18");
+      await expectCounts(whole(page), "4", "18", "16");
       await selectRange(page, 17, 22);
-      await expectSelected(page, "0", "1");
+      await expectSelected(page, "0", "1", "1");
     });
     await test.step("When they compare methods and read the explanation, the selection remains", async () => {
       await method.focus();
       await method.selectOption("whitespace");
-      await expectCounts(whole(page), "3", "18");
-      await expectSelected(page, "1", "1");
+      await expectCounts(whole(page), "3", "18", "16");
+      await expectSelected(page, "1", "1", "1");
       await method.selectOption("legacy");
-      await expectCounts(whole(page), "3", "22");
-      await expectSelected(page, "1", "5");
+      await expectCounts(whole(page), "3", "22", "20");
+      await expectSelected(page, "1", "5", "5");
       const info = page.getByRole("button", { name: "About counting methods" });
       if (isMobile) await info.tap();
       else await info.click();
@@ -104,21 +116,21 @@ test.describe("A visitor on the word counter", () => {
         page.getByRole("dialog", { name: "How counting works" }),
       ).toBeVisible();
       await page.keyboard.press("Escape");
-      await expectSelected(page, "1", "5");
+      await expectSelected(page, "1", "5", "5");
       await expect(editor).toHaveValue(example);
       await expect(editor).toHaveJSProperty("selectionStart", 17);
       await expect(editor).toHaveJSProperty("selectionEnd", 22);
     });
     await test.step("Then collapsing, editing or clearing removes the selection counts", async () => {
       await selectRange(page, 2, 2);
-      await expectSelected(page, "—", "—");
+      await expectSelected(page, "—", "—", "—");
       await selectRange(page, 0, 2);
       await editor.press("Backspace");
-      await expectSelected(page, "—", "—");
+      await expectSelected(page, "—", "—", "—");
       await page.getByRole("button", { name: "Clear text" }).click();
       await expect(editor).toBeFocused();
       await expect(editor).toHaveValue("");
-      await expectCounts(whole(page), "0", "0");
+      await expectCounts(whole(page), "0", "0", "0");
     });
   });
 
@@ -129,19 +141,19 @@ test.describe("A visitor on the word counter", () => {
     const editor = page.getByLabel("Your text");
     await editor.fill("Hello\nworld 👩‍💻");
     await editor.press("ControlOrMeta+a");
-    await expectSelected(page, "2", "13");
-    await expectCounts(whole(page), "2", "13");
+    await expectSelected(page, "2", "13", "11");
+    await expectCounts(whole(page), "2", "13", "11");
     await editor.press("ArrowLeft");
-    await expectSelected(page, "—", "—");
+    await expectSelected(page, "—", "—", "—");
     await editor.press("ControlOrMeta+Home");
     await editor.press("Shift+ArrowRight");
-    await expectSelected(page, "1", "1");
+    await expectSelected(page, "1", "1", "1");
     await editor.press("ControlOrMeta+a");
     await editor.press("Backspace");
     await editor.pressSequentially("Hello");
-    await expectCounts(whole(page), "1", "5");
+    await expectCounts(whole(page), "1", "5", "5");
     await expect(page.getByRole("status")).toContainText(
-      "Whole text: 1 word, 5 characters.",
+      "Whole text: 1 word, 5 characters with spaces, 5 without spaces.",
     );
   });
 
@@ -163,10 +175,8 @@ test.describe("A visitor on the word counter", () => {
         dialog.getByRole("row", { name: `${method} ${words} ${characters}` }),
       ).toBeVisible();
     }
-    await expect(dialog.getByRole("link")).toHaveAttribute(
-      "href",
-      "https://github.com/alphagov/govuk-frontend/releases/tag/v6.6.0",
-    );
+    await expect(dialog.getByRole("link")).toHaveCount(0);
+    await expect(dialog).not.toContainText("GOV.UK");
     for (let index = 0; index < 4; index++) {
       await page.keyboard.press("Tab");
       expect(
@@ -199,12 +209,12 @@ test.describe("A visitor on the word counter", () => {
     ).toContainText("Your browser does not support Unicode segmentation");
     await expect(page.locator('option[value="unicode"]')).toBeDisabled();
     await expect(page.locator('option[value="whitespace"]')).toBeDisabled();
-    await expectCounts(whole(page), "—", "—");
+    await expectCounts(whole(page), "—", "—", "—");
     await page
       .getByLabel("Counting method", { exact: true })
       .selectOption("legacy");
     await page.getByLabel("Your text").fill(example);
-    await expectCounts(whole(page), "3", "22");
+    await expectCounts(whole(page), "3", "22", "20");
     await page.getByRole("button", { name: "About counting methods" }).click();
     await expect(
       page.getByRole("row", { name: "Unicode-aware Unavailable Unavailable" }),
@@ -244,11 +254,11 @@ test.describe("A visitor on the word counter", () => {
       await page.keyboard.press("Escape");
       await context.setOffline(true);
       await page.getByLabel("Your text").fill(`${passage} offline`);
-      await expectCounts(whole(page), "5", "71");
+      await expectCounts(whole(page), "5", "71", "67");
       await page
         .getByLabel("Counting method", { exact: true })
         .selectOption("unicode");
-      await expectCounts(whole(page), "10", "67");
+      await expectCounts(whole(page), "10", "67", "63");
       await context.setOffline(false);
     });
     await test.step("Then text stays out of requests and storage and is cleared on reload", async () => {
@@ -336,14 +346,14 @@ test.describe("A visitor on the word counter", () => {
       const editor = page.getByLabel("Your text");
       await editor.focus();
       await editor.press("ControlOrMeta+v");
-      await expectCounts(whole(page), "4", "18");
+      await expectCounts(whole(page), "4", "18", "16");
       await editor.dblclick({ position: { x: 20, y: 18 } });
       // Windows can include the space after a double-clicked word.
       const highlighted = await editor.evaluate((input: HTMLTextAreaElement) =>
         input.value.slice(input.selectionStart, input.selectionEnd),
       );
       expect(highlighted.trim()).toBe("My");
-      await expectSelected(page, "1", highlighted.length.toString());
+      await expectSelected(page, "1", highlighted.length.toString(), "2");
     },
   );
 

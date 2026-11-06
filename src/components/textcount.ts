@@ -2,6 +2,7 @@ export type CountingMethod = "unicode" | "whitespace" | "legacy";
 export interface TextCounts {
   words: number;
   characters: number;
+  charactersWithoutSpaces: number;
 }
 
 export function supportsSegmentation(): boolean {
@@ -79,5 +80,10 @@ export const countingMethods = [
 export function countText(text: string, method: CountingMethod): TextCounts {
   const preset = countingMethods.find((preset) => preset.value === method);
   if (!preset) throw new Error("Unknown counting method.");
-  return { words: preset.words(text), characters: preset.characters(text) };
+  return {
+    words: preset.words(text),
+    characters: preset.characters(text),
+    // Spaces, tabs and line breaks are all left out.
+    charactersWithoutSpaces: preset.characters(text.replace(/\s/gu, "")),
+  };
 }

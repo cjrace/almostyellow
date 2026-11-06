@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor, Modal, Stack, Table, Text, Title } from "@mantine/core";
+import { Modal, Stack, Table, Text, Title } from "@mantine/core";
 import { countText, countingMethods } from "@/components/textcount";
 
 const example = "My mother-in-law 👩‍💻";
@@ -84,21 +84,10 @@ export default function CountingMethodInfo({
           </Text>
         </Stack>
         <Text size="sm" c="dimmed">
-          Spaces and line breaks count as characters too. These methods do not
-          guarantee matching results in Microsoft Word or other applications.
-        </Text>
-        <Text size="sm">
-          Unicode-aware counting follows the approach introduced in newer GOV.UK
-          Frontend releases. Other applications may count differently. See the{" "}
-          <Anchor
-            href="https://github.com/alphagov/govuk-frontend/releases/tag/v6.6.0"
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="always"
-          >
-            GOV.UK Frontend v6.6.0 release notes
-          </Anchor>
-          .
+          The table shows characters with spaces. Spaces, tabs and line breaks
+          count as characters there, and are left out of characters without
+          spaces. These methods do not guarantee matching results in Microsoft
+          Word or other applications.
         </Text>
       </Stack>
     </Modal>

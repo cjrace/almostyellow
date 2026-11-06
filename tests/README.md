@@ -92,7 +92,7 @@ If you write a test that imports a module like that, or one that changes `proces
 
 ## Word and character counter
 
-`unit/textcount.test.ts` checks the three counting methods, including joined emoji, combining marks, non-Latin text and line endings. The information modal uses the same counting engine as the editor; the unit and browser tests both check its worked example.
+`unit/textcount.test.ts` checks the three counting methods, with and without spaces, including joined emoji, combining marks, non-Latin text and line endings. The information modal uses the same counting engine as the editor; the unit and browser tests both check its worked example.
 
 `public/09_word_counter.spec.ts` checks navigation, selection, method changes, compatibility messaging and offline use. Privacy checks look for distinctive input in request URLs, headers, bodies, browser logs and browser storage, and verify that reloading clears the editor. The counter does not load Vercel Analytics or Speed Insights on a direct visit. Send-time filters also exclude counter events when those scripts were loaded on another page. Browser tests exercise both filters after client navigation. Accessibility checks cover results and the information modal in both colour schemes.
 
