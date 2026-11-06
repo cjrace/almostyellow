@@ -83,6 +83,10 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # The "Google Chrome" project uses real Chrome, which the image lacks
+      # (the runner has it, but the container does not)
+      - name: Install Google Chrome
+        run: pnpm exec playwright install chrome
       - name: Cache Next.js build artifacts
         uses: actions/cache@v6
         with:
