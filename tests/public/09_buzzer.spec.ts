@@ -385,6 +385,9 @@ test.describe("Quiz host and guests", () => {
           await expectTextInsideCap(
             guest.getByRole("button", { name: "Buzz recorded", exact: true }),
           );
+          await expect(
+            guest.getByRole("button", { name: "Buzz recorded", exact: true }),
+          ).toHaveCSS("opacity", "0.5");
           await guest.emulateMedia({ reducedMotion: "reduce" });
           await expect(
             guest

@@ -430,7 +430,6 @@ export default function Buzzer({
           <Stack gap="sm">
             {host ? (
               <Button
-                autoContrast
                 disabled={busy || !online}
                 loading={busy}
                 onClick={() =>
@@ -446,14 +445,12 @@ export default function Buzzer({
             ) : (
               <Button
                 component={Link}
-                autoContrast
                 href="/admin/login?callbackUrl=%2Fgames%2Fbuzzer"
               >
                 Create a room
               </Button>
             )}
             <Button
-              autoContrast
               variant="default"
               size="sm"
               ref={joinChoiceRef}
@@ -509,12 +506,11 @@ export default function Buzzer({
                   setName(event.currentTarget.value);
                 }}
               />
-              <Button autoContrast type="submit" disabled={busy || !online}>
+              <Button type="submit" disabled={busy || !online}>
                 Join room
               </Button>
               {joinView === "code" && (
                 <Button
-                  autoContrast
                   type="button"
                   variant="default"
                   size="sm"
@@ -543,7 +539,6 @@ export default function Buzzer({
             {hosting && room && !ended && (
               <Group gap="xs">
                 <Button
-                  autoContrast
                   size="sm"
                   aria-disabled={busy || cached}
                   data-disabled={busy || cached || undefined}
@@ -552,7 +547,6 @@ export default function Buzzer({
                   Reset
                 </Button>
                 <Button
-                  autoContrast
                   size="sm"
                   variant="default"
                   onClick={() =>
@@ -567,7 +561,6 @@ export default function Buzzer({
                   Copy join link
                 </Button>
                 <Button
-                  autoContrast
                   size="sm"
                   ref={endRef}
                   color="red"
@@ -588,7 +581,8 @@ export default function Buzzer({
                 aria-keyshortcuts="Space"
                 data-pressed={pressed || buzzing || ownBuzz || undefined}
                 data-unavailable={
-                  (!ownBuzz && !buzzing && (!online || cached || uncertain)) ||
+                  ownBuzz ||
+                  (!buzzing && (!online || cached || uncertain)) ||
                   undefined
                 }
                 onPointerDown={() => {
@@ -649,7 +643,6 @@ export default function Buzzer({
             )}
             {room && !ended && uncertain && (
               <Button
-                autoContrast
                 onClick={() =>
                   void run(async () => {
                     if (client) {
@@ -715,7 +708,6 @@ export default function Buzzer({
                       }}
                     />
                     <Button
-                      autoContrast
                       disabled={busy || !online}
                       onClick={() => void run(join)}
                     >
@@ -740,7 +732,6 @@ export default function Buzzer({
                               <>
                                 {" "}
                                 <Button
-                                  autoContrast
                                   size="compact-sm"
                                   variant="default"
                                   disabled={busy}
@@ -762,7 +753,6 @@ export default function Buzzer({
               </>
             )}
             <Button
-              autoContrast
               ref={leaveRef}
               variant="default"
               disabled={busy}
@@ -787,7 +777,6 @@ export default function Buzzer({
           <Stack gap="md" align="flex-start" pt="xs">
             <Text>Everyone will lose access to gameplay.</Text>
             <Button
-              autoContrast
               color="red.9"
               disabled={busy}
               onClick={() =>

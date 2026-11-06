@@ -69,8 +69,8 @@
   cursor: default;
 }
 
-/* Offline, reconnecting or unconfirmed: fade and grey the button so it reads
-   as unavailable. A recorded buzz keeps its full colour. */
+/* Offline, reconnecting, unconfirmed or already buzzed: fade and grey the
+   button so it reads as unavailable. */
 .buzzer {
   transition:
     opacity 200ms ease-out,
