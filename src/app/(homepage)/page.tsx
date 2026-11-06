@@ -6,6 +6,7 @@ import {
   IconPaperclip,
   IconGlass,
   IconMovie,
+  IconTools,
 } from "@tabler/icons-react";
 import Header from "@/components/header";
 import ButtonLink from "@/components/buttonlink";
@@ -85,6 +86,15 @@ export default function Home() {
             href="/films"
           >
             Cam&apos;s film list
+          </ButtonLink>
+          <ButtonLink
+            leftSection={<IconTools />}
+            variant="default"
+            size="xl"
+            classNames={{ root: home.button, label: home.label }}
+            href="/tools"
+          >
+            Tools
           </ButtonLink>
         </Group>
 
