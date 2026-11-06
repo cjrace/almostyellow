@@ -1,5 +1,21 @@
 import { describe, expect, test } from "vitest";
-import { isRoomCode, leaderboard } from "@/buzzer/model";
+import { isRoomCode, leaderboard, ordinal } from "@/buzzer/model";
+
+describe("Ordinals", () => {
+  test.each([
+    [1, "1st"],
+    [2, "2nd"],
+    [3, "3rd"],
+    [4, "4th"],
+    [11, "11th"],
+    [12, "12th"],
+    [13, "13th"],
+    [21, "21st"],
+    [112, "112th"],
+  ])("writes %i as %s", (place, text) => {
+    expect(ordinal(place)).toBe(text);
+  });
+});
 import { playerSignInError } from "@/buzzer/errors";
 
 describe("Room codes", () => {

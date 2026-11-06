@@ -61,6 +61,8 @@ test.describe("Quiz host and guests", () => {
       page.getByRole("heading", { name: "Join room ABC234", exact: true }),
     ).toBeVisible();
     await expect(page.getByLabel("Room code", { exact: true })).toHaveCount(0);
+    await expect(page.getByLabel("Your name", { exact: true })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Back" })).toHaveCount(0);
     expect(
       await page.evaluate(() => localStorage.getItem("buzzer-key-ABC234")),
     ).toBeNull();
@@ -144,7 +146,7 @@ test.describe("Quiz host and guests", () => {
       code = (await heading.innerText()).slice(5);
       expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
       await expect(
-        page.getByRole("heading", { name: "Players (0/20)" }),
+        page.getByRole("button", { name: "Players (0/20)" }),
       ).toBeVisible();
       await page.getByLabel("Your player name", { exact: true }).fill("Cam");
       await page
@@ -153,9 +155,7 @@ test.describe("Quiz host and guests", () => {
       await expect(page.getByRole("main").getByRole("alert")).toContainText(
         "Could not join the room",
       );
-      await expect(
-        page.getByText("Buzzing is open.", { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByText(/Reconnecting|ended|expired/)).toHaveCount(0);
       await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
         page.getByRole("button", { name: "Reset", exact: true }),
@@ -276,8 +276,11 @@ test.describe("Quiz host and guests", () => {
       .getByRole("button", { name: "Join as a player", exact: true })
       .click();
     await expect(
-      page.getByRole("heading", { name: "Players (1/20)" }),
+      page.getByRole("button", { name: "Players (1/20)" }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Buzz!", exact: true }),
+    ).toBeEnabled();
     await page.getByRole("button", { name: "Buzz!", exact: true }).click();
     await expect(
       page.getByRole("button", { name: "Buzz recorded", exact: true }),
@@ -319,7 +322,7 @@ test.describe("Quiz host and guests", () => {
         .getByRole("button", { name: "Join room", exact: true })
         .click();
       await expect(
-        guest.getByRole("heading", { name: "Players (2/20)" }),
+        guest.getByRole("button", { name: "Players (2/20)" }),
       ).toBeVisible();
       expect(await (await cookieResponse).headerValue("set-cookie")).toContain(
         "SameSite=strict",
@@ -418,7 +421,13 @@ test.describe("Quiz host and guests", () => {
         ).toHaveCSS("transition-duration", "0s");
         await guest.emulateMedia({ reducedMotion: "no-preference" });
         await expect(
-          page.getByRole("cell", { name: guestName, exact: true }),
+          page
+            .getByRole("list", { name: "Buzz order" })
+            .getByRole("listitem")
+            .filter({ hasText: guestName }),
+        ).toBeVisible();
+        await expect(
+          guest.getByRole("status").filter({ hasText: /^You're (2nd|1st)/ }),
         ).toBeVisible();
       });
       expect(
@@ -465,7 +474,7 @@ test.describe("Quiz host and guests", () => {
             .getByLabel("Your name", { exact: true })
             .press("Enter");
           await expect(
-            otherGuest.getByRole("heading", { name: "Players (1/20)" }),
+            otherGuest.getByRole("button", { name: "Players (1/20)" }),
           ).toBeVisible();
           const otherCookie = (await context.cookies()).find(
             (cookie) => cookie.name === `buzzer-guest-${otherCode}`,
@@ -478,14 +487,14 @@ test.describe("Quiz host and guests", () => {
           expect(otherCookie?.value).not.toBe(roomCookie?.value);
           await otherGuest.reload();
           await expect(
-            otherGuest.getByRole("heading", { name: "Players (1/20)" }),
+            otherGuest.getByRole("button", { name: "Players (1/20)" }),
           ).toBeVisible();
           await guest.reload();
           await expect(
             guest.getByRole("button", { name: "Buzz recorded", exact: true }),
           ).toBeVisible();
           await expect(
-            guest.getByRole("heading", { name: "Players (2/20)" }),
+            guest.getByRole("button", { name: "Players (2/20)" }),
           ).toBeVisible();
         } finally {
           await otherGuest.close();
@@ -497,9 +506,9 @@ test.describe("Quiz host and guests", () => {
         await expectNoUnexpectedAxeViolations(guest);
       }
       await page.getByRole("button", { name: "Reset", exact: true }).click();
-      await expect(
-        guest.getByRole("cell", { name: guestName, exact: true }),
-      ).toHaveCount(0);
+      await expect(guest.getByRole("list", { name: "Buzz order" })).toHaveCount(
+        0,
+      );
       await expect(
         guest.getByRole("button", { name: "Buzz!", exact: true }),
       ).toBeEnabled();
@@ -508,7 +517,10 @@ test.describe("Quiz host and guests", () => {
         guest.getByRole("button", { name: "Buzz recorded", exact: true }),
       ).toBeVisible();
       await expect(
-        page.getByRole("cell", { name: guestName, exact: true }),
+        page
+          .getByRole("list", { name: "Buzz order" })
+          .getByRole("listitem")
+          .filter({ hasText: guestName }),
       ).toBeVisible();
       await page.getByRole("button", { name: "Reset", exact: true }).click();
       await expect(
@@ -522,9 +534,7 @@ test.describe("Quiz host and guests", () => {
       await expect(
         guest.getByRole("button", { name: "Buzz!", exact: true }),
       ).toBeEnabled();
-      await expect(
-        guest.getByRole("cell", { name: "Guest", exact: true }),
-      ).toHaveCount(0);
+      await page.getByRole("button", { name: /^Players \(/ }).click();
       await page
         .getByRole("button", { name: `Remove ${guestName}`, exact: true })
         .click();
@@ -544,6 +554,10 @@ test.describe("Quiz host and guests", () => {
       await expect(
         page.getByText("This room has ended.", { exact: true }),
       ).toBeVisible();
+      await page
+        .getByRole("button", { name: "Leave game", exact: true })
+        .click();
+      await page.waitForURL("/games");
       expect(signUps).toBe(0);
     } finally {
       await context.close();

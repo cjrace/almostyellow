@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMounted } from "@mantine/hooks";
 import { IconInfoCircle } from "@tabler/icons-react";
 import {
+  Accordion,
   ActionIcon,
   Alert,
   Button,
@@ -13,7 +15,6 @@ import {
   List,
   Modal,
   Stack,
-  Table,
   Text,
   TextInput,
   Title,
@@ -38,7 +39,7 @@ import {
   watchRoom,
   type GuestClient,
 } from "@/buzzer/client";
-import { leaderboard, type Buzz, type RoomView } from "@/buzzer/model";
+import { leaderboard, ordinal, type Buzz, type RoomView } from "@/buzzer/model";
 import { playerSignInError } from "@/buzzer/errors";
 import styles from "@/styles/buzzer.module.css";
 
@@ -75,17 +76,18 @@ export default function Buzzer({
   const [instructions, setInstructions] = useState(false);
   const mounted = useMounted();
   const [now, setNow] = useState(0);
-  const titleRef = useRef<HTMLHeadingElement>(null);
+  const router = useRouter();
   const roomTitleRef = useRef<HTMLHeadingElement>(null);
-  const rosterRef = useRef<HTMLHeadingElement>(null);
+  const rosterRef = useRef<HTMLButtonElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
-  const backRef = useRef<HTMLButtonElement>(null);
+  const leaveRef = useRef<HTMLButtonElement>(null);
   const lastRoundRef = useRef("");
   const createIdRef = useRef<string | null>(null);
   const flightRef = useRef(false);
   const buzzButtonRef = useRef<HTMLButtonElement>(null);
   const joinChoiceRef = useRef<HTMLButtonElement>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     let alive = true;
     // Restoring a host's room must not depend on player sign-in.
@@ -216,6 +218,9 @@ export default function Buzzer({
       },
     );
   }, [client, room, hosting, config]);
+  useEffect(() => {
+    if (!active && joinView === "invite") nameInputRef.current?.focus();
+  }, [active, joinView]);
   function remember(
     nextCode: string,
     nextPlayer: string,
@@ -261,6 +266,31 @@ export default function Buzzer({
     setClient(result.client);
     setIdentityError("");
     remember(code, result.playerId, hosting);
+  }
+  async function leave() {
+    if (client && room && playerId && room.phase !== "ended") {
+      try {
+        await send(client, "leave", {
+          code: room.code,
+          round: room.round,
+          version: room.version,
+          commandId: crypto.randomUUID(),
+        });
+      } catch {
+        // Leaving must always work. An unreleased seat is freed when the room
+        // expires, or the host can remove it.
+      }
+    }
+    // A host keeps the room so they can come back to it in this tab.
+    if (hosting) {
+      sessionStorage.setItem(
+        "buzzer-room",
+        JSON.stringify({ code: active, playerId: "", hosting: true }),
+      );
+    } else {
+      sessionStorage.removeItem("buzzer-room");
+    }
+    router.push("/games");
   }
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
@@ -358,13 +388,12 @@ export default function Buzzer({
       });
   }
   const rows = leaderboard(buzzes);
+  const ownRow = rows.find((row) => row.id === playerId);
   return (
     <Container size="sm">
       <Stack gap="md">
         <Group gap="xs">
           <Title
-            ref={titleRef}
-            tabIndex={-1}
             fz={{
               base: "var(--mantine-h2-font-size)",
               sm: "var(--mantine-h1-font-size)",
@@ -478,6 +507,7 @@ export default function Buzzer({
                 />
               )}
               <TextInput
+                ref={nameInputRef}
                 label="Your name"
                 value={name}
                 maxLength={30}
@@ -488,24 +518,26 @@ export default function Buzzer({
               <Button autoContrast type="submit" disabled={busy || !online}>
                 Join room
               </Button>
-              <Button
-                autoContrast
-                type="button"
-                variant="default"
-                size="sm"
-                disabled={busy}
-                onClick={() => {
-                  setJoinView("choose");
-                  setError("");
-                  setIdentityError("");
-                  window.history.replaceState(null, "", "/games/buzzer");
-                  requestAnimationFrame(() => {
-                    joinChoiceRef.current?.focus();
-                  });
-                }}
-              >
-                Back
-              </Button>
+              {joinView === "code" && (
+                <Button
+                  autoContrast
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => {
+                    setJoinView("choose");
+                    setError("");
+                    setIdentityError("");
+                    window.history.replaceState(null, "", "/games/buzzer");
+                    requestAnimationFrame(() => {
+                      joinChoiceRef.current?.focus();
+                    });
+                  }}
+                >
+                  Back
+                </Button>
+              )}
             </Stack>
           </form>
         )}
@@ -514,57 +546,169 @@ export default function Buzzer({
             <Title ref={roomTitleRef} tabIndex={-1} order={2}>
               Room {active}
             </Title>
-            <Button
-              autoContrast
-              variant="default"
-              onClick={() =>
-                void run(async () => {
-                  await navigator.clipboard.writeText(
-                    `${location.origin}/games/buzzer?room=${active}`,
-                  );
-                  setNotice("Join link copied.");
-                })
-              }
-            >
-              Copy join link
-            </Button>
-            <Text role="status">
+            {hosting && room && !ended && (
+              <Group gap="xs">
+                <Button
+                  autoContrast
+                  size="sm"
+                  aria-disabled={busy || cached}
+                  data-disabled={busy || cached || undefined}
+                  onClick={() => void run(() => control("reset"))}
+                >
+                  Reset
+                </Button>
+                <Button
+                  autoContrast
+                  size="sm"
+                  variant="default"
+                  onClick={() =>
+                    void run(async () => {
+                      await navigator.clipboard.writeText(
+                        `${location.origin}/games/buzzer?room=${active}`,
+                      );
+                      setNotice("Join link copied.");
+                    })
+                  }
+                >
+                  Copy join link
+                </Button>
+                <Button
+                  autoContrast
+                  size="sm"
+                  ref={endRef}
+                  color="red"
+                  variant="default"
+                  onClick={() => {
+                    setEnding(true);
+                  }}
+                >
+                  End room
+                </Button>
+              </Group>
+            )}
+            {room && !ended && playerId && (
+              <UnstyledButton
+                ref={buzzButtonRef}
+                className={styles.buzzer}
+                aria-disabled={!canBuzz}
+                aria-keyshortcuts="Space"
+                data-pressed={pressed || buzzing || ownBuzz || undefined}
+                onPointerDown={() => {
+                  if (canBuzz) setPressed(true);
+                }}
+                onPointerUp={() => {
+                  setPressed(false);
+                }}
+                onPointerCancel={() => {
+                  setPressed(false);
+                }}
+                onPointerLeave={() => {
+                  setPressed(false);
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    canBuzz &&
+                    (event.code === "Space" || event.key === "Enter")
+                  )
+                    setPressed(true);
+                }}
+                onKeyUp={() => {
+                  setPressed(false);
+                }}
+                onBlur={() => {
+                  setPressed(false);
+                }}
+                onClick={() => void buzz()}
+              >
+                <span className={styles.cap}>
+                  <span className={styles.label}>
+                    {ownBuzz
+                      ? "Buzz recorded"
+                      : buzzing
+                        ? "Confirming…"
+                        : "Buzz!"}
+                  </span>
+                </span>
+              </UnstyledButton>
+            )}
+            <Text role="status" ta="center">
               {ended
                 ? expired
                   ? "This room has expired."
                   : "This room has ended."
                 : !online || cached
                   ? "Reconnecting — buzzing is unavailable."
-                  : "Buzzing is open."}
+                  : ownRow
+                    ? `You're ${ordinal(ownRow.place)}${ownRow.gap > 0 ? `, ${String(ownRow.gap)} ms behind first` : ""}.`
+                    : ownBuzz
+                      ? "Buzz recorded."
+                      : ""}
             </Text>
+            {room && !ended && playerId && !ownBuzz && (
+              <Text visibleFrom="sm" c="dimmed" size="sm" ta="center">
+                Press Space to buzz.
+              </Text>
+            )}
+            {room && !ended && uncertain && (
+              <Button
+                autoContrast
+                onClick={() =>
+                  void run(async () => {
+                    if (client) {
+                      try {
+                        const confirmed = await reconcile(
+                          client.db,
+                          room.code,
+                          room.round,
+                        );
+                        if (lastRoundRef.current !== room.round) return;
+                        setBuzzes(confirmed);
+                        setUncertain(false);
+                      } catch (error) {
+                        if (lastRoundRef.current === room.round) throw error;
+                      }
+                    }
+                  })
+                }
+              >
+                Check buzz
+              </Button>
+            )}
             {room && !ended && (
               <>
-                {hosting && (
-                  <Group>
-                    <Button
-                      autoContrast
-                      aria-disabled={busy || cached}
-                      data-disabled={busy || cached || undefined}
-                      onClick={() => void run(() => control("reset"))}
+                {rows.length > 0 ? (
+                  <>
+                    <Title order={2}>Buzz order</Title>
+                    <List
+                      role="list"
+                      aria-label="Buzz order"
+                      listStyleType="none"
+                      spacing="xs"
                     >
-                      Reset
-                    </Button>
-                    <Button
-                      autoContrast
-                      ref={endRef}
-                      color="red"
-                      variant="default"
-                      onClick={() => {
-                        setEnding(true);
-                      }}
-                    >
-                      End room
-                    </Button>
-                  </Group>
+                      {rows.map((row) => (
+                        <List.Item
+                          key={row.id}
+                          style={{ overflowWrap: "anywhere" }}
+                        >
+                          {row.place}. {row.name}
+                          {row.id === playerId && " (you)"}
+                          {row.gap > 0 && (
+                            <Text span c="dimmed">
+                              {" "}
+                              — {row.gap} ms behind
+                            </Text>
+                          )}
+                        </List.Item>
+                      ))}
+                    </List>
+                  </>
+                ) : (
+                  hosting && <Text c="dimmed">Waiting for the first buzz.</Text>
                 )}
                 {!playerId && hosting && (
-                  <>
+                  <Group align="flex-end" wrap="nowrap">
                     <TextInput
+                      style={{ flex: 1 }}
                       label="Your player name"
                       value={name}
                       maxLength={30}
@@ -579,193 +723,54 @@ export default function Buzzer({
                     >
                       Join as a player
                     </Button>
-                  </>
+                  </Group>
                 )}
-                {playerId && (
-                  <>
-                    <UnstyledButton
-                      ref={buzzButtonRef}
-                      className={styles.buzzer}
-                      aria-disabled={!canBuzz}
-                      data-pressed={pressed || buzzing || ownBuzz || undefined}
-                      onPointerDown={() => {
-                        if (canBuzz) setPressed(true);
-                      }}
-                      onPointerUp={() => {
-                        setPressed(false);
-                      }}
-                      onPointerCancel={() => {
-                        setPressed(false);
-                      }}
-                      onPointerLeave={() => {
-                        setPressed(false);
-                      }}
-                      onKeyDown={(event) => {
-                        if (
-                          canBuzz &&
-                          (event.code === "Space" || event.key === "Enter")
-                        )
-                          setPressed(true);
-                      }}
-                      onKeyUp={() => {
-                        setPressed(false);
-                      }}
-                      onBlur={() => {
-                        setPressed(false);
-                      }}
-                      onClick={() => void buzz()}
-                    >
-                      <span className={styles.cap}>
-                        <span className={styles.label}>
-                          {ownBuzz
-                            ? "Buzz recorded"
-                            : buzzing
-                              ? "Confirming…"
-                              : "Buzz!"}
-                        </span>
-                      </span>
-                    </UnstyledButton>
-                    <Text role="status">
-                      {ownBuzz
-                        ? `Your place: ${String(rows.find((row) => row.id === playerId)?.place ?? "pending")}.`
-                        : "Use the button or press Space."}
-                    </Text>
-                    {uncertain && (
-                      <Button
-                        autoContrast
-                        onClick={() =>
-                          void run(async () => {
-                            if (client) {
-                              try {
-                                const confirmed = await reconcile(
-                                  client.db,
-                                  room.code,
-                                  room.round,
-                                );
-                                if (lastRoundRef.current !== room.round) return;
-                                setBuzzes(confirmed);
-                                setUncertain(false);
-                              } catch (error) {
-                                if (lastRoundRef.current === room.round)
-                                  throw error;
-                              }
-                            }
-                          })
-                        }
-                      >
-                        Check buzz
-                      </Button>
-                    )}
-                    <Button
-                      autoContrast
-                      variant="default"
-                      disabled={busy}
-                      onClick={() =>
-                        void run(async () => {
-                          if (client)
-                            await send(client, "leave", {
-                              code: room.code,
-                              round: room.round,
-                              version: room.version,
-                              commandId: crypto.randomUUID(),
-                            });
-                          setPlayerId("");
-                          if (hosting) remember(active, "", true);
-                          else {
-                            setActive("");
-                            setJoinView("choose");
-                            requestAnimationFrame(() => {
-                              titleRef.current?.focus();
-                            });
-                            setRoom(null);
-                            sessionStorage.removeItem("buzzer-room");
-                            window.history.replaceState(
-                              null,
-                              "",
-                              "/games/buzzer",
-                            );
-                          }
-                        })
-                      }
-                    >
-                      Leave room
-                    </Button>
-                  </>
-                )}
-                <Title order={2}>Buzz order</Title>
-                <Table captionSide="top">
-                  <Table.Caption c="var(--mantine-color-text)">
-                    Gaps behind first place, in milliseconds
-                  </Table.Caption>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Place</Table.Th>
-                      <Table.Th>Player</Table.Th>
-                      <Table.Th>Gap</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {rows.map((row) => (
-                      <Table.Tr key={row.id}>
-                        <Table.Td>{row.place}</Table.Td>
-                        <Table.Td style={{ overflowWrap: "anywhere" }}>
-                          {row.name}
-                        </Table.Td>
-                        <Table.Td>{row.gap} ms</Table.Td>
-                      </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
-                <Title ref={rosterRef} tabIndex={-1} order={2}>
-                  Players ({room.players.length}/20)
-                </Title>
-                <List>
-                  {room.players.map((player) => (
-                    <List.Item
-                      key={player.id}
-                      style={{ overflowWrap: "anywhere" }}
-                    >
-                      {player.name}{" "}
-                      {hosting && (
-                        <Button
-                          autoContrast
-                          size="compact-sm"
-                          variant="default"
-                          disabled={busy}
-                          aria-label={`Remove ${player.name}`}
-                          onClick={() =>
-                            void run(() => control("remove", player.id))
-                          }
-                        >
-                          Remove
-                        </Button>
-                      )}
-                    </List.Item>
-                  ))}
-                </List>
+                <Accordion variant="default">
+                  <Accordion.Item value="players">
+                    <Accordion.Control ref={rosterRef}>
+                      Players ({room.players.length}/20)
+                    </Accordion.Control>
+                    <Accordion.Panel>
+                      <List listStyleType="none" spacing="xs">
+                        {room.players.map((player) => (
+                          <List.Item
+                            key={player.id}
+                            style={{ overflowWrap: "anywhere" }}
+                          >
+                            {player.name}
+                            {hosting && (
+                              <>
+                                {" "}
+                                <Button
+                                  autoContrast
+                                  size="compact-sm"
+                                  variant="default"
+                                  disabled={busy}
+                                  aria-label={`Remove ${player.name}`}
+                                  onClick={() =>
+                                    void run(() => control("remove", player.id))
+                                  }
+                                >
+                                  Remove
+                                </Button>
+                              </>
+                            )}
+                          </List.Item>
+                        ))}
+                      </List>
+                    </Accordion.Panel>
+                  </Accordion.Item>
+                </Accordion>
               </>
             )}
             <Button
               autoContrast
-              ref={backRef}
+              ref={leaveRef}
               variant="default"
-              onClick={() => {
-                setActive("");
-                setJoinView("choose");
-                lastRoundRef.current = "";
-                requestAnimationFrame(() => {
-                  titleRef.current?.focus();
-                });
-                setRoom(null);
-                setPlayerId("");
-                setHosting(false);
-                setBuzzes([]);
-                createIdRef.current = null;
-                sessionStorage.removeItem("buzzer-room");
-                window.history.replaceState(null, "", "/games/buzzer");
-              }}
+              disabled={busy}
+              onClick={() => void run(leave)}
             >
-              Back to start
+              Leave game
             </Button>
           </>
         )}
@@ -791,7 +796,7 @@ export default function Buzzer({
                 await control("end");
                 setEnding(false);
                 requestAnimationFrame(() => {
-                  backRef.current?.focus();
+                  leaveRef.current?.focus();
                 });
               })
             }
@@ -823,19 +828,16 @@ export default function Buzzer({
                 </Modal.Title>
                 <Stack>
                   <Text>
-                    Buzz once per question; everyone sees the confirmed order.
-                    Buzzing is always open. The host resets the results for the
-                    next question.
+                    Buzz once per question. Everyone sees the confirmed order,
+                    and the host resets for the next question.
                   </Text>
                   <Text>
-                    You can buzz as soon as you join. Exactly equal recorded
-                    times share a place. Network and processing delays can
-                    affect close finishes.
+                    Exactly equal times share a place. Network and processing
+                    delays can affect close finishes.
                   </Text>
                   <Text>
-                    Stay connected: buzzes are never queued offline. Refresh
-                    restores your place in this browser; deleting browser
-                    storage loses your identity. Rooms last six hours.
+                    Stay connected: buzzes are never queued offline. Refreshing
+                    keeps your place in this browser. Rooms last six hours.
                   </Text>
                 </Stack>
                 <Center>

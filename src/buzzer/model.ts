@@ -53,6 +53,10 @@ export function leaderboard(buzzes: Buzz[]) {
     };
   });
 }
+export function ordinal(n: number) {
+  if (n % 100 >= 11 && n % 100 <= 13) return `${String(n)}th`;
+  return `${String(n)}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
 export class RoomError extends Error {
   constructor(
     public code: string,
