@@ -50,6 +50,13 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # firebase-tools downloads the Firestore emulator on first use. The key
+      # follows the lockfile, so a new firebase-tools fetches a fresh copy.
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-emulators-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Run Security Rules and seeding tests against the emulators
         run: pnpm test:firebase
 
@@ -87,6 +94,13 @@ jobs:
       # (the runner has it, but the container does not)
       - name: Install Google Chrome
         run: pnpm exec playwright install chrome
+      # firebase-tools downloads the Firestore emulator on first use. The key
+      # follows the lockfile, so a new firebase-tools fetches a fresh copy.
+      - name: Cache Firebase emulators
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{ runner.os }}-firebase-emulators-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Cache Next.js build artifacts
         uses: actions/cache@v6
         with:
