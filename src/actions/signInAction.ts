@@ -8,16 +8,17 @@ import {
   SESSION_DURATION_MS,
 } from "@/auth";
 
-// Return only to the admin area or the Uno pages. The login page
+// Return only to the admin area or these game pages. The login page
 // already filters callbackUrl, but this action can be called directly.
-const unoPages = [
+const gamePages = [
   "/games/uno-tracker",
   "/games/uno-tracker/stats",
   "/games/uno-tracker/history",
+  "/games/buzzer",
 ];
 function safeRedirect(redirectTo: unknown) {
   if (typeof redirectTo !== "string") return "/";
-  if (unoPages.includes(redirectTo)) return redirectTo;
+  if (gamePages.includes(redirectTo)) return redirectTo;
   const isAdminPath =
     redirectTo === "/admin" || redirectTo.startsWith("/admin/");
   return isAdminPath && redirectTo !== "/admin/login" ? redirectTo : "/";
