@@ -24,9 +24,10 @@ test.describe("Quiz host and guests", () => {
     await expect(
       page.getByRole("button", { name: "Join room", exact: true }),
     ).toBeEnabled();
-    await expect(page.getByLabel("Room code", { exact: true })).toHaveValue(
-      "ABC234",
-    );
+    await expect(
+      page.getByRole("heading", { name: "Join room ABC234", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Room code", { exact: true })).toHaveCount(0);
     expect(
       await page.evaluate(() => localStorage.getItem("buzzer-key-ABC234")),
     ).toBeNull();
@@ -75,28 +76,40 @@ test.describe("Quiz host and guests", () => {
           }),
         }),
       );
-      await page.goto("/admin/login");
+      await page.goto("/games/buzzer");
+      await expect(page.getByRole("textbox")).toHaveCount(0);
+      await page
+        .getByRole("link", { name: "Create a room", exact: true })
+        .click();
+      await page.waitForURL(/\/admin\/login\?/);
       await page
         .getByPlaceholder("e.g. simply@thebest.co.uk")
         .fill(users.alice.email);
       await page.getByPlaceholder("Enter password").fill(users.alice.password);
       await page.getByRole("button", { name: "Log in", exact: true }).click();
-      await page.waitForURL("/");
-      await page.goto("/games/buzzer");
+      await page.waitForURL("/games/buzzer");
       await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
     });
     let code = "";
     await test.step("When the host creates a room and opens and resets buzzing", async () => {
+      await expect(page.getByRole("textbox")).toHaveCount(0);
       const create = page.getByRole("button", {
-        name: "Create room",
+        name: "Create a room",
         exact: true,
       });
       await expect(create).toBeEnabled();
+      await page.screenshot({
+        path: testInfo.outputPath("host-landing-dark.png"),
+        fullPage: true,
+      });
+      if (testInfo.project.name === "Google Chrome")
+        await expectNoUnexpectedAxeViolations(page);
       await create.focus();
       await page.keyboard.press("Enter");
       const heading = page.getByRole("heading", { name: /^Room / });
       await expect(heading).toBeVisible();
       code = (await heading.innerText()).slice(5);
+      expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
       await expect(
         page.getByRole("heading", { name: "Players (0/20)" }),
       ).toBeVisible();
@@ -152,6 +165,9 @@ test.describe("Quiz host and guests", () => {
       }),
     );
     await page.goto("/games/buzzer");
+    await page
+      .getByRole("button", { name: "Join with a code", exact: true })
+      .click();
     await page.getByLabel("Room code", { exact: true }).fill("ABC234");
     await page.getByLabel("Your name", { exact: true }).fill("Cam");
     await page.getByRole("button", { name: "Join room", exact: true }).click();
@@ -208,7 +224,7 @@ test.describe("Quiz host and guests", () => {
     await test.step("Given public sign-ups are blocked and the buzzer page is open before admin sign-in", async () => {
       await page.goto("/games/buzzer");
       await expect(
-        page.getByRole("button", { name: "Join room", exact: true }),
+        page.getByRole("button", { name: "Join with a code", exact: true }),
       ).toBeEnabled();
     });
     await page.goto("/admin/login");
@@ -220,7 +236,7 @@ test.describe("Quiz host and guests", () => {
     await page.waitForURL("/");
     await page.goto("/games/buzzer");
     await page
-      .getByRole("button", { name: "Create room", exact: true })
+      .getByRole("button", { name: "Create a room", exact: true })
       .click();
     const heading = page.getByRole("heading", { name: /^Room / });
     await expect(heading).toBeVisible();
@@ -251,7 +267,16 @@ test.describe("Quiz host and guests", () => {
       },
     );
     try {
-      await guest.goto(`/games/buzzer?room=${code}`);
+      await guest.goto("/games/buzzer");
+      await guest
+        .getByRole("button", { name: "Join with a code", exact: true })
+        .click();
+      await guest
+        .getByLabel("Room code", { exact: true })
+        .fill(code.toLowerCase());
+      await expect(guest.getByLabel("Room code", { exact: true })).toHaveValue(
+        code,
+      );
       await guest.getByLabel("Your name", { exact: true }).fill(guestName);
       const cookieResponse = guest.waitForResponse(
         (response) => new URL(response.url()).pathname === "/api/buzzer",
@@ -340,7 +365,7 @@ test.describe("Quiz host and guests", () => {
         try {
           await otherHost.goto("/games/buzzer");
           await otherHost
-            .getByRole("button", { name: "Create room", exact: true })
+            .getByRole("button", { name: "Create a room", exact: true })
             .click();
           const otherHeading = otherHost.getByRole("heading", {
             name: /^Room /,
@@ -348,12 +373,16 @@ test.describe("Quiz host and guests", () => {
           await expect(otherHeading).toBeVisible();
           const otherCode = (await otherHeading.innerText()).slice(5);
           await otherGuest.goto(`/games/buzzer?room=${otherCode}`);
+          await expect(otherGuest.getByRole("textbox")).toHaveCount(1);
+          await expect(
+            otherGuest.getByLabel("Room code", { exact: true }),
+          ).toHaveCount(0);
           await otherGuest
             .getByLabel("Your name", { exact: true })
             .fill("Laura");
           await otherGuest
-            .getByRole("button", { name: "Join room", exact: true })
-            .click();
+            .getByLabel("Your name", { exact: true })
+            .press("Enter");
           await expect(
             otherGuest.getByRole("heading", { name: "Players (1/20)" }),
           ).toBeVisible();
@@ -452,8 +481,12 @@ test.describe("Quiz host and guests", () => {
             scheme,
           );
         }, scheme);
+        await expect(page.getByRole("textbox")).toHaveCount(0);
         await expect(
-          page.getByLabel("Room code", { exact: true }),
+          page.getByRole("link", { name: "Create a room", exact: true }),
+        ).toBeInViewport();
+        await expect(
+          page.getByRole("button", { name: "Join with a code", exact: true }),
         ).toBeInViewport();
         expect(
           await page.evaluate(
@@ -464,6 +497,31 @@ test.describe("Quiz host and guests", () => {
           path: testInfo.outputPath("landing-" + scheme + ".png"),
           fullPage: true,
         });
+        await page
+          .getByRole("button", { name: "Join with a code", exact: true })
+          .click();
+        await expect(
+          page.getByLabel("Room code", { exact: true }),
+        ).toBeFocused();
+        await expect(
+          page.getByLabel("Room code", { exact: true }),
+        ).toBeInViewport();
+        await expect(
+          page.getByRole("link", { name: "Create a room", exact: true }),
+        ).toHaveCount(0);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await page.screenshot({
+          path: testInfo.outputPath("join-code-" + scheme + ".png"),
+          fullPage: true,
+        });
+        await page.getByRole("button", { name: "Back", exact: true }).click();
+        await expect(
+          page.getByRole("button", { name: "Join with a code", exact: true }),
+        ).toBeFocused();
       }
     },
   );
@@ -485,6 +543,17 @@ test.describe("Quiz host and guests", () => {
             () => document.documentElement.scrollWidth <= innerWidth,
           ),
         ).toBe(true);
+        await expectNoUnexpectedAxeViolations(page);
+        await page
+          .getByRole("button", { name: "Join with a code", exact: true })
+          .click();
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await expectNoUnexpectedAxeViolations(page);
+        await page.getByRole("button", { name: "Back", exact: true }).click();
       }
     },
   );

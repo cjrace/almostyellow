@@ -7,14 +7,19 @@ import {
 } from "firebase-admin/firestore";
 import { z } from "zod";
 import { adminAuth, adminDb } from "@/firebase/admin";
-import { RoomError, type RoomView } from "@/buzzer/model";
+import {
+  isRoomCode,
+  roomCodeAlphabet,
+  RoomError,
+  type RoomView,
+} from "@/buzzer/model";
 
 function transaction<T>(operation: (tx: Transaction) => Promise<T>) {
   return adminDb().runTransaction(operation, { maxAttempts: 30 });
 }
 
 const id = z.uuid();
-const codeSchema = z.string().regex(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/);
+const codeSchema = z.string().refine(isRoomCode);
 export const joinInputSchema = z
   .object({ code: codeSchema, name: z.string().trim().min(1).max(30) })
   .strict();
@@ -86,11 +91,10 @@ export async function createRoom(owner: string, commandId: string) {
   await cleanupRooms().catch(() => {
     console.error("Buzzer cleanup failed.");
   });
-  const alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = Array.from(
-      { length: 6 },
-      () => alphabet[randomInt(alphabet.length)],
+      { length: 4 },
+      () => roomCodeAlphabet[randomInt(roomCodeAlphabet.length)],
     ).join("");
     const result = await transaction(async (tx) => {
       const receiptRef = adminDb().doc(

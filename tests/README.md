@@ -92,7 +92,7 @@ If you write a test that imports a module like that, or one that changes `proces
 
 ## Quiz buzzer
 
-`unit/buzzer.test.ts` checks timestamp ordering and sign-in error messages. `firebase/buzzer.test.ts` exercises room transactions, concurrent players, server-created room identities, HttpOnly cookie attributes and confirmation, guest limits, expiry cleanup and Security Rules. `public/09_buzzer.spec.ts` runs separate host and guest browser contexts against synthetic users with public sign-ups blocked, checks separate room cookies and refresh recovery, and covers blocked cookies and legacy-key removal. It also checks that a host can create, restore and control a room when guest provisioning fails. See `docs/buzzer.md` for recovery and real-device performance checks.
+`unit/buzzer.test.ts` checks room-code validation, timestamp ordering and sign-in error messages. `firebase/buzzer.test.ts` exercises room transactions, concurrent players, server-created room identities, HttpOnly cookie attributes and confirmation, guest limits, expiry cleanup and Security Rules. `public/09_buzzer.spec.ts` runs separate host and guest browser contexts against synthetic users with public sign-ups blocked, checks create and join journeys, direct name entry from shared links, separate room cookies and refresh recovery, and covers blocked cookies and legacy-key removal. It also checks that a host can create, restore and control a room when guest provisioning fails. See `docs/buzzer.md` for recovery and real-device performance checks.
 
 Desktop Chrome accessibility checks cover the landing page and instructions in both colour schemes, plus host and player results and the end-room confirmation in the browser journey.
 

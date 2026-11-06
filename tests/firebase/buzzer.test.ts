@@ -365,6 +365,7 @@ describe("Quiz rooms and concurrent players", () => {
   test("create retries return one room and host commands require its owner", async () => {
     const id = randomUUID();
     const code = await createRoom(owner, id);
+    expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4}$/);
     expect(await createRoom(owner, id)).toBe(code);
     await expect(
       hostCommand(users.bob.uid, "open", await command(code)),
@@ -374,6 +375,30 @@ describe("Quiz rooms and concurrent players", () => {
     const round = (await state(code)).round;
     await hostCommand(owner, "reset", reset);
     expect((await state(code)).round).toBe(round);
+  });
+  test("guests can join new four-character codes and existing six-character rooms", async () => {
+    const code = await createRoom(owner, randomUUID());
+    const legacyCode = "ABC234";
+    await adminDb()
+      .doc(`gameRooms/${legacyCode}`)
+      .set({ ...(await state(code)), code: legacyCode });
+    const privateData = (
+      await adminDb().doc(`roomPrivate/${code}`).get()
+    ).data();
+    if (!privateData) throw new Error("The test room has no owner.");
+    await adminDb().doc(`roomPrivate/${legacyCode}`).set(privateData);
+    for (const roomCode of [code, legacyCode]) {
+      const guest = await joinGuestRoom({
+        code: roomCode,
+        name: "Cam",
+        secret: "a".repeat(64),
+      });
+      expect((await state(roomCode)).players).toEqual([
+        { id: guest.playerId, name: "Cam" },
+      ]);
+      await hostCommand(owner, "open", await command(roomCode));
+      await hostCommand(owner, "reset", await command(roomCode));
+    }
   });
   test("admits at most twenty players and records each simultaneous buzz once", async () => {
     const code = await createRoom(owner, randomUUID());

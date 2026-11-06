@@ -1,6 +1,30 @@
 import { describe, expect, test } from "vitest";
-import { leaderboard } from "@/buzzer/model";
+import { isRoomCode, leaderboard } from "@/buzzer/model";
 import { playerSignInError } from "@/buzzer/errors";
+
+describe("Room codes", () => {
+  test.each(["K7M4", "2345", "ABCD", "ABC234"])(
+    "accepts new or existing room code %s",
+    (code) => {
+      expect(isRoomCode(code)).toBe(true);
+    },
+  );
+  test.each([
+    "",
+    "ABC",
+    "ABCDE",
+    "ABCDEFG",
+    "AB0D",
+    "AB1D",
+    "ABID",
+    "ABOD",
+    "ab23",
+    "AB/2",
+    "AB 2",
+  ])("rejects invalid room code %s", (code) => {
+    expect(isRoomCode(code)).toBe(false);
+  });
+});
 
 describe("Player sign-in errors", () => {
   test("retains Firebase's error code without blaming browser storage", () => {

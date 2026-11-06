@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   Alert,
-  Anchor,
   Button,
   Container,
   Group,
@@ -49,6 +49,9 @@ export default function Buzzer({
   const [client, setClient] = useState<GuestClient | null>(null);
   const [code, setCode] = useState(initialCode.toUpperCase());
   const [name, setName] = useState("");
+  const [joinView, setJoinView] = useState<"choose" | "code" | "invite">(
+    initialCode ? "invite" : "choose",
+  );
   const [active, setActive] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [hosting, setHosting] = useState(false);
@@ -75,6 +78,8 @@ export default function Buzzer({
   const createIdRef = useRef<string | null>(null);
   const flightRef = useRef(false);
   const buzzButtonRef = useRef<HTMLButtonElement>(null);
+  const joinChoiceRef = useRef<HTMLButtonElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     let alive = true;
     // Restoring a host's room must not depend on player sign-in.
@@ -95,6 +100,7 @@ export default function Buzzer({
           };
           if (!initialCode || initialCode.toUpperCase() === membership.code) {
             setCode(membership.code);
+            setJoinView("invite");
             setActive(membership.code);
             setPlayerId(membership.playerId);
             setHosting(membership.hosting && host);
@@ -379,39 +385,13 @@ export default function Buzzer({
             {error}
           </Alert>
         )}
-        {!active && (
-          <>
-            <Text>Join a room on your phone or laptop. No account needed.</Text>
-            <TextInput
-              label="Room code"
-              value={code}
-              maxLength={6}
-              onChange={(event) => {
-                setCode(
-                  event.currentTarget.value.toUpperCase().replace(/\s/g, ""),
-                );
-              }}
-            />
-            <TextInput
-              label="Your name"
-              value={name}
-              maxLength={30}
-              onChange={(event) => {
-                setName(event.currentTarget.value);
-              }}
-            />
-            <Button
-              autoContrast
-              disabled={busy || !online}
-              onClick={() => void run(join)}
-            >
-              Join room
-            </Button>
+        {!active && joinView === "choose" && (
+          <Stack gap="sm">
             {host ? (
               <Button
                 autoContrast
-                variant="default"
                 disabled={busy || !online}
+                loading={busy}
                 onClick={() =>
                   void run(async () => {
                     createIdRef.current ??= crypto.randomUUID();
@@ -420,14 +400,96 @@ export default function Buzzer({
                   })
                 }
               >
-                Create room
+                Create a room
               </Button>
             ) : (
-              <Anchor c="inherit" underline="always" href="/admin/login">
-                Sign in to host a room
-              </Anchor>
+              <Button
+                component={Link}
+                autoContrast
+                href="/admin/login?callbackUrl=%2Fgames%2Fbuzzer"
+              >
+                Create a room
+              </Button>
             )}
-          </>
+            <Button
+              autoContrast
+              variant="default"
+              size="sm"
+              ref={joinChoiceRef}
+              disabled={busy}
+              onClick={() => {
+                setJoinView("code");
+                setError("");
+                requestAnimationFrame(() => {
+                  codeInputRef.current?.focus();
+                });
+              }}
+            >
+              Join with a code
+            </Button>
+          </Stack>
+        )}
+        {!active && joinView !== "choose" && (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void run(join);
+            }}
+          >
+            <Stack gap="sm">
+              <Title order={2}>
+                {joinView === "invite" ? `Join room ${code}` : "Join a room"}
+              </Title>
+              {joinView === "code" && (
+                <TextInput
+                  ref={codeInputRef}
+                  label="Room code"
+                  placeholder="e.g. K7M4"
+                  autoCapitalize="characters"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={code}
+                  maxLength={6}
+                  onChange={(event) => {
+                    setCode(
+                      event.currentTarget.value
+                        .toUpperCase()
+                        .replace(/\s/g, ""),
+                    );
+                  }}
+                />
+              )}
+              <TextInput
+                label="Your name"
+                value={name}
+                maxLength={30}
+                onChange={(event) => {
+                  setName(event.currentTarget.value);
+                }}
+              />
+              <Button autoContrast type="submit" disabled={busy || !online}>
+                Join room
+              </Button>
+              <Button
+                autoContrast
+                type="button"
+                variant="default"
+                size="sm"
+                disabled={busy}
+                onClick={() => {
+                  setJoinView("choose");
+                  setError("");
+                  setIdentityError("");
+                  window.history.replaceState(null, "", "/games/buzzer");
+                  requestAnimationFrame(() => {
+                    joinChoiceRef.current?.focus();
+                  });
+                }}
+              >
+                Back
+              </Button>
+            </Stack>
+          </form>
         )}
         {active && (
           <>
@@ -626,6 +688,7 @@ export default function Buzzer({
                           if (hosting) remember(active, "", true);
                           else {
                             setActive("");
+                            setJoinView("choose");
                             requestAnimationFrame(() => {
                               titleRef.current?.focus();
                             });
@@ -703,6 +766,7 @@ export default function Buzzer({
               variant="default"
               onClick={() => {
                 setActive("");
+                setJoinView("choose");
                 lastRoundRef.current = "";
                 requestAnimationFrame(() => {
                   titleRef.current?.focus();
@@ -716,7 +780,7 @@ export default function Buzzer({
                 window.history.replaceState(null, "", "/games/buzzer");
               }}
             >
-              Back to join screen
+              Back to start
             </Button>
           </>
         )}

@@ -18,11 +18,10 @@ import {
   type Timestamp,
 } from "firebase/firestore";
 import type { FirebaseClientConfig } from "@/firebase/client";
-import type { RoomView, Buzz } from "./model";
+import { isRoomCode, type RoomView, type Buzz } from "./model";
 import { playerSignInError } from "./errors";
 async function initialiseGuest(config: FirebaseClientConfig, code: string) {
-  if (!/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}$/.test(code))
-    throw new Error("Check the room code.");
+  if (!isRoomCode(code)) throw new Error("Check the room code.");
   const appName = `room-guests-cookie-${code}`;
   let app = getApps().find((app) => app.name === appName);
   if (!app) {

@@ -1,3 +1,12 @@
+export const roomCodeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+export function isRoomCode(code: string) {
+  // Six-character codes remain valid until existing rooms expire.
+  if (code.length !== 4 && code.length !== 6) return false;
+  for (const character of code) {
+    if (!roomCodeAlphabet.includes(character)) return false;
+  }
+  return true;
+}
 export type Phase = "ready" | "open" | "closed" | "ended";
 export interface Player {
   id: string;
