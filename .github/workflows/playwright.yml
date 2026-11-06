@@ -77,8 +77,21 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      # The browsers are the big download. The key changes with the lockfile,
+      # so a new Playwright version fetches new ones.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright with deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium webkit
+      # System packages are not part of the cache, so they are always needed
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium webkit
       - name: Cache Next.js build artifacts
         uses: actions/cache@v6
         with:
