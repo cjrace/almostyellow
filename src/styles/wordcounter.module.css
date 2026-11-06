@@ -38,7 +38,7 @@
 /* Phones are short of height, so the text box is modest, and the three counts
    sit side by side with their labels above. */
 .input {
-  min-height: 120px;
+  min-height: 160px;
 }
 
 .countList {

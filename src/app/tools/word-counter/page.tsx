@@ -30,9 +30,7 @@ export default function WordCounterPage() {
               style={{ flexShrink: 0, marginTop: 3 }}
               aria-hidden
             />
-            <Text c="dimmed">
-              Your text stays in your browser. Nothing is uploaded or saved.
-            </Text>
+            <Text c="dimmed">Your text stays in your browser.</Text>
           </Group>
         </Stack>
         <WordCounter />
