@@ -33,9 +33,9 @@ There are no turn timers. A player who stops responding holds up the table until
 - Unplayable cards stay focusable and are marked `aria-disabled`, with the reason in their name. Playable cards also stand higher in the hand, and the player to move has a thicker border and the word "Playing", so nothing depends on colour. The colour in play has a shape as well as a colour.
 - Your hand is an overlapping fan (`src/unogame/handlayout.ts`) that always fits the width it has, so there is no scrolling. Each card keeps its top-left corner showing. If even the narrowest strips would not fit, the hand wraps into rows, each overlapping the one above with its top strip showing. The focused or hovered card comes to the front.
 
-### Preview page
+### Table tests
 
-`/admin/unopreview` (signed-in only, so outside the sitemap and search) shows synthetic tables built from real engine states in `src/unogame/preview.ts`: two and ten players, long names, a large hand, catching Uno and a finished round. Choosing a card only reports the choice. It is temporary and goes when the playable table replaces it.
+`tests/admin/09_unotable.spec.ts` checks the table at its awkward sizes and states: two and ten players, long names, a large hand, catching Uno, the colour picker and the Uno button, at 320 and 640 pixels, with axe in both colour schemes. It signs in as the host, then writes synthetic tables into a real room with the Admin SDK. They are real engine states from `tests/unogame-preview.ts`, dealt with a fixed shuffle, so the page, its listeners and the server commands are the ones players use. The temporary `/admin/unopreview` page that used to do this has been removed.
 
 ## Game service
 
