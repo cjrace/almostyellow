@@ -376,6 +376,25 @@
 
 /* Small phones, such as 667 by 320: everything above, but tighter */
 @media (orientation: landscape) and (max-height: 400px) {
+  /* The top row has to stay on one line even in a wider font, so the room
+     buttons and code are a little tighter */
+  .roomRow {
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .roomRow > h2 {
+    --title-fz: var(--mantine-font-size-md) !important;
+  }
+
+  .roomRow > div {
+    gap: 4px;
+  }
+
+  .roomRow > div > button {
+    --button-fz: var(--mantine-font-size-xs) !important;
+    --button-padding-x: 8px !important;
+  }
+
   /* Narrower sides, so the buttons for catching Uno sit on one line */
   .board {
     grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 16rem);

@@ -149,6 +149,29 @@ const sidewaysPhones = [
 
 // Everything needed to take a turn is on screen without scrolling
 async function expectTurnOnScreen(page: Page, label: string) {
+  try {
+    await expectTurnOnScreenOnce(page, label);
+  } catch (error) {
+    // Where everything is, so a failure on another machine can be read
+    const layout = await page.evaluate(() => ({
+      font: getComputedStyle(document.body).fontFamily,
+      page: [innerWidth, innerHeight, document.documentElement.scrollHeight],
+      boxes: [...document.querySelectorAll("h1, h2, p, button, ul")]
+        .slice(0, 30)
+        .map((e) => {
+          const b = e.getBoundingClientRect();
+          return `${e.tagName} ${(e.getAttribute("aria-label") ?? e.textContent).slice(0, 18)} ${String(Math.round(b.left))},${String(Math.round(b.top))},${String(Math.round(b.right))},${String(Math.round(b.bottom))}`;
+        }),
+    }));
+    throw new Error(
+      `${(error as Error).message}
+LAYOUT ${JSON.stringify(layout)}`,
+      { cause: error },
+    );
+  }
+}
+
+async function expectTurnOnScreenOnce(page: Page, label: string) {
   await expect
     .poll(
       () =>
