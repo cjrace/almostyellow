@@ -24,6 +24,7 @@ import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
   guestClient,
   joinGuest,
+  warmToken,
   send,
   type GuestClient,
 } from "@/buzzer/client";
@@ -276,6 +277,14 @@ export default function Uno({
     },
     [],
   );
+
+  // The sign-in token is refreshed over the network about hourly. Doing it as
+  // your turn starts keeps a slow refresh out of your move.
+  const myTurn =
+    room?.stage === "playing" && room.view?.currentPlayer === playerId;
+  useEffect(() => {
+    if (client && myTurn) void warmToken(client);
+  }, [client, myTurn]);
 
   // Once this device has shown the result, it says so, so the host can play
   // again knowing nobody missed it
