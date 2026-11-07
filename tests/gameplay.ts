@@ -65,3 +65,11 @@ export async function expectInstructions(
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
 }
+
+// Snakes and Ladders picks the number of players from a row of choices
+export async function choosePlayers(page: Page, players: number) {
+  await page
+    .getByRole("radiogroup", { name: "Number of Players" })
+    .getByText(players.toString(), { exact: true })
+    .click();
+}

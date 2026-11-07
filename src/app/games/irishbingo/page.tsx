@@ -13,7 +13,7 @@ export default function IrishBingoPage() {
     <div className={layout.screen}>
       <Header noCrumbs={true} game={true} title={<IrishBingoTitle />} />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <IrishBingo />
       </main>
     </div>

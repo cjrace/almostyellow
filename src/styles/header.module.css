@@ -90,3 +90,20 @@
     line-height: 1.1;
   }
 }
+
+/* The menu stands in for the buttons on a portrait phone */
+.bar .menu {
+  display: none;
+  grid-area: tools;
+  justify-self: end;
+}
+
+@media (max-width: 39.99em) and (orientation: portrait) {
+  .bar .menu {
+    display: flex;
+  }
+
+  .bar .inlineTools {
+    display: none;
+  }
+}

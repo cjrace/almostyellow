@@ -39,6 +39,7 @@ import {
   type GuestClient,
 } from "@/buzzer/client";
 import { leaderboard, ordinal, type Buzz, type RoomView } from "@/buzzer/model";
+import { vibrate } from "@/haptics";
 import { playerSignInError } from "@/buzzer/errors";
 import styles from "@/styles/buzzer.module.css";
 
@@ -306,6 +307,7 @@ export default function Buzzer({
     !ended;
   async function buzz() {
     if (!canBuzz) return;
+    vibrate(60);
     const original = room;
     setBuzzing(true);
     await run(async () => {

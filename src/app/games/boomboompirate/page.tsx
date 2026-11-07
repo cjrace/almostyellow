@@ -18,7 +18,7 @@ export default function BoomBoomPiratePage() {
         title={<Title>Boom Boom Pirate</Title>}
       />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <BoomBoomPirate />
       </main>
     </div>

@@ -29,6 +29,8 @@ export default function PlayingCard({ card, decorative }: PlayingCardProps) {
   const name = card ? getCardName(card.suit, card.rank) : "Face-down card";
   return (
     <Image
+      // A new key turns the card over each time a different one is shown
+      key={name}
       className={styles.card}
       src={card ? getCardImagePath(card) : CardBackImagePath}
       alt={decorative ? "" : name}
