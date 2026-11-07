@@ -25,7 +25,7 @@ export default function UnoColourPicker({
       returnFocus={false}
       closeButtonProps={{ "aria-label": "Choose a different card" }}
     >
-      <div role="group" aria-label="Colours">
+      <div role="group" aria-label="Colours" className={styles.pickerGroup}>
         <div className={styles.picker}>
           {colours.map((colour, index) => (
             <Button

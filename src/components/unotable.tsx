@@ -113,6 +113,14 @@ export default function UnoTable({
       setAlerts(null);
     }, alertDuration(next));
   }, [version, events, names, me]);
+  // A warning in the same pop-up, for a move that is not allowed
+  const warn = (text: string) => {
+    clearTimeout(alertTimerRef.current);
+    setAlerts([{ tone: "special", ms: 2500, text }]);
+    alertTimerRef.current = setTimeout(() => {
+      setAlerts(null);
+    }, 2500);
+  };
   useEffect(
     () => () => {
       clearTimeout(alertTimerRef.current);
@@ -242,8 +250,6 @@ export default function UnoTable({
                 aria-hidden="true"
               />{" "}
               {colourNames[view.colour]}
-              {" · "}
-              {view.direction === 1 ? "clockwise" : "anticlockwise"}
             </Text>
           </div>
           <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
@@ -293,6 +299,7 @@ export default function UnoTable({
                 aria-describedby={canDraw ? undefined : "uno_draw_reason"}
                 onClick={() => {
                   if (canDraw) onDraw();
+                  else warn(drawReason);
                 }}
               >
                 <UnoCard card={null} decorative />
@@ -348,7 +355,7 @@ export default function UnoTable({
           size="sm"
           c="dimmed"
           id="uno_draw_reason"
-          className={styles.reason}
+          className={`${styles.reason} ${styles.visuallyHidden}`}
         >
           {drawReason}
         </Text>

@@ -369,9 +369,14 @@ export default function Uno({
     if (!room) return null;
     const reasonId = "uno_start_reason";
     return (
-      <Stack gap="sm">
+      <Stack gap="sm" className={table.bottomActions}>
         {hosting ? (
           <Stack gap={4}>
+            <Text id={reasonId} size="sm" c="dimmed">
+              {players.length < MIN_PLAYERS
+                ? `Wait for at least ${String(MIN_PLAYERS)} players.`
+                : `${String(players.length)} players are ready.`}
+            </Text>
             <Button
               disabled={
                 busy ||
@@ -386,11 +391,6 @@ export default function Uno({
             >
               {room.stage === "lobby" ? "Start the round" : "Play again"}
             </Button>
-            <Text id={reasonId} size="sm" c="dimmed">
-              {players.length < MIN_PLAYERS
-                ? `Wait for at least ${String(MIN_PLAYERS)} players.`
-                : `${String(players.length)} players are ready.`}
-            </Text>
           </Stack>
         ) : (
           <Text>Waiting for the host to start the round.</Text>
@@ -451,7 +451,7 @@ export default function Uno({
       className={tableShown ? table.page : undefined}
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
-      <Stack gap="md" className={tableShown ? table.pageHead : undefined}>
+      <Stack gap="md" className={tableShown ? table.pageHead : table.fill}>
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
           <Alert color="red" role="alert">
@@ -647,7 +647,7 @@ export default function Uno({
         )}
 
         {room && !ended && room.stage !== "playing" && playerId && (
-          <Stack gap="sm">
+          <Stack gap="sm" className={table.fill}>
             <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
             </Title>

@@ -81,7 +81,6 @@
   background: #c2410c;
   border-color: #c2410c;
   color: #fff;
-  transition: background-color 0.25s;
 }
 
 .opponent[data-current] p {
@@ -280,6 +279,11 @@
 .picker .swatch[data-colour] {
   background: #fff;
   border-color: #fff;
+}
+
+/* Room all round for the focus ring, which the dialog body would clip */
+.pickerGroup {
+  padding: 6px;
 }
 
 .picker {
@@ -571,6 +575,7 @@
    everyone else's turn is quieter. */
 .heading[data-myturn] {
   display: inline-block;
+  margin-bottom: 6px;
   padding: 2px var(--mantine-spacing-sm);
   background: #c2410c;
   color: #fff;
@@ -580,6 +585,17 @@
 .heading[data-waiting] {
   color: var(--mantine-color-dimmed);
   font-weight: 500;
+}
+
+/* The draw pile cannot be used: it is greyed right out. Why is said by a
+   warning when it is clicked, and in its description. */
+.pileButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.pileButton[aria-disabled="true"] img {
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.75;
 }
 
 /* The draw pile can be clicked: a pointer, a lift and a slight grey */
@@ -742,5 +758,71 @@
 @media (prefers-reduced-motion: reduce) {
   .trophy {
     animation: none;
+  }
+}
+
+/* The lobby and round-over page fill the screen, so the main buttons can sit
+   at the bottom of it */
+.fill {
+  flex: 1;
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  /* On a phone the main buttons are at the bottom, above the gap kept for the
+     confetti credit, and stay there while the page scrolls */
+  .bottomActions {
+    margin-top: auto;
+    position: sticky;
+    bottom: var(--site-frame-bottom);
+    padding-block: var(--mantine-spacing-xs);
+    background: var(--mantine-color-body);
+  }
+}
+
+/* A phone held upright: "Your turn" shares its line with the room button
+   instead of sitting under it, and Scores moves down beside the colour */
+@media (max-width: 47.99em) and (orientation: portrait) {
+  .page {
+    position: relative;
+  }
+
+  .roomRow {
+    position: absolute;
+    top: 4px;
+    right: var(--mantine-spacing-md);
+    z-index: 1;
+  }
+
+  .page .board {
+    margin-top: 0;
+  }
+
+  div.head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--mantine-spacing-xs);
+    row-gap: 4px;
+  }
+
+  div.head > div:first-child {
+    display: contents;
+  }
+
+  .head h2 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: start;
+    max-width: calc(100% - 7.5rem);
+  }
+
+  .head p {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .head > div:last-child {
+    grid-column: 2;
+    grid-row: 2;
   }
 }

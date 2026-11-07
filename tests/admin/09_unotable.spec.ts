@@ -356,6 +356,14 @@ test.describe("Looking at the Uno table in a real room", () => {
       await expect(pile).toHaveAccessibleDescription(
         "You have a card you can play, so you cannot draw.",
       );
+      // The reason is only shown as a warning when I try
+      await expect(
+        page.getByText("You have a card you can play, so you cannot draw."),
+      ).toHaveCount(1);
+      await pile.click({ force: true });
+      await expect(
+        page.getByText("You have a card you can play, so you cannot draw."),
+      ).toHaveCount(2);
     });
 
     await test.step("But when nothing can be played I draw", async () => {
