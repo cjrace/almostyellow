@@ -192,8 +192,9 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
             ),
           };
           const off = Object.entries(spots)
-            .filter(([, el]) => {
-              if (!el) return true;
+            .filter(([name, el]) => {
+              // Say Uno only appears when it matters
+              if (!el) return name !== "unoButton";
               const box = el.getBoundingClientRect();
               return box.top < 0 || box.bottom > height + 1;
             })
@@ -491,7 +492,11 @@ test.describe("Looking at the Uno table in a real room", () => {
     const { show } = await openTable(page, "two-players");
     for (const { name, width, height } of sidewaysPhones) {
       await page.setViewportSize({ width, height });
-      for (const scenario of ["two-players", "catch-uno"] as const) {
+      for (const scenario of [
+        "two-players",
+        "catch-uno",
+        "two-cards",
+      ] as const) {
         await show(scenario);
         await expectTurnOnScreen(page, `${scenario} on a ${name}`);
         await expectWholeHandShowing(page);
