@@ -392,8 +392,8 @@
     width: auto;
     display: flex;
     align-items: center;
-    gap: var(--mantine-spacing-xs);
-    padding: 1px var(--mantine-spacing-xs);
+    gap: 4px;
+    padding: 1px 6px;
     border-width: 1px;
     border-radius: var(--mantine-radius-xl);
   }
@@ -430,7 +430,7 @@
   .controls,
   .picker {
     grid-column: 3;
-    grid-row: 1 / 6;
+    grid-row: 1 / 4;
     align-self: center;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -473,13 +473,13 @@
   /* The piles take the height the left side gives them */
   .table {
     grid-column: 2;
-    grid-row: 1 / 6;
+    grid-row: 1 / 4;
     min-height: 0;
   }
 
   .hand {
     grid-column: 1 / -1;
-    grid-row: 6;
+    grid-row: 4;
   }
 }
 
