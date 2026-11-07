@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@mantine/hooks";
+import useGameInProgress from "@/components/usegameinprogress";
 import useGameTimers from "@/components/usegametimers";
 import {
   Badge,
@@ -284,6 +285,7 @@ const SnakesAndLadders = () => {
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
   const [playersOpened, setPlayersOpened] = useState(false); // Phones only
+  useGameInProgress(gameInitialized && winner === null);
   const reducedMotion = useReducedMotion();
   const { after, clear } = useGameTimers();
 

@@ -9,6 +9,7 @@ import {
   getCardName,
   shuffleDeck,
 } from "@/components/carddeck";
+import useGameInProgress from "@/components/usegameinprogress";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import layout from "@/styles/cardgame.module.css";
@@ -45,6 +46,7 @@ export default function RedOrBlack() {
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [drawnOpened, setDrawnOpened] = useState(false);
   const latestCard = drawnCards.at(-1) ?? null;
+  useGameInProgress(drawnCards.length > 0);
   const cardsRemaining = deck?.length ?? 52;
 
   // At one end of the deck each button goes, or disables itself, so focus

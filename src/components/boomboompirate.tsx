@@ -1,5 +1,6 @@
 "use client";
 
+import useGameInProgress from "@/components/usegameinprogress";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@mantine/hooks";
 import useGameTimers from "@/components/usegametimers";
@@ -44,6 +45,7 @@ const BoomBoomPirate = () => {
   const [showExplosions, setShowExplosions] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false); // New state for game initialization
   const [lastPull, setLastPull] = useState("");
+  useGameInProgress(gameInitialized);
   const reducedMotion = useReducedMotion();
   const { after, clear } = useGameTimers();
 

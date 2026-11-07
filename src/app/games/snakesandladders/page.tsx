@@ -18,7 +18,7 @@ export default function SnakesAndLaddersPage() {
         title={<Title>Snakes and Ladders</Title>}
       />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <SnakesAndLadders />
       </main>
     </div>

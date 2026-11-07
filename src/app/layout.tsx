@@ -38,6 +38,8 @@ export const metadata: Metadata = {
 
 // The browser bar matches Mantine's page background in each scheme
 export const viewport: Viewport = {
+  // Lets the page use the space beside a notch, and know where it is
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#242424" },
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },

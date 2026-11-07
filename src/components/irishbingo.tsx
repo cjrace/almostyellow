@@ -17,6 +17,7 @@ import {
   Anchor,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
+import useGameInProgress from "@/components/usegameinprogress";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import { IconConfetti } from "@tabler/icons-react";
@@ -135,6 +136,7 @@ export default function IrishBingo() {
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
+  useGameInProgress(drawnCards.length > 0);
   const progressColor = drawnCards.length > 35 ? "red" : "";
 
   // At one end of the deck each button goes, or disables itself, so focus

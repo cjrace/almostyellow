@@ -31,6 +31,7 @@ import {
   shuffleDeck,
   SuitNames,
 } from "@/components/carddeck";
+import useGameInProgress from "@/components/usegameinprogress";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import {
@@ -166,6 +167,7 @@ export default function Suits() {
     { id: 1, name: "" },
   ]);
   const [confirmOpened, setConfirmOpened] = useState(false);
+  useGameInProgress(state.phase === "guessing");
 
   // Most buttons here disappear or disable once pressed, so focus moves on to
   // whatever comes next rather than dropping back to the top of the page

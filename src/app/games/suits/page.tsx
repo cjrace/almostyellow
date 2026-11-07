@@ -13,7 +13,7 @@ export default function SuitsPage() {
     <div className={layout.screen}>
       <Header noCrumbs={true} game={true} title={<SuitsTitle />} />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <Suits />
       </main>
     </div>

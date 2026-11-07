@@ -13,7 +13,7 @@ export default function RedOrBlackPage() {
     <div className={layout.screen}>
       <Header noCrumbs={true} game={true} title={<RedOrBlackTitle />} />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <RedOrBlack />
       </main>
     </div>
