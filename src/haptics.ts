@@ -2,22 +2,19 @@
 // don't, but Safari ticks when a switch control is toggled during a tap, so a
 // hidden one stands in. It is a side effect rather than a feature, and only
 // works while the page is reacting to a touch.
-let tap: HTMLLabelElement | null = null;
-
 function iPhoneTick() {
-  if (!tap) {
-    tap = document.createElement("label");
-    tap.setAttribute("aria-hidden", "true");
-    tap.style.cssText =
-      "position:fixed;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.setAttribute("switch", "");
-    input.tabIndex = -1;
-    tap.append(input);
-    document.body.append(tap);
-  }
+  const tap = document.createElement("label");
+  tap.setAttribute("aria-hidden", "true");
+  tap.style.cssText =
+    "position:fixed;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("switch", "");
+  input.tabIndex = -1;
+  tap.append(input);
+  document.body.append(tap);
   tap.click();
+  tap.remove();
 }
 
 export function vibrate(pattern: number | number[]) {

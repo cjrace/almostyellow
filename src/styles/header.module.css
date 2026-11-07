@@ -4,23 +4,6 @@
   margin-bottom: 20px;
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
-  .bar {
-    margin-bottom: 8px;
-  }
-
-  /* Slightly smaller buttons, still well over the 24px minimum */
-  .bar :global(.mantine-ActionIcon-root) {
-    --ai-size: 2.25rem;
-  }
-}
-
-@media (orientation: landscape) and (max-height: 360px) {
-  .bar {
-    margin-bottom: 4px;
-  }
-}
-
 /* Game pages put their h1 in the header, centred. On a narrow screen it gets
    a row of its own under the buttons. Wider screens, and phones held sideways
    whatever their width, share one row */
@@ -72,8 +55,17 @@
   }
 }
 
-/* Short and wide: a smaller title and info button, so the row stays low */
+/* Short and wide: less space under the header, slightly smaller buttons (still
+   well over the 24px minimum), and a smaller title, so the row stays low */
 @media (orientation: landscape) and (max-height: 500px) {
+  .bar {
+    margin-bottom: 8px;
+  }
+
+  .bar :global(.mantine-ActionIcon-root) {
+    --ai-size: 2.25rem;
+  }
+
   .title :global(.mantine-Title-root[data-order]) {
     --title-fz: var(--mantine-h3-font-size) !important;
     --title-lh: 1.1 !important;
@@ -86,6 +78,12 @@
   .title :global(.mantine-Text-root) {
     font-size: var(--mantine-font-size-xs);
     line-height: 1.1;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 360px) {
+  .bar {
+    margin-bottom: 4px;
   }
 }
 

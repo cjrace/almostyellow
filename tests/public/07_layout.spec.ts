@@ -180,7 +180,8 @@ test.describe("A visitor on a phone", { tag: "@phone" }, () => {
     // tap. With 50 the ropes may scroll within their grid, but the page doesn't
     const sizes = await ropes.evaluateAll((buttons) =>
       buttons.map((button) => {
-        const label = button.querySelector(".mantine-Button-label");
+        // The knot holds the rope's icon and number
+        const label = button.querySelector("span:last-child");
         return {
           cut: !label || label.scrollWidth > label.clientWidth,
           height: button.getBoundingClientRect().height,

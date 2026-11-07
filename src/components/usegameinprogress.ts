@@ -21,7 +21,12 @@ export default function useGameInProgress(active: boolean) {
       navigator.wakeLock
         .request("screen")
         .then((sentinel) => {
-          lock = sentinel;
+          if (leaving) {
+            // The game ended while the browser was still deciding
+            sentinel.release().catch(() => undefined);
+          } else {
+            lock = sentinel;
+          }
         })
         .catch(() => undefined); // Unsupported, or the battery is low
     };
