@@ -963,6 +963,20 @@ describe("players leaving and rounds ending early", () => {
     expect(events).toEqual([{ type: "left", player: "a" }]);
   });
 
+  it("refills an empty draw pile without touching the discard pile", () => {
+    const state = three({ stock: [], discardBelow: ["G9", "Y9"], current: 1 });
+    const leaverIds = state.hands.a.map((c) => c.id).sort((x, y) => x - y);
+    const { state: next } = leave(state, "a");
+    expect(next.stock.map((c) => c.id).sort((x, y) => x - y)).toEqual(
+      leaverIds,
+    );
+    expect(next.discard).toEqual(state.discard);
+
+    const drawn = run(next, { type: "draw", player: "b" });
+    expect(drawn.events.map((e) => e.type)).not.toContain("recycled");
+    expect(drawn.state.hands.b).toHaveLength(4);
+  });
+
   it("passes the turn on to the next player in the direction of play", () => {
     const forward = leave(three({ current: 1 }), "b").state;
     expect(forward.players[forward.current]).toBe("c");
