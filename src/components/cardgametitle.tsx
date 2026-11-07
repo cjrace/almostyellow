@@ -14,13 +14,13 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import styles from "@/styles/cardgame.module.css";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 interface CardGameTitleProps {
   title: string;
   children: React.ReactNode; // The instructions
   creditLink?: string; // Where Ben published the game, if he did
+  credited?: boolean; // Whether it is one of Ben's games
 }
 
 // Title, instructions and credit for Ben Palmer's card games
@@ -28,22 +28,16 @@ export default function CardGameTitle({
   title,
   children,
   creditLink,
+  credited = true,
 }: CardGameTitleProps) {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
   const mounted = useMounted();
 
   return (
     <>
-      <div className={styles.heading}>
+      <div>
         <Group gap="xs">
-          <Title
-            fz={{
-              base: "var(--mantine-h2-font-size)",
-              sm: "var(--mantine-h1-font-size)",
-            }}
-          >
-            {title}
-          </Title>
+          <Title>{title}</Title>
           <Tooltip
             label="Game instructions"
             openDelay={250}
@@ -64,20 +58,22 @@ export default function CardGameTitle({
             </ActionIcon>
           </Tooltip>
         </Group>
-        <Text c="dimmed" mt={4} className={styles.credit}>
-          {creditLink ? (
-            <Anchor
-              href={creditLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="A Ben Palmer original (opens in new tab)"
-            >
-              A Ben Palmer original
-            </Anchor>
-          ) : (
-            "A Ben Palmer original"
-          )}
-        </Text>
+        {credited && (
+          <Text c="dimmed" size="sm">
+            {creditLink ? (
+              <Anchor
+                href={creditLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="A Ben Palmer original (opens in new tab)"
+              >
+                A Ben Palmer original
+              </Anchor>
+            ) : (
+              "A Ben Palmer original"
+            )}
+          </Text>
+        )}
       </div>
 
       {/* Built from parts so Modal.Title can name the dialog without the

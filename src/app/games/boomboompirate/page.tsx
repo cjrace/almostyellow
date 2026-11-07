@@ -1,4 +1,4 @@
-import { Space, Title } from "@mantine/core";
+import { Title } from "@mantine/core";
 import BoomBoomPirate from "@/components/boomboompirate";
 import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
@@ -12,19 +12,13 @@ export const metadata = pageMetadata(
 export default function BoomBoomPiratePage() {
   return (
     <div className={layout.screen}>
-      <Header noCrumbs={true} game={true} />
+      <Header
+        noCrumbs={true}
+        game={true}
+        title={<Title>Boom Boom Pirate</Title>}
+      />
 
       <main id="main-content">
-        <Title
-          className={layout.pageTitle}
-          fz={{
-            base: "var(--mantine-h2-font-size)",
-            sm: "var(--mantine-h1-font-size)",
-          }}
-        >
-          Boom Boom Pirate
-        </Title>
-        <Space h="md" />
         <BoomBoomPirate />
       </main>
     </div>

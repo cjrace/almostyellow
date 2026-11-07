@@ -38,6 +38,7 @@ interface HeaderProps {
   filmList?: boolean; // Back button for our film list pages
   tools?: boolean; // Back button for our tools pages
   homeOnly?: boolean; // Just show the home button
+  title?: React.ReactNode; // The page's h1, centred in the header
 }
 
 export default function Header({
@@ -49,6 +50,7 @@ export default function Header({
   filmList = false,
   tools = false,
   homeOnly = false,
+  title,
 }: HeaderProps) {
   const mainJustify =
     noCrumbs && !game && !whiskyJournal && !filmList && !tools && !homeOnly
@@ -61,7 +63,10 @@ export default function Header({
 
   return (
     <header>
-      <Group justify={mainJustify} className={styles.bar}>
+      <Group
+        justify={mainJustify}
+        className={`${styles.bar} ${title ? styles.withTitle : ""}`}
+      >
         {!noCrumbs && (
           <Group>
             <Breadcrumbs>
@@ -161,7 +166,9 @@ export default function Header({
           </Tooltip>
         )}
 
-        <Group h="100%" gap="xs" justify="flex-end">
+        {title ? <div className={styles.title}>{title}</div> : null}
+
+        <Group h="100%" gap="xs" justify="flex-end" className={styles.tools}>
           <Tooltip label="Unleash confetti" openDelay={250}>
             <ActionIcon
               onClick={playConfetti}

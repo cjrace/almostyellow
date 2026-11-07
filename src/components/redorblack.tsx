@@ -14,6 +14,29 @@ import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/playingcard.module.css";
 
+// The title, instructions and credit, which the page puts in its header
+export function RedOrBlackTitle() {
+  return (
+    <CardGameTitle
+      title="Red or Black v1"
+      creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
+    >
+      <Text mb="sm">A Ben Palmer special designed to encourage drinking.</Text>
+      <List variant="ordered">
+        <List.Item>
+          guess out loud whether the next card is red or black
+        </List.Item>
+        <List.Item>&apos;Draw a card&apos; to see if you were right</List.Item>
+        <List.Item>if you guess wrong, take a drink</List.Item>
+        <List.Item>if you guess right, assign drinks to others</List.Item>
+        <List.Item>
+          keep going until the deck runs out, then shuffle a new one
+        </List.Item>
+      </List>
+    </CardGameTitle>
+  );
+}
+
 export default function RedOrBlack() {
   usePreloadCards();
   // The deck is shuffled on the first draw rather than on the server, so the
@@ -53,28 +76,6 @@ export default function RedOrBlack() {
 
   return (
     <div className={layout.game}>
-      <CardGameTitle
-        title="Red or Black v1"
-        creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
-      >
-        <Text mb="sm">
-          A Ben Palmer special designed to encourage drinking.
-        </Text>
-        <List variant="ordered">
-          <List.Item>
-            guess out loud whether the next card is red or black
-          </List.Item>
-          <List.Item>
-            &apos;Draw a card&apos; to see if you were right
-          </List.Item>
-          <List.Item>if you guess wrong, take a drink</List.Item>
-          <List.Item>if you guess right, assign drinks to others</List.Item>
-          <List.Item>
-            keep going until the deck runs out, then shuffle a new one
-          </List.Item>
-        </List>
-      </CardGameTitle>
-
       <div className={`${layout.board} ${layout.sideBySide}`}>
         <div className={layout.table}>
           <div className={styles.single}>
