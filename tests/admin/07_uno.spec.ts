@@ -713,4 +713,101 @@ test.describe("Uno durable scoring", () => {
     await expect(other.getByTestId("lifetime-laura")).toHaveText("3");
     expect((await local(other)).events).toHaveLength(0);
   });
+
+  for (const scheme of schemes)
+    test(`a host saves an online Uno room to the tracker once, ${scheme} scheme`, async ({
+      page,
+      browser,
+    }) => {
+      test.slow();
+      await useScheme(page, scheme);
+      const context = await browser.newContext({
+        baseURL: "http://localhost:3000/",
+      });
+      const guest = waitsForHydration(await context.newPage());
+      try {
+        let code = "";
+        await test.step("Given Cam hosts a room and Laura joins", async () => {
+          await signIn(page);
+          await page.goto("/games/uno");
+          await page.getByRole("button", { name: "Create a room" }).click();
+          const heading = page.getByRole("heading", { name: /^Room / });
+          await expect(heading).toBeVisible();
+          code = (await heading.innerText()).slice(5);
+          await page.getByLabel("Your player name").fill("Cam");
+          await page.getByRole("button", { name: "Join as a player" }).click();
+          await guest.goto(`/games/uno?room=${code}`);
+          await guest.getByLabel("Your name", { exact: true }).fill("Laura");
+          await guest.getByRole("button", { name: "Join room" }).click();
+          await expect(
+            page.getByRole("list", { name: "Players" }).getByRole("listitem"),
+          ).toHaveCount(2);
+          await expect(
+            page.getByRole("button", { name: "Save to tracker" }),
+          ).toHaveCount(0);
+        });
+
+        await test.step("When Cam has won two rounds to Laura's one", async () => {
+          const db = getFirestore(
+            getApps()[0] ??
+              initializeApp({
+                projectId: assertEmulatorEnvironment().projectId,
+              }),
+          );
+          const ref = db.doc(`gameRooms/${code}`);
+          const players = (await ref.get()).get("players") as {
+            id: string;
+            name: string;
+          }[];
+          const id = (name: string) => players.find((p) => p.name === name)?.id;
+          await ref.update({
+            stage: "finished",
+            scores: { [id("Cam") ?? ""]: 2, [id("Laura") ?? ""]: 1 },
+          });
+        });
+
+        await test.step("Then only the host can save it, with each name chosen", async () => {
+          await expect(
+            guest.getByRole("button", { name: "Save to tracker" }),
+          ).toHaveCount(0);
+          await page.getByRole("button", { name: "Save to tracker" }).click();
+          const dialog = page.getByRole("dialog", {
+            name: "Save to the Uno tracker?",
+          });
+          await expect(dialog.getByLabel("Who is Cam?")).toHaveValue(/.+/);
+          await expect(dialog).toContainText("Cam (Cam): 2, Laura (Laura): 1");
+          await expectNoUnexpectedAxeViolations(page);
+          await dialog.getByRole("button", { name: "Save to tracker" }).click();
+        });
+
+        await test.step("And the button becomes 'Saved to tracker' for good", async () => {
+          await expect(
+            page.getByRole("button", { name: "Saved to tracker" }),
+          ).toBeDisabled();
+          // Focus moves on to the link, as the button can no longer be used
+          await expect(
+            page.getByRole("link", { name: "View in tracker history" }),
+          ).toBeFocused();
+          await expect(
+            page.getByRole("button", { name: "Save to tracker" }),
+          ).toHaveCount(0);
+          await page.reload();
+          await expect(
+            page.getByRole("button", { name: "Saved to tracker" }),
+          ).toBeDisabled();
+        });
+
+        await test.step("And the game is in the tracker history once", async () => {
+          await page
+            .getByRole("link", { name: "View in tracker history" })
+            .click();
+          await expect(page).toHaveURL(/\/games\/uno-tracker\/history$/);
+          await expect(
+            page.getByText(`Played online (room ${code})`),
+          ).toHaveCount(1, SYNC);
+        });
+      } finally {
+        await context.close();
+      }
+    });
 });

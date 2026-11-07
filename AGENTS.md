@@ -27,6 +27,7 @@ Husky pre-commit hooks run Prettier automatically on staged files.
 CI (`.github/workflows/playwright.yml`) runs format, lint and unit tests, Firebase tests, and four Playwright shards in parallel. Each shard has its own emulators and 2 workers. A final job merges their reports and requires every shard to pass. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
 
 `scripts/generate-card-svgs.mts` writes the card images in `public/images/cards`; rerun it after changing the card design.
+`scripts/generate-uno-svgs.mts` does the same for the Uno faces in `public/images/uno` (`node scripts/generate-uno-svgs.mts`). `tests/unit/unogame_cards.test.ts` checks the images match the engine's cards.
 
 ## Dependencies
 

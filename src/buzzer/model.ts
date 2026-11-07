@@ -11,14 +11,21 @@ export interface Player {
   id: string;
   name: string;
 }
+export type Game = "buzzer" | "uno";
 export interface RoomView {
   code: string;
+  // Rooms made before Uno have no game, and are buzzer rooms
+  game?: Game;
   round: string;
   version: number;
   phase: Phase;
   expiresAt: number;
   players: Player[];
 }
+export const gameOf = (room: { game?: Game }): Game => room.game ?? "buzzer";
+// Most players a room admits
+export const playerCap = (room: { game?: Game }) =>
+  gameOf(room) === "uno" ? 10 : 20;
 export interface Buzz {
   id: string;
   name: string;
