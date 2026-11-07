@@ -61,8 +61,12 @@ export default function Uno({
   host: boolean;
 }) {
   const router = useRouter();
+  // Read at once rather than in an effect, so a phone already held sideways
+  // never shows the full set of room buttons first
   const sideways = useMediaQuery(
     "(orientation: landscape) and (max-height: 500px)",
+    false,
+    { getInitialValueInEffect: false },
   );
   const [code, setCode] = useState(initialCode.toUpperCase());
   const [name, setName] = useState("");
@@ -529,7 +533,8 @@ export default function Uno({
                     aria-label="Room options"
                     rightSection={<IconChevronDown size={14} />}
                     ref={(button) => {
-                      // Whichever dialog the menu opens, focus comes back here
+                      // The end round, end room and leave dialogs each return focus to their
+                      // own ref, so all three point at this one button
                       roundRef.current = button;
                       endRef.current = button;
                       leaveRef.current = button;
