@@ -22,20 +22,73 @@
    screens */
 .opponents {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--mantine-spacing-xs);
   margin: 0;
-  padding: 0 0 4px;
+  padding: 0;
   list-style: none;
-  overflow-x: auto;
 }
 
+/* Each other player is a small pill, so the current player is never hidden
+   off the side, and there is room for the cards */
 .opponent {
-  flex: 0 0 auto;
-  width: 10.5rem;
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
   min-width: 0;
-  padding: var(--mantine-spacing-xs);
-  border: 2px solid var(--mantine-color-default-border);
-  border-radius: var(--mantine-radius-md);
+  padding: 2px var(--mantine-spacing-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-xl);
+}
+
+.opponent > p:first-child {
+  max-width: 9rem;
+}
+
+.opponent > div {
+  flex: none;
+  flex-wrap: nowrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+/* "Waiting" is the same for everyone who is not playing, so it is left out.
+   "Playing" and "Uno?" stay as words. */
+.waiting {
+  display: none;
+}
+
+/* The Uno hint stays as the button's description for screen readers; it is
+   not worth the space on screen */
+.hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The room code, big enough to read out across a table */
+.bigCode {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 2.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  line-height: 1.1;
+}
+
+/* The host's room menu sits beside the room code, which is a small badge */
+.roomRow {
+  flex-wrap: nowrap;
+}
+
+.roomRow > h2 {
+  --title-fz: var(--mantine-font-size-sm) !important;
+  padding: 1px var(--mantine-spacing-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-xl);
+  white-space: nowrap;
 }
 
 /* The player whose turn it is also gets a thicker border and the word
@@ -51,13 +104,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-@mixin larger-than $mantine-breakpoint-sm {
-  .opponents {
-    flex-wrap: wrap;
-    overflow-x: visible;
-  }
 }
 
 /* A size container, so the piles take the height that is left */

@@ -134,6 +134,7 @@ async function playRound(
     const players = page.getByRole("list", { name: "Players" });
     await expect(players.getByRole("listitem")).toHaveCount(2);
     await expect(players).toContainText("Laura");
+    await expect(page.locator("[class*='bigCode']")).toHaveText(code);
     await checkAccessibility?.(page);
     await page.getByRole("button", { name: "Start the round" }).click();
   });
@@ -270,14 +271,14 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
     });
 
     await test.step("When the host ends the round", async () => {
-      await page.getByRole("button", { name: "Leave game" }).click();
+      await page.getByRole("button", { name: "Room options" }).click();
+      await page.getByRole("menuitem", { name: "Leave game" }).click();
       const warning = page.getByRole("dialog", { name: "Leave this round?" });
       await expect(warning).toContainText("You host this room");
       await page.keyboard.press("Escape");
       await expect(warning).toBeHidden();
-      await page
-        .getByRole("button", { name: "End round", exact: true })
-        .click();
+      await page.getByRole("button", { name: "Room options" }).click();
+      await page.getByRole("menuitem", { name: "End round" }).click();
       const dialog = page.getByRole("dialog", { name: "End this round?" });
       await expect(dialog).toBeVisible();
       if (testInfo.project.name === "Google Chrome")

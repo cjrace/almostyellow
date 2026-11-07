@@ -468,22 +468,12 @@ test.describe("Looking at the Uno table in a real room", () => {
     }
   });
 
-  test("A phone held sideways folds the room buttons into one menu", async ({
+  test("The host's room buttons are in one menu while the table shows", async ({
     page,
   }) => {
     await openTable(page, "two-players");
-    await test.step("Given the table is the right way up, the buttons are all there", async () => {
-      await expect(
-        page.getByRole("button", { name: "End room" }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("button", { name: "Room options" }),
-      ).toHaveCount(0);
-    });
-
-    await test.step("When the phone is turned sideways, they are in a menu", async () => {
-      await page.setViewportSize({ width: 874, height: 402 });
-      const menu = page.getByRole("button", { name: "Room options" });
+    const menu = page.getByRole("button", { name: "Room options" });
+    await test.step("Given the table, the room buttons are folded into a menu", async () => {
       await expect(menu).toBeVisible();
       await expect(page.getByRole("button", { name: "End room" })).toHaveCount(
         0,
@@ -498,8 +488,7 @@ test.describe("Looking at the Uno table in a real room", () => {
         await expect(page.getByRole("menuitem", { name })).toBeVisible();
     });
 
-    await test.step("And closing it returns focus, as does the dialog it opens", async () => {
-      const menu = page.getByRole("button", { name: "Room options" });
+    await test.step("When I close it, or the dialog it opens, focus comes back to it", async () => {
       await page.keyboard.press("Escape");
       await expect(menu).toBeFocused();
       await menu.click();
@@ -511,11 +500,12 @@ test.describe("Looking at the Uno table in a real room", () => {
       await expect(menu).toBeFocused();
     });
 
-    await test.step("Then turning it back brings the buttons back", async () => {
-      await page.setViewportSize({ width: 402, height: 874 });
-      await expect(
-        page.getByRole("button", { name: "End room" }),
-      ).toBeVisible();
+    await test.step("Then it is the same on a phone held sideways", async () => {
+      await page.setViewportSize({ width: 874, height: 402 });
+      await expect(menu).toBeVisible();
+      await expect(page.getByRole("button", { name: "End room" })).toHaveCount(
+        0,
+      );
     });
   });
 
