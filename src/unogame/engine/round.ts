@@ -26,7 +26,11 @@ export interface UnoWindow {
   // Catching is only allowed from this time, until the next draw or play.
   protectedUntil: number;
 }
-export type Outcome = { type: "win"; winner: string } | { type: "blocked" };
+export type Outcome =
+  | { type: "win"; winner: string }
+  | { type: "blocked" }
+  // The host ended the round early
+  | { type: "abandoned" };
 
 // Plain JSON, so it can be stored as is. The top of `stock` and `discard` is
 // the last element.
@@ -79,7 +83,9 @@ export type RoundEvent =
   | { type: "uno-caught"; catcher: string; player: string }
   | { type: "recycled"; count: number }
   | { type: "won"; player: string }
-  | { type: "blocked" };
+  | { type: "blocked" }
+  | { type: "left"; player: string }
+  | { type: "abandoned" };
 
 export type ErrorCode =
   | "round_over"
@@ -274,6 +280,57 @@ function settle(state: RoundState, events: RoundEvent[]) {
   state.drawnCardId = null;
   state.uno = null;
   events.push({ type: "blocked" });
+}
+
+/**
+ * Takes a player out of a round being played. Their cards are shuffled back
+ * into the draw pile, so none are lost, and the turn passes on if it was
+ * theirs. A last player left standing wins.
+ */
+export function removePlayer(
+  previous: RoundState,
+  player: string,
+  ctx: Context,
+): Result {
+  if (previous.phase === "finished") return reject("round_over");
+  const index = previous.players.indexOf(player);
+  if (index === -1) return reject("unknown_player");
+  const state = structuredClone(previous);
+  const events: RoundEvent[] = [{ type: "left", player }];
+
+  state.stock = checked(ctx.shuffle, [...state.stock, ...state.hands[player]]);
+  state.hands = Object.fromEntries(
+    Object.entries(state.hands).filter(([id]) => id !== player),
+  );
+  state.players.splice(index, 1);
+  const n = state.players.length;
+  if (index < state.current) state.current -= 1;
+  else if (index === state.current) {
+    // The next player in the direction of play takes the turn
+    state.current = state.direction === 1 ? index % n : (index - 1 + n) % n;
+    state.drawnCardId = null;
+  }
+  if (state.uno?.player === player) state.uno = null;
+
+  if (n === 1) {
+    state.phase = "finished";
+    state.outcome = { type: "win", winner: state.players[0] };
+    state.drawnCardId = null;
+    state.uno = null;
+    events.push({ type: "won", player: state.players[0] });
+  } else settle(state, events);
+  return { ok: true, state, events };
+}
+
+/** Ends a round early with no winner, for the host. */
+export function abandonRound(previous: RoundState): Result {
+  if (previous.phase === "finished") return reject("round_over");
+  const state = structuredClone(previous);
+  state.phase = "finished";
+  state.outcome = { type: "abandoned" };
+  state.drawnCardId = null;
+  state.uno = null;
+  return { ok: true, state, events: [{ type: "abandoned" }] };
 }
 
 export function applyCommand(

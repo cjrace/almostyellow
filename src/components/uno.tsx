@@ -74,6 +74,8 @@ export default function Uno({
   const [identityError, setIdentityError] = useState("");
   const [notice, setNotice] = useState("");
   const [ending, setEnding] = useState(false);
+  const [abandoning, setAbandoning] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [instructions, setInstructions] = useState(false);
   const [now, setNow] = useState(0);
   const flightRef = useRef(false);
@@ -81,6 +83,8 @@ export default function Uno({
   const titleRef = useRef<HTMLHeadingElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
+  const leaveRef = useRef<HTMLButtonElement>(null);
+  const roundRef = useRef<HTMLButtonElement>(null);
 
   // Restore this tab's room after a reload
   useEffect(() => {
@@ -249,7 +253,7 @@ export default function Uno({
   }
 
   async function control(
-    action: "start" | "remove" | "end",
+    action: "start" | "remove" | "end" | "abandon",
     removeId?: string,
   ) {
     if (!room || !connected) return;
@@ -276,14 +280,8 @@ export default function Uno({
           },
           "uno",
         );
-      } catch (failure) {
-        // A seat that cannot be given up mid-round stays; anything else must
-        // not trap the player in the room
-        if (
-          failure instanceof Error &&
-          failure.message.includes("round finishes")
-        )
-          throw failure;
+      } catch {
+        // Nothing must trap the player in the room
       }
     }
     sessionStorage.removeItem(STORAGE_KEY);
@@ -464,6 +462,18 @@ export default function Uno({
                   >
                     Copy join link
                   </Button>
+                  {room.stage === "playing" && (
+                    <Button
+                      size="compact-sm"
+                      ref={roundRef}
+                      variant="default"
+                      onClick={() => {
+                        setAbandoning(true);
+                      }}
+                    >
+                      End round
+                    </Button>
+                  )}
                   <Button
                     size="compact-sm"
                     ref={endRef}
@@ -480,22 +490,17 @@ export default function Uno({
               <Button
                 size="compact-sm"
                 variant="default"
-                aria-disabled={busy || inRound}
-                data-disabled={busy || inRound || undefined}
-                aria-describedby={inRound ? "uno_leave_reason" : undefined}
+                ref={leaveRef}
+                disabled={busy}
                 onClick={() => {
-                  if (!busy && !inRound) void run(leave);
+                  if (inRound || (hosting && room && !ended)) setLeaving(true);
+                  else void run(leave);
                 }}
               >
                 Leave game
               </Button>
             </Group>
           </Group>
-        )}
-        {inRound && (
-          <Text id="uno_leave_reason" size="sm" c="dimmed">
-            You can leave when the round finishes.
-          </Text>
         )}
 
         {active && !playerId && (
@@ -541,7 +546,9 @@ export default function Uno({
               <Text role="status">
                 {room.view.outcome.type === "win"
                   ? `${room.names[room.view.outcome.winner] ?? "A player"} won the round.`
-                  : "Nobody could move, so nobody won."}
+                  : room.view.outcome.type === "abandoned"
+                    ? "The host ended the round."
+                    : "Nobody could move, so nobody won."}
               </Text>
             )}
             {hosting ? (
@@ -639,6 +646,74 @@ export default function Uno({
         </div>
       )}
 
+      <Modal
+        opened={leaving}
+        onClose={() => {
+          setLeaving(false);
+          requestAnimationFrame(() => {
+            leaveRef.current?.focus();
+          });
+        }}
+        title={inRound ? "Leave this round?" : "Leave the room?"}
+        returnFocus={false}
+        closeButtonProps={{ "aria-label": "Stay in the game" }}
+      >
+        <Stack gap="md" align="flex-start" pt="xs">
+          {inRound && (
+            <Text>
+              Your cards go back into the draw pile and the round carries on
+              without you. You can join again for the next round.
+            </Text>
+          )}
+          {hosting && (
+            <Text>
+              You host this room. If you leave, nobody can end the round or the
+              room, and you will not get the host controls back. Use End room to
+              finish the game for everyone instead.
+            </Text>
+          )}
+          <Button
+            color="red.9"
+            disabled={busy}
+            onClick={() => {
+              setLeaving(false);
+              void run(leave);
+            }}
+          >
+            Leave game
+          </Button>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={abandoning}
+        onClose={() => {
+          setAbandoning(false);
+          requestAnimationFrame(() => {
+            roundRef.current?.focus();
+          });
+        }}
+        title="End this round?"
+        returnFocus={false}
+        closeButtonProps={{ "aria-label": "Keep playing" }}
+      >
+        <Stack gap="md" align="flex-start" pt="xs">
+          <Text>
+            Nobody wins and everyone goes back to the lobby. Scores are kept.
+          </Text>
+          <Button
+            color="red.9"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await control("abandon");
+                setAbandoning(false);
+              })
+            }
+          >
+            End round
+          </Button>
+        </Stack>
+      </Modal>
       <Modal
         opened={ending}
         onClose={() => {

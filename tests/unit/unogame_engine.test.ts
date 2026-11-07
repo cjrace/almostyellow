@@ -8,8 +8,10 @@ import {
   type Colour,
 } from "@/unogame/engine/cards";
 import {
+  abandonRound,
   allCardIds,
   applyCommand,
+  removePlayer,
   nextStartingIndex,
   playableCards,
   startRound,
@@ -933,5 +935,100 @@ describe("saying Uno after the play", () => {
     expect(errorOf(state, { type: "sayUno", player: "a" })).toBe(
       "nothing_to_declare",
     );
+  });
+});
+
+describe("players leaving and rounds ending early", () => {
+  const three = (extra: Partial<Parameters<typeof rig>[0]> = {}) =>
+    rig({
+      hands: { a: ["R1", "R2"], b: ["R3", "G4", "B5"], c: ["R6", "Y7"] },
+      top: "R5",
+      stock: ["G1", "G2"],
+      ...extra,
+    });
+  const leave = (state: RoundState, player: string, ctx = at()) => {
+    const result = removePlayer(state, player, ctx);
+    if (!result.ok) throw new Error(result.error.code);
+    expect(allCardIds(result.state)).toEqual(allCardIds(state));
+    return result;
+  };
+
+  it("returns their cards to the draw pile and keeps the turn where it was", () => {
+    const state = three({ current: 2 });
+    const { state: next, events } = leave(state, "a");
+    expect(next.players).toEqual(["b", "c"]);
+    expect(next.hands).not.toHaveProperty("a");
+    expect(next.stock).toHaveLength(state.stock.length + 2);
+    expect(next.players[next.current]).toBe("c");
+    expect(events).toEqual([{ type: "left", player: "a" }]);
+  });
+
+  it("refills an empty draw pile without touching the discard pile", () => {
+    const state = three({ stock: [], discardBelow: ["G9", "Y9"], current: 1 });
+    const leaverIds = state.hands.a.map((c) => c.id).sort((x, y) => x - y);
+    const { state: next } = leave(state, "a");
+    expect(next.stock.map((c) => c.id).sort((x, y) => x - y)).toEqual(
+      leaverIds,
+    );
+    expect(next.discard).toEqual(state.discard);
+
+    const drawn = run(next, { type: "draw", player: "b" });
+    expect(drawn.events.map((e) => e.type)).not.toContain("recycled");
+    expect(drawn.state.hands.b).toHaveLength(4);
+  });
+
+  it("passes the turn on to the next player in the direction of play", () => {
+    const forward = leave(three({ current: 1 }), "b").state;
+    expect(forward.players[forward.current]).toBe("c");
+    const last = leave(three({ current: 2 }), "c").state;
+    expect(last.players[last.current]).toBe("a");
+    const backward = leave(three({ current: 1, direction: -1 }), "b").state;
+    expect(backward.players[backward.current]).toBe("a");
+    const wrapped = leave(three({ current: 0, direction: -1 }), "a").state;
+    expect(wrapped.players[wrapped.current]).toBe("c");
+  });
+
+  it("clears a card drawn by the player who left", () => {
+    const state = three({ current: 1 });
+    const { state: drawn } = run(state, { type: "draw", player: "b" });
+    const { state: next } = leave(
+      { ...drawn, drawnCardId: drawn.hands.b[0].id, current: 1 },
+      "b",
+    );
+    expect(next.drawnCardId).toBeNull();
+  });
+
+  it("drops an Uno window that belonged to the player who left", () => {
+    const state = { ...three(), uno: { player: "a", protectedUntil: 0 } };
+    expect(leave(state, "a").state.uno).toBeNull();
+    expect(leave(state, "c").state.uno).toEqual(state.uno);
+  });
+
+  it("gives the round to the last player left", () => {
+    const state = rig({ hands: { a: ["R1"], b: ["R2"] }, top: "R5" });
+    const { state: next, events } = leave(state, "b");
+    expect(next.phase).toBe("finished");
+    expect(next.outcome).toEqual({ type: "win", winner: "a" });
+    expect(events.map((e) => e.type)).toEqual(["left", "won"]);
+  });
+
+  it("rejects strangers and finished rounds", () => {
+    const state = three();
+    const stranger = removePlayer(state, "zed", at());
+    expect(stranger.ok ? "" : stranger.error.code).toBe("unknown_player");
+    const over = removePlayer({ ...state, phase: "finished" }, "a", at());
+    expect(over.ok ? "" : over.error.code).toBe("round_over");
+  });
+
+  it("ends a round with no winner when the host abandons it", () => {
+    const state = { ...three(), uno: { player: "a", protectedUntil: 0 } };
+    const result = abandonRound(state);
+    if (!result.ok) throw new Error("Expected the round to end.");
+    expect(result.state.phase).toBe("finished");
+    expect(result.state.outcome).toEqual({ type: "abandoned" });
+    expect(result.state.uno).toBeNull();
+    expect(result.events).toEqual([{ type: "abandoned" }]);
+    const again = abandonRound(result.state);
+    expect(again.ok ? "" : again.error.code).toBe("round_over");
   });
 });

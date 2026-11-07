@@ -72,6 +72,13 @@ describe("Announcing what happened at the table", () => {
     );
   });
 
+  test("says who left and when the host ends the round", () => {
+    expect(
+      say([{ type: "left", player: "laura" }, { type: "abandoned" }]),
+    ).toBe("Laura left the game. The host ended the round.");
+    expect(say([{ type: "left", player: "me" }])).toBe("You left the game.");
+  });
+
   test("says nothing when nothing happened, and copes with an unknown player", () => {
     expect(say([])).toBe("");
     expect(say([{ type: "drew", player: "gone", count: 3 }])).toBe(

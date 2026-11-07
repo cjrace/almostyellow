@@ -14,8 +14,15 @@ import type { RoundState } from "../../src/unogame/engine/round";
 // Cam hosts and plays on the page under test, and Laura joins from a second
 // browser, as on two phones. The cards are dealt at random, so the test only
 // draws, then leaves one player on a last matching card to finish the round.
-const test = base.extend<{ guestPage: Page }>({
+const test = base.extend<{ guestPage: Page; thirdPage: Page }>({
   guestPage: async ({ browser }, use) => {
+    const context = await browser.newContext({
+      baseURL: "http://localhost:3000/",
+    });
+    await use(waitsForHydration(await context.newPage()));
+    await context.close();
+  },
+  thirdPage: async ({ browser }, use) => {
     const context = await browser.newContext({
       baseURL: "http://localhost:3000/",
     });
@@ -201,6 +208,101 @@ async function playRound(
 }
 
 test.describe("Playing Uno online", { tag: "@no-android" }, () => {
+  test("A player can leave mid-round, and the host can end the round and play again", async ({
+    page,
+    guestPage,
+    thirdPage,
+  }, testInfo) => {
+    test.slow();
+    let code = "";
+
+    await test.step("Given three players have started a round", async () => {
+      await signIn(page);
+      await page.goto("/games/uno");
+      await page.getByRole("button", { name: "Create a room" }).click();
+      const heading = page.getByRole("heading", { name: /^Room / });
+      await expect(heading).toBeVisible();
+      code = (await heading.innerText()).slice(5);
+      await page.getByLabel("Your player name").fill("Cam");
+      await page.getByRole("button", { name: "Join as a player" }).click();
+      for (const [view, name] of [
+        [guestPage, "Laura"],
+        [thirdPage, "Sam"],
+      ] as const) {
+        await view.goto(`/games/uno?room=${code}`);
+        await view.getByLabel("Your name", { exact: true }).fill(name);
+        await view.getByRole("button", { name: "Join room" }).click();
+        await expect(
+          view.getByRole("heading", { name: "Waiting to start" }),
+        ).toBeVisible();
+      }
+      await expect(
+        page.getByRole("list", { name: "Players" }).getByRole("listitem"),
+      ).toHaveCount(3);
+      await page.getByRole("button", { name: "Start the round" }).click();
+      for (const view of [page, guestPage, thirdPage])
+        await expect(
+          view.getByRole("list", { name: "Your hand, 7 cards" }),
+        ).toBeVisible();
+    });
+
+    await test.step("When one player leaves, after confirming", async () => {
+      await thirdPage.getByRole("button", { name: "Leave game" }).click();
+      const dialog = thirdPage.getByRole("dialog", {
+        name: "Leave this round?",
+      });
+      await expect(dialog).toBeVisible();
+      if (testInfo.project.name === "Google Chrome")
+        await expectNoUnexpectedAxeViolations(thirdPage);
+      await dialog.getByRole("button", { name: "Leave game" }).click();
+      await expect(thirdPage).toHaveURL(/\/games$/);
+    });
+
+    await test.step("Then the others hear and carry on with two players", async () => {
+      for (const view of [page, guestPage])
+        await expect(
+          view.getByRole("status").filter({ hasText: "Sam left the game" }),
+        ).toHaveCount(1);
+      await expect(
+        page.getByRole("list", { name: "Your hand, 7 cards" }),
+      ).toBeVisible();
+      await expectNoSidewaysScroll(page);
+    });
+
+    await test.step("When the host ends the round", async () => {
+      await page.getByRole("button", { name: "Leave game" }).click();
+      const warning = page.getByRole("dialog", { name: "Leave this round?" });
+      await expect(warning).toContainText("You host this room");
+      await page.keyboard.press("Escape");
+      await expect(warning).toBeHidden();
+      await page
+        .getByRole("button", { name: "End round", exact: true })
+        .click();
+      const dialog = page.getByRole("dialog", { name: "End this round?" });
+      await expect(dialog).toBeVisible();
+      if (testInfo.project.name === "Google Chrome")
+        await expectNoUnexpectedAxeViolations(page);
+      await dialog.getByRole("button", { name: "End round" }).click();
+    });
+
+    await test.step("Then everyone is back at the lobby and the host can play again", async () => {
+      for (const view of [page, guestPage]) {
+        await expect(
+          view.getByRole("heading", { name: "Round over" }),
+        ).toBeVisible();
+        await expect(view.getByText("The host ended the round.")).toBeVisible();
+      }
+      await expect(
+        page.getByRole("list", { name: "Players" }).getByRole("listitem"),
+      ).toHaveCount(2);
+      await page.getByRole("button", { name: "Play again" }).click();
+      for (const view of [page, guestPage])
+        await expect(
+          view.getByRole("list", { name: "Your hand, 7 cards" }),
+        ).toBeVisible();
+    });
+  });
+
   test("Two players play a round from the lobby to a win", async ({
     page,
     guestPage,
