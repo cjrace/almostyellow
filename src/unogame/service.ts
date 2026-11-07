@@ -400,7 +400,8 @@ export async function unoPlayerCommand(
   });
 }
 
-const trackerSchema = commandSchema.extend({
+// Saving is idempotent through the room, so it needs no command id
+const trackerSchema = commandSchema.omit({ commandId: true }).extend({
   // Which of the two players is Cam; the other is Laura
   camPlayerId: z.uuid(),
   playedOn: HistoricGameSchema.shape.playedOn,

@@ -611,7 +611,6 @@ describe("saving a room to the Uno tracker", () => {
       code,
       round: current.round,
       version: current.version,
-      commandId: randomUUID(),
       camPlayerId,
       playedOn: "2026-11-07",
     });
@@ -678,7 +677,6 @@ describe("saving a room to the Uno tracker", () => {
         code,
         round: current.round,
         version: current.version + 1,
-        commandId: randomUUID(),
         camPlayerId: seated[0].playerId,
         playedOn: "2026-11-07",
       }),

@@ -325,7 +325,6 @@ export default function Uno({
       code: room.code,
       round: room.round,
       version: room.version,
-      commandId: crypto.randomUUID(),
       camPlayerId: camId,
       playedOn,
     });
