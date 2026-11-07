@@ -234,7 +234,7 @@ export default function UnoTable({
                 read; it is one-way, so it is a button and not a switch */}
             <Button
               variant={unoReady ? "filled" : "default"}
-              data-ready={unoReady || undefined}
+              data-ready={unoReady ? "" : undefined}
               aria-disabled={!canSayUno}
               data-disabled={!canSayUno || undefined}
               aria-describedby="uno_declare_reason"
