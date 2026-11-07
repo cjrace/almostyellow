@@ -272,6 +272,8 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
         name: "Leave this round?",
       });
       await expect(dialog).toBeVisible();
+      await expect(thirdPage.getByRole("menu")).toHaveCount(0);
+      await expect(dialog).toHaveCSS("opacity", "1");
       if (testInfo.project.name === "Google Chrome")
         await expectNoUnexpectedAxeViolations(thirdPage);
       await dialog.getByRole("button", { name: "Leave game" }).click();
@@ -300,6 +302,10 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
       await page.getByRole("menuitem", { name: "End round" }).click();
       const dialog = page.getByRole("dialog", { name: "End this round?" });
       await expect(dialog).toBeVisible();
+      // Axe reads the colours as they are drawn, so let the menu finish
+      // closing and the dialog finish fading in first
+      await expect(page.getByRole("menu")).toHaveCount(0);
+      await expect(dialog).toHaveCSS("opacity", "1");
       if (testInfo.project.name === "Google Chrome")
         await expectNoUnexpectedAxeViolations(page);
       await dialog.getByRole("button", { name: "End round" }).click();
