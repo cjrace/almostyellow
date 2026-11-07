@@ -93,21 +93,9 @@ label[data-active] .redSuit {
   }
 }
 
-/* A phone held sideways: short and wide. The title and credit share a line,
-   the card goes beside the buttons as on a desktop, and the margins shrink so
+/* A phone held sideways: short and wide. The card goes beside the buttons as on a desktop, and the margins shrink so
    the game fits without scrolling */
 @media (orientation: landscape) and (max-height: 500px) {
-  .heading {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: var(--mantine-spacing-md);
-  }
-
-  .credit {
-    margin-top: 0;
-  }
-
   .board {
     margin-top: var(--mantine-spacing-xs);
   }
@@ -127,13 +115,6 @@ label[data-active] .redSuit {
 
   .controls {
     gap: var(--mantine-spacing-xs);
-  }
-
-  /* The page title above a game, smaller and with less space under it on a
-   phone held sideways */
-  .pageTitle {
-    font-size: var(--mantine-h3-font-size);
-    margin-bottom: var(--mantine-spacing-xs);
   }
 
   /* Smaller buttons, still over 24px, so three fit beside a card */
