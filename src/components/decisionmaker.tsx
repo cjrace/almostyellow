@@ -81,7 +81,7 @@ Laura`;
   };
 
   return (
-    <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }}>
+    <SimpleGrid spacing="xl" cols={{ base: 1, sm: 2 }} className={classes.grid}>
       <form onSubmit={form.onSubmit(makeDecision)} onReset={form.onReset}>
         <Group>
           <Button mb="md" variant="default" onClick={prePopulateTakeaways}>
@@ -102,7 +102,7 @@ Laura`;
         />
         {/* Looks disabled while deciding, but keeps keyboard focus */}
         <Button
-          mt="xl"
+          className={classes.submit}
           type="submit"
           fullWidth
           data-disabled={isLoading || undefined}

@@ -32,7 +32,7 @@ import bingo from "@/styles/irishbingo.module.css";
 // Tayto calls the card from a speech bubble, in the height the text takes
 const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   <>
-    <Group justify="center" gap="sm" wrap="nowrap">
+    <Group justify="center" gap="sm" wrap="nowrap" className={bingo.callout}>
       <Image
         component={NextImage}
         width={444}
@@ -46,6 +46,7 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
         h={64}
         w="auto"
         fit="contain"
+        className={bingo.calloutMascot}
         data-testid="caller-mascot"
       />
       <Box ta="center" className={bingo.bubble}>
@@ -125,6 +126,7 @@ export default function IrishBingo() {
       <div>
         <Group gap="xs">
           <Title
+            className={layout.pageTitle}
             fz={{
               base: "var(--mantine-h2-font-size)",
               sm: "var(--mantine-h1-font-size)",
@@ -272,7 +274,7 @@ export default function IrishBingo() {
 
         <div className={bingo.caller}>
           <CalloutBox card={latestCard} />
-          <div className={layout.controls}>
+          <div className={`${layout.controls} ${bingo.controls}`}>
             <Progress
               // Make each draw 1/52 of the way
               value={drawnCards.length * 1.923}

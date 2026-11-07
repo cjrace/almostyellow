@@ -28,6 +28,13 @@ body {
   }
 }
 
+/* A phone held sideways has little height, so the frame gives up some of it */
+@media (orientation: landscape) and (max-height: 500px) {
+  .site-frame {
+    --site-frame-padding: 10px;
+  }
+}
+
 /* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
 html {
   scroll-padding-top: 100px;
@@ -74,4 +81,11 @@ html {
 [data-mantine-color-scheme="light"] .mantine-Input-input:focus,
 [data-mantine-color-scheme="light"] .mantine-Input-input:focus-within {
   --input-bd: #c2410c;
+}
+
+/* A small phone held sideways gives up a little more */
+@media (orientation: landscape) and (max-height: 360px) {
+  .site-frame {
+    --site-frame-padding: 6px;
+  }
 }
