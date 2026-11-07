@@ -1,14 +1,14 @@
-// Synthetic table states for the preview page and tests. They are real engine
-// states, dealt with a fixed shuffle, so the views have exactly the shape the
-// server will publish. Nothing here is used in play.
-import { buildDeck } from "./engine/cards";
+// Synthetic table states for the card and table unit tests. They are real
+// engine states, dealt with a fixed shuffle, so the views have exactly the
+// shape the server publishes. Nothing here is used in play.
+import { buildDeck } from "@/unogame/engine/cards";
 import {
   playableCards,
   startRound,
   type RoundState,
   type Shuffle,
-} from "./engine/round";
-import { privateView, publicView } from "./engine/views";
+} from "@/unogame/engine/round";
+import { privateView, publicView } from "@/unogame/engine/views";
 
 export type PreviewScenario =
   | "two-players"

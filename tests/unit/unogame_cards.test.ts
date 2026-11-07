@@ -7,7 +7,7 @@ import {
   getUnoCardName,
   unoCardBackImagePath,
 } from "@/unogame/cards";
-import { buildPreview, previewScenarios } from "@/unogame/preview";
+import { buildPreview, previewScenarios } from "../unogame-preview";
 import { allCardIds } from "@/unogame/engine/round";
 
 const publicDir = join(import.meta.dirname, "..", "..", "public");
