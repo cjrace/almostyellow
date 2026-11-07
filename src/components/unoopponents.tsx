@@ -56,6 +56,18 @@ export default function UnoOpponents({
     };
   }, [players.length]);
 
+  // When the list scrolls, keep whoever is playing in view as the turn moves
+  useEffect(() => {
+    const list = listRef.current;
+    const current = list?.querySelector<HTMLElement>("[data-current]");
+    if (!list || !current) return;
+    const top =
+      current.offsetTop - (list.clientHeight - current.offsetHeight) / 2;
+    const left =
+      current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2;
+    list.scrollTo({ top: Math.max(0, top), left: Math.max(0, left) });
+  }, [currentPlayer, players.length]);
+
   return (
     <ul
       ref={listRef}
@@ -77,6 +89,7 @@ export default function UnoOpponents({
             key={player.id}
             className={styles.opponent}
             data-current={current ? "" : undefined}
+            data-catch={unoPlayer === player.id ? "" : undefined}
             aria-label={`${label}, ${cards}${current ? ", playing now" : ""}${said ? ", said Uno" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
           >
             <Text
@@ -89,7 +102,17 @@ export default function UnoOpponents({
             </Text>
             <Group gap="0 xs" justify="space-between" aria-hidden="true">
               <Group gap={6} wrap="nowrap">
-                <IconCards size={18} />
+                {/* A few card backs stand for the hand when the seats sit
+                    along the top of a phone held sideways */}
+                <span
+                  className={styles.backs}
+                  data-count={Math.min(player.cards, 3)}
+                >
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <IconCards size={18} className={styles.cardsIcon} />
                 <Text>
                   {player.cards}
                   <span className={styles.unit}>

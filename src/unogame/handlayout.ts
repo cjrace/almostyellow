@@ -11,6 +11,9 @@ export const MIN_CARD_WIDTH = 58;
 export const SHORT_SCREEN = 400;
 export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
+// A card's width as a share of the screen's height, so the hand grows with the
+// space it has: about 64 pixels on a phone held sideways, 100 on a tall one
+export const CARD_HEIGHT_SHARE = 0.16;
 // Part of a card's width, from its left edge, that is never covered. The
 // corner label sits inside it.
 export const CORNER_STRIP = 0.26;
@@ -48,10 +51,7 @@ export function fanLayout(options: {
       Math.max(
         viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
         // Tall screens have room for bigger cards
-        Math.min(
-          width * 0.17,
-          viewportHeight * (viewportHeight >= 600 ? 0.16 : 0.13),
-        ),
+        Math.min(width * 0.17, viewportHeight * CARD_HEIGHT_SHARE),
       ),
     ),
   );

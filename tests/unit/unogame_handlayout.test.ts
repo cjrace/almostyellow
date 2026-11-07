@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CARD_HEIGHT_SHARE,
   CARD_RATIO,
   COMFORT_ROWS,
   COMFORT_STEP,
@@ -113,12 +114,21 @@ describe("fanLayout", () => {
     expect(short.cardWidth).toBeLessThan(tall.cardWidth);
   });
 
-  it("gives screens 600 pixels tall or more bigger cards, up to the largest", () => {
-    const justUnder = fanLayout({ width: 1100, viewportHeight: 599, count: 7 });
-    const tall = fanLayout({ width: 1100, viewportHeight: 600, count: 7 });
-    expect(tall.cardWidth).toBe(Math.round(600 * 0.16));
-    expect(justUnder.cardWidth).toBe(Math.round(599 * 0.13));
-    expect(tall.cardWidth).toBeGreaterThan(justUnder.cardWidth);
+  it("sizes the cards by the screen's height, up to the largest", () => {
+    // A phone held sideways gets cards of about 64 pixels, not much smaller
+    // than a tall screen's
+    for (const viewportHeight of [402, 448, 599, 600]) {
+      const { cardWidth } = fanLayout({
+        width: 1100,
+        viewportHeight,
+        count: 7,
+      });
+      expect(cardWidth).toBe(Math.round(viewportHeight * CARD_HEIGHT_SHARE));
+    }
+    const taller = fanLayout({ width: 1100, viewportHeight: 800, count: 7 });
+    expect(taller.cardWidth).toBeGreaterThan(
+      fanLayout({ width: 1100, viewportHeight: 600, count: 7 }).cardWidth,
+    );
     const tallest = fanLayout({ width: 1600, viewportHeight: 1200, count: 7 });
     expect(tallest.cardWidth).toBe(MAX_CARD_WIDTH);
   });

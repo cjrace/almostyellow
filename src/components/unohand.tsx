@@ -8,7 +8,10 @@ import { UnoCardButton } from "@/components/unocard";
 import styles from "@/styles/unotable.module.css";
 
 interface UnoHandProps {
+  // What is shown. It is fewer than `total` while the hand is narrowed to the
+  // cards that can be played.
   cards: Card[];
+  total?: number;
   playableIds: number[];
   drawnCardId: number | null;
   // Why an unplayable card cannot be played, for its accessible name
@@ -26,6 +29,7 @@ const DEFAULT_SIZE = { width: 320, height: 800 };
 // comes to the front.
 export default function UnoHand({
   cards,
+  total = cards.length,
   playableIds,
   drawnCardId,
   reason,
@@ -66,7 +70,11 @@ export default function UnoHand({
       className={styles.hand}
       data-myturn={active ? "" : undefined}
       style={{ height: layout.height }}
-      aria-label={`Your hand, ${String(cards.length)} ${cards.length === 1 ? "card" : "cards"}`}
+      aria-label={
+        cards.length === total
+          ? `Your hand, ${String(total)} ${total === 1 ? "card" : "cards"}`
+          : `Your hand, ${String(total)} cards, showing the ${String(cards.length)} you can play`
+      }
     >
       {sorted.map((card, index) => (
         <li

@@ -117,3 +117,17 @@ html:has(main[data-game]) {
     env(safe-area-inset-right, 0px)
   );
 }
+
+/* The Uno table on a phone held sideways takes the height the site's header
+   and the gap kept for the confetti credit would use. The page puts its own
+   back button, title and menu in their place (see unotable.module.css), and
+   sets this attribute only while the table is showing. */
+@media (orientation: landscape) and (max-height: 500px) {
+  html[data-uno-table] {
+    --confetti-gap: 0px;
+  }
+
+  html[data-uno-table] .site-frame header {
+    display: none;
+  }
+}

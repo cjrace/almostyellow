@@ -213,7 +213,7 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
               b.textContent.startsWith("Room"),
             ),
             catchUno: [...document.querySelectorAll("button")].find((b) =>
-              b.textContent.startsWith("Call out"),
+              b.textContent.startsWith("Catch "),
             ),
             sayUno: spots.unoButton,
             drawPile: spots.drawPile ?? undefined,
@@ -441,7 +441,7 @@ test.describe("Looking at the Uno table in a real room", () => {
       }),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "Call out Laura for not saying Uno" })
+      .getByRole("button", { name: "Catch Laura! for not saying Uno" })
       .click();
     await expect(
       page.getByRole("status").filter({ hasText: "caught" }),
@@ -492,6 +492,39 @@ test.describe("Looking at the Uno table in a real room", () => {
       page.getByRole("list", { name: /^Your hand, 5\d cards$/ }),
     ).toBeVisible();
     await expectWholeHandShowing(page);
+  });
+
+  test("A big hand can be narrowed to the cards that can be played", async ({
+    page,
+  }) => {
+    await openTable(page, "large-hand");
+    const hand = page.getByRole("list", { name: /^Your hand, d+ cards$/ });
+    const all = await hand.getByRole("button").count();
+
+    await test.step("Given I have a big hand and it is my turn", async () => {
+      await expect(
+        page.getByRole("heading", { level: 2, name: "Your turn" }),
+      ).toBeVisible();
+    });
+
+    await test.step("When I ask for the playable cards only", async () => {
+      await page.getByRole("button", { name: /^Playable only (d+)$/ }).click();
+    });
+
+    await test.step("Then I only see cards I can play, and can show them all again", async () => {
+      const narrowed = page.getByRole("list", {
+        name: /^Your hand, d+ cards, showing the d+ you can play$/,
+      });
+      await expect(narrowed).toBeVisible();
+      const buttons = narrowed.getByRole("button");
+      expect(await buttons.count()).toBeLessThan(all);
+      for (const label of await buttons.evaluateAll((els) =>
+        els.map((e) => e.getAttribute("aria-label") ?? ""),
+      ))
+        expect(label).toMatch(/, play$/);
+      await page.getByRole("button", { name: "Show all cards" }).click();
+      await expect(hand.getByRole("button")).toHaveCount(all);
+    });
   });
 
   test("A phone held sideways keeps the piles, buttons and hand on screen", async ({

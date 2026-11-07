@@ -20,6 +20,7 @@ import type {
 } from "@/unogame/engine/views";
 import { alertDuration, tableAlerts, type TableAlert } from "@/unogame/alerts";
 import { colourNames } from "@/unogame/cards";
+import { vibrate } from "@/haptics";
 import { UnoCard } from "@/components/unocard";
 import {
   DrawReveal,
@@ -33,6 +34,9 @@ import UnoOpponents from "@/components/unoopponents";
 import UnoScoreboard from "@/components/unoscoreboard";
 import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/unotable.module.css";
+
+// A hand this big can be narrowed to what can be played
+const BIG_HAND = 12;
 
 interface UnoTableProps {
   view: PublicView;
@@ -89,6 +93,8 @@ export default function UnoTable({
   // Uno said before playing the second-last card, sent with that play
   const [declareUno, setDeclareUno] = useState(false);
   const [scoresOpen, setScoresOpen] = useState(false);
+  // A big hand can be narrowed to the cards that can be played
+  const [playableOnly, setPlayableOnly] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [flight, setFlight] = useState<{ card: Card; from: DOMRect } | null>(
     null,
@@ -109,6 +115,9 @@ export default function UnoTable({
       return;
     }
     seenVersionRef.current = version;
+    // A buzz when you have to pick cards up, so it is felt as well as seen
+    if (events.some((e) => e.type === "penalty" && e.player === me))
+      vibrate([120, 60, 120]);
     const next = tableAlerts(events, names, me);
     if (!next.length) return;
     clearTimeout(alertTimerRef.current);
@@ -216,11 +225,31 @@ export default function UnoTable({
   // Saying Uno matters right now
   const unoReady = canSayUno && !declareUno;
   const unoLabel = declareUno ? "Uno said" : "Say Uno!";
+  // A short buzz as your turn starts, and a double one when saying Uno
+  // starts to matter. Neither repeats while the state holds.
+  const wasMyTurnRef = useRef(false);
+  useEffect(() => {
+    if (myTurn && !wasMyTurnRef.current) vibrate(40);
+    wasMyTurnRef.current = myTurn;
+  }, [myTurn]);
+  const wasUnoReadyRef = useRef(false);
+  useEffect(() => {
+    if (unoReady && !wasUnoReadyRef.current) vibrate([40, 60, 40]);
+    wasUnoReadyRef.current = unoReady;
+  }, [unoReady]);
   const unoReason = unoWindowMine
     ? "Say it now, before anyone catches you."
     : declareUno
       ? "It will count when you play your next card."
       : "Say it before you play your second-last card, or right after.";
+
+  // Only on your turn, and only while something can be played
+  const canFilter =
+    handSize >= BIG_HAND && myTurn && mine.playableIds.length > 0;
+  const filtered = canFilter && playableOnly && !settling;
+  const shownHand = filtered
+    ? mine.hand.filter((c) => mine.playableIds.includes(c.id))
+    : mine.hand;
 
   const play = (card: Card, colour?: Colour) => {
     const from = document
@@ -273,6 +302,7 @@ export default function UnoTable({
               <ActionIcon
                 variant="subtle"
                 size="lg"
+                className={styles.infoButton}
                 aria-label="Open game instructions modal"
                 onClick={onInstructions}
               >
@@ -282,6 +312,7 @@ export default function UnoTable({
             <Button
               variant="default"
               size="compact-sm"
+              className={styles.scoresButton}
               onClick={() => {
                 setScoresOpen(true);
               }}
@@ -313,7 +344,7 @@ export default function UnoTable({
           unoPlayer={catchable}
         />
 
-        <div className={styles.table}>
+        <div className={styles.table} data-colour={view.colour}>
           <div className={styles.piles}>
             <div className={styles.pile} data-uno-pile="draw">
               <button
@@ -351,6 +382,21 @@ export default function UnoTable({
         </div>
 
         <div className={styles.controls}>
+          {/* The draw pile is the main way to draw. This button repeats it in
+              reach of a thumb, in the column beside the table on a phone held
+              sideways, and is hidden in other layouts. */}
+          {canDraw ? (
+            <Button
+              className={styles.drawButton}
+              variant={mustDraw ? "filled" : "default"}
+              aria-disabled={!!sending}
+              onClick={() => {
+                if (!sending) onDraw();
+              }}
+            >
+              Draw a card
+            </Button>
+          ) : null}
           {/* Only the player who drew decides whether to keep it */}
           {view.drawPending && myTurn ? (
             <Button
@@ -365,13 +411,14 @@ export default function UnoTable({
           ) : null}
           {canCatch && catchable ? (
             <Button
-              variant="default"
+              variant="filled"
               aria-disabled={!!sending}
               onClick={() => {
                 if (!sending) onCatch();
               }}
             >
-              Call out {names[catchable]} for not saying Uno
+              Catch {names[catchable]}!
+              <VisuallyHidden> for not saying Uno</VisuallyHidden>
             </Button>
           ) : null}
           {/* Only there when it matters. Once said before playing, it stays
@@ -390,6 +437,19 @@ export default function UnoTable({
               }}
             >
               {unoLabel}
+            </Button>
+          ) : null}
+          {canFilter ? (
+            <Button
+              variant="default"
+              aria-pressed={playableOnly}
+              onClick={() => {
+                setPlayableOnly(!playableOnly);
+              }}
+            >
+              {playableOnly
+                ? "Show all cards"
+                : `Playable only (${String(mine.playableIds.length)})`}
             </Button>
           ) : null}
         </div>
@@ -423,7 +483,8 @@ export default function UnoTable({
         />
 
         <UnoHand
-          cards={mine.hand}
+          cards={shownHand}
+          total={mine.hand.length}
           playableIds={settling ? [] : mine.playableIds}
           drawnCardId={mine.drawnCardId}
           reason={cardReason}
