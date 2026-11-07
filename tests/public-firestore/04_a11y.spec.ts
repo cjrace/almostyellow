@@ -9,6 +9,8 @@ const publicRoutes = [
   "/whiskyjournal",
   "/films",
   "/cocktails",
+  "/tools",
+  "/tools/word-counter",
   "/games/uno-tracker",
   "/games/uno-tracker/stats",
   "/games/uno-tracker/history",
@@ -74,6 +76,22 @@ for (const scheme of schemes) {
         await expectNoUnexpectedAxeViolations(page);
       });
     }
+
+    test("Word counter results and method information pass accessibility checks", async ({
+      page,
+    }) => {
+      await page.goto("/tools/word-counter");
+      await page.getByLabel("Your text").fill("My mother-in-law 👩‍💻");
+      await page.getByLabel("Your text").press("ControlOrMeta+a");
+      await expectNoUnexpectedAxeViolations(page);
+      await page
+        .getByRole("button", { name: "About counting methods" })
+        .click();
+      await expect(
+        page.getByRole("dialog", { name: "How counting works" }),
+      ).toBeVisible();
+      await expectNoUnexpectedAxeViolations(page);
+    });
 
     test("Decision maker passes accessibility checks with an error and a decision", async ({
       page,

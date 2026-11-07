@@ -4,8 +4,7 @@ import ThemeProvider from "@/components/themeprovider";
 import { siteUrl } from "@/routes";
 import "@/styles/global.css";
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import Telemetry from "@/components/telemetry";
 import skip from "@/styles/skip.module.css";
 import Hydrated from "@/components/hydrated";
 
@@ -63,8 +62,7 @@ export default function RootLayout({
             </Anchor>
             {children}
           </div>
-          <Analytics />
-          <SpeedInsights />
+          <Telemetry />
           <Hydrated />
         </ThemeProvider>
       </body>
