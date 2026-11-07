@@ -511,6 +511,32 @@ describe("Uno rooms", () => {
     );
   });
 
+  test("rules let a player wait for their own hand before the deal", async () => {
+    const { code, seated } = await table(2);
+    const [first, second] = seated;
+    const mine = env.authenticatedContext(first.uid).firestore();
+    const ownHand = doc(mine, "roomHands", `${code}_${first.playerId}`);
+    expect((await assertSucceeds(getDoc(ownHand))).exists()).toBe(false);
+    await assertFails(
+      getDoc(doc(mine, "roomHands", `${code}_${second.playerId}`)),
+    );
+    for (const id of [
+      code,
+      `${code}_${first.playerId}_x`,
+      `x_${first.playerId}`,
+    ])
+      await assertFails(getDoc(doc(mine, "roomHands", id)));
+    const outsider = env.authenticatedContext("outsider").firestore();
+    await assertFails(
+      getDoc(doc(outsider, "roomHands", `${code}_${first.playerId}`)),
+    );
+
+    await host(code, "start");
+    expect((await assertSucceeds(getDoc(ownHand))).exists()).toBe(true);
+    await host(code, "remove", { playerId: first.playerId });
+    await assertFails(getDoc(ownHand));
+  });
+
   test("guests get their own Uno identity and cookie", async () => {
     const code = await createRoom(owner, randomUUID(), "uno");
     const secret = "a".repeat(64);

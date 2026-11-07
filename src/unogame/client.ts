@@ -1,4 +1,9 @@
-import { doc, onSnapshot, type Firestore } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  type Firestore,
+  type Unsubscribe,
+} from "firebase/firestore";
 import { send, NetworkError, type GuestClient } from "@/buzzer/client";
 import type { UnoHand, UnoRoom } from "./room";
 
@@ -22,21 +27,39 @@ export function watchUnoRoom(
   );
 }
 
-// A seat's own hand. Nothing exists until the first round starts.
+const RETRY_MS = 1000;
+const MAX_RETRY_MS = 30_000;
+
+// A player's own hand. Nothing exists until the first round starts, so it is
+// null until then. A failed listener is started again, waiting longer each
+// time, as one lost listener would leave the table waiting for cards forever.
 export function watchUnoHand(
   db: Firestore,
   code: string,
   playerId: string,
   next: (hand: UnoHand | null) => void,
-  error: () => void,
 ) {
-  return onSnapshot(
-    doc(db, "roomHands", `${code}_${playerId}`),
-    (snapshot) => {
-      next(snapshot.exists() ? (snapshot.data() as UnoHand) : null);
-    },
-    error,
-  );
+  let stop: Unsubscribe | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let wait = RETRY_MS;
+  const listen = () => {
+    stop = onSnapshot(
+      doc(db, "roomHands", `${code}_${playerId}`),
+      (snapshot) => {
+        wait = RETRY_MS;
+        next(snapshot.exists() ? (snapshot.data() as UnoHand) : null);
+      },
+      () => {
+        timer = setTimeout(listen, wait);
+        wait = Math.min(wait * 2, MAX_RETRY_MS);
+      },
+    );
+  };
+  listen();
+  return () => {
+    clearTimeout(timer);
+    stop?.();
+  };
 }
 
 export type UnoAction = "leave" | "play" | "draw" | "keep" | "catch" | "sayUno";

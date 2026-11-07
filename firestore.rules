@@ -146,13 +146,19 @@ service cloud.firestore {
         && resource.data.round == get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.round;
       allow write: if false;
     }
-    // A player's own Uno hand. The full round and everyone else's hand stay
-    // on the server.
+    // A player's own Uno hand, `{code}_{playerId}`. The full round and
+    // everyone else's hand stay on the server. Access follows the document ID
+    // rather than its contents, so a player can listen before the first deal
+    // and keep listening if their hand is deleted.
+    function handAccess(parts) {
+      let member = get(/databases/$(database)/documents/roomMembers/$(parts[0] + '_' + request.auth.uid)).data;
+      return parts.size() == 2 && member.playerId == parts[1]
+        && roomAccess(parts[0])
+        && get(/databases/$(database)/documents/gameRooms/$(parts[0])).data.phase != 'ended'
+        && (resource == null || resource.data.uid == request.auth.uid);
+    }
     match /roomHands/{id} {
-      allow read: if request.auth != null
-        && resource.data.uid == request.auth.uid
-        && roomAccess(resource.data.code)
-        && get(/databases/$(database)/documents/gameRooms/$(resource.data.code)).data.phase != 'ended';
+      allow read: if request.auth != null && handAccess(id.split('_'));
       allow write: if false;
     }
     // The allowlist is managed with the Admin SDK only, which bypasses rules

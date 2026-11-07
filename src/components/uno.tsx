@@ -187,16 +187,17 @@ export default function Uno({
   }, [client, active]);
 
   const seated = !!room && room.seats.includes(playerId);
-  // The Security Rules refuse a read of a hand that does not exist yet, which
-  // would end the listener, so it starts once the player has a seat
+  const expired = !!room && room.expiresAt <= now;
+  const ended = room?.phase === "ended" || expired;
+  // Listening from the lobby means the cards arrive with the deal itself,
+  // rather than after the room shows a seat and a new listener starts
+  const listed = !!room && room.players.some((p) => p.id === playerId);
+  const handOpen = listed && !ended;
   useEffect(() => {
-    if (!client || !active || !playerId || !seated || client.code !== active)
+    if (!client || !active || !playerId || !handOpen || client.code !== active)
       return;
-    return watchUnoHand(client.db, active, playerId, setHand, () => {
-      // Hands stop being readable when the room ends or the player leaves
-      setHand(null);
-    });
-  }, [client, active, playerId, seated]);
+    return watchUnoHand(client.db, active, playerId, setHand);
+  }, [client, active, playerId, handOpen]);
 
   const trackerSaved = !!room?.trackerGameId;
   useEffect(() => {
@@ -211,8 +212,6 @@ export default function Uno({
     };
   }, [trackerSaved, focusHistory]);
 
-  const expired = !!room && room.expiresAt <= now;
-  const ended = room?.phase === "ended" || expired;
   const connected = online && !cached && !ended;
   const announcement = useMemo(() => {
     if (!room?.view || !playerId) return "";
