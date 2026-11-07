@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { requireAuth } from "@/auth";
 import { adminDb } from "@/firebase/admin";
+import { historicGameEntry } from "@/uno/historic";
 import {
   emptyBoard,
   HistoricGameSchema,
@@ -265,29 +266,13 @@ export async function addHistoricUnoGame(input: unknown) {
         throw new Error("This entry ID has already been used.");
       return;
     }
-    const board = boardSnapshot.exists
-      ? (boardSnapshot.data() as Board)
-      : emptyBoard();
-    const now = Date.now();
-    const game: Game = {
-      ...data,
-      playedOn: data.playedOn,
-      status: "completed",
-      source: "historic",
-      startedAt: now,
-      finishedAt: now,
-      ...result(data),
-      version: 1,
-      amended: false,
-    };
+    const { game, board } = historicGameEntry(
+      data,
+      boardSnapshot.exists ? (boardSnapshot.data() as Board) : undefined,
+      Date.now(),
+    );
     tx.create(gameRef(data.id), game);
-    tx.set(boardRef(), {
-      ...board,
-      cam: board.cam + data.cam,
-      laura: board.laura + data.laura,
-      version: board.version + 1,
-      updatedAt: now,
-    });
+    tx.set(boardRef(), board);
   });
   return readUnoState();
 }

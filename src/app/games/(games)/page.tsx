@@ -76,6 +76,7 @@ export default function Games() {
             description="Join a room and buzz in with friends."
             link="/games/buzzer"
             linktext="Quiz buzzer"
+            experimental
           />
           <GamesCard
             imagePath="/images/almo-border.png"

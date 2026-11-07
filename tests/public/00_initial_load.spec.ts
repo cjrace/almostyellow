@@ -14,7 +14,7 @@ test.describe("A visitor on the homepage", () => {
   }) => {
     await page.goto("/");
     const buttons = page.locator("main .mantine-Button-root");
-    await expect(buttons).toHaveCount(6);
+    await expect(buttons).toHaveCount(7);
     for (const button of await buttons.all()) {
       const bounds = await button.evaluate((element) => {
         const button = element.getBoundingClientRect();

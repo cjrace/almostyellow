@@ -18,6 +18,7 @@ import {
   IconGlass,
   IconMovie,
   IconHome,
+  IconTool,
 } from "@tabler/icons-react";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
@@ -34,6 +35,7 @@ interface HeaderProps {
   game?: boolean; // Back button for our games pages
   whiskyJournal?: boolean; // Back button for our whisky journal pages
   filmList?: boolean; // Back button for our film list pages
+  tools?: boolean; // Back button for our tools pages
   homeOnly?: boolean; // Just show the home button
 }
 
@@ -44,10 +46,11 @@ export default function Header({
   game = false,
   whiskyJournal = false,
   filmList = false,
+  tools = false,
   homeOnly = false,
 }: HeaderProps) {
   const mainJustify =
-    noCrumbs && !game && !whiskyJournal && !filmList && !homeOnly
+    noCrumbs && !game && !whiskyJournal && !filmList && !tools && !homeOnly
       ? "flex-end"
       : "space-between"; // This keeps the icon buttons on the right when there's no crumbs
   const { setColorScheme } = useMantineColorScheme();
@@ -137,6 +140,22 @@ export default function Header({
             >
               <IconChevronLeft />
               <IconMovie />
+            </ActionIcon>
+          </Tooltip>
+        )}
+
+        {tools && (
+          <Tooltip label="Back to our tools list" openDelay={250}>
+            <ActionIcon
+              variant="default"
+              component={Link}
+              href="/tools"
+              size="xl"
+              aria-label="Back to our tools list"
+              style={{ width: 70 }}
+            >
+              <IconChevronLeft />
+              <IconTool />
             </ActionIcon>
           </Tooltip>
         )}

@@ -133,6 +133,11 @@ test.describe("A visitor on a phone", { tag: "@phone" }, () => {
       "Uno",
     ]);
 
+    await expect(cards.filter({ hasText: "Experimental" })).toHaveCount(1);
+    await expect(cards.filter({ hasText: "Experimental" })).toContainText(
+      "Quiz buzzer",
+    );
+
     for (const scheme of ["dark", "light"]) {
       await page.evaluate((colourScheme) => {
         document.documentElement.setAttribute(
