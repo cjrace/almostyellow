@@ -1,18 +1,32 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { IconInfoCircle } from "@tabler/icons-react";
 import {
+  ActionIcon,
   Button,
   Group,
   Modal,
   Text,
   Title,
+  Tooltip,
   VisuallyHidden,
 } from "@mantine/core";
 import { isWild, type Card, type Colour } from "@/unogame/engine/cards";
-import type { PrivateView, PublicView } from "@/unogame/engine/views";
+import type {
+  PrivateView,
+  PublicEvent,
+  PublicView,
+} from "@/unogame/engine/views";
+import { tableAlerts, type TableAlert } from "@/unogame/alerts";
 import { colourNames } from "@/unogame/cards";
 import { UnoCard } from "@/components/unocard";
+import {
+  DrawReveal,
+  FlyingCard,
+  reducedMotion,
+  UnoAlert,
+} from "@/components/unoeffects";
 import UnoColourPicker from "@/components/unocolourpicker";
 import UnoHand from "@/components/unohand";
 import UnoOpponents from "@/components/unoopponents";
@@ -28,6 +42,12 @@ interface UnoTableProps {
   scores: Record<string, number>;
   // Read out by screen readers whenever it changes
   announcement: string;
+  // What the latest move did, for the pop-ups. The version says when it is new.
+  events: PublicEvent[];
+  version: number;
+  // The clock, so the catch button can wait out the protected time
+  now: number;
+  onInstructions: () => void;
   onPlay: (
     cardId: number,
     colour: Colour | undefined,
@@ -49,6 +69,10 @@ export default function UnoTable({
   names,
   scores,
   announcement,
+  events,
+  version,
+  now,
+  onInstructions,
   onPlay,
   onDraw,
   onKeep,
@@ -60,6 +84,61 @@ export default function UnoTable({
   const [declareUno, setDeclareUno] = useState(false);
   const [scoresOpen, setScoresOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const [flight, setFlight] = useState<{ card: Card; from: DOMRect } | null>(
+    null,
+  );
+  const [reveals, setReveals] = useState<Card[]>([]);
+  const [alerts, setAlerts] = useState<TableAlert[] | null>(null);
+  const seenVersionRef = useRef<number | null>(null);
+  const alertTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const handIdsRef = useRef<Set<number> | null>(null);
+
+  // Pop-ups for the latest move, but not for whatever was already there when
+  // this page opened
+  useEffect(() => {
+    if (seenVersionRef.current === null || seenVersionRef.current === version) {
+      seenVersionRef.current = version;
+      return;
+    }
+    seenVersionRef.current = version;
+    const next = tableAlerts(events, names, me);
+    if (!next.length) return;
+    clearTimeout(alertTimerRef.current);
+    queueMicrotask(() => {
+      setAlerts(next);
+    });
+    alertTimerRef.current = setTimeout(() => {
+      setAlerts(null);
+    }, 2200);
+  }, [version, events, names, me]);
+  useEffect(
+    () => () => {
+      clearTimeout(alertTimerRef.current);
+    },
+    [],
+  );
+
+  // Cards that arrive in your hand after the deal are drawn, so they are
+  // turned over one at a time
+  useEffect(() => {
+    const ids = new Set(mine.hand.map((c) => c.id));
+    const before = handIdsRef.current;
+    handIdsRef.current = ids;
+    if (!before || before.size === 0 || reducedMotion()) return;
+    const added = mine.hand.filter((c) => !before.has(c.id));
+    if (added.length === 0 || added.length > 4) return;
+    queueMicrotask(() => {
+      setReveals((current) => [...current, ...added]);
+    });
+  }, [mine.hand]);
+  const revealed = useCallback(() => {
+    setReveals((current) => current.slice(1));
+  }, []);
+  const landed = useCallback(() => {
+    setFlight(null);
+  }, []);
 
   const playing = view.phase === "playing";
   const myTurn = playing && view.currentPlayer === me;
@@ -90,6 +169,9 @@ export default function UnoTable({
         ? "Play the card you drew, or keep it."
         : "";
   const canDraw = drawReason === "";
+  // Nothing in your hand can be played, so the only move is to draw
+  const mustDraw =
+    canDraw && !view.drawPending && mine.playableIds.length === 0;
 
   const order = view.players.map((p) => p.id);
   const mineAt = order.indexOf(me);
@@ -101,6 +183,8 @@ export default function UnoTable({
     }),
   );
   const catchable = view.uno && view.uno.player !== me ? view.uno.player : null;
+  // Catching only works once the player's protected time is up
+  const canCatch = !!view.uno && !!catchable && now >= view.uno.protectedUntil;
   const handSize = mine.hand.length;
   // After playing down to one card without saying it, Uno can still be said
   // until the next draw or play. With two cards it can be said in advance.
@@ -118,6 +202,10 @@ export default function UnoTable({
         : "Saying Uno only matters when you play down to one card.";
 
   const play = (card: Card, colour?: Colour) => {
+    const from = document
+      .querySelector(`[data-uno-card="${String(card.id)}"]`)
+      ?.getBoundingClientRect();
+    if (from && !reducedMotion()) setFlight({ card, from });
     onPlay(card.id, colour, declareUno);
     setDeclareUno(false);
     setWild(null);
@@ -140,6 +228,8 @@ export default function UnoTable({
               ref={headingRef}
               tabIndex={-1}
               className={styles.heading}
+              data-myturn={myTurn ? "" : undefined}
+              data-waiting={playing && !myTurn ? "" : undefined}
             >
               {heading}
             </Title>
@@ -155,15 +245,27 @@ export default function UnoTable({
               {view.direction === 1 ? "clockwise" : "anticlockwise"}
             </Text>
           </div>
-          <Button
-            variant="default"
-            style={{ flexShrink: 0 }}
-            onClick={() => {
-              setScoresOpen(true);
-            }}
-          >
-            Scores
-          </Button>
+          <Group gap={4} wrap="nowrap" style={{ flexShrink: 0 }}>
+            <Tooltip label="Game instructions" openDelay={250} position="left">
+              <ActionIcon
+                variant="subtle"
+                size="lg"
+                aria-label="Open game instructions modal"
+                onClick={onInstructions}
+              >
+                <IconInfoCircle />
+              </ActionIcon>
+            </Tooltip>
+            <Button
+              variant="default"
+              size="compact-sm"
+              onClick={() => {
+                setScoresOpen(true);
+              }}
+            >
+              Scores
+            </Button>
+          </Group>
         </Group>
 
         <VisuallyHidden>
@@ -178,10 +280,11 @@ export default function UnoTable({
 
         <div className={styles.table}>
           <div className={styles.piles}>
-            <div className={styles.pile}>
+            <div className={styles.pile} data-uno-pile="draw">
               <button
                 type="button"
                 className={styles.pileButton}
+                data-attention={mustDraw ? "" : undefined}
                 aria-disabled={!canDraw}
                 aria-label={`Draw pile, ${String(view.stockCount)} cards${canDraw ? ", draw a card" : ""}`}
                 aria-describedby={canDraw ? undefined : "uno_draw_reason"}
@@ -195,8 +298,10 @@ export default function UnoTable({
                 {view.stockCount}
               </span>
             </div>
-            <div className={styles.pile}>
-              <UnoCard card={view.top} />
+            <div className={styles.pile} data-uno-pile="discard">
+              <div className={styles.landed} key={view.top.id}>
+                <UnoCard card={view.top} />
+              </div>
               {/* The colour in play, as a shape as well as a colour, so it can be
                   seen at a glance after a wild */}
               <span
@@ -225,9 +330,9 @@ export default function UnoTable({
                 Keep the card I drew
               </Button>
             ) : null}
-            {catchable ? (
+            {canCatch && catchable ? (
               <Button variant="default" onClick={onCatch}>
-                Catch {names[catchable]} for Uno
+                Call out {names[catchable]} for not saying Uno
               </Button>
             ) : null}
             {/* Stays focusable when it cannot be used, so its reason can be
@@ -277,6 +382,22 @@ export default function UnoTable({
           }}
         />
       </div>
+
+      {alerts ? (
+        <UnoAlert
+          alerts={alerts}
+          onDismiss={() => {
+            clearTimeout(alertTimerRef.current);
+            setAlerts(null);
+          }}
+        />
+      ) : null}
+      {flight ? (
+        <FlyingCard card={flight.card} from={flight.from} onDone={landed} />
+      ) : null}
+      {reveals[0] ? (
+        <DrawReveal key={reveals[0].id} card={reveals[0]} onDone={revealed} />
+      ) : null}
 
       <Modal.Root
         opened={scoresOpen}

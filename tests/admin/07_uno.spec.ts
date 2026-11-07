@@ -731,7 +731,9 @@ test.describe("Uno durable scoring", () => {
           await signIn(page);
           await page.goto("/games/uno");
           await page.getByRole("button", { name: "Create a room" }).click();
-          const heading = page.getByRole("heading", { name: /^Room / });
+          const heading = page.getByRole("button", {
+            name: /^Room \w{4}, options$/,
+          });
           await expect(heading).toBeVisible();
           code = (await heading.innerText()).slice(5);
           await page.getByLabel("Your player name").fill("Cam");

@@ -70,26 +70,9 @@
   white-space: nowrap;
 }
 
-/* The room code, big enough to read out across a table */
-.bigCode {
-  font-family: var(--mantine-font-family-monospace);
-  font-size: 2.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  line-height: 1.1;
-}
-
-/* The host's room menu sits beside the room code, which is a small badge */
+/* The room code and its menu are one button, top right */
 .roomRow {
   flex-wrap: nowrap;
-}
-
-.roomRow > h2 {
-  --title-fz: var(--mantine-font-size-sm) !important;
-  padding: 1px var(--mantine-spacing-sm);
-  border: 1px solid var(--mantine-color-default-border);
-  border-radius: var(--mantine-radius-xl);
-  white-space: nowrap;
 }
 
 /* The player whose turn it is also gets a thicker border and the word
@@ -353,25 +336,8 @@
     min-width: 0;
   }
 
-  /* The room code, then its buttons, one under the other */
+  /* The room button fills the side column */
   .roomRow {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 4px;
-  }
-
-  /* The room code is a small badge */
-  .roomRow > h2 {
-    --title-fz: var(--mantine-font-size-sm) !important;
-    align-self: flex-start;
-    padding: 1px var(--mantine-spacing-sm);
-    border: 1px solid var(--mantine-color-default-border);
-    border-radius: var(--mantine-radius-xl);
-    white-space: nowrap;
-  }
-
-  .roomRow > div {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
@@ -400,7 +366,7 @@
     row-gap: 0;
   }
 
-  div.head > div {
+  div.head > div:first-child {
     display: contents;
   }
 
@@ -410,7 +376,7 @@
     --title-fz: var(--mantine-font-size-lg) !important;
   }
 
-  .head > button {
+  .head > div:last-child {
     grid-column: 2;
     grid-row: 1;
   }
@@ -534,8 +500,8 @@
     gap: 4px;
   }
 
-  .roomRow > div > button,
-  .head > button {
+  .roomRow button,
+  .head button {
     --button-height: 1.625rem !important;
     --button-fz: var(--mantine-font-size-xs) !important;
     --button-padding-x: var(--mantine-spacing-xs) !important;
@@ -556,5 +522,145 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/* Whose turn it is. Your turn gets a thick outline and the words "Your turn";
+   everyone else's turn is quieter. */
+.heading[data-myturn] {
+  display: inline-block;
+  padding: 2px var(--mantine-spacing-sm);
+  border: 3px solid var(--mantine-color-orange-6);
+  border-radius: var(--mantine-radius-md);
+}
+
+.heading[data-waiting] {
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+/* The draw pile can be clicked: a pointer, a lift and a slight grey */
+.pileButton[aria-disabled="false"] {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.pileButton[aria-disabled="false"] img {
+  filter: brightness(0.85);
+}
+
+.pileButton[aria-disabled="false"]:hover {
+  transform: translateY(-6px);
+}
+
+/* Nothing can be played, so drawing is the move */
+.pileButton[data-attention] {
+  animation: drawPulse 1.2s ease-out infinite;
+}
+
+@keyframes drawPulse {
+  from {
+    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+  }
+
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+/* A card landing on the discard pile */
+.landed {
+  height: 100%;
+  animation: landOnPile 0.3s ease-out;
+}
+
+@keyframes landOnPile {
+  from {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* What the last move did: dimmed table, a box in the middle (special cards)
+   or a short banner at the top (Uno calls) */
+.alertBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 55%);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.alertTop {
+  position: fixed;
+  inset-inline: 0;
+  top: 4.5rem;
+  z-index: 400;
+  display: flex;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.alertBox {
+  max-width: min(90vw, 28rem);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.flying {
+  position: fixed;
+  z-index: 300;
+  pointer-events: none;
+}
+
+.reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  perspective: 900px;
+}
+
+.revealCard {
+  position: fixed;
+  transform-style: preserve-3d;
+}
+
+.revealBack,
+.revealFront {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.revealFront {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pileButton[data-attention],
+  .landed,
+  .alertBackdrop,
+  .alertTop {
+    animation: none;
+  }
+
+  .pileButton[aria-disabled="false"] {
+    transition: none;
   }
 }

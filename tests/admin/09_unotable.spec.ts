@@ -76,7 +76,7 @@ async function openTable(
   await signIn(page);
   await page.goto("/games/uno");
   await page.getByRole("button", { name: "Create a room" }).click();
-  const heading = page.getByRole("heading", { name: /^Room / });
+  const heading = page.getByRole("button", { name: /^Room \w{4}, options$/ });
   await expect(heading).toBeVisible();
   const code = (await heading.innerText()).slice(5);
   await page.getByLabel("Your player name").fill("Cam");
@@ -208,9 +208,11 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
               p.textContent.startsWith("Colour"),
             ),
             scores: button("Scores"),
-            room: button("Room"),
+            room: [...document.querySelectorAll("button")].find((b) =>
+              b.textContent.startsWith("Room"),
+            ),
             catchUno: [...document.querySelectorAll("button")].find((b) =>
-              b.textContent.startsWith("Catch"),
+              b.textContent.startsWith("Call out"),
             ),
             sayUno: spots.unoButton,
             drawPile: spots.drawPile ?? undefined,
@@ -424,7 +426,9 @@ test.describe("Looking at the Uno table in a real room", () => {
         name: "Laura, 1 card, can be caught for Uno",
       }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Catch Laura for Uno" }).click();
+    await page
+      .getByRole("button", { name: "Call out Laura for not saying Uno" })
+      .click();
     await expect(
       page.getByRole("status").filter({ hasText: "caught" }),
     ).toContainText(
@@ -480,7 +484,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     page,
   }) => {
     await openTable(page, "two-players");
-    const menu = page.getByRole("button", { name: "Room options" });
+    const menu = page.getByRole("button", { name: /^Room \w{4}, options$/ });
     await test.step("Given the table, the room buttons are folded into a menu", async () => {
       await expect(menu).toBeVisible();
       await expect(page.getByRole("button", { name: "End room" })).toHaveCount(

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Title } from "@mantine/core";
 import Header from "@/components/header";
 import Uno from "@/components/uno";
 import { firebaseClientConfig, getSession } from "@/auth";
@@ -26,7 +27,7 @@ export default async function UnoPage({
   const session = await getSession();
   return (
     <div className={layout.screen}>
-      <Header noCrumbs game />
+      <Header noCrumbs game title={<Title>Uno</Title>} />
       <main id="main-content">
         <Uno
           config={firebaseClientConfig()}

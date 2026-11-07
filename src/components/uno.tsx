@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconChevronDown, IconInfoCircle } from "@tabler/icons-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import {
-  ActionIcon,
   Alert,
   Anchor,
   Button,
@@ -25,7 +18,6 @@ import {
   Text,
   TextInput,
   Title,
-  Tooltip,
 } from "@mantine/core";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
@@ -41,6 +33,7 @@ import { sendUno, watchUnoHand, watchUnoRoom } from "@/unogame/client";
 import type { Colour } from "@/unogame/engine/cards";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/unogame/engine/round";
 import type { UnoHand, UnoRoom } from "@/unogame/room";
+import playConfetti from "@/components/playconfetti";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
 import layout from "@/styles/cardgame.module.css";
@@ -66,12 +59,6 @@ export default function Uno({
   host: boolean;
 }) {
   const router = useRouter();
-  // Whether this browser can hand an invite to the phone's share sheet
-  const canShare = useSyncExternalStore(
-    () => () => undefined,
-    () => typeof navigator.share === "function",
-    () => false,
-  );
   const [code, setCode] = useState(initialCode.toUpperCase());
   const [name, setName] = useState("");
   const [joinView, setJoinView] = useState<"choose" | "code" | "invite">(
@@ -96,10 +83,13 @@ export default function Uno({
   const [camId, setCamId] = useState("");
   const [playedOn, setPlayedOn] = useState("");
   const [instructions, setInstructions] = useState(false);
+  const [winOpen, setWinOpen] = useState(false);
   const [now, setNow] = useState(0);
   const flightRef = useRef(false);
   const createIdRef = useRef<string | null>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
+  const roomRef = useRef<HTMLButtonElement>(null);
+  const focusRoomRef = useRef(false);
+  const prevStageRef = useRef<string | undefined>(undefined);
   const nameRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
@@ -134,7 +124,7 @@ export default function Uno({
     window.addEventListener("offline", update);
     const timer = setInterval(() => {
       setNow(Date.now());
-    }, 1000);
+    }, 500);
     return () => {
       clearInterval(timer);
       window.removeEventListener("online", update);
@@ -212,6 +202,47 @@ export default function Uno({
     };
   }, [trackerSaved, focusHistory]);
 
+  // Once the room is shown, focus goes to its badge
+  useEffect(() => {
+    if (!active || !focusRoomRef.current) return;
+    focusRoomRef.current = false;
+    roomRef.current?.focus();
+  }, [active]);
+
+  // Notices such as "Join link copied" go after a few seconds, and when the
+  // game moves on
+  const stage = room?.stage;
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => {
+      setNotice("");
+    }, 3000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [notice]);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setNotice("");
+    });
+  }, [stage]);
+
+  // A round won while this page was open ends with confetti and a modal. A
+  // reload into a finished room shows neither.
+  useEffect(() => {
+    const finishedNow =
+      prevStageRef.current === "playing" &&
+      stage === "finished" &&
+      !!playerId &&
+      room?.view?.outcome?.type === "win";
+    prevStageRef.current = stage;
+    if (!finishedNow) return;
+    queueMicrotask(() => {
+      setWinOpen(true);
+    });
+    playConfetti();
+  }, [stage, room?.view?.outcome?.type, playerId]);
+
   const connected = online && !cached && !ended;
   const announcement = useMemo(() => {
     if (!room?.view || !playerId) return "";
@@ -225,9 +256,7 @@ export default function Uno({
     setPlayerId(next.playerId);
     setHosting(next.hosting);
     window.history.replaceState(null, "", `?room=${next.code}`);
-    requestAnimationFrame(() => {
-      titleRef.current?.focus();
-    });
+    focusRoomRef.current = true;
   }
 
   async function run(operation: () => Promise<void>) {
@@ -337,18 +366,70 @@ export default function Uno({
     setFocusHistory(true);
   }
 
-  // While the table shows, the host's room buttons fold into one menu, to
-  // leave room for the cards
-  const compactRoom = tableShown && hosting && !ended;
-  const shareInvite = () => {
-    void navigator
-      .share({
-        title: "Join my game of Uno",
-        url: `${location.origin}/games/uno?room=${active}`,
-      })
-      .catch(() => {
-        // Cancelling the share sheet is not an error
-      });
+  // Start / play again and save to tracker, shared by the lobby and the win
+  // modal so they cannot drift apart
+  const roundActions = (inModal = false) => {
+    if (!room) return null;
+    const reasonId = inModal ? "uno_start_reason_modal" : "uno_start_reason";
+    return (
+      <Stack gap="sm">
+        {hosting ? (
+          <Stack gap={4}>
+            <Button
+              disabled={
+                busy ||
+                !connected ||
+                players.length < MIN_PLAYERS ||
+                players.length > MAX_PLAYERS
+              }
+              aria-describedby={reasonId}
+              onClick={() => {
+                setWinOpen(false);
+                void run(() => control("start"));
+              }}
+            >
+              {room.stage === "lobby" ? "Start the round" : "Play again"}
+            </Button>
+            <Text id={reasonId} size="sm" c="dimmed">
+              {players.length < MIN_PLAYERS
+                ? `Wait for at least ${String(MIN_PLAYERS)} players.`
+                : `${String(players.length)} players are ready.`}
+            </Text>
+          </Stack>
+        ) : (
+          <Text>Waiting for the host to start the round.</Text>
+        )}
+        {savable &&
+          (room.trackerGameId ? (
+            <Group gap="xs">
+              <Button variant="default" disabled>
+                Saved to tracker
+              </Button>
+              <Anchor
+                component={Link}
+                href="/games/uno-tracker/history"
+                ref={historyRef}
+              >
+                View in tracker history
+              </Anchor>
+            </Group>
+          ) : (
+            <Button
+              ref={saveRef}
+              variant="default"
+              disabled={busy || !connected}
+              onClick={() => {
+                setCamId(players[0].id);
+                setPlayedOn(new Date().toLocaleDateString("en-CA"));
+                if (inModal) setWinOpen(false);
+                setSaving(true);
+              }}
+            >
+              Save to tracker
+            </Button>
+          ))}
+      </Stack>
+    );
   };
   const copyLink = () =>
     void run(async () => {
@@ -376,32 +457,6 @@ export default function Uno({
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
       <Stack gap="md" className={tableShown ? table.pageHead : undefined}>
-        <Group gap="xs">
-          <Title
-            fz={
-              tableShown
-                ? "var(--mantine-h4-font-size)"
-                : {
-                    base: "var(--mantine-h2-font-size)",
-                    sm: "var(--mantine-h1-font-size)",
-                  }
-            }
-          >
-            Uno
-          </Title>
-          <Tooltip label="Game instructions" openDelay={250} position="right">
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              aria-label="Open game instructions modal"
-              onClick={() => {
-                setInstructions(true);
-              }}
-            >
-              <IconInfoCircle />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
           <Alert color="red" role="alert">
@@ -519,90 +574,46 @@ export default function Uno({
 
         {active && (
           <Group
-            justify="space-between"
+            justify="flex-end"
             align="center"
-            wrap="wrap"
+            wrap="nowrap"
             className={tableShown ? table.roomRow : undefined}
           >
-            <Title ref={titleRef} tabIndex={-1} order={2} size="h3">
-              Room {active}
-            </Title>
-            {compactRoom ? (
-              <Menu position="bottom-end" withinPortal>
-                <Menu.Target>
-                  <Button
-                    size="compact-sm"
-                    variant="default"
-                    aria-label="Room options"
-                    rightSection={<IconChevronDown size={14} />}
-                    ref={(button) => {
-                      // The end round, end room and leave dialogs each return focus to their
-                      // own ref, so all three point at this one button
-                      roundRef.current = button;
-                      endRef.current = button;
-                      leaveRef.current = button;
-                    }}
-                  >
-                    Room
-                  </Button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item onClick={copyLink}>Copy join link</Menu.Item>
-                  {room.stage === "playing" && (
-                    <Menu.Item onClick={askEndRound}>End round</Menu.Item>
-                  )}
-                  <Menu.Item color="red" onClick={askEndRoom}>
-                    End room
-                  </Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item disabled={busy} onClick={askLeave}>
-                    Leave game
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            ) : (
-              <Group gap="xs">
-                {hosting && room && !ended && (
-                  <>
-                    <Button
-                      size="compact-sm"
-                      variant="default"
-                      onClick={copyLink}
-                    >
-                      Copy join link
-                    </Button>
-                    {room.stage === "playing" && (
-                      <Button
-                        size="compact-sm"
-                        ref={roundRef}
-                        variant="default"
-                        onClick={askEndRound}
-                      >
-                        End round
-                      </Button>
-                    )}
-                    <Button
-                      size="compact-sm"
-                      ref={endRef}
-                      color="red"
-                      variant="default"
-                      onClick={askEndRoom}
-                    >
-                      End room
-                    </Button>
-                  </>
-                )}
+            <Menu position="bottom-end" withinPortal>
+              <Menu.Target>
                 <Button
                   size="compact-sm"
                   variant="default"
-                  ref={leaveRef}
-                  disabled={busy}
-                  onClick={askLeave}
+                  aria-label={`Room ${active}, options`}
+                  rightSection={<IconChevronDown size={14} />}
+                  ref={(button) => {
+                    // The end round, end room and leave dialogs each return focus to their
+                    // own ref, so all of them point at this one button
+                    roomRef.current = button;
+                    roundRef.current = button;
+                    endRef.current = button;
+                    leaveRef.current = button;
+                  }}
                 >
-                  Leave game
+                  Room {active}
                 </Button>
-              </Group>
-            )}
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item onClick={copyLink}>Copy join link</Menu.Item>
+                {hosting && room && !ended && room.stage === "playing" && (
+                  <Menu.Item onClick={askEndRound}>End round</Menu.Item>
+                )}
+                {hosting && room && !ended && (
+                  <Menu.Item color="red" onClick={askEndRoom}>
+                    End room
+                  </Menu.Item>
+                )}
+                <Menu.Divider />
+                <Menu.Item disabled={busy} onClick={askLeave}>
+                  Leave game
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
           </Group>
         )}
 
@@ -642,26 +653,9 @@ export default function Uno({
 
         {room && !ended && room.stage !== "playing" && playerId && (
           <Stack gap="sm">
-            <Title order={3}>
+            <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
             </Title>
-            {room.stage === "lobby" && (
-              <Stack gap={4} align="flex-start">
-                <Text size="sm" c="dimmed">
-                  Room code, to read out or share
-                </Text>
-                {/* The same code is in the heading above, so this is for the
-                    eyes only */}
-                <Text className={table.bigCode} aria-hidden="true">
-                  {active}
-                </Text>
-                {canShare && (
-                  <Button variant="default" onClick={shareInvite}>
-                    Share invite
-                  </Button>
-                )}
-              </Stack>
-            )}
             {room.stage === "finished" && room.view?.outcome && (
               <Text role="status">
                 {room.view.outcome.type === "win"
@@ -669,57 +663,6 @@ export default function Uno({
                   : room.view.outcome.type === "abandoned"
                     ? "The host ended the round."
                     : "Nobody could move, so nobody won."}
-              </Text>
-            )}
-            {hosting ? (
-              <Button
-                disabled={
-                  busy ||
-                  !connected ||
-                  players.length < MIN_PLAYERS ||
-                  players.length > MAX_PLAYERS
-                }
-                aria-describedby="uno_start_reason"
-                onClick={() => void run(() => control("start"))}
-              >
-                {room.stage === "lobby" ? "Start the round" : "Play again"}
-              </Button>
-            ) : (
-              <Text>Waiting for the host to start the round.</Text>
-            )}
-            {savable &&
-              (room.trackerGameId ? (
-                <Group gap="xs">
-                  <Button variant="default" disabled>
-                    Saved to tracker
-                  </Button>
-                  <Anchor
-                    component={Link}
-                    href="/games/uno-tracker/history"
-                    ref={historyRef}
-                  >
-                    View in tracker history
-                  </Anchor>
-                </Group>
-              ) : (
-                <Button
-                  ref={saveRef}
-                  variant="default"
-                  disabled={busy || !connected}
-                  onClick={() => {
-                    setCamId(players[0].id);
-                    setPlayedOn(new Date().toLocaleDateString("en-CA"));
-                    setSaving(true);
-                  }}
-                >
-                  Save to tracker
-                </Button>
-              ))}
-            {hosting && (
-              <Text id="uno_start_reason" size="sm" c="dimmed">
-                {players.length < MIN_PLAYERS
-                  ? `Wait for at least ${String(MIN_PLAYERS)} players.`
-                  : `${String(players.length)} players are ready.`}
               </Text>
             )}
             <Title order={3} size="h4">
@@ -758,6 +701,8 @@ export default function Uno({
                 }))}
               />
             )}
+            {/* The main actions are last, where they are easy to reach */}
+            {roundActions()}
           </Stack>
         )}
 
@@ -776,6 +721,9 @@ export default function Uno({
               names={room.names}
               scores={room.scores}
               announcement={announcement}
+              events={room.events}
+              version={room.version}
+              now={now}
               onPlay={(cardId, colour: Colour | undefined, declareUno) => {
                 void play("play", {
                   cardId,
@@ -787,6 +735,9 @@ export default function Uno({
               onKeep={() => void play("keep")}
               onCatch={() => void play("catch")}
               onSayUno={() => void play("sayUno")}
+              onInstructions={() => {
+                setInstructions(true);
+              }}
             />
           ) : (
             <Text role="status">Dealing the cards…</Text>
@@ -939,6 +890,46 @@ export default function Uno({
           >
             End room
           </Button>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={winOpen}
+        onClose={() => {
+          setWinOpen(false);
+        }}
+        centered
+        title={
+          room?.view?.outcome?.type === "win"
+            ? room.view.outcome.winner === playerId
+              ? "You won the round!"
+              : `${room.names[room.view.outcome.winner] ?? "A player"} won the round!`
+            : "Round over"
+        }
+        closeButtonProps={{ "aria-label": "Close and see the lobby" }}
+      >
+        <Stack gap="md" pt="xs">
+          {/* After the first round of the room, show how everyone stands */}
+          {room &&
+            Object.values(room.scores).reduce((a, b) => a + b, 0) > 1 && (
+              <UnoScoreboard
+                players={room.seats.map((id) => ({
+                  id,
+                  name: room.names[id] ?? "A player",
+                  wins: room.scores[id] ?? 0,
+                }))}
+              />
+            )}
+          {roundActions(true)}
+          {!hosting && (
+            <Button
+              variant="subtle"
+              onClick={() => {
+                setWinOpen(false);
+              }}
+            >
+              Close
+            </Button>
+          )}
         </Stack>
       </Modal>
       <Modal

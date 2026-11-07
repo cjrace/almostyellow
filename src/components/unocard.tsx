@@ -47,6 +47,7 @@ export function UnoCardButton({
   return (
     <UnstyledButton
       className={styles.cardButton}
+      data-uno-card={card.id}
       data-playable={playable ? "" : undefined}
       data-drawn={justDrawn ? "" : undefined}
       aria-disabled={!playable}
