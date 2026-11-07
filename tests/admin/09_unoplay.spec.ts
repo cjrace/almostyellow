@@ -335,6 +335,78 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
     ).toBeVisible();
     await expect(guestPage.getByLabel("Your name")).toHaveCount(0);
   });
+
+  test("The host can share an invite from the lobby, and cancelling is not an error", async ({
+    page,
+  }) => {
+    // Browsers without a share sheet do not show the button, so give this one
+    // a stand-in that records what it was asked to share
+    await page.addInitScript(() => {
+      const shared: { title?: string; url?: string }[] = [];
+      const state = { cancel: false };
+      Object.assign(window, { shared, state });
+      Object.defineProperty(navigator, "share", {
+        configurable: true,
+        value: (data: { title?: string; url?: string }) => {
+          shared.push(data);
+          return state.cancel
+            ? Promise.reject(new DOMException("Cancelled", "AbortError"))
+            : Promise.resolve();
+        },
+      });
+    });
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    let code = "";
+
+    await test.step("Given a host in the lobby of a new room", async () => {
+      await signIn(page);
+      await page.goto("/games/uno");
+      await page.getByRole("button", { name: "Create a room" }).click();
+      const heading = page.getByRole("heading", { name: /^Room / });
+      await expect(heading).toBeVisible();
+      code = (await heading.innerText()).slice(5);
+      await page.getByLabel("Your player name").fill("Cam");
+      await page.getByRole("button", { name: "Join as a player" }).click();
+      await expect(
+        page.getByRole("heading", { name: "Waiting to start" }),
+      ).toBeVisible();
+    });
+
+    await test.step("When they share the invite, the share sheet gets the join link", async () => {
+      await page.getByRole("button", { name: "Share invite" }).click();
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => (window as never as { shared: unknown[] }).shared,
+          ),
+        )
+        .toEqual([
+          {
+            title: "Join my game of Uno",
+            url: `http://localhost:3000/games/uno?room=${code}`,
+          },
+        ]);
+    });
+
+    await test.step("Then cancelling the share sheet leaves the lobby as it was", async () => {
+      await page.evaluate(() => {
+        (window as never as { state: { cancel: boolean } }).state.cancel = true;
+      });
+      await page.getByRole("button", { name: "Share invite" }).click();
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => (window as never as { shared: unknown[] }).shared.length,
+          ),
+        )
+        .toBe(2);
+      await expect(
+        page.getByRole("button", { name: "Share invite" }),
+      ).toBeEnabled();
+      expect(errors).toEqual([]);
+    });
+  });
 });
 
 for (const scheme of schemes) {

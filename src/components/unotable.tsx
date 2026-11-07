@@ -260,7 +260,7 @@ export default function UnoTable({
           size="sm"
           c="dimmed"
           id="uno_declare_reason"
-          className={`${styles.reason} ${styles.hint}`}
+          className={`${styles.reason} ${styles.visuallyHidden}`}
         >
           {unoReason}
         </Text>

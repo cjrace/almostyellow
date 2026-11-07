@@ -58,9 +58,9 @@
   display: none;
 }
 
-/* The Uno hint stays as the button's description for screen readers; it is
-   not worth the space on screen */
-.hint {
+/* Text that stays as a button's description for screen readers but is not
+   worth the space on screen */
+.visuallyHidden {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -493,17 +493,6 @@
   .controls > button :global(.mantine-Button-label) {
     white-space: normal;
     text-align: center;
-  }
-
-  /* The Uno hint is still read out as the button's description */
-  .hint {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   /* Two lines at most, so a wider font cannot push the hand down. The whole
