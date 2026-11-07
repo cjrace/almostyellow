@@ -92,3 +92,53 @@ label[data-active] .redSuit {
     margin-top: var(--mantine-spacing-md);
   }
 }
+
+/* A phone held sideways: short and wide. The title and credit share a line,
+   the card goes beside the buttons as on a desktop, and the margins shrink so
+   the game fits without scrolling */
+@media (orientation: landscape) and (max-height: 500px) {
+  .heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--mantine-spacing-md);
+  }
+
+  .credit {
+    margin-top: 0;
+  }
+
+  .board {
+    margin-top: var(--mantine-spacing-xs);
+  }
+
+  .sideBySide {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(22rem, 50%);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    max-width: 1100px;
+  }
+
+  .sideBySide > .table {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .controls {
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* The page title above a game, smaller and with less space under it on a
+   phone held sideways */
+  .pageTitle {
+    font-size: var(--mantine-h3-font-size);
+    margin-bottom: var(--mantine-spacing-xs);
+  }
+
+  /* Smaller buttons, still over 24px, so three fit beside a card */
+  .sideBySide .controls :global(.mantine-Button-root) {
+    --button-height: 2rem;
+    --button-fz: var(--mantine-font-size-sm);
+  }
+}

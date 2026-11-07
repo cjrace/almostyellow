@@ -153,13 +153,9 @@ const BoomBoomPirate = () => {
   const phoneColumns = totalRopes <= 8 ? 2 : 3;
 
   return (
-    <Box
-      p="md"
-      className={styles.game}
-      data-setup={!gameInitialized || undefined}
-    >
+    <Box className={styles.game} data-setup={!gameInitialized || undefined}>
       {!gameInitialized ? (
-        <Stack align="center">
+        <Stack align="center" className={styles.setup}>
           <NumberInput
             ref={setupRef}
             value={totalRopes}

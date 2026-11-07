@@ -16,6 +16,7 @@ export default function SnakesAndLaddersPage() {
 
       <main id="main-content">
         <Title
+          className={layout.pageTitle}
           fz={{
             base: "var(--mantine-h2-font-size)",
             sm: "var(--mantine-h1-font-size)",
