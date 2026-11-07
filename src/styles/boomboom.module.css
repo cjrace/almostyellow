@@ -69,6 +69,7 @@
    and the explosions are placed inside it */
 .game {
   position: relative;
+  padding: var(--mantine-spacing-md);
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -126,5 +127,26 @@
   .explosion,
   .flash {
     display: none;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .game {
+    padding: 0;
+  }
+
+  /* Each rope keeps its tap target, and the grid scrolls if they don't all fit */
+  .ropes {
+    --rope-cols: 6;
+    --rope-rows: var(--rope-rows-md);
+    min-height: 0;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* The number of ropes and the Start button side by side */
+  .setup {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
   }
 }

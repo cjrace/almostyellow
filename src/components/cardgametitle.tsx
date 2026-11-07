@@ -14,6 +14,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import styles from "@/styles/cardgame.module.css";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 interface CardGameTitleProps {
@@ -33,49 +34,51 @@ export default function CardGameTitle({
 
   return (
     <>
-      <Group gap="xs">
-        <Title
-          fz={{
-            base: "var(--mantine-h2-font-size)",
-            sm: "var(--mantine-h1-font-size)",
-          }}
-        >
-          {title}
-        </Title>
-        <Tooltip
-          label="Game instructions"
-          openDelay={250}
-          position="right"
-          offset={5}
-        >
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            aria-label="Open game instructions modal"
-            onClick={(event) => {
-              // Safari does not focus buttons on a tap; remember this opener.
-              event.currentTarget.focus();
-              setModalInstructionsOpened(true);
+      <div className={styles.heading}>
+        <Group gap="xs">
+          <Title
+            fz={{
+              base: "var(--mantine-h2-font-size)",
+              sm: "var(--mantine-h1-font-size)",
             }}
           >
-            <IconInfoCircle />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
-      <Text c="dimmed" mt={4}>
-        {creditLink ? (
-          <Anchor
-            href={creditLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="A Ben Palmer original (opens in new tab)"
+            {title}
+          </Title>
+          <Tooltip
+            label="Game instructions"
+            openDelay={250}
+            position="right"
+            offset={5}
           >
-            A Ben Palmer original
-          </Anchor>
-        ) : (
-          "A Ben Palmer original"
-        )}
-      </Text>
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open game instructions modal"
+              onClick={(event) => {
+                // Safari does not focus buttons on a tap; remember this opener.
+                event.currentTarget.focus();
+                setModalInstructionsOpened(true);
+              }}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        <Text c="dimmed" mt={4} className={styles.credit}>
+          {creditLink ? (
+            <Anchor
+              href={creditLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="A Ben Palmer original (opens in new tab)"
+            >
+              A Ben Palmer original
+            </Anchor>
+          ) : (
+            "A Ben Palmer original"
+          )}
+        </Text>
+      </div>
 
       {/* Built from parts so Modal.Title can name the dialog without the
           default header and close button */}

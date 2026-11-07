@@ -245,7 +245,12 @@ export default function Suits() {
         </div>
       ) : (
         <div className={`${layout.board} ${layout.wideTable} ${suits.board}`}>
-          <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Group
+            justify="space-between"
+            align="flex-start"
+            wrap="nowrap"
+            className={suits.head}
+          >
             {/* Long names wrap onto a second line at most, so the cards keep
                 their space on small phones */}
             <div style={{ minWidth: 0 }}>
@@ -288,11 +293,16 @@ export default function Suits() {
           </Group>
 
           {state.phase === "guessing" && isFinalTurn(state) && (
-            <Alert color="orange" title="Final turn counts double" py={6} />
+            <Alert
+              color="orange"
+              title="Final turn counts double"
+              py={6}
+              className={suits.alert}
+            />
           )}
 
           {/* The last turn stays on show while the next player picks */}
-          <Text id="suits_chosen" mih="1.5em">
+          <Text id="suits_chosen" mih="1.5em" className={suits.chosen}>
             {lastTurn && (
               <>
                 {lastTurn.player} picked <SuitLabel suit={lastTurn.suit} />
@@ -311,7 +321,7 @@ export default function Suits() {
             </div>
           </div>
 
-          <div aria-live="polite" id="suits_result">
+          <div aria-live="polite" id="suits_result" className={suits.result}>
             {lastTurn?.result.kind === "safe" ? (
               <Alert
                 color="green"
@@ -332,7 +342,7 @@ export default function Suits() {
 
           {/* Next to the buttons, so a thumb has less far to move */}
           {state.phase === "guessing" && (
-            <div ref={pickerRef}>
+            <div ref={pickerRef} className={suits.picker}>
               <Text
                 id="suits_choose"
                 fw={500}
@@ -373,7 +383,13 @@ export default function Suits() {
                 >
                   Reveal four cards
                 </Button>
-                <Text size="xs" c="dimmed" ta="center" visibleFrom="sm">
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  ta="center"
+                  visibleFrom="sm"
+                  className={suits.hint}
+                >
                   or press <Kbd size="xs">Ctrl</Kbd> +{" "}
                   <Kbd size="xs">Enter</Kbd>
                 </Text>

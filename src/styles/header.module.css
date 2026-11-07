@@ -1,0 +1,22 @@
+/* Space under the header row. A phone held sideways is short, so the games
+   that fill one screen keep every pixel they can */
+.bar {
+  margin-bottom: 20px;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .bar {
+    margin-bottom: 8px;
+  }
+
+  /* Slightly smaller buttons, still well over the 24px minimum */
+  .bar :global(.mantine-ActionIcon-root) {
+    --ai-size: 2.25rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 360px) {
+  .bar {
+    margin-bottom: 4px;
+  }
+}
