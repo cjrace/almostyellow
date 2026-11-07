@@ -192,22 +192,38 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
               return box.top < 0 || box.bottom > height + 1;
             })
             .map(([name]) => name);
-          // Nothing on the top rows sits on top of anything beside it
-          const rect = (el: Element | undefined) => el?.getBoundingClientRect();
-          const colour = [...document.querySelectorAll("p")].find((p) =>
-            p.textContent.startsWith("Colour"),
+          // Nothing sits on top of anything beside it
+          const button = (name: string) =>
+            [...document.querySelectorAll("button")].find(
+              (b) => b.textContent === name,
+            );
+          const named: Record<string, Element | undefined> = {
+            colour: [...document.querySelectorAll("p")].find((p) =>
+              p.textContent.startsWith("Colour"),
+            ),
+            scores: button("Scores"),
+            copy: button("Copy join link"),
+            endRoom: button("End room"),
+            leave: button("Leave game"),
+            sayUno: spots.unoButton,
+            drawPile: spots.drawPile ?? undefined,
+            hand: spots.hand ?? undefined,
+          };
+          const boxes = Object.entries(named).flatMap(([name, el]) =>
+            el ? [[name, el.getBoundingClientRect()] as const] : [],
           );
-          const scores = [...document.querySelectorAll("button")].find(
-            (b) => b.textContent === "Scores",
+          const overlaps = boxes.flatMap(([nameA, a], i) =>
+            boxes
+              .slice(i + 1)
+              .filter(
+                ([, b]) =>
+                  a.left < b.right &&
+                  b.left < a.right &&
+                  a.top < b.bottom &&
+                  b.top < a.bottom,
+              )
+              .map(([nameB]) => `${nameA} and ${nameB}`),
           );
-          const [a, b] = [rect(colour), rect(scores)];
-          const overlaps =
-            !!a &&
-            !!b &&
-            a.left < b.right &&
-            b.left < a.right &&
-            a.top < b.bottom &&
-            b.top < a.bottom;
           return {
             overlaps,
             off,
@@ -224,7 +240,7 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
         }),
       { message: label },
     )
-    .toEqual({ overlaps: false, off: [], sideways: 0, scrollsBy: 0 });
+    .toEqual({ overlaps: [], off: [], sideways: 0, scrollsBy: 0 });
 }
 
 test.describe("Looking at the Uno table in a real room", () => {

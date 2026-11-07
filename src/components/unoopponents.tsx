@@ -78,9 +78,22 @@ export default function UnoOpponents({
             <Group gap="0 xs" justify="space-between" aria-hidden="true">
               <Group gap={6} wrap="nowrap">
                 <IconCards size={18} />
-                <Text>{cards}</Text>
+                <Text>
+                  {player.cards}
+                  <span className={styles.unit}>
+                    {player.cards === 1 ? " card" : " cards"}
+                  </span>
+                </Text>
               </Group>
-              <Text size="sm" c="dimmed">
+              <Text
+                size="sm"
+                c="dimmed"
+                className={
+                  current || unoPlayer === player.id
+                    ? undefined
+                    : styles.waiting
+                }
+              >
                 {current
                   ? "Playing"
                   : unoPlayer === player.id

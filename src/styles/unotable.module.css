@@ -240,50 +240,61 @@
 }
 
 /* A phone on its side is wide but short, so the portrait stack would push the
-   hand below the fold. Here the table is three columns above the hand: who is
-   playing on the left, the piles in the middle and the buttons on the right,
-   with your hand across the whole width underneath. */
+   hand below the fold. Here the page has a side column down the left (the game
+   title, the room code and the room buttons) with the table beside it. In the
+   table, the turn, the other players and your buttons are on the left, the
+   piles on the right, and your hand runs across the bottom. */
 @media (orientation: landscape) and (max-height: 500px) {
+  .page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 9.5rem;
+    column-gap: var(--mantine-spacing-md);
+    align-items: start;
+    align-content: start;
+  }
+
+  /* The side column is on the right, with the table on the left */
   .pageHead {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0 var(--mantine-spacing-md);
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--mantine-spacing-xs);
+    min-width: 0;
   }
 
-  /* Notices and errors still take a line of their own */
-  .pageHead > [role="status"],
-  .pageHead > [role="alert"] {
-    flex: 1 1 100%;
+  .stage {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
   }
 
-  /* The room name and its buttons share the line with the game title */
-  .pageHead > :nth-child(n + 2):not([role]) {
-    flex: 1 1 auto;
-  }
-
-  /* The room code sits at the top right, after the buttons */
+  /* The room code, then its buttons, one under the other */
   .roomRow {
-    flex-direction: row-reverse;
+    flex-direction: column;
     flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: var(--mantine-spacing-md);
+    align-items: stretch;
+    gap: 4px;
   }
 
+  /* The room code is a small badge */
   .roomRow > h2 {
-    --title-fz: var(--mantine-font-size-lg) !important;
+    --title-fz: var(--mantine-font-size-sm) !important;
+    align-self: flex-start;
+    padding: 1px var(--mantine-spacing-sm);
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-xl);
     white-space: nowrap;
   }
 
   .roomRow > div {
-    flex: 1 1 auto;
-    justify-content: flex-end;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
   }
 
   .board {
     display: grid;
-    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 13rem);
-    grid-template-rows: auto auto auto auto;
+    grid-template-columns: minmax(0, 15.5rem) minmax(0, 1fr);
     column-gap: var(--mantine-spacing-md);
     row-gap: 4px;
     margin-top: 0;
@@ -293,65 +304,98 @@
     grid-column: 1;
   }
 
-  .head {
+  /* Whose turn it is, with Scores beside it and the colour under both */
+  div.head {
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--mantine-spacing-xs);
+    row-gap: 0;
+  }
+
+  div.head > div {
+    display: contents;
+  }
+
+  .head h2 {
+    grid-column: 1;
+    grid-row: 1;
+    --title-fz: var(--mantine-font-size-lg) !important;
+  }
+
+  .head > button {
+    grid-column: 2;
     grid-row: 1;
   }
 
-  .head,
   .head p {
-    font-size: var(--mantine-font-size-sm);
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: nowrap;
+    font-size: var(--mantine-font-size-xs);
   }
 
+  /* Each other player is a small pill, not a box */
   .opponents {
-    grid-row: 2 / 4;
+    grid-row: 2;
     flex-wrap: wrap;
     align-content: flex-start;
+    gap: 4px;
     overflow-x: visible;
     overflow-y: auto;
+    max-height: 3.4rem;
     padding: 0;
-    /* Room for one row of players. Any more scroll inside this box, rather
-       than pushing your hand off the screen. */
-    min-height: 3.9rem;
-    contain: size;
   }
 
   .opponent {
+    flex: 0 1 auto;
     width: auto;
-    flex: 1 1 8rem;
-    padding: 4px var(--mantine-spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-xs);
+    padding: 1px var(--mantine-spacing-xs);
+    border-width: 1px;
+    border-radius: var(--mantine-radius-xl);
   }
 
   .opponent[data-current] {
-    padding: 2px calc(var(--mantine-spacing-xs) - 2px);
+    border-width: 3px;
+    padding: 0 calc(var(--mantine-spacing-xs) - 2px);
   }
 
-  /* One line for the name, which is also in its title and its label */
-  .opponent p:first-child {
+  .opponent p {
+    font-size: var(--mantine-font-size-sm);
     --text-line-clamp: 1 !important;
+  }
+
+  .opponent > p:first-child {
+    max-width: 7rem;
+  }
+
+  .opponent > div {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* "Waiting" is the same for everyone who is not playing, so it can go.
+     "Playing" and "Uno?" stay as words. */
+  .waiting,
+  .unit {
+    display: none;
   }
 
   .controls,
   .picker {
-    grid-column: 3;
-    grid-row: 1;
+    grid-row: 3;
     align-self: start;
-  }
-
-  .controls {
     gap: 4px var(--mantine-spacing-xs);
-  }
-
-  /* Smaller buttons, still well over the 24 pixel minimum */
-  .controls > button {
-    --button-height: 1.875rem !important;
-    --button-fz: var(--mantine-font-size-sm) !important;
-    --button-padding-x: var(--mantine-spacing-sm) !important;
   }
 
   /* Two lines at most, so a wider font cannot push the hand down. The whole
      text is still there for screen readers. */
   .reason {
-    grid-column: 3;
     margin: 0;
     font-size: var(--mantine-font-size-xs);
     line-height: 1.25;
@@ -361,91 +405,46 @@
     overflow: hidden;
   }
 
-  /* The piles take the height the three rows give them */
+  /* The piles take the height the left side gives them */
   .table {
     grid-column: 2;
-    grid-row: 1 / 4;
+    grid-row: 1 / 6;
     min-height: 0;
   }
 
   .hand {
     grid-column: 1 / -1;
-    grid-row: 4;
+    grid-row: 6;
   }
 }
 
 /* Small phones, such as 667 by 320: everything above, but tighter */
 @media (orientation: landscape) and (max-height: 400px) {
-  /* The top row has to stay on one line even in a wider font, so the room
-     buttons and code are a little tighter */
-  .roomRow {
-    gap: var(--mantine-spacing-xs);
-  }
-
-  .roomRow > h2 {
-    --title-fz: var(--mantine-font-size-md) !important;
-  }
-
-  .roomRow > div {
+  .pageHead {
     gap: 4px;
   }
 
-  .roomRow > div > button {
+  .roomRow > div > button,
+  .controls > button,
+  .head > button {
+    --button-height: 1.625rem !important;
     --button-fz: var(--mantine-font-size-xs) !important;
-    --button-padding-x: 8px !important;
+    --button-padding-x: var(--mantine-spacing-xs) !important;
   }
 
-  /* Narrower sides, so the buttons for catching Uno sit on one line */
-  .board {
-    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 16rem);
-  }
-
-  div.head {
-    flex-wrap: nowrap;
-    align-items: center;
-  }
-
-  .head h2 {
-    --title-fz: var(--mantine-font-size-lg) !important;
-  }
-
-  .head p {
-    white-space: nowrap;
-    font-size: var(--mantine-font-size-xs);
-  }
-
-  /* "Colour: Red · clockwise" is short enough to sit beside the button */
+  /* "Colour: Red · clockwise" */
   .inPlay {
     display: none;
   }
 
-  .head > button {
-    --button-height: 1.875rem !important;
-    --button-fz: var(--mantine-font-size-sm) !important;
-    --button-padding-x: var(--mantine-spacing-sm) !important;
-  }
-
-  /* One line a player: the name, then the cards held and whose turn it is */
-  .opponents {
-    min-height: 2.2rem;
-  }
-
-  .opponent {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--mantine-spacing-xs);
-    padding-block: 2px;
-  }
-
-  .opponent > p:first-child {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .opponent > div {
-    flex: none;
-    flex-wrap: nowrap;
-    gap: var(--mantine-spacing-xs);
+  /* The hints are still read out as each button's description, but there is
+     no room to show them */
+  .reason {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

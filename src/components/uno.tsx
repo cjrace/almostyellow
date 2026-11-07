@@ -339,6 +339,7 @@ export default function Uno({
     <Container
       size={tableShown ? "md" : "sm"}
       w="100%"
+      className={tableShown ? table.page : undefined}
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
       <Stack gap="md" className={tableShown ? table.pageHead : undefined}>
@@ -695,7 +696,7 @@ export default function Uno({
       </Stack>
 
       {tableShown && room.view && (
-        <div className={layout.game}>
+        <div className={`${layout.game} ${table.stage}`}>
           {hand?.round === room.round ? (
             <UnoTable
               view={room.view}
