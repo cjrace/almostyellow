@@ -12,6 +12,8 @@ interface UnoHandProps {
   drawnCardId: number | null;
   // Why an unplayable card cannot be played, for its accessible name
   reason: string;
+  // Whether it is your turn, shown as a bar above the hand
+  active?: boolean;
   onPlay: (card: Card) => void;
 }
 
@@ -26,6 +28,7 @@ export default function UnoHand({
   playableIds,
   drawnCardId,
   reason,
+  active = false,
   onPlay,
 }: UnoHandProps) {
   const listRef = useRef<HTMLUListElement>(null);
@@ -57,6 +60,7 @@ export default function UnoHand({
     <ul
       ref={listRef}
       className={styles.hand}
+      data-myturn={active ? "" : undefined}
       style={{ height: layout.height }}
       aria-label={`Your hand, ${String(cards.length)} ${cards.length === 1 ? "card" : "cards"}`}
     >

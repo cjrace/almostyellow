@@ -239,6 +239,45 @@
   }
 }
 
+/* The colour in play, on the corner of the discard pile. Its shape is
+   drawn by .swatch, so it never relies on colour alone. */
+.pileSwatch {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  z-index: 1;
+}
+
+/* A bar over your hand while it is your turn. "Your turn" is also written
+   out, so the bar is only a second signal. */
+.hand[data-myturn] {
+  box-shadow: 0 -3px 0 var(--mantine-color-orange-6);
+}
+
+/* Saying Uno matters right now: the button fills in and pulses three times,
+   and does not move at all when reduced motion is on */
+.controls button[data-ready] {
+  animation: sayUnoPulse 1.2s ease-out 3;
+}
+
+@keyframes sayUnoPulse {
+  from {
+    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+  }
+
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controls button[data-ready] {
+    animation: none;
+  }
+}
+
 /* A phone on its side is wide but short, so the portrait stack would push the
    hand below the fold. Here the page has a side column down the left (the game
    title, the room code and the room buttons) with the table beside it. In the
@@ -247,7 +286,7 @@
 @media (orientation: landscape) and (max-height: 500px) {
   .page {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 9.5rem;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
     column-gap: var(--mantine-spacing-md);
     align-items: start;
     align-content: start;
@@ -294,7 +333,7 @@
 
   .board {
     display: grid;
-    grid-template-columns: minmax(0, 15.5rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 8.5rem;
     column-gap: var(--mantine-spacing-md);
     row-gap: 4px;
     margin-top: 0;
@@ -386,11 +425,37 @@
     display: none;
   }
 
+  /* Your buttons are in their own column beside the piles, within reach of a
+     thumb, and tall enough to tap */
   .controls,
   .picker {
-    grid-row: 3;
-    align-self: start;
-    gap: 4px var(--mantine-spacing-xs);
+    grid-column: 3;
+    grid-row: 1 / 6;
+    align-self: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .controls > button {
+    --button-height: auto !important;
+    min-height: 2.75rem;
+  }
+
+  .controls > button :global(.mantine-Button-label) {
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* The Uno hint is still read out as the button's description */
+  .hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* Two lines at most, so a wider font cannot push the hand down. The whole
@@ -425,7 +490,6 @@
   }
 
   .roomRow > div > button,
-  .controls > button,
   .head > button {
     --button-height: 1.625rem !important;
     --button-fz: var(--mantine-font-size-xs) !important;

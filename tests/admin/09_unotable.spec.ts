@@ -202,9 +202,10 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
               p.textContent.startsWith("Colour"),
             ),
             scores: button("Scores"),
-            copy: button("Copy join link"),
-            endRoom: button("End room"),
-            leave: button("Leave game"),
+            room: button("Room"),
+            catchUno: [...document.querySelectorAll("button")].find((b) =>
+              b.textContent.startsWith("Catch"),
+            ),
             sayUno: spots.unoButton,
             drawPile: spots.drawPile ?? undefined,
             hand: spots.hand ?? undefined,
@@ -416,6 +417,77 @@ test.describe("Looking at the Uno table in a real room", () => {
         await expectWholeHandShowing(page);
       }
     }
+  });
+
+  test("A phone held sideways folds the room buttons into one menu", async ({
+    page,
+  }) => {
+    await openTable(page, "two-players");
+    await test.step("Given the table is the right way up, the buttons are all there", async () => {
+      await expect(
+        page.getByRole("button", { name: "End room" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Room options" }),
+      ).toHaveCount(0);
+    });
+
+    await test.step("When the phone is turned sideways, they are in a menu", async () => {
+      await page.setViewportSize({ width: 874, height: 402 });
+      const menu = page.getByRole("button", { name: "Room options" });
+      await expect(menu).toBeVisible();
+      await expect(page.getByRole("button", { name: "End room" })).toHaveCount(
+        0,
+      );
+      await menu.click();
+      for (const name of [
+        "Copy join link",
+        "End round",
+        "End room",
+        "Leave game",
+      ])
+        await expect(page.getByRole("menuitem", { name })).toBeVisible();
+    });
+
+    await test.step("And closing it returns focus, as does the dialog it opens", async () => {
+      const menu = page.getByRole("button", { name: "Room options" });
+      await page.keyboard.press("Escape");
+      await expect(menu).toBeFocused();
+      await menu.click();
+      await page.getByRole("menuitem", { name: "Leave game" }).click();
+      const dialog = page.getByRole("dialog", { name: "Leave this round?" });
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(menu).toBeFocused();
+    });
+
+    await test.step("Then turning it back brings the buttons back", async () => {
+      await page.setViewportSize({ width: 402, height: 874 });
+      await expect(
+        page.getByRole("button", { name: "End room" }),
+      ).toBeVisible();
+    });
+  });
+
+  test("The colour in play, your turn and Uno are easy to see", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    const hand = page.getByRole("list", { name: /^Your hand/ });
+    await expect(hand).toHaveAttribute("data-myturn", "");
+    await expect(
+      page.locator("[data-colour][class*='pileSwatch']"),
+    ).toHaveAttribute("data-colour", /^(red|yellow|green|blue)$/);
+
+    const say = page.getByRole("button", { name: "Say Uno!" });
+    await expect(say).not.toHaveAttribute("data-ready");
+    await show("two-cards");
+    await expect(say).toHaveAttribute("data-ready", "");
+    await say.click();
+    await expect(
+      page.getByRole("button", { name: "Uno said" }),
+    ).not.toHaveAttribute("data-ready");
   });
 
   test("Stays inside a 320 pixel wide screen and at 200% zoom", async ({

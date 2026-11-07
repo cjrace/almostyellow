@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconChevronDown, IconInfoCircle } from "@tabler/icons-react";
 import {
   ActionIcon,
   Alert,
@@ -12,6 +12,7 @@ import {
   Container,
   Group,
   List,
+  Menu,
   Modal,
   NativeSelect,
   Stack,
@@ -20,6 +21,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
@@ -59,6 +61,9 @@ export default function Uno({
   host: boolean;
 }) {
   const router = useRouter();
+  const sideways = useMediaQuery(
+    "(orientation: landscape) and (max-height: 500px)",
+  );
   const [code, setCode] = useState(initialCode.toUpperCase());
   const [name, setName] = useState("");
   const [joinView, setJoinView] = useState<"choose" | "code" | "invite">(
@@ -335,6 +340,27 @@ export default function Uno({
     setFocusHistory(true);
   }
 
+  // On a phone held sideways the host's room buttons fold into one menu, to
+  // leave room for the table
+  const compactRoom = tableShown && sideways && hosting && !ended;
+  const copyLink = () =>
+    void run(async () => {
+      await navigator.clipboard.writeText(
+        `${location.origin}/games/uno?room=${active}`,
+      );
+      setNotice("Join link copied.");
+    });
+  const askEndRound = () => {
+    setAbandoning(true);
+  };
+  const askEndRoom = () => {
+    setEnding(true);
+  };
+  const askLeave = () => {
+    if (inRound || (hosting && room && !ended)) setLeaving(true);
+    else void run(leave);
+  };
+
   return (
     <Container
       size={tableShown ? "md" : "sm"}
@@ -494,61 +520,81 @@ export default function Uno({
             <Title ref={titleRef} tabIndex={-1} order={2} size="h3">
               Room {active}
             </Title>
-            <Group gap="xs">
-              {hosting && room && !ended && (
-                <>
+            {compactRoom ? (
+              <Menu position="bottom-end" withinPortal>
+                <Menu.Target>
                   <Button
                     size="compact-sm"
                     variant="default"
-                    onClick={() =>
-                      void run(async () => {
-                        await navigator.clipboard.writeText(
-                          `${location.origin}/games/uno?room=${active}`,
-                        );
-                        setNotice("Join link copied.");
-                      })
-                    }
-                  >
-                    Copy join link
-                  </Button>
-                  {room.stage === "playing" && (
-                    <Button
-                      size="compact-sm"
-                      ref={roundRef}
-                      variant="default"
-                      onClick={() => {
-                        setAbandoning(true);
-                      }}
-                    >
-                      End round
-                    </Button>
-                  )}
-                  <Button
-                    size="compact-sm"
-                    ref={endRef}
-                    color="red"
-                    variant="default"
-                    onClick={() => {
-                      setEnding(true);
+                    aria-label="Room options"
+                    rightSection={<IconChevronDown size={14} />}
+                    ref={(button) => {
+                      // Whichever dialog the menu opens, focus comes back here
+                      roundRef.current = button;
+                      endRef.current = button;
+                      leaveRef.current = button;
                     }}
                   >
-                    End room
+                    Room
                   </Button>
-                </>
-              )}
-              <Button
-                size="compact-sm"
-                variant="default"
-                ref={leaveRef}
-                disabled={busy}
-                onClick={() => {
-                  if (inRound || (hosting && room && !ended)) setLeaving(true);
-                  else void run(leave);
-                }}
-              >
-                Leave game
-              </Button>
-            </Group>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item onClick={copyLink}>Copy join link</Menu.Item>
+                  {room.stage === "playing" && (
+                    <Menu.Item onClick={askEndRound}>End round</Menu.Item>
+                  )}
+                  <Menu.Item color="red" onClick={askEndRoom}>
+                    End room
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item disabled={busy} onClick={askLeave}>
+                    Leave game
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            ) : (
+              <Group gap="xs">
+                {hosting && room && !ended && (
+                  <>
+                    <Button
+                      size="compact-sm"
+                      variant="default"
+                      onClick={copyLink}
+                    >
+                      Copy join link
+                    </Button>
+                    {room.stage === "playing" && (
+                      <Button
+                        size="compact-sm"
+                        ref={roundRef}
+                        variant="default"
+                        onClick={askEndRound}
+                      >
+                        End round
+                      </Button>
+                    )}
+                    <Button
+                      size="compact-sm"
+                      ref={endRef}
+                      color="red"
+                      variant="default"
+                      onClick={askEndRoom}
+                    >
+                      End room
+                    </Button>
+                  </>
+                )}
+                <Button
+                  size="compact-sm"
+                  variant="default"
+                  ref={leaveRef}
+                  disabled={busy}
+                  onClick={askLeave}
+                >
+                  Leave game
+                </Button>
+              </Group>
+            )}
           </Group>
         )}
 
