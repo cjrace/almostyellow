@@ -7,7 +7,7 @@ import styles from "@/styles/wordcounter.module.css";
 
 export const metadata = pageMetadata(
   "Word and character counter",
-  "Count words and characters, compare counting methods and check selected text. Your text stays in your browser.",
+  "Free online word and character counter. Count with and without spaces, or just highlighted text. Private: your text stays in your browser.",
 );
 
 export default function WordCounterPage() {
