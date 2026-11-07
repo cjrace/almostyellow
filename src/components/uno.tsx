@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconChevronDown, IconInfoCircle } from "@tabler/icons-react";
@@ -21,7 +27,6 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
@@ -61,12 +66,11 @@ export default function Uno({
   host: boolean;
 }) {
   const router = useRouter();
-  // Read at once rather than in an effect, so a phone already held sideways
-  // never shows the full set of room buttons first
-  const sideways = useMediaQuery(
-    "(orientation: landscape) and (max-height: 500px)",
-    false,
-    { getInitialValueInEffect: false },
+  // Whether this browser can hand an invite to the phone's share sheet
+  const canShare = useSyncExternalStore(
+    () => () => undefined,
+    () => typeof navigator.share === "function",
+    () => false,
   );
   const [code, setCode] = useState(initialCode.toUpperCase());
   const [name, setName] = useState("");
@@ -344,9 +348,19 @@ export default function Uno({
     setFocusHistory(true);
   }
 
-  // On a phone held sideways the host's room buttons fold into one menu, to
-  // leave room for the table
-  const compactRoom = tableShown && sideways && hosting && !ended;
+  // While the table shows, the host's room buttons fold into one menu, to
+  // leave room for the cards
+  const compactRoom = tableShown && hosting && !ended;
+  const shareInvite = () => {
+    void navigator
+      .share({
+        title: "Join my game of Uno",
+        url: `${location.origin}/games/uno?room=${active}`,
+      })
+      .catch(() => {
+        // Cancelling the share sheet is not an error
+      });
+  };
   const copyLink = () =>
     void run(async () => {
       await navigator.clipboard.writeText(
@@ -642,6 +656,23 @@ export default function Uno({
             <Title order={3}>
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
             </Title>
+            {room.stage === "lobby" && (
+              <Stack gap={4} align="flex-start">
+                <Text size="sm" c="dimmed">
+                  Room code, to read out or share
+                </Text>
+                {/* The same code is in the heading above, so this is for the
+                    eyes only */}
+                <Text className={table.bigCode} aria-hidden="true">
+                  {active}
+                </Text>
+                {canShare && (
+                  <Button variant="default" onClick={shareInvite}>
+                    Share invite
+                  </Button>
+                )}
+              </Stack>
+            )}
             {room.stage === "finished" && room.view?.outcome && (
               <Text role="status">
                 {room.view.outcome.type === "win"
