@@ -348,11 +348,17 @@
     --button-padding-x: var(--mantine-spacing-sm) !important;
   }
 
+  /* Two lines at most, so a wider font cannot push the hand down. The whole
+     text is still there for screen readers. */
   .reason {
     grid-column: 3;
     margin: 0;
     font-size: var(--mantine-font-size-xs);
     line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
   /* The piles take the height the three rows give them */

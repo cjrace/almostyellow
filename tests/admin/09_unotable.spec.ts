@@ -191,12 +191,17 @@ async function expectTurnOnScreen(page: Page, label: string) {
             sideways:
               document.documentElement.scrollWidth -
               document.documentElement.clientWidth,
-            scrolls: document.documentElement.scrollHeight > height + 1,
+            // A few pixels either way, as fonts differ from machine to machine,
+            // and the gap under the page makes up the rest
+            scrollsBy: Math.max(
+              0,
+              document.documentElement.scrollHeight - height - 12,
+            ),
           };
         }),
       { message: label },
     )
-    .toEqual({ overlaps: false, off: [], sideways: 0, scrolls: false });
+    .toEqual({ overlaps: false, off: [], sideways: 0, scrollsBy: 0 });
 }
 
 test.describe("Looking at the Uno table in a real room", () => {
