@@ -125,7 +125,12 @@ export default function UnoTable({
   return (
     <div className={layout.game}>
       <div className={styles.board}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Group
+          justify="space-between"
+          align="flex-start"
+          wrap="nowrap"
+          className={styles.head}
+        >
           <div style={{ minWidth: 0 }}>
             <Title
               order={2}
@@ -233,10 +238,20 @@ export default function UnoTable({
             </Button>
           </div>
         )}
-        <Text size="sm" c="dimmed" id="uno_draw_reason">
+        <Text
+          size="sm"
+          c="dimmed"
+          id="uno_draw_reason"
+          className={styles.reason}
+        >
           {drawReason}
         </Text>
-        <Text size="sm" c="dimmed" id="uno_declare_reason">
+        <Text
+          size="sm"
+          c="dimmed"
+          id="uno_declare_reason"
+          className={styles.reason}
+        >
           {unoReason}
         </Text>
 

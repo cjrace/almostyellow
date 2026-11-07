@@ -37,6 +37,7 @@ import type { UnoHand, UnoRoom } from "@/unogame/room";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
 import layout from "@/styles/cardgame.module.css";
+import table from "@/styles/unotable.module.css";
 
 const STORAGE_KEY = "uno-room";
 
@@ -340,7 +341,7 @@ export default function Uno({
       w="100%"
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
-      <Stack gap="md">
+      <Stack gap="md" className={tableShown ? table.pageHead : undefined}>
         <Group gap="xs">
           <Title
             fz={

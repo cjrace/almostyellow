@@ -140,6 +140,47 @@ const overflowOf = (page: Page) =>
 // Cards overlap in the fan, so tap the corner strip that is always showing
 const CORNER = { x: 8, y: 8 };
 
+// Phones held sideways: wide and short
+const sidewaysPhones = [
+  { name: "iPhone 17", width: 874, height: 402 },
+  { name: "Pixel 9", width: 960, height: 448 },
+];
+
+// Everything needed to take a turn is on screen without scrolling
+async function expectTurnOnScreen(page: Page, label: string) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const height = window.innerHeight;
+          const spots = {
+            heading: document.querySelector("h2[tabindex]:not([id])"),
+            hand: document.querySelector('ul[aria-label^="Your hand"]'),
+            drawPile: document.querySelector('button[aria-label^="Draw pile"]'),
+            unoButton: [...document.querySelectorAll("button")].find((b) =>
+              /^(Say Uno!|Uno said)$/.test(b.textContent),
+            ),
+          };
+          const off = Object.entries(spots)
+            .filter(([, el]) => {
+              if (!el) return true;
+              const box = el.getBoundingClientRect();
+              return box.top < 0 || box.bottom > height + 1;
+            })
+            .map(([name]) => name);
+          return {
+            off,
+            sideways:
+              document.documentElement.scrollWidth -
+              document.documentElement.clientWidth,
+            scrolls: document.documentElement.scrollHeight > height + 1,
+          };
+        }),
+      { message: label },
+    )
+    .toEqual({ off: [], sideways: 0, scrolls: false });
+}
+
 test.describe("Looking at the Uno table in a real room", () => {
   test.slow();
 
@@ -291,6 +332,30 @@ test.describe("Looking at the Uno table in a real room", () => {
     await expectWholeHandShowing(page);
   });
 
+  test("A phone held sideways keeps the piles, buttons and hand on screen", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    for (const { name, width, height } of sidewaysPhones) {
+      await page.setViewportSize({ width, height });
+      for (const scenario of ["two-players", "catch-uno"] as const) {
+        await show(scenario);
+        await expectTurnOnScreen(page, `${scenario} on a ${name}`);
+        await expectWholeHandShowing(page);
+      }
+      // A hand of 50 or more cards wraps into rows and can be scrolled to, but
+      // still shows every card, as does a full table of ten
+      for (const scenario of ["large-hand", "ten-players"] as const) {
+        await show(scenario);
+        expect(
+          await overflowOf(page),
+          `${scenario} overflows sideways on a ${name}`,
+        ).toBeLessThanOrEqual(0);
+        await expectWholeHandShowing(page);
+      }
+    }
+  });
+
   test("Stays inside a 320 pixel wide screen and at 200% zoom", async ({
     page,
   }) => {
@@ -343,6 +408,21 @@ for (const scheme of schemes) {
           ).toBeVisible();
           await expectNoUnexpectedAxeViolations(page);
         });
+      });
+
+      test("A phone held sideways passes accessibility checks", async ({
+        page,
+      }) => {
+        const { show } = await openTable(page, "two-players");
+        await page.setViewportSize({ width: 874, height: 402 });
+        for (const scenario of [
+          "two-players",
+          "catch-uno",
+          "ten-players",
+        ] as const) {
+          await show(scenario);
+          await expectNoUnexpectedAxeViolations(page);
+        }
       });
 
       test("Scores open in a dialog and return focus when closed", async ({

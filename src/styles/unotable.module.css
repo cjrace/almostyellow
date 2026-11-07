@@ -74,7 +74,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--mantine-spacing-md);
-  height: min(100cqh, 20rem);
+  /* Two piles of 5 by 7 and the gap between them also have to fit the width */
+  height: min(100cqh, 20rem, calc(0.7 * (100cqw - var(--mantine-spacing-md))));
   max-width: 100cqw;
 }
 
@@ -235,5 +236,116 @@
 
   .board {
     margin-top: var(--mantine-spacing-xs);
+  }
+}
+
+/* A phone on its side is wide but short, so the portrait stack would push the
+   hand below the fold. Here the table is three columns above the hand: who is
+   playing on the left, the piles in the middle and the buttons on the right,
+   with your hand across the whole width underneath. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .pageHead {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--mantine-spacing-md);
+  }
+
+  /* Notices and errors still take a line of their own */
+  .pageHead > [role="status"],
+  .pageHead > [role="alert"] {
+    flex: 1 1 100%;
+  }
+
+  /* The room name and its buttons share the line with the game title */
+  .pageHead > :nth-child(n + 2):not([role]) {
+    flex: 1 1 auto;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 13rem);
+    grid-template-rows: auto auto auto auto;
+    column-gap: var(--mantine-spacing-md);
+    row-gap: 4px;
+    margin-top: 0;
+  }
+
+  .board > * {
+    grid-column: 1;
+  }
+
+  .head {
+    grid-row: 1;
+  }
+
+  .head,
+  .head p {
+    font-size: var(--mantine-font-size-sm);
+  }
+
+  .opponents {
+    grid-row: 2 / 4;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow-x: visible;
+    overflow-y: auto;
+    padding: 0;
+    /* Room for one row of players. Any more scroll inside this box, rather
+       than pushing your hand off the screen. */
+    min-height: 3.9rem;
+    contain: size;
+  }
+
+  .opponent {
+    width: auto;
+    flex: 1 1 8rem;
+    padding: 4px var(--mantine-spacing-xs);
+  }
+
+  .opponent[data-current] {
+    padding: 2px calc(var(--mantine-spacing-xs) - 2px);
+  }
+
+  /* One line for the name, which is also in its title and its label */
+  .opponent p:first-child {
+    --text-line-clamp: 1 !important;
+  }
+
+  .controls,
+  .picker {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .controls {
+    gap: 4px var(--mantine-spacing-xs);
+  }
+
+  /* Smaller buttons, still well over the 24 pixel minimum */
+  .controls > button {
+    --button-height: 1.875rem !important;
+    --button-fz: var(--mantine-font-size-sm) !important;
+    --button-padding-x: var(--mantine-spacing-sm) !important;
+  }
+
+  .reason {
+    grid-column: 3;
+    margin: 0;
+    font-size: var(--mantine-font-size-xs);
+    line-height: 1.25;
+  }
+
+  /* The piles take the height the three rows give them */
+  .table {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    min-height: 0;
+  }
+
+  .hand {
+    grid-column: 1 / -1;
+    grid-row: 4;
   }
 }
