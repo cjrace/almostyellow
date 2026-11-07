@@ -15,6 +15,8 @@ export interface UnoRoom extends RoomView {
   names: Record<string, string>;
   // Rounds won in this room, by player id
   scores: Record<string, number>;
+  // Set once the host has saved this room's scores to the Uno tracker
+  trackerGameId?: string;
   view: PublicView | null;
   // What the latest command did, without anyone's private cards
   events: PublicEvent[];

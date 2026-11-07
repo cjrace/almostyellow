@@ -7,11 +7,13 @@ import { IconInfoCircle } from "@tabler/icons-react";
 import {
   ActionIcon,
   Alert,
+  Anchor,
   Button,
   Container,
   Group,
   List,
   Modal,
+  NativeSelect,
   Stack,
   Text,
   TextInput,
@@ -19,7 +21,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import type { FirebaseClientConfig } from "@/firebase/client";
-import { controlUno, createUnoRoom } from "@/actions/unoroom";
+import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
   guestClient,
   joinGuest,
@@ -76,6 +78,9 @@ export default function Uno({
   const [ending, setEnding] = useState(false);
   const [abandoning, setAbandoning] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [camId, setCamId] = useState("");
+  const [playedOn, setPlayedOn] = useState("");
   const [instructions, setInstructions] = useState(false);
   const [now, setNow] = useState(0);
   const flightRef = useRef(false);
@@ -85,6 +90,9 @@ export default function Uno({
   const endRef = useRef<HTMLButtonElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
   const roundRef = useRef<HTMLButtonElement>(null);
+  const saveRef = useRef<HTMLButtonElement>(null);
+  const historyRef = useRef<HTMLAnchorElement>(null);
+  const [focusHistory, setFocusHistory] = useState(false);
 
   // Restore this tab's room after a reload
   useEffect(() => {
@@ -175,6 +183,19 @@ export default function Uno({
       setHand(null);
     });
   }, [client, active, playerId, seated]);
+
+  const trackerSaved = !!room?.trackerGameId;
+  useEffect(() => {
+    if (!trackerSaved || !focusHistory) return;
+    // After the closing modal has finished handing focus back
+    const frame = requestAnimationFrame(() => {
+      historyRef.current?.focus();
+      setFocusHistory(false);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [trackerSaved, focusHistory]);
 
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
@@ -291,6 +312,27 @@ export default function Uno({
   const inRound = room?.stage === "playing" && seated;
   const tableShown = !!room?.view && inRound && !ended;
   const players = room?.players ?? [];
+  // Two players with a round won between them can be saved to the tracker
+  const savable =
+    hosting &&
+    room?.stage === "finished" &&
+    players.length === 2 &&
+    players.some((p) => (room.scores[p.id] ?? 0) > 0);
+
+  async function saveToTracker() {
+    if (!room || !connected) return;
+    const result = await saveUnoToTracker({
+      code: room.code,
+      round: room.round,
+      version: room.version,
+      camPlayerId: camId,
+      playedOn,
+    });
+    if (result?.error) throw new Error(result.error);
+    setSaving(false);
+    // The link appears once the room reports the save, which may be first
+    setFocusHistory(true);
+  }
 
   return (
     <Container
@@ -567,6 +609,34 @@ export default function Uno({
             ) : (
               <Text>Waiting for the host to start the round.</Text>
             )}
+            {savable &&
+              (room.trackerGameId ? (
+                <Group gap="xs">
+                  <Button variant="default" disabled>
+                    Saved to tracker
+                  </Button>
+                  <Anchor
+                    component={Link}
+                    href="/games/uno-tracker/history"
+                    ref={historyRef}
+                  >
+                    View in tracker history
+                  </Anchor>
+                </Group>
+              ) : (
+                <Button
+                  ref={saveRef}
+                  variant="default"
+                  disabled={busy || !connected}
+                  onClick={() => {
+                    setCamId(players[0].id);
+                    setPlayedOn(new Date().toLocaleDateString("en-CA"));
+                    setSaving(true);
+                  }}
+                >
+                  Save to tracker
+                </Button>
+              ))}
             {hosting && (
               <Text id="uno_start_reason" size="sm" c="dimmed">
                 {players.length < MIN_PLAYERS
@@ -681,6 +751,57 @@ export default function Uno({
             }}
           >
             Leave game
+          </Button>
+        </Stack>
+      </Modal>
+      <Modal
+        opened={saving}
+        onClose={() => {
+          setSaving(false);
+          requestAnimationFrame(() => {
+            saveRef.current?.focus();
+          });
+        }}
+        title="Save to the Uno tracker?"
+        returnFocus={false}
+        closeButtonProps={{ "aria-label": "Do not save to the tracker" }}
+      >
+        <Stack gap="md" align="stretch" pt="xs">
+          <Text>
+            This adds this room&apos;s score as one finished game to the Cam and
+            Laura tracker. You can only save a room once.
+          </Text>
+          <NativeSelect
+            label="Who is Cam?"
+            description="The other player is Laura."
+            value={camId}
+            data={players.map((p) => ({ value: p.id, label: p.name }))}
+            onChange={(event) => {
+              setCamId(event.currentTarget.value);
+            }}
+          />
+          <Text role="status">
+            {players
+              .map(
+                (p) =>
+                  `${p.name} ${p.id === camId ? "(Cam)" : "(Laura)"}: ${String(room?.scores[p.id] ?? 0)}`,
+              )
+              .join(", ")}
+          </Text>
+          <TextInput
+            type="date"
+            label="Date played"
+            value={playedOn}
+            required
+            onChange={(event) => {
+              setPlayedOn(event.currentTarget.value);
+            }}
+          />
+          <Button
+            disabled={busy || !connected || !playedOn}
+            onClick={() => void run(saveToTracker)}
+          >
+            Save to tracker
           </Button>
         </Stack>
       </Modal>
