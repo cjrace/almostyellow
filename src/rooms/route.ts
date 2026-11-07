@@ -68,7 +68,7 @@ export async function handleRoomRequest(
       );
     let uid: string;
     try {
-      const identity = await adminAuth().verifyIdToken(token, true);
+      const identity = await adminAuth().verifyIdToken(token);
       const code = z.object({ code: z.string() }).parse(input).code;
       if (identity[`${game}Room`] !== code) throw new Error("Wrong room.");
       uid = identity.uid;

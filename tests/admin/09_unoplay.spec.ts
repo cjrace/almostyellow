@@ -188,9 +188,24 @@ async function playRound(
     const actor = await whoseTurn([page, guest]);
     const other = actor === page ? guest : page;
     const name = actor === page ? "Cam" : "Laura";
+    // The server is slow to answer, so the move shows as being sent
+    await actor.route("**/api/uno", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await route.continue();
+    });
     await actor
       .getByRole("button", { name: /^Draw pile, \d+ cards, draw a card/ })
       .click();
+    const sending = actor.getByRole("status").filter({ hasText: /sending/ });
+    await expect(sending).toHaveText("Sending…");
+    await expect(actor.getByRole("list", { name: /^Your hand/ })).toHaveCSS(
+      "opacity",
+      "0.55",
+    );
+    await expect(sending).toHaveText("Still sending…");
+    await checkAccessibility?.(actor);
+    await expect(sending).toHaveCount(0, { timeout: 10_000 });
+    await actor.unroute("**/api/uno");
     await expect(
       other.getByRole("status").filter({ hasText: `${name} drew a card` }),
     ).toHaveCount(1);

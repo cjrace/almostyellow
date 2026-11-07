@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
 import {
   ActionIcon,
   Button,
@@ -49,6 +49,8 @@ interface UnoTableProps {
   now: number;
   // The next move is refused until then, so everyone sees the last one
   turnReadyAt: number;
+  // A move has been sent and the table has not changed yet
+  sending?: "sending" | "slow" | null;
   onInstructions: () => void;
   onPlay: (
     cardId: number,
@@ -75,6 +77,7 @@ export default function UnoTable({
   version,
   now,
   turnReadyAt,
+  sending = null,
   onInstructions,
   onPlay,
   onDraw,
@@ -232,7 +235,11 @@ export default function UnoTable({
 
   return (
     <div className={layout.game}>
-      <div className={styles.board}>
+      <div
+        className={styles.board}
+        data-sending={sending ? "" : undefined}
+        aria-busy={sending ? true : undefined}
+      >
         <Group
           justify="space-between"
           align="flex-start"
@@ -287,6 +294,16 @@ export default function UnoTable({
         <VisuallyHidden>
           <div role="status">{announcement}</div>
         </VisuallyHidden>
+        {/* The words are what tell you, not the dimming. The region is always
+            there so a screen reader hears it appear. */}
+        <div role="status" className={styles.sendingStatus}>
+          {sending ? (
+            <span className={styles.sending}>
+              <IconLoader2 aria-hidden="true" size={16} />
+              {sending === "slow" ? "Still sending…" : "Sending…"}
+            </span>
+          ) : null}
+        </div>
 
         <UnoOpponents
           players={seats}

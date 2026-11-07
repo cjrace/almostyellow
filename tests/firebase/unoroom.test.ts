@@ -248,6 +248,25 @@ describe("Uno rooms", () => {
     expect((await room(code)).version).toBe(once.version);
   });
 
+  test("two copies of a command arriving together apply it once", async () => {
+    // A resend can reach the server while the first copy is still running
+    const { code, seated } = await started(2);
+    const { seat, playable } = await turn(code, seated);
+    if (playable.length === 0) return;
+    const before = await secretState(code);
+    const commandId = randomUUID();
+    const results = await Promise.allSettled([
+      play(code, seat.uid, playable[0], commandId),
+      play(code, seat.uid, playable[0], commandId),
+    ]);
+    expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+    const after = await secretState(code);
+    expect(after.discard).toHaveLength(before.discard.length + 1);
+    expect(after.hands[seat.playerId]).toHaveLength(
+      before.hands[seat.playerId].length - 1,
+    );
+  });
+
   test("playing out of turn or with a card you do not hold is refused", async () => {
     const { code, seated } = await started(3);
     const { seat, playable, state } = await turn(code, seated);

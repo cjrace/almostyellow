@@ -39,6 +39,7 @@ import {
   type UnoRoom,
 } from "@/unogame/room";
 import playConfetti from "@/components/playconfetti";
+import { sendingState, type Sent } from "@/unogame/sending";
 import ViewportHeight from "@/components/viewportheight";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
@@ -47,6 +48,8 @@ import layout from "@/styles/cardgame.module.css";
 import table from "@/styles/unotable.module.css";
 
 const STORAGE_KEY = "uno-room";
+// The clock, read when a move is sent or answered
+const timestamp = () => Date.now();
 
 interface Saved {
   code: string;
@@ -98,6 +101,10 @@ export default function Uno({
   const prevStageRef = useRef<string | undefined>(undefined);
   // After a win the table stays up for a few seconds, so everyone sees how it
   // was won. The ref is read by effects in the same commit, the state draws.
+  // A move sent from the table that the room has not yet shown. It clears when
+  // the room changes, when the command fails, or a few seconds after the
+  // server answered (a repeat that changed nothing).
+  const [sending, setSending] = useState<Sent | null>(null);
   const [holding, setHolding] = useState(false);
   const holdingRef = useRef(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -190,6 +197,7 @@ export default function Uno({
     );
   }, [client, active]);
 
+  const sendingNow = sendingState(sending, room?.version, now);
   const seated = !!room && room.seats.includes(playerId);
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
@@ -310,19 +318,21 @@ export default function Uno({
     focusRoomRef.current = true;
   }
 
-  async function run(operation: () => Promise<void>) {
-    if (flightRef.current) return;
+  async function run(operation: () => Promise<void>): Promise<boolean> {
+    if (flightRef.current) return false;
     flightRef.current = true;
     setBusy(true);
     setError("");
     try {
       await operation();
+      return true;
     } catch (failure) {
       setError(
         failure instanceof Error
           ? failure.message
           : "Could not complete the change.",
       );
+      return false;
     } finally {
       flightRef.current = false;
       setBusy(false);
@@ -345,7 +355,10 @@ export default function Uno({
       setError("Reconnecting. Moves are unavailable until you are back.");
       return;
     }
-    await run(() =>
+    const sentAt = timestamp();
+    const started = { version: room.version, at: sentAt };
+    setSending(started);
+    const ok = await run(() =>
       sendUno(client, action, {
         code: room.code,
         round: room.round,
@@ -353,6 +366,13 @@ export default function Uno({
         ...(action === "catch" ? { version: room.version } : {}),
         ...extra,
       }),
+    );
+    setSending((current) =>
+      current?.at !== sentAt
+        ? current
+        : ok
+          ? { ...current, answeredAt: timestamp() }
+          : null,
     );
   }
 
@@ -786,6 +806,7 @@ export default function Uno({
               version={room.version}
               now={now}
               turnReadyAt={room.turnReadyAt ?? 0}
+              sending={sendingNow}
               onPlay={(cardId, colour: Colour | undefined, declareUno) => {
                 void play("play", {
                   cardId,

@@ -826,3 +826,48 @@
     grid-row: 2;
   }
 }
+
+/* A move has been sent and the table has not changed yet. The hand and the
+   buttons are dimmed and cannot be tapped again; the words in .sending say why,
+   so nothing depends on the dimming. The pill floats above the confetti credit
+   so it never moves the layout. */
+.board[data-sending] .hand,
+.board[data-sending] .controls,
+.board[data-sending] .pile[data-uno-pile="draw"] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.sendingStatus {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--confetti-gap) + var(--mantine-spacing-xs));
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  padding: 4px var(--mantine-spacing-md);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sending svg {
+    animation: sendingSpin 1s linear infinite;
+  }
+}
+
+@keyframes sendingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

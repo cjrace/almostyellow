@@ -65,12 +65,20 @@ export function watchUnoHand(
 export type UnoAction =
   "leave" | "play" | "draw" | "keep" | "catch" | "sayUno" | "seen";
 
+// A command with no answer after this long is sent again, while the first is
+// still running, rather than waiting for the request to time out
+export const RESEND_MS = 2500;
+const UNREACHABLE =
+  "Could not reach the table. Check your connection, then look at the table before trying again.";
+
 /**
- * Sends one command. When no answer arrives it is sent once more with the
- * same command id, which the server applies at most once, so a lost reply
- * can never play a card twice.
+ * Sends one command. When no answer arrives within RESEND_MS, or the first
+ * attempt fails to connect, it is sent once more with the same command id. The
+ * server applies a command id at most once, even when both copies arrive at the
+ * same moment, so a slow or lost reply can never play a card twice. The first
+ * answer wins; it only fails when both attempts get no answer.
  */
-export async function sendUno(
+export function sendUno(
   client: GuestClient,
   action: UnoAction,
   input: { code: string; round: string; version?: number } & Record<
@@ -79,19 +87,44 @@ export async function sendUno(
   >,
 ) {
   const body = { ...input, commandId: crypto.randomUUID() };
-  try {
-    await send(client, action, body, "uno");
-  } catch (error) {
-    if (!(error instanceof NetworkError)) throw error;
-    try {
-      await send(client, action, body, "uno");
-    } catch (again) {
-      if (again instanceof NetworkError)
-        throw new Error(
-          "Could not reach the table. Check your connection, then look at the table before trying again.",
-          { cause: again },
-        );
-      throw again;
-    }
-  }
+  return new Promise<void>((resolve, reject) => {
+    let started = 0;
+    let failed = 0;
+    let done = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (settle: () => void) => {
+      done = true;
+      clearTimeout(timer);
+      settle();
+    };
+    const attempt = () => {
+      if (done || started >= 2) return;
+      started++;
+      if (started === 1) timer = setTimeout(attempt, RESEND_MS);
+      send(client, action, body, "uno").then(
+        () => {
+          if (!done) finish(resolve);
+        },
+        (error: unknown) => {
+          if (done) return;
+          if (!(error instanceof NetworkError)) {
+            finish(() => {
+              reject(error instanceof Error ? error : new Error(UNREACHABLE));
+            });
+            return;
+          }
+          failed++;
+          if (started < 2) {
+            // Nothing reached the server, so there is no reason to wait
+            clearTimeout(timer);
+            attempt();
+          } else if (failed >= 2)
+            finish(() => {
+              reject(new Error(UNREACHABLE, { cause: error }));
+            });
+        },
+      );
+    };
+    attempt();
+  });
 }
