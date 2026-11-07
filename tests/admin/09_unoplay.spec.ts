@@ -8,25 +8,36 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { assertEmulatorEnvironment } from "../firebase/guard";
 import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
+import { mockConfetti } from "../confetti";
 import { signIn } from "./helpers";
 import type { RoundState } from "../../src/unogame/engine/round";
 
 // Cam hosts and plays on the page under test, and Laura joins from a second
 // browser, as on two phones. The cards are dealt at random, so the test only
 // draws, then leaves one player on a last matching card to finish the round.
+// A won round plays confetti, so every page uses the stand-in for its script
+// and never reaches the real site
 const test = base.extend<{ guestPage: Page; thirdPage: Page }>({
+  page: async ({ page }, use) => {
+    await mockConfetti(page);
+    await use(page);
+  },
   guestPage: async ({ browser }, use) => {
     const context = await browser.newContext({
       baseURL: "http://localhost:3000/",
     });
-    await use(waitsForHydration(await context.newPage()));
+    const page = waitsForHydration(await context.newPage());
+    await mockConfetti(page);
+    await use(page);
     await context.close();
   },
   thirdPage: async ({ browser }, use) => {
     const context = await browser.newContext({
       baseURL: "http://localhost:3000/",
     });
-    await use(waitsForHydration(await context.newPage()));
+    const page = waitsForHydration(await context.newPage());
+    await mockConfetti(page);
+    await use(page);
     await context.close();
   },
 });
