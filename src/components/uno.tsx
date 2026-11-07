@@ -321,7 +321,9 @@ export default function Uno({
   }
 
   async function leave() {
-    if (client && room && playerId && !ended) {
+    // A player who has been removed has nothing left to leave, and the room
+    // would only refuse the command
+    if (client && room && playerId && listed && !ended) {
       try {
         await send(
           client,
