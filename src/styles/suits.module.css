@@ -117,12 +117,10 @@
       flex-basis: 100%;
     }
   }
-}
 
-/* A phone held sideways has room across but not down, so the game sits in two
+  /* A phone held sideways has room across but not down, so the game sits in two
    columns: whose turn it is, the last result and the cards on the left, and
    what to do next on the right */
-@media (orientation: landscape) and (max-height: 500px) {
   div.board.board {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
@@ -190,23 +188,17 @@
     grid-area: controls;
     align-self: start;
   }
-}
 
-/* No room for the keyboard hint beside the buttons on a short screen */
-@media (orientation: landscape) and (max-height: 500px) {
+  /* No room for the keyboard hint beside the buttons on a short screen */
   .hint {
     display: none;
   }
-}
 
-@media (orientation: landscape) and (max-height: 500px) {
   div.table {
     min-height: 3.5rem;
   }
-}
 
-/* Smaller buttons and a flatter suit picker, still well over 24px */
-@media (orientation: landscape) and (max-height: 500px) {
+  /* Smaller buttons and a flatter suit picker, still well over 24px */
   .board :global(.mantine-Button-root) {
     --button-height: 2.25rem;
   }

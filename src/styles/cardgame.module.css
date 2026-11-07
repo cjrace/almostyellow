@@ -116,4 +116,10 @@ label[data-active] .redSuit {
   .controls {
     gap: var(--mantine-spacing-xs);
   }
+
+  /* Smaller buttons, still over 24px, so three fit beside a card */
+  .sideBySide .controls :global(.mantine-Button-root) {
+    --button-height: 2rem;
+    --button-fz: var(--mantine-font-size-sm);
+  }
 }

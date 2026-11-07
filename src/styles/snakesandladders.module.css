@@ -145,16 +145,13 @@
     min-height: 0;
     overflow-y: auto;
   }
-}
 
-@media (orientation: landscape) and (max-height: 500px) {
   /* Roll Dice names the player, so the buttons wrap rather than cut it off */
   .controls > :last-child {
     flex-wrap: wrap;
   }
-}
 
-@media (orientation: landscape) and (max-height: 500px) {
+  /* !important beats the `flex` style prop */
   .controls > :last-child > button:first-child {
     flex: 1 0 auto !important;
   }

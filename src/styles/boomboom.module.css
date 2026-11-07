@@ -142,10 +142,8 @@
     min-height: 0;
     gap: var(--mantine-spacing-sm) var(--mantine-spacing-xs);
   }
-}
 
-/* The number of ropes and the Start button side by side */
-@media (orientation: landscape) and (max-height: 500px) {
+  /* The number of ropes and the Start button side by side */
   .setup {
     flex-direction: row;
     align-items: flex-end;

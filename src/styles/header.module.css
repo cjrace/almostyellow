@@ -8,10 +8,8 @@
   .bar {
     margin-bottom: 8px;
   }
-}
 
-/* Slightly smaller buttons, still well over the 24px minimum */
-@media (orientation: landscape) and (max-height: 500px) {
+  /* Slightly smaller buttons, still well over the 24px minimum */
   .bar :global(.mantine-ActionIcon-root) {
     --ai-size: 2.25rem;
   }
