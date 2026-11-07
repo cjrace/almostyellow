@@ -320,10 +320,11 @@ export default function UnoTable({
                 type="button"
                 className={styles.pileButton}
                 data-attention={mustDraw ? "" : undefined}
-                aria-disabled={!canDraw}
+                aria-disabled={!canDraw || !!sending}
                 aria-label={`Draw pile, ${String(view.stockCount)} cards${canDraw ? ", draw a card" : ""}`}
                 aria-describedby={canDraw ? undefined : "uno_draw_reason"}
                 onClick={() => {
+                  if (sending) return;
                   if (canDraw) onDraw();
                   else warn(drawReason);
                 }}
@@ -352,12 +353,24 @@ export default function UnoTable({
         <div className={styles.controls}>
           {/* Only the player who drew decides whether to keep it */}
           {view.drawPending && myTurn ? (
-            <Button variant="default" onClick={onKeep}>
+            <Button
+              variant="default"
+              aria-disabled={!!sending}
+              onClick={() => {
+                if (!sending) onKeep();
+              }}
+            >
               Keep the card I drew
             </Button>
           ) : null}
           {canCatch && catchable ? (
-            <Button variant="default" onClick={onCatch}>
+            <Button
+              variant="default"
+              aria-disabled={!!sending}
+              onClick={() => {
+                if (!sending) onCatch();
+              }}
+            >
               Call out {names[catchable]} for not saying Uno
             </Button>
           ) : null}
@@ -368,8 +381,10 @@ export default function UnoTable({
               variant={unoReady ? "filled" : "default"}
               data-ready={unoReady ? "" : undefined}
               disabled={declareUno}
+              aria-disabled={!!sending}
               aria-describedby="uno_declare_reason"
               onClick={() => {
+                if (sending) return;
                 if (unoWindowMine) onSayUno();
                 else setDeclareUno(true);
               }}
@@ -414,6 +429,7 @@ export default function UnoTable({
           reason={cardReason}
           active={myTurn}
           onPlay={(card) => {
+            if (sending) return;
             if (isWild(card)) setWild(card);
             else play(card);
           }}

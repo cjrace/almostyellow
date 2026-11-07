@@ -827,14 +827,20 @@
   }
 }
 
-/* A move has been sent and the table has not changed yet. The hand and the
-   buttons are dimmed and cannot be tapped again; the words in .sending say why,
-   so nothing depends on the dimming. The pill floats above the confetti credit
-   so it never moves the layout. */
+/* A move has been sent and the table has not changed yet. Only the card
+   images fade, as the draw pile does when you cannot draw, so the count, the
+   "New" tag and the buttons keep their contrast. The buttons are also marked
+   aria-disabled, and the words in .sending say why. The pill floats above the
+   confetti credit so it never moves the layout. */
+.board[data-sending] .hand img,
+.board[data-sending] .pileButton img {
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.75;
+}
+
 .board[data-sending] .hand,
 .board[data-sending] .controls,
-.board[data-sending] .pile[data-uno-pile="draw"] {
-  opacity: 0.55;
+.board[data-sending] .pileButton {
   pointer-events: none;
 }
 

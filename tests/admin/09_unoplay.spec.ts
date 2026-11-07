@@ -198,10 +198,13 @@ async function playRound(
       .click();
     const sending = actor.getByRole("status").filter({ hasText: /sending/i });
     await expect(sending).toHaveText("Sending…");
-    await expect(actor.getByRole("list", { name: /^Your hand/ })).toHaveCSS(
-      "opacity",
-      "0.55",
-    );
+    // The cards fade, but the draw pile's count keeps its full contrast
+    await expect(
+      actor
+        .getByRole("list", { name: /^Your hand/ })
+        .locator("img")
+        .first(),
+    ).toHaveCSS("opacity", "0.75");
     await expect(sending).toHaveText("Still sending…");
     await checkAccessibility?.(actor);
     await expect(sending).toHaveCount(0, { timeout: 10_000 });
