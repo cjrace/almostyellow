@@ -103,31 +103,37 @@ async function openTable(
 // The hand never scrolls, and the top-left corner of every card is the
 // frontmost thing at that spot, so no card is covered
 async function expectWholeHandShowing(page: Page) {
-  const result = await page.evaluate(() => {
-    const list = document.querySelector('ul[aria-label^="Your hand"]');
-    if (!list) return { error: "no hand" };
-    const buttons = [...list.querySelectorAll("button")];
-    const bounds = list.getBoundingClientRect();
-    const covered: string[] = [];
-    let outside = 0;
-    for (const button of buttons) {
-      // elementFromPoint only sees what is on screen
-      button.scrollIntoView({ block: "nearest" });
-      const box = button.getBoundingClientRect();
-      if (box.left < bounds.left - 1 || box.right > bounds.right + 1) outside++;
-      const x = box.left + box.width * 0.1;
-      const y = box.top + box.height * 0.1;
-      const top = document.elementFromPoint(x, y)?.closest("button");
-      if (top !== button) covered.push(button.getAttribute("aria-label") ?? "");
-    }
-    return {
-      scrolls: list.scrollWidth > list.clientWidth,
-      outside,
-      covered,
-      cards: buttons.length,
-    };
-  });
-  expect(result).toMatchObject({ scrolls: false, outside: 0, covered: [] });
+  // Polled, as the fan settles a moment after a resize
+  const measure = () =>
+    page.evaluate(() => {
+      const list = document.querySelector('ul[aria-label^="Your hand"]');
+      if (!list) return { error: "no hand" };
+      const buttons = [...list.querySelectorAll("button")];
+      const bounds = list.getBoundingClientRect();
+      const covered: string[] = [];
+      let outside = 0;
+      for (const button of buttons) {
+        // elementFromPoint only sees what is on screen
+        button.scrollIntoView({ block: "nearest" });
+        const box = button.getBoundingClientRect();
+        if (box.left < bounds.left - 1 || box.right > bounds.right + 1)
+          outside++;
+        const x = box.left + box.width * 0.1;
+        const y = box.top + box.height * 0.1;
+        const top = document.elementFromPoint(x, y)?.closest("button");
+        if (top !== button)
+          covered.push(button.getAttribute("aria-label") ?? "");
+      }
+      return {
+        scrolls: list.scrollWidth > list.clientWidth,
+        outside,
+        covered,
+        cards: buttons.length,
+      };
+    });
+  await expect
+    .poll(measure)
+    .toMatchObject({ scrolls: false, outside: 0, covered: [] });
 }
 
 const overflowOf = (page: Page) =>
@@ -432,10 +438,11 @@ test.describe("Looking at the Uno table in a real room", () => {
     const { show } = await openTable(page, "large-hand");
     for (const { value } of scenarios) {
       await show(value);
-      expect(
-        await overflowOf(page),
-        `${value} overflows the page sideways`,
-      ).toBeLessThanOrEqual(0);
+      await expect
+        .poll(() => overflowOf(page), {
+          message: `${value} overflows the page sideways`,
+        })
+        .toBeLessThanOrEqual(0);
     }
     await show("large-hand");
     await expect(
@@ -459,10 +466,11 @@ test.describe("Looking at the Uno table in a real room", () => {
       // still shows every card, as does a full table of ten
       for (const scenario of ["large-hand", "ten-players"] as const) {
         await show(scenario);
-        expect(
-          await overflowOf(page),
-          `${scenario} overflows sideways on a ${name}`,
-        ).toBeLessThanOrEqual(0);
+        await expect
+          .poll(() => overflowOf(page), {
+            message: `${scenario} overflows sideways on a ${name}`,
+          })
+          .toBeLessThanOrEqual(0);
         await expectWholeHandShowing(page);
       }
     }
@@ -488,7 +496,10 @@ test.describe("Looking at the Uno table in a real room", () => {
       await expect(page.getByRole("button", { name: "End room" })).toHaveCount(
         0,
       );
-      await menu.click();
+      // From the keyboard: a click does not focus a button in Safari, so there
+      // would be nothing for focus to return to
+      await menu.focus();
+      await page.keyboard.press("Enter");
       for (const name of [
         "Copy join link",
         "End round",
@@ -547,10 +558,11 @@ test.describe("Looking at the Uno table in a real room", () => {
       await page.setViewportSize({ width, height: 700 });
       for (const { value } of scenarios) {
         await show(value);
-        expect(
-          await overflowOf(page),
-          `${value} overflows at ${String(width)} pixels`,
-        ).toBeLessThanOrEqual(0);
+        await expect
+          .poll(() => overflowOf(page), {
+            message: `${value} overflows at ${String(width)} pixels`,
+          })
+          .toBeLessThanOrEqual(0);
         await expectWholeHandShowing(page);
       }
     }
