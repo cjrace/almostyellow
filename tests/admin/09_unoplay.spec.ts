@@ -196,7 +196,7 @@ async function playRound(
     await actor
       .getByRole("button", { name: /^Draw pile, \d+ cards, draw a card/ })
       .click();
-    const sending = actor.getByRole("status").filter({ hasText: /sending/ });
+    const sending = actor.getByRole("status").filter({ hasText: /sending/i });
     await expect(sending).toHaveText("Sending…");
     await expect(actor.getByRole("list", { name: /^Your hand/ })).toHaveCSS(
       "opacity",
