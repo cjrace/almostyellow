@@ -142,7 +142,7 @@ export default function UnoTable({
               {heading}
             </Title>
             <Text c="dimmed">
-              Colour in play:{" "}
+              Colour<span className={styles.inPlay}> in play</span>:{" "}
               <span
                 className={styles.swatch}
                 data-colour={view.colour}

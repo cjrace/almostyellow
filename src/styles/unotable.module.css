@@ -262,6 +262,24 @@
     flex: 1 1 auto;
   }
 
+  /* The room code sits at the top right, after the buttons */
+  .roomRow {
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: var(--mantine-spacing-md);
+  }
+
+  .roomRow > h2 {
+    --title-fz: var(--mantine-font-size-lg) !important;
+    white-space: nowrap;
+  }
+
+  .roomRow > div {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
   .board {
     display: grid;
     grid-template-columns: minmax(0, 17rem) minmax(0, 1fr) minmax(0, 13rem);
@@ -347,5 +365,62 @@
   .hand {
     grid-column: 1 / -1;
     grid-row: 4;
+  }
+}
+
+/* Small phones, such as 667 by 320: everything above, but tighter */
+@media (orientation: landscape) and (max-height: 400px) {
+  /* Narrower sides, so the buttons for catching Uno sit on one line */
+  .board {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 16rem);
+  }
+
+  div.head {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .head h2 {
+    --title-fz: var(--mantine-font-size-lg) !important;
+  }
+
+  .head p {
+    white-space: nowrap;
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  /* "Colour: Red · clockwise" is short enough to sit beside the button */
+  .inPlay {
+    display: none;
+  }
+
+  .head > button {
+    --button-height: 1.875rem !important;
+    --button-fz: var(--mantine-font-size-sm) !important;
+    --button-padding-x: var(--mantine-spacing-sm) !important;
+  }
+
+  /* One line a player: the name, then the cards held and whose turn it is */
+  .opponents {
+    min-height: 2.2rem;
+  }
+
+  .opponent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mantine-spacing-xs);
+    padding-block: 2px;
+  }
+
+  .opponent > p:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .opponent > div {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: var(--mantine-spacing-xs);
   }
 }

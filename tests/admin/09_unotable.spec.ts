@@ -144,6 +144,7 @@ const CORNER = { x: 8, y: 8 };
 const sidewaysPhones = [
   { name: "iPhone 17", width: 874, height: 402 },
   { name: "Pixel 9", width: 960, height: 448 },
+  { name: "small phone", width: 667, height: 320 },
 ];
 
 // Everything needed to take a turn is on screen without scrolling
@@ -168,7 +169,24 @@ async function expectTurnOnScreen(page: Page, label: string) {
               return box.top < 0 || box.bottom > height + 1;
             })
             .map(([name]) => name);
+          // Nothing on the top rows sits on top of anything beside it
+          const rect = (el: Element | undefined) => el?.getBoundingClientRect();
+          const colour = [...document.querySelectorAll("p")].find((p) =>
+            p.textContent.startsWith("Colour"),
+          );
+          const scores = [...document.querySelectorAll("button")].find(
+            (b) => b.textContent === "Scores",
+          );
+          const [a, b] = [rect(colour), rect(scores)];
+          const overlaps =
+            !!a &&
+            !!b &&
+            a.left < b.right &&
+            b.left < a.right &&
+            a.top < b.bottom &&
+            b.top < a.bottom;
           return {
+            overlaps,
             off,
             sideways:
               document.documentElement.scrollWidth -
@@ -178,7 +196,7 @@ async function expectTurnOnScreen(page: Page, label: string) {
         }),
       { message: label },
     )
-    .toEqual({ off: [], sideways: 0, scrolls: false });
+    .toEqual({ overlaps: false, off: [], sideways: 0, scrolls: false });
 }
 
 test.describe("Looking at the Uno table in a real room", () => {

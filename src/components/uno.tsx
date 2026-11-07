@@ -484,7 +484,12 @@ export default function Uno({
         )}
 
         {active && (
-          <Group justify="space-between" align="center" wrap="wrap">
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="wrap"
+            className={tableShown ? table.roomRow : undefined}
+          >
             <Title ref={titleRef} tabIndex={-1} order={2} size="h3">
               Room {active}
             </Title>
