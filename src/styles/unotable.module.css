@@ -1,0 +1,828 @@
+/* The Uno table fills the screen like the other card games (see
+   cardgame.module.css). Opponents, the piles and the hand each get their own
+   area, and a large hand fans out to fit its width rather than scrolling. */
+
+.board {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-sm);
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  margin-top: var(--mantine-spacing-md);
+  min-width: 0;
+}
+
+.heading {
+  overflow-wrap: anywhere;
+}
+
+/* Players other than you: one scrolling row on phones, wrapping on wider
+   screens */
+.opponents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Each other player is a small pill, so the current player is never hidden
+   off the side, and there is room for the cards */
+.opponent {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  min-width: 0;
+  padding: 2px var(--mantine-spacing-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-xl);
+}
+
+.opponent > p:first-child {
+  max-width: 9rem;
+}
+
+.opponent > div {
+  flex: none;
+  flex-wrap: nowrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+/* "Waiting" is the same for everyone who is not playing, so it is left out.
+   "Playing" and "Uno?" stay as words. */
+.waiting {
+  display: none;
+}
+
+/* Text that stays as a button's description for screen readers but is not
+   worth the space on screen */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The room code and its menu are one button, top right */
+.roomRow {
+  flex-wrap: nowrap;
+}
+
+/* The player whose turn it is fills solid, and says "Playing", so it never
+   relies on colour alone */
+.opponent[data-current] {
+  background: #c2410c;
+  border-color: #c2410c;
+  color: #fff;
+}
+
+.opponent[data-current] p {
+  color: #fff;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.direction {
+  display: inline-flex;
+}
+
+.name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A size container, so the piles take the height that is left */
+.table {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-height: 11rem;
+  container-type: size;
+}
+
+.piles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-md);
+  /* Two piles of 5 by 7 and the gap between them also have to fit the width */
+  height: min(100cqh, 20rem, calc(0.7 * (100cqw - var(--mantine-spacing-md))));
+  max-width: 100cqw;
+}
+
+.pile {
+  position: relative;
+  height: 100%;
+  aspect-ratio: 5 / 7;
+  min-width: 0;
+}
+
+.pileButton {
+  display: block;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  border-radius: 6%;
+}
+
+.pileButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.pileImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6%;
+}
+
+/* The card count sits in a box on the pile, so it does not depend on the
+   colours of the card behind it */
+.count {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 6%;
+  margin-inline: auto;
+  width: fit-content;
+  padding: 2px 10px;
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  border: 2px solid var(--mantine-color-default-border);
+  font-weight: 700;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--mantine-color-text);
+  vertical-align: -0.15rem;
+}
+
+/* Each colour also has its own shape */
+.swatch[data-colour="red"] {
+  background: #d62828;
+  border-radius: 50%;
+}
+
+.swatch[data-colour="yellow"] {
+  background: #f5c518;
+  border-radius: 2px;
+}
+
+.swatch[data-colour="green"] {
+  background: #2a9d4a;
+  border-radius: 50% 0 50% 0;
+}
+
+.swatch[data-colour="blue"] {
+  background: #1f5fd1;
+  border-radius: 2px;
+  transform: rotate(45deg) scale(0.85);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+/* The hand is a fan: each card is placed by UnoHand so the whole hand fits the
+   width, with every top-left corner showing. Playable cards stand up from the
+   rest, so playability is also shown by position, not only by being brighter.
+   The focused or hovered card comes to the front. */
+.hand {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.handCard {
+  position: absolute;
+}
+
+/* Only focus brings a card to the front. Hovering lifts it instead, so a
+   pointer never covers the strip of the card beside it. */
+.handCard:focus-within {
+  z-index: 5;
+}
+
+.cardButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border-radius: 6%;
+  transition: transform 0.15s;
+}
+
+.cardButton[data-playable] {
+  transform: translateY(-10px);
+}
+
+.cardButton[data-playable]:hover {
+  transform: translateY(-16px);
+}
+
+.cardButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.cardButton[aria-disabled="true"] img {
+  /* A filter, not opacity, so overlapped cards do not show through */
+  filter: grayscale(0.55) brightness(0.8);
+}
+
+/* A card you just drew looks like any other playable card, with a small tag */
+.cardButton[data-drawn] {
+  position: relative;
+}
+
+.newTag {
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  z-index: 1;
+  padding: 1px 6px;
+  border-radius: var(--mantine-radius-xl);
+  background: #c2410c;
+  color: #fff;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardButton {
+    transition: none;
+  }
+}
+
+/* The buttons are the colours themselves, with Mantine's usual white text. The
+   shape stays, in white, so each colour is still more than a fill */
+.picker .swatch[data-colour] {
+  background: #fff;
+  border-color: #fff;
+}
+
+/* Room all round for the focus ring, which the dialog body would clip */
+.pickerGroup {
+  padding: 6px;
+}
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--mantine-spacing-xs);
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  .picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board {
+    margin-top: var(--mantine-spacing-xs);
+  }
+}
+
+/* The colour in play, on the corner of the discard pile. Its shape is
+   drawn by .swatch, so it never relies on colour alone. */
+.pileSwatch {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  z-index: 1;
+}
+
+/* A soft glow behind your hand while it is your turn. "Your turn" and your
+   filled pill say it too, so the glow is only another signal. */
+.hand[data-myturn] {
+  border-radius: var(--mantine-radius-md);
+  background: color-mix(in srgb, #c2410c 14%, transparent);
+  box-shadow: 0 0 22px 4px color-mix(in srgb, #c2410c 45%, transparent);
+  animation: handGlow 2.4s ease-in-out infinite alternate;
+}
+
+@keyframes handGlow {
+  from {
+    box-shadow: 0 0 10px 1px color-mix(in srgb, #c2410c 30%, transparent);
+  }
+
+  to {
+    box-shadow: 0 0 24px 5px color-mix(in srgb, #c2410c 55%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hand[data-myturn] {
+    animation: none;
+  }
+}
+
+/* Saying Uno matters right now: the button fills in and pulses three times,
+   and does not move at all when reduced motion is on */
+.controls button[data-ready] {
+  animation: sayUnoPulse 1.2s ease-out 3;
+}
+
+@keyframes sayUnoPulse {
+  from {
+    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+  }
+
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controls button[data-ready] {
+    animation: none;
+  }
+}
+
+/* A phone on its side is wide but short, so the portrait stack would push the
+   hand below the fold. Here the page has a side column down the left (the game
+   title, the room code and the room buttons) with the table beside it. In the
+   table, the turn, the other players and your buttons are on the left, the
+   piles on the right, and your hand runs across the bottom. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    column-gap: var(--mantine-spacing-md);
+    align-items: start;
+    align-content: start;
+  }
+
+  /* The side column is on the right, with the table on the left */
+  .pageHead {
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--mantine-spacing-xs);
+    min-width: 0;
+  }
+
+  .stage {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  /* The room button fills the side column */
+  .roomRow {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 8.5rem;
+    column-gap: var(--mantine-spacing-md);
+    row-gap: 4px;
+    margin-top: 0;
+  }
+
+  .board > * {
+    grid-column: 1;
+  }
+
+  /* Whose turn it is, with Scores beside it and the colour under both */
+  div.head {
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--mantine-spacing-xs);
+    row-gap: 0;
+  }
+
+  div.head > div:first-child {
+    display: contents;
+  }
+
+  .head h2 {
+    grid-column: 1;
+    grid-row: 1;
+    --title-fz: var(--mantine-font-size-lg) !important;
+  }
+
+  .head > div:last-child {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .head p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: nowrap;
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  /* Each other player is a small pill, not a box */
+  .opponents {
+    grid-row: 2;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
+    overflow-x: visible;
+    overflow-y: auto;
+    max-height: 3.4rem;
+    padding: 0;
+  }
+
+  .opponent {
+    flex: 0 1 auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    border-width: 1px;
+    border-radius: var(--mantine-radius-xl);
+  }
+
+  .opponent p {
+    font-size: var(--mantine-font-size-sm);
+    --text-line-clamp: 1 !important;
+  }
+
+  .opponent > p:first-child {
+    max-width: 7rem;
+  }
+
+  .opponent > div {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* "Waiting" is the same for everyone who is not playing, so it can go.
+     "Playing" and "Uno?" stay as words. */
+  .waiting,
+  .unit {
+    display: none;
+  }
+
+  /* Your buttons are in their own column beside the piles, within reach of a
+     thumb, and tall enough to tap */
+  .controls {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    align-self: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .controls > button {
+    --button-height: auto !important;
+    min-height: 2.75rem;
+  }
+
+  .controls > button :global(.mantine-Button-label) {
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Two lines at most, so a wider font cannot push the hand down. The whole
+     text is still there for screen readers. */
+  .reason {
+    margin: 0;
+    font-size: var(--mantine-font-size-xs);
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* A smaller swatch, so it does not cover the colour name on a small card */
+  .pileSwatch {
+    top: -0.6rem;
+    right: -0.6rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* The piles take the height the left side gives them */
+  .table {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    min-height: 0;
+  }
+
+  .hand {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+}
+
+/* Small phones, such as 667 by 320: everything above, but tighter */
+@media (orientation: landscape) and (max-height: 400px) {
+  .pageHead {
+    gap: 4px;
+  }
+
+  .roomRow button,
+  .head button {
+    --button-height: 1.625rem !important;
+    --button-fz: var(--mantine-font-size-xs) !important;
+    --button-padding-x: var(--mantine-spacing-xs) !important;
+  }
+
+  /* "Colour: Red · clockwise" */
+  .inPlay {
+    display: none;
+  }
+
+  /* The hints are still read out as each button's description, but there is
+     no room to show them */
+  .reason {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Whose turn it is. Your turn gets a thick outline and the words "Your turn";
+   everyone else's turn is quieter. */
+.heading[data-myturn] {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px var(--mantine-spacing-sm);
+  background: #c2410c;
+  color: #fff;
+  border-radius: var(--mantine-radius-md);
+}
+
+.heading[data-waiting] {
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+/* The draw pile cannot be used: it is greyed right out. Why is said by a
+   warning when it is clicked, and in its description. */
+.pileButton[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.pileButton[aria-disabled="true"] img {
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.75;
+}
+
+/* The draw pile can be clicked: a pointer, a lift and a slight grey */
+.pileButton[aria-disabled="false"] {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.pileButton[aria-disabled="false"] img {
+  filter: brightness(0.85);
+}
+
+.pileButton[aria-disabled="false"]:hover {
+  transform: translateY(-6px);
+}
+
+/* Nothing can be played, so drawing is the move */
+.pileButton[data-attention] {
+  animation: drawPulse 1.2s ease-out infinite;
+}
+
+@keyframes drawPulse {
+  from {
+    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+  }
+
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+/* A card landing on the discard pile */
+.landed {
+  height: 100%;
+  animation: landOnPile 0.3s ease-out;
+}
+
+@keyframes landOnPile {
+  from {
+    opacity: 0.4;
+    transform: scale(1.15);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* What the last move did: dimmed table, a box in the middle (special cards)
+   or a short banner at the top (Uno calls) */
+.alertBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 55%);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.alertBox {
+  max-width: min(90vw, 28rem);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.flying {
+  position: fixed;
+  z-index: 300;
+  pointer-events: none;
+}
+
+.reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  perspective: 900px;
+}
+
+.revealCard {
+  position: fixed;
+  transform-style: preserve-3d;
+}
+
+.revealBack,
+.revealFront {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.revealFront {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pileButton[data-attention],
+  .landed,
+  .alertBackdrop {
+    animation: none;
+  }
+
+  .pileButton[aria-disabled="false"] {
+    transition: none;
+  }
+}
+
+/* The round's winner: centred, with the four Uno colours around it */
+.winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  text-align: center;
+  border: 6px solid transparent;
+  background:
+    linear-gradient(var(--mantine-color-body), var(--mantine-color-body))
+      padding-box,
+    linear-gradient(135deg, #e03131, #f59f00, #2f9e44, #1971c2) border-box;
+}
+
+.trophy {
+  color: #e8a400;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 35%));
+  animation: trophyPop 0.6s ease-out;
+}
+
+.winnerName {
+  font-size: clamp(2rem, 9vw, 3.5rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  background: linear-gradient(90deg, #e03131, #e8590c, #2f9e44, #1971c2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes trophyPop {
+  from {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy {
+    animation: none;
+  }
+}
+
+/* The lobby and round-over page fill the screen, so the main buttons can sit
+   at the bottom of it */
+.fill {
+  flex: 1;
+}
+
+@mixin smaller-than $mantine-breakpoint-sm {
+  /* On a phone the main buttons are at the bottom, above the gap kept for the
+     confetti credit, and stay there while the page scrolls */
+  .bottomActions {
+    margin-top: auto;
+    position: sticky;
+    bottom: var(--site-frame-bottom);
+    padding-block: var(--mantine-spacing-xs);
+    background: var(--mantine-color-body);
+  }
+}
+
+/* A phone held upright: "Your turn" shares its line with the room button
+   instead of sitting under it, and Scores moves down beside the colour */
+@media (max-width: 47.99em) and (orientation: portrait) {
+  .page {
+    position: relative;
+  }
+
+  .roomRow {
+    position: absolute;
+    top: 4px;
+    right: var(--mantine-spacing-md);
+    z-index: 1;
+  }
+
+  .page .board {
+    margin-top: 0;
+  }
+
+  div.head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--mantine-spacing-xs);
+    row-gap: 4px;
+  }
+
+  div.head > div:first-child {
+    display: contents;
+  }
+
+  .head h2 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: start;
+    max-width: calc(100% - 7.5rem);
+  }
+
+  .head p {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .head > div:last-child {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}

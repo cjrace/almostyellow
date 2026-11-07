@@ -8,13 +8,16 @@ import {
 import { z } from "zod";
 import { adminAuth, adminDb } from "@/firebase/admin";
 import {
+  gameOf,
   isRoomCode,
+  playerCap,
   roomCodeAlphabet,
   RoomError,
+  type Game,
   type RoomView,
 } from "@/buzzer/model";
 
-function transaction<T>(operation: (tx: Transaction) => Promise<T>) {
+export function transaction<T>(operation: (tx: Transaction) => Promise<T>) {
   return adminDb().runTransaction(operation, { maxAttempts: 30 });
 }
 
@@ -29,8 +32,9 @@ export const commandSchema = z.object({
   round: id,
   version: z.number().int().nonnegative(),
 });
-interface Member {
+export interface Member {
   playerId: string;
+  uid?: string;
   expiresAt: Timestamp;
   status: "active" | "left" | "removed";
 }
@@ -43,19 +47,23 @@ const collections = [
   "roomPrivate",
   "roomMembers",
   "roomBuzzes",
+  "roomHands",
+  "roomResults",
   "roomCommands",
   "roomLimits",
 ];
-const key = (value: string) => createHash("sha256").update(value).digest("hex");
-const memberRef = (code: string, uid: string) =>
+const guestPrefixes = ["buzzer-", "uno-"];
+export const key = (value: string) =>
+  createHash("sha256").update(value).digest("hex");
+export const memberRef = (code: string, uid: string) =>
   adminDb().doc(`roomMembers/${code}_${uid}`);
 export function membershipId(code: string, uid: string) {
   return `${code}_${uid}`;
 }
-function fail(code: string, message: string): never {
+export function fail(code: string, message: string): never {
   throw new RoomError(code, message);
 }
-function live(room: RoomView) {
+export function live(room: RoomView) {
   if (room.expiresAt <= Date.now()) fail("expired", "This room has expired.");
   if (room.phase === "ended") fail("ended", "This room has ended.");
 }
@@ -74,7 +82,10 @@ export async function cleanupRooms() {
     if (collection === "roomMembers") {
       const uids = expired.docs
         .map((doc) => doc.get("guestUid") as string | undefined)
-        .filter((uid): uid is string => !!uid?.startsWith("buzzer-"));
+        .filter(
+          (uid): uid is string =>
+            !!uid && guestPrefixes.some((prefix) => uid.startsWith(prefix)),
+        );
       if (uids.length) {
         const result = await adminAuth().deleteUsers(uids);
         if (result.failureCount)
@@ -86,7 +97,11 @@ export async function cleanupRooms() {
     await batch.commit();
   }
 }
-export async function createRoom(owner: string, commandId: string) {
+export async function createRoom(
+  owner: string,
+  commandId: string,
+  game: Game = "buzzer",
+) {
   id.parse(commandId);
   await cleanupRooms().catch(() => {
     console.error("Buzzer cleanup failed.");
@@ -118,6 +133,10 @@ export async function createRoom(owner: string, commandId: string) {
         expiresAt,
         players: [],
         cleanupAt: expiry,
+        game,
+        ...(game === "uno"
+          ? { stage: "lobby", seats: [], scores: {}, view: null, events: [] }
+          : {}),
       });
       tx.create(adminDb().doc(`roomPrivate/${code}`), {
         owner,
@@ -134,6 +153,7 @@ export async function joinRoom(
   uid: string,
   input: unknown,
   serverGuest = false,
+  game: Game = "buzzer",
 ) {
   const { code, name } = z
     .object({ code: codeSchema, name: z.string().trim().min(1).max(30) })
@@ -162,6 +182,8 @@ export async function joinRoom(
     ]);
     if (!snapshot.exists) fail("invalid", "This room code is not available.");
     const room = snapshot.data() as RoomView;
+    if (gameOf(room) !== game)
+      fail("invalid", "This room code is not available.");
     live(room);
     const storedMember = membership.data() as Member | undefined;
     const member =
@@ -171,7 +193,8 @@ export async function joinRoom(
     if (member?.status === "removed")
       fail("removed", "You have been removed from this room.");
     if (member?.status === "active") return { playerId: member.playerId };
-    if (room.players.length >= 20) fail("full", "This room is full.");
+    if (room.players.length >= playerCap(room))
+      fail("full", "This room is full.");
     if (room.players.some((p) => p.name.toLowerCase() === name.toLowerCase()))
       fail("name_taken", "Someone is already using that name.");
     if (serverGuest && !member) {
@@ -191,6 +214,7 @@ export async function joinRoom(
       status: "active",
       code,
       expiresAt: Timestamp.fromMillis(room.expiresAt),
+      uid,
       ...(serverGuest ? { guestUid: uid } : {}),
     });
     // Rejoining retains the seat identifier, including any buzz this round.
@@ -198,15 +222,23 @@ export async function joinRoom(
     return { playerId };
   });
 }
-export async function joinGuestRoom(input: unknown, secret: string) {
+export async function joinGuestRoom(
+  input: unknown,
+  secret: string,
+  game: Game = "buzzer",
+) {
   const data = joinInputSchema.parse(input);
   z.string()
     .regex(/^[a-f0-9]{64}$/)
     .parse(secret);
   // Store only a room-specific hash. The prefix retires local-storage keys
   // from the previous flow, even if someone copies one into a cookie.
-  const uid = `buzzer-${key(`cookie:${data.code}:${secret}`)}`;
-  const membership = await joinRoom(uid, data, true);
+  // Buzzer UIDs keep their original form, so existing players are unchanged.
+  const uid =
+    game === "buzzer"
+      ? `buzzer-${key(`cookie:${data.code}:${secret}`)}`
+      : `${game}-${key(`cookie:${game}:${data.code}:${secret}`)}`;
+  const membership = await joinRoom(uid, data, true, game);
   // Membership must succeed before any Auth record is created. A retry uses
   // the same UID if either the response or the token exchange was lost.
   try {
@@ -221,7 +253,9 @@ export async function joinGuestRoom(input: unknown, secret: string) {
   }
   return {
     ...membership,
-    token: await adminAuth().createCustomToken(uid, { buzzerRoom: data.code }),
+    token: await adminAuth().createCustomToken(uid, {
+      [`${game}Room`]: data.code,
+    }),
   };
 }
 export async function hostCommand(
@@ -247,6 +281,8 @@ export async function hostCommand(
       fail("forbidden", "You do not host this room.");
     if (receipt.exists) return;
     const room = snapshot.data() as RoomView;
+    if (gameOf(room) !== "buzzer")
+      fail("invalid", "This is not a buzzer room.");
     live(room);
     if (room.round !== data.round || room.version !== data.version)
       fail("stale", "The room changed. Review it and try again.");
@@ -292,6 +328,8 @@ export async function playerCommand(
     ]);
     if (!snapshot.exists) fail("invalid", "This room is not available.");
     const room = snapshot.data() as RoomView;
+    if (gameOf(room) !== "buzzer")
+      fail("invalid", "This is not a buzzer room.");
     live(room);
     const member = membership.data() as Member | undefined;
     if (member?.status !== "active")

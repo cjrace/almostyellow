@@ -78,6 +78,13 @@ export default function Games() {
             linktext="Quiz buzzer"
             experimental
           />
+          <GamesCard
+            imagePath="/images/almo-border.png"
+            title="Uno"
+            description="Play Uno online with friends in a private room."
+            link="/games/uno"
+            linktext="Uno"
+          />
         </SimpleGrid>
       </Stack>
     </div>

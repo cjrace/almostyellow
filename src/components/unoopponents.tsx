@@ -1,0 +1,132 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Group, Text } from "@mantine/core";
+import {
+  IconArrowBackUp,
+  IconArrowForwardUp,
+  IconCards,
+} from "@tabler/icons-react";
+import styles from "@/styles/unotable.module.css";
+
+interface Seat {
+  id: string;
+  name: string;
+  cards: number;
+}
+
+interface UnoOpponentsProps {
+  players: Seat[]; // Everyone, you included, in seat order
+  me: string;
+  currentPlayer: string;
+  direction: 1 | -1;
+  unoPlayer: string | null; // Anyone sitting on one card without saying Uno
+}
+
+// Everyone in the round, in seat order, with their card count and whose turn it
+// is. The turn is a filled pill with the word "Playing", and "UNO!" stays on
+// anyone down to one card who has said it, so none of it depends on colour.
+export default function UnoOpponents({
+  players,
+  me,
+  currentPlayer,
+  direction,
+  unoPlayer,
+}: UnoOpponentsProps) {
+  const listRef = useRef<HTMLUListElement>(null);
+  // When there are more players than fit, the list scrolls, so the keyboard
+  // needs a way into it
+  const [scrolls, setScrolls] = useState(false);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      setScrolls(
+        list.scrollHeight > list.clientHeight + 1 ||
+          list.scrollWidth > list.clientWidth + 1,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(list);
+    for (const child of list.children) observer.observe(child);
+    return () => {
+      observer.disconnect();
+    };
+  }, [players.length]);
+
+  return (
+    <ul
+      ref={listRef}
+      className={styles.opponents}
+      aria-label="Players"
+      // A scrolling box needs a keyboard stop (WCAG 2.1.1) or its players
+      // cannot be reached; it only gets one while it really scrolls
+      // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
+      tabIndex={scrolls ? 0 : undefined}
+    >
+      {players.map((player) => {
+        const current = player.id === currentPlayer;
+        const you = player.id === me;
+        const label = you ? "You" : player.name;
+        const said = player.cards === 1 && unoPlayer !== player.id;
+        const cards = `${String(player.cards)} ${player.cards === 1 ? "card" : "cards"}`;
+        return (
+          <li
+            key={player.id}
+            className={styles.opponent}
+            data-current={current ? "" : undefined}
+            aria-label={`${label}, ${cards}${current ? ", playing now" : ""}${said ? ", said Uno" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
+          >
+            <Text
+              fw={700}
+              lineClamp={2}
+              title={label}
+              style={{ overflowWrap: "anywhere" }}
+            >
+              {label}
+            </Text>
+            <Group gap="0 xs" justify="space-between" aria-hidden="true">
+              <Group gap={6} wrap="nowrap">
+                <IconCards size={18} />
+                <Text>
+                  {player.cards}
+                  <span className={styles.unit}>
+                    {player.cards === 1 ? " card" : " cards"}
+                  </span>
+                </Text>
+              </Group>
+              <Text
+                size="sm"
+                fw={said || current ? 700 : undefined}
+                className={
+                  current || said || unoPlayer === player.id
+                    ? styles.status
+                    : styles.waiting
+                }
+              >
+                {current && (
+                  <span className={styles.direction}>
+                    {direction === 1 ? (
+                      <IconArrowForwardUp size={14} />
+                    ) : (
+                      <IconArrowBackUp size={14} />
+                    )}
+                  </span>
+                )}
+                {current
+                  ? "Playing"
+                  : unoPlayer === player.id
+                    ? "Uno?"
+                    : said
+                      ? "UNO!"
+                      : "Waiting"}
+              </Text>
+            </Group>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
