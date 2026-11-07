@@ -502,7 +502,10 @@ test.describe("Looking at the Uno table in a real room", () => {
     await test.step("When I close it, or the dialog it opens, focus comes back to it", async () => {
       await page.keyboard.press("Escape");
       await expect(menu).toBeFocused();
-      await menu.click();
+      // From the keyboard: a click does not focus a button in Safari, so there
+      // would be nothing for focus to return to
+      await menu.focus();
+      await page.keyboard.press("Enter");
       await page.getByRole("menuitem", { name: "Leave game" }).click();
       const dialog = page.getByRole("dialog", { name: "Leave this round?" });
       await expect(dialog).toBeVisible();
