@@ -54,15 +54,17 @@ for (const viewport of viewports) {
       await expectGameFits(page);
     });
 
-    test("can reach the Decision Maker button without scrolling", async ({
-      page,
-    }) => {
-      test.skip(viewport.height < 400, "Too short to fit without scrolling");
-      await page.goto("/decisionmaker");
-      await expect(
-        page.getByRole("button", { name: "Make a decision" }),
-      ).toBeInViewport({ ratio: 1 });
-    });
+    // The small phone is too short to fit it without scrolling
+    if (viewport.height >= 400) {
+      test("can reach the Decision Maker button without scrolling", async ({
+        page,
+      }) => {
+        await page.goto("/decisionmaker");
+        await expect(
+          page.getByRole("button", { name: "Make a decision" }),
+        ).toBeInViewport({ ratio: 1 });
+      });
+    }
 
     test("has no sideways scroll on any public page", async ({ page }) => {
       for (const path of [

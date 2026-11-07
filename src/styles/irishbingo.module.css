@@ -105,6 +105,7 @@
     grid-row: 1;
   }
 
+  /* !important beats `hiddenFrom="sm"` on the image */
   img.calloutMascot {
     display: block !important;
     height: 2.5rem;
@@ -140,9 +141,7 @@
   .bubble {
     padding: 2px var(--mantine-spacing-sm);
   }
-}
 
-@media (orientation: landscape) and (max-height: 500px) {
   .callout {
     gap: var(--mantine-spacing-xs);
   }
@@ -155,6 +154,7 @@
     --progress-size: 8px;
   }
 
+  /* !important beats the `mih` prop on the group */
   .controls :global(.mantine-Group-root) {
     min-height: 1.75rem !important;
   }
@@ -172,12 +172,11 @@
     column-gap: var(--mantine-spacing-xs);
   }
 
+  /* !important beats the `mt` style props */
   .bubble > * {
     margin-top: 0 !important;
   }
-}
 
-@media (orientation: landscape) and (max-height: 500px) {
   .controls {
     gap: 4px;
   }

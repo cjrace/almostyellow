@@ -128,19 +128,15 @@ label[data-active] .redSuit {
   .controls {
     gap: var(--mantine-spacing-xs);
   }
-}
 
-/* The page title above a game, smaller and with less space under it on a
+  /* The page title above a game, smaller and with less space under it on a
    phone held sideways */
-@media (orientation: landscape) and (max-height: 500px) {
   .pageTitle {
     font-size: var(--mantine-h3-font-size);
     margin-bottom: var(--mantine-spacing-xs);
   }
-}
 
-/* Smaller buttons, still over 24px, so three fit beside a card */
-@media (orientation: landscape) and (max-height: 500px) {
+  /* Smaller buttons, still over 24px, so three fit beside a card */
   .sideBySide .controls :global(.mantine-Button-root) {
     --button-height: 2rem;
     --button-fz: var(--mantine-font-size-sm);
