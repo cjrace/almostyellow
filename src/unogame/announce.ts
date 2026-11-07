@@ -1,5 +1,5 @@
 import { colourNames, getUnoCardName } from "./cards";
-import type { PublicEvent } from "./engine/views";
+import type { PublicEvent, PublicView } from "./engine/views";
 
 const plural = (count: number, word: string) =>
   `${String(count)} ${word}${count === 1 ? "" : "s"}`;
@@ -83,4 +83,31 @@ export function announceEvents(
     }
   }
   return sentences.join(" ");
+}
+
+/**
+ * The live region's text for the table: what the latest command did, then
+ * whose turn it is. Starting a round clears the events and every later
+ * command adds some, so a playing table with none has just been dealt.
+ */
+export function announceTable(
+  table: {
+    view: PublicView;
+    events: readonly PublicEvent[];
+    names: Record<string, string>;
+  },
+  me: string,
+): string {
+  const { view, events, names } = table;
+  const playing = view.phase === "playing";
+  const happened =
+    playing && events.length === 0
+      ? "The round has started."
+      : announceEvents(events, names, me);
+  const turn = !playing
+    ? ""
+    : view.currentPlayer === me
+      ? "It is your turn."
+      : `It is ${names[view.currentPlayer] ?? "another player"}'s turn.`;
+  return [happened, turn].filter(Boolean).join(" ");
 }

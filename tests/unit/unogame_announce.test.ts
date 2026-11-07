@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { announceEvents } from "@/unogame/announce";
-import type { PublicEvent } from "@/unogame/engine/views";
+import { announceEvents, announceTable } from "@/unogame/announce";
+import type { PublicEvent, PublicView } from "@/unogame/engine/views";
 
 const names = { me: "Cam", laura: "Laura" };
 const say = (events: PublicEvent[]) => announceEvents(events, names, "me");
@@ -84,5 +84,66 @@ describe("Announcing what happened at the table", () => {
     expect(say([{ type: "drew", player: "gone", count: 3 }])).toBe(
       "A player drew 3 cards.",
     );
+  });
+});
+
+describe("Announcing the table", () => {
+  const view = (changes: Partial<PublicView> = {}): PublicView => ({
+    phase: "playing",
+    players: [
+      { id: "me", cards: 7 },
+      { id: "laura", cards: 7 },
+    ],
+    currentPlayer: "laura",
+    direction: 1,
+    top: { id: 1, kind: "number", colour: "red", value: 5 },
+    colour: "red",
+    stockCount: 93,
+    discardCount: 1,
+    drawPending: false,
+    uno: null,
+    outcome: null,
+    ...changes,
+  });
+
+  test("says a round has started whenever one is dealt, not only the first", () => {
+    expect(announceTable({ view: view(), events: [], names }, "me")).toBe(
+      "The round has started. It is Laura's turn.",
+    );
+    expect(
+      announceTable(
+        { view: view({ currentPlayer: "me" }), events: [], names },
+        "me",
+      ),
+    ).toBe("The round has started. It is your turn.");
+  });
+
+  test("says what happened, then whose turn it is, once play is under way", () => {
+    expect(
+      announceTable(
+        {
+          view: view({ currentPlayer: "me" }),
+          events: [{ type: "drew", player: "laura", count: 1 }],
+          names,
+        },
+        "me",
+      ),
+    ).toBe("Laura drew a card. It is your turn.");
+  });
+
+  test("gives no turn once the round is over", () => {
+    expect(
+      announceTable(
+        {
+          view: view({
+            phase: "finished",
+            outcome: { type: "win", winner: "laura" },
+          }),
+          events: [{ type: "won", player: "laura" }],
+          names,
+        },
+        "me",
+      ),
+    ).toBe("Laura won the round.");
   });
 });

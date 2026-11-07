@@ -36,7 +36,7 @@ import {
   type GuestClient,
 } from "@/buzzer/client";
 import { playerSignInError } from "@/buzzer/errors";
-import { announceEvents } from "@/unogame/announce";
+import { announceTable } from "@/unogame/announce";
 import { sendUno, watchUnoHand, watchUnoRoom } from "@/unogame/client";
 import type { Colour } from "@/unogame/engine/cards";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/unogame/engine/round";
@@ -216,17 +216,7 @@ export default function Uno({
   const connected = online && !cached && !ended;
   const announcement = useMemo(() => {
     if (!room?.view || !playerId) return "";
-    const events = announceEvents(room.events, room.names, playerId);
-    const view = room.view;
-    const turn =
-      view.phase !== "playing"
-        ? ""
-        : view.currentPlayer === playerId
-          ? "It is your turn."
-          : `It is ${room.names[view.currentPlayer] ?? "another player"}'s turn.`;
-    return [events || (room.version <= 1 ? "The round has started." : ""), turn]
-      .filter(Boolean)
-      .join(" ");
+    return announceTable({ ...room, view: room.view }, playerId);
   }, [room, playerId]);
 
   function remember(next: Saved) {

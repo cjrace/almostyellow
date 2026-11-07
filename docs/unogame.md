@@ -1,6 +1,6 @@
 # Online Uno
 
-Work in progress, built in stages on the `feat/uno` branch. This page describes what has landed so far. The Cam and Laura score tracker is separate; see [uno.md](uno.md).
+Uno played online at `/games/uno`: an authorised host opens a room, up to ten players join from their own phones, and the server deals, checks every move and keeps each hand private. This page covers the rules engine, the table, the game service and the page. The Cam and Laura score tracker is separate; see [uno.md](uno.md).
 
 ## Rules engine (`src/unogame/engine/`)
 
@@ -23,7 +23,7 @@ Playing down to one card with `declareUno` opens no window. Without it, the play
 
 ### Known limits
 
-There are no turn timers. A player who stops responding holds up the table until the host abandons the round (added in a later stage).
+There are no turn timers. A player who stops responding holds up the table until the host removes them or ends the round.
 
 ## Cards and table components
 
@@ -61,8 +61,8 @@ Everything is decided on the server in `src/unogame/service.ts`, which runs the 
 - **Table.** Seated players get `UnoTable`, fed by two listeners: the room document and their own hand document. Choosing a card, drawing, keeping, saying Uno and catching become commands to `/api/uno`. `catch` also sends the table version it was made against. Someone who joins mid-round waits for the next one.
 - **Lost replies.** A command that gets no answer is sent once more with the same command id, which the server applies at most once. If that also fails, the player is told to look at the table before trying again. Moves are refused while offline or while the listener is serving cached data.
 - **Announcements.** `src/unogame/announce.ts` turns the room's public events into sentences for the live region, and adds whose turn it is. It only ever sees public events.
-- **After a round.** The room shows who won and the scoreboard. The host can play again, which deals a new round and moves the first turn on one seat. Abandoning a round and the rest of the lifecycle are still to come.
+- **After a round.** The room shows who won and the scoreboard. The host can play again, which deals a new round and moves the first turn on one seat.
 - **Saving to the tracker.** Between rounds, a host with exactly two players and at least one round won sees **Save to tracker**. They say which player is Cam (the other is Laura) and the date played, and `saveRoomToTracker` adds the room's scores to the Uno tracker as one finished historic game, with the note "Played online (room CODE)". It checks the caller owns the room and that the table has not changed. The game id comes from the room code and expiry (`trackerGameId`), and the room records it as `trackerGameId`, so a room is saved once and the button then reads "Saved to tracker". It adds one game however many rounds were played, so save when the session is over. The tracker's own code (`historicGameEntry`) does the counting, so lifetime totals and statistics match entries made on the history page.
 - **Reloading.** The tab remembers the room, and the Firebase sign-in keeps the seat. A host's saved room only gives host controls while the host is signed in.
 
-A second journey in the same file has three players, one of whom leaves mid-round, then the host ends the round and plays again. The first journey (`tests/admin/09_unoplay.spec.ts`) cannot know the random deal, so it draws once, then uses the Admin SDK against the emulator to leave one player on a last matching card and plays it. Playing every kind of card is covered by the engine tests. Saving to the tracker is tested in `tests/firebase/unoroom.test.ts` and, with the shared scoreboard, in `tests/admin/07_uno.spec.ts` (desktop Chrome only).
+The first journey in `tests/admin/09_unoplay.spec.ts` cannot know the random deal, so it draws once, then uses the Admin SDK against the emulator to leave one player on a last matching card and plays it. A second journey in the same file has three players, one of whom leaves mid-round, then the host ends the round and plays again. Playing every kind of card is covered by the engine tests. Saving to the tracker is tested in `tests/firebase/unoroom.test.ts` and, with the shared scoreboard, in `tests/admin/07_uno.spec.ts` (desktop Chrome only).

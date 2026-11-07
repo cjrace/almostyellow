@@ -297,10 +297,17 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
         page.getByRole("list", { name: "Players" }).getByRole("listitem"),
       ).toHaveCount(2);
       await page.getByRole("button", { name: "Play again" }).click();
-      for (const view of [page, guestPage])
+      for (const view of [page, guestPage]) {
         await expect(
           view.getByRole("list", { name: "Your hand, 7 cards" }),
         ).toBeVisible();
+        // Screen readers hear about every new deal, not only the first
+        await expect(
+          view
+            .getByRole("status")
+            .filter({ hasText: "The round has started." }),
+        ).toBeVisible();
+      }
     });
   });
 

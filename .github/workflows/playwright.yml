@@ -3,9 +3,9 @@ permissions:
   contents: read
 on:
   push:
-    branches: [main, feat/uno]
+    branches: [main]
   pull_request:
-    branches: [main, feat/uno]
+    branches: [main]
 jobs:
   checks:
     name: Format, lint and unit tests

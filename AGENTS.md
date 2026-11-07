@@ -57,7 +57,7 @@ Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a fo
   - `(homepage)/` — Home page (route group, no URL segment)
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
-  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits, the Uno tracker and the quiz buzzer. Uno and the buzzer use Firestore
+  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits, the Uno tracker, online Uno and the quiz buzzer. Both Uno pages and the buzzer use Firestore
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
@@ -94,6 +94,10 @@ The Uno score tracker (`/games/uno-tracker`, `/games/uno-tracker/stats` and `/ga
 The buzzer at `/games/buzzer` uses protected host actions in `src/actions/buzzer.ts` and guest POST commands in `src/app/api/buzzer/route.ts`. Host actions require an authorised session and room ownership. Joining uses a server-issued, room-specific HttpOnly cookie to create a guest only after membership is accepted; leave and buzz commands verify room-scoped Firebase ID tokens and membership. Keep public Firebase sign-ups disabled. The room transactions are in `src/rooms/service.ts`, with browser subscriptions and timestamp ordering in `src/buzzer/`. Browser writes are denied. Guest authentication persists in a separate named Firebase app for each room, independent of the default admin app. Buzzes are never queued offline.
 
 Rooms expire after six hours. Authorised room creation performs bounded cleanup of expired records; there is no TTL policy. See `docs/buzzer.md` for behaviour and recovery, and the buzzer unit, Firebase and browser tests for concurrency and privacy coverage.
+
+### Online Uno (Firestore)
+
+Online Uno at `/games/uno` (`src/components/uno.tsx`) shares the buzzer's rooms, guest sign-in, expiry and cleanup in `src/rooms/`, told apart by a `game` field on the room. Host actions (start, remove, end round, end room, save to tracker) are in `src/actions/unoroom.ts` and require an authorised session and room ownership. Guest commands go to `src/app/api/uno/route.ts`, with Uno-only cookies, UIDs and token claims, so a buzzer sign-in does nothing in an Uno room. `src/unogame/engine/` is a pure rules engine, and `src/unogame/service.ts` runs it inside Firestore transactions. The full round stays in `roomPrivate`; each player can read only their own hand in `roomHands`, and finished rounds are kept for seven days in `roomResults`. Browser writes are denied. A room of two players can be saved to the Uno tracker as one historic game. See `docs/unogame.md`.
 
 ### UI
 
