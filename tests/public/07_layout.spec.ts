@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "../playwright";
+import { choosePlayers } from "../gameplay";
 
 const desktop = { width: 1280, height: 800 };
 
@@ -386,7 +387,7 @@ test.describe("A visitor on a desktop", { tag: "@desktop" }, () => {
 test.describe("A player of Snakes and Ladders", () => {
   async function startGame(page: Page, players = 2) {
     await page.goto("/games/snakesandladders");
-    await page.getByLabel("Number of Players").fill(players.toString());
+    await choosePlayers(page, players);
     await page.getByLabel("Name of player 1:").fill("Al");
     await page.getByRole("button", { name: "Start game!" }).click();
     await expect(page.getByTestId("board")).toBeVisible();

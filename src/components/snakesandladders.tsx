@@ -16,7 +16,6 @@ import {
   Text,
   Space,
   TextInput,
-  NumberInput,
   SimpleGrid,
   Group,
   SegmentedControl,
@@ -291,7 +290,7 @@ const SnakesAndLadders = () => {
 
   // The buttons a keyboard user is on disappear or are disabled as the game
   // moves on, so put focus back where they can carry on playing
-  const setupRef = useRef<HTMLInputElement>(null);
+  const setupRef = useRef<HTMLDivElement>(null);
   const rollRef = useRef<HTMLButtonElement>(null);
   const backToSetupRef = useRef(false);
 
@@ -316,7 +315,9 @@ const SnakesAndLadders = () => {
   useEffect(() => {
     if (!gameInitialized && backToSetupRef.current) {
       backToSetupRef.current = false;
-      setupRef.current?.focus();
+      setupRef.current
+        ?.querySelector<HTMLInputElement>("input:checked")
+        ?.focus();
     }
   }, [gameInitialized]);
 
@@ -515,16 +516,20 @@ const SnakesAndLadders = () => {
     return (
       <Box maw="40rem">
         {/* Form to set up the players */}
-        <NumberInput
+        <Text id="snakes_players" fw={500} size="sm">
+          Number of Players
+        </Text>
+        <SegmentedControl
           ref={setupRef}
-          value={numPlayers}
+          aria-labelledby="snakes_players"
+          fullWidth
+          mt={4}
+          maw="30rem"
+          value={String(numPlayers)}
           onChange={(value) => {
-            setNumPlayers(Number(value) || 2);
+            setNumPlayers(Number(value));
           }}
-          label="Number of Players"
-          min={2}
-          max={10}
-          maw="12rem"
+          data={Array.from({ length: 9 }, (_, i) => String(i + 2))}
         />
 
         <Space h="xl" />
