@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
-import { Card, Text, Image, Button, Flex, Group, Box } from "@mantine/core";
+import {
+  Card,
+  Text,
+  Image,
+  Button,
+  Flex,
+  Group,
+  Box,
+  Badge,
+} from "@mantine/core";
 
 interface GamesCardProps {
   imagePath: string;
@@ -10,6 +19,7 @@ interface GamesCardProps {
   description: string;
   link: string;
   linktext: string;
+  experimental?: boolean;
 }
 
 export default function GamesCard({
@@ -18,6 +28,7 @@ export default function GamesCard({
   description,
   link,
   linktext,
+  experimental,
 }: GamesCardProps) {
   return (
     <Card component="article" shadow="xs" p="sm" h="100%">
@@ -42,9 +53,16 @@ export default function GamesCard({
             style={{ flexShrink: 0 }}
           />
           <Box miw={0}>
-            <Text component="h2" size="md" fw={500}>
-              {title}
-            </Text>
+            <Group gap="xs">
+              <Text component="h2" size="md" fw={500}>
+                {title}
+              </Text>
+              {experimental && (
+                <Badge variant="default" size="sm">
+                  Experimental
+                </Badge>
+              )}
+            </Group>
             <Text size="sm" c="dimmed">
               {description}
             </Text>

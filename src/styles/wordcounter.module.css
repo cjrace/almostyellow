@@ -1,0 +1,116 @@
+/* Phones read top to bottom: method, text, counts. From md the method and
+   counts share a column beside the text, which Mantine's Grid can't do. */
+.layout {
+  display: grid;
+  gap: var(--mantine-spacing-md);
+}
+
+.method {
+  grid-area: method;
+}
+
+.editor {
+  grid-area: editor;
+}
+
+.counts {
+  grid-area: counts;
+}
+
+.layout {
+  grid-template-areas:
+    "method"
+    "editor"
+    "counts";
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .layout {
+    gap: var(--mantine-spacing-lg);
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "editor method"
+      "editor counts";
+  }
+}
+
+/* Phones are short of height, so the text box is modest, and the three counts
+   sit side by side with their labels above. */
+.input {
+  min-height: 160px;
+}
+
+.countList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mantine-spacing-xs);
+  margin: 0;
+}
+
+/* Labels wrap onto different numbers of lines, so each count spans the same
+   two rows and the numbers line up across the columns. */
+.countList {
+  grid-template-rows: auto auto;
+}
+
+.count {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  min-width: 0;
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .input {
+    min-height: 220px;
+  }
+
+  .countList {
+    grid-template-rows: none;
+    grid-template-columns: 1fr;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .count {
+    grid-row: auto;
+    grid-template-rows: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--mantine-spacing-md);
+  }
+}
+
+/* On phones the text box takes the height left on the screen, below the
+   heading and above the counts, clear of the confetti credit like the games. */
+@mixin smaller-than $mantine-breakpoint-md {
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(
+      100dvh - var(--site-frame-padding) - var(--site-frame-bottom)
+    );
+  }
+
+  .main,
+  .root {
+    flex: 1;
+  }
+
+  .layout {
+    flex: 1;
+    grid-template-rows: auto 1fr auto;
+  }
+}
+
+/* Mantine's gap prop can't change with screen size, so set its variable. */
+.main {
+  --stack-gap: var(--mantine-spacing-sm);
+}
+
+@mixin larger-than $mantine-breakpoint-md {
+  .main {
+    --stack-gap: var(--mantine-spacing-lg);
+  }
+}
