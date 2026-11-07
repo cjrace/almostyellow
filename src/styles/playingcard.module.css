@@ -38,3 +38,19 @@
     );
   }
 }
+
+/* Turning a card over */
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    animation: turn-over 0.25s ease-out;
+  }
+}
+
+@keyframes turn-over {
+  from {
+    transform: rotateY(90deg);
+  }
+  to {
+    transform: rotateY(0);
+  }
+}

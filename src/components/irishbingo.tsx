@@ -1,7 +1,6 @@
 "use client";
 
 import { type RefObject, useEffect, useRef, useState } from "react";
-import { useMounted } from "@mantine/hooks";
 import NextImage from "next/image";
 import { Card, getCardName, createCardDeck } from "@/components/carddeck";
 import {
@@ -11,19 +10,17 @@ import {
   Box,
   Progress,
   Group,
-  ActionIcon,
   Text,
   Title,
   List,
   Modal,
   Anchor,
-  Tooltip,
-  Center,
-  Container,
 } from "@mantine/core";
 import playConfetti from "@/components/playconfetti";
+import useGameInProgress from "@/components/usegameinprogress";
+import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
-import { IconConfetti, IconInfoCircle } from "@tabler/icons-react";
+import { IconConfetti } from "@tabler/icons-react";
 import layout from "@/styles/cardgame.module.css";
 import cardStyles from "@/styles/playingcard.module.css";
 import bingo from "@/styles/irishbingo.module.css";
@@ -72,13 +69,74 @@ const CalloutBox: React.FC<{ card: Card | null }> = ({ card }) => (
   </>
 );
 
+// The title and instructions, which the page puts in its header
+export function IrishBingoTitle() {
+  return (
+    <CardGameTitle title="Irish Bingo" credited={false}>
+      <Text>This game can be played with any number of players.</Text>
+      <Title order={3} my="md">
+        Standard rules
+      </Title>
+      <List variant="ordered" mb="md">
+        <List.Item>
+          deal 13 cards at random to all players from a standard 52 card deck
+          (use multiple decks if necessary based on the number of players)
+        </List.Item>
+        <List.Item>players then lay out all cards face up</List.Item>
+        <List.Item>
+          the caller then starts calling cards, players turn their cards face
+          down if they are called
+        </List.Item>
+        <List.Item>
+          first player to turn over all of their cards shouts &apos;Tayto&apos;
+          and wins
+        </List.Item>
+      </List>
+      <Text mb="sm">
+        Note that it is usually worth double checking the winners cards,
+        especially if alcohol has been involved.
+      </Text>
+      <Text mb="sm">
+        Different players can have have duplicates of cards, though no
+        individual player should have duplicate cards themselves.
+      </Text>
+      <Text>
+        For example players A and B both having the 7 of Hearts is fine, but
+        player A should not have two 7 of Hearts cards.
+      </Text>
+      <Title order={3} my="md">
+        Tie breaks
+      </Title>
+      <Text>
+        Tie breaks are decided in any way you like. We suggest a quick game of{" "}
+        <Anchor
+          underline="always"
+          target="_blank"
+          href="/games/boomboompirate"
+          rel="noreferrer"
+        >
+          Boom Boom Pirate (opens in new tab)
+        </Anchor>
+        , or a simple high card draw.
+      </Text>
+      <Title order={3} my="md">
+        Variations
+      </Title>
+      <Text>
+        You can change the number of cards per player if you want a longer or
+        shorter game, or are limited in the number of cards you have.
+      </Text>
+    </CardGameTitle>
+  );
+}
+
 export default function IrishBingo() {
-  const mounted = useMounted();
   usePreloadCards();
   // Initialize state for the decks
   const [mainDeck, setMainDeck] = useState<Card[]>(createCardDeck);
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [latestCard, setLatestCard] = useState<Card | null>(null);
+  useGameInProgress(drawnCards.length > 0);
   const progressColor = drawnCards.length > 35 ? "red" : "";
 
   // At one end of the deck each button goes, or disables itself, so focus
@@ -119,138 +177,9 @@ export default function IrishBingo() {
   };
 
   const [modalCardOpened, setModalCardOpened] = useState(false);
-  const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
 
   return (
     <div className={layout.game}>
-      <div>
-        <Group gap="xs">
-          <Title
-            className={layout.pageTitle}
-            fz={{
-              base: "var(--mantine-h2-font-size)",
-              sm: "var(--mantine-h1-font-size)",
-            }}
-          >
-            Irish Bingo
-          </Title>
-          <Tooltip
-            label="Game instructions"
-            openDelay={250}
-            position="right"
-            offset={5}
-          >
-            <ActionIcon
-              variant="subtle"
-              size="lg"
-              aria-label="Open game instructions modal"
-              onClick={(event) => {
-                event.currentTarget.focus();
-                setModalInstructionsOpened(true);
-              }}
-            >
-              <IconInfoCircle />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-
-        {/* Mantine only names a dialog from its own title, so name it here */}
-        <Modal.Root
-          // Include hidden rules in server HTML, then use the normal portal.
-          keepMounted
-          withinPortal={mounted}
-          keepMountedMode={mounted ? "activity" : "display-none"}
-          size="auto"
-          opened={modalInstructionsOpened}
-          onClose={() => {
-            setModalInstructionsOpened(false);
-          }}
-          transitionProps={{
-            transition: "fade",
-            duration: 300,
-            timingFunction: "linear",
-          }}
-        >
-          <Modal.Overlay backgroundOpacity={0.75} blur={3} />
-          <Modal.Content aria-label="Irish Bingo instructions">
-            <Modal.Body>
-              <Container>
-                <Title order={2} mb="sm" id="ib_instructions">
-                  Irish Bingo instructions
-                </Title>
-                <Text>This game can be played with any number of players.</Text>
-                <Title order={3} my="md">
-                  Standard rules
-                </Title>
-                <List variant="ordered" mb="md">
-                  <List.Item>
-                    deal 13 cards at random to all players from a standard 52
-                    card deck (use multiple decks if necessary based on the
-                    number of players)
-                  </List.Item>
-                  <List.Item>players then lay out all cards face up</List.Item>
-                  <List.Item>
-                    the caller then starts calling cards, players turn their
-                    cards face down if they are called
-                  </List.Item>
-                  <List.Item>
-                    first player to turn over all of their cards shouts
-                    &apos;Tayto&apos; and wins
-                  </List.Item>
-                </List>
-                <Text mb="sm">
-                  Note that it is usually worth double checking the winners
-                  cards, especially if alcohol has been involved.
-                </Text>
-                <Text mb="sm">
-                  Different players can have have duplicates of cards, though no
-                  individual player should have duplicate cards themselves.
-                </Text>
-                <Text>
-                  For example players A and B both having the 7 of Hearts is
-                  fine, but player A should not have two 7 of Hearts cards.
-                </Text>
-                <Title order={3} my="md">
-                  Tie breaks
-                </Title>
-                <Text>
-                  Tie breaks are decided in any way you like. We suggest a quick
-                  game of{" "}
-                  <Anchor
-                    underline="always"
-                    target="_blank"
-                    href="/games/boomboompirate"
-                    rel="noreferrer"
-                  >
-                    Boom Boom Pirate (opens in new tab)
-                  </Anchor>
-                  , or a simple high card draw.
-                </Text>
-                <Title order={3} my="md">
-                  Variations
-                </Title>
-                <Text>
-                  You can change the number of cards per player if you want a
-                  longer or shorter game, or are limited in the number of cards
-                  you have.
-                </Text>
-                <Center>
-                  <Button
-                    variant="subtle"
-                    mt="md"
-                    onClick={() => {
-                      setModalInstructionsOpened(false);
-                    }}
-                  >
-                    Close instructions modal
-                  </Button>
-                </Center>
-              </Container>
-            </Modal.Body>
-          </Modal.Content>
-        </Modal.Root>
-      </div>
-
       {/* Phones give the card all the height left, with the buttons at the
           bottom. Wider screens put Mr. Tayto beside it */}
       <div className={bingo.board}>

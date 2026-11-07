@@ -398,7 +398,11 @@ test(
     }
     await page.getByRole("button", { name: "Restart Game" }).focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByLabel("Number of Players")).toBeFocused();
+    await expect(
+      page
+        .getByRole("radiogroup", { name: "Number of Players" })
+        .getByRole("radio", { checked: true }),
+    ).toBeFocused();
   },
 );
 

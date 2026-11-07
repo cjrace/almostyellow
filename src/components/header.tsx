@@ -9,6 +9,7 @@ import {
   useMantineColorScheme,
   useComputedColorScheme,
   Tooltip,
+  Menu,
 } from "@mantine/core";
 import {
   IconBrandGithub,
@@ -19,6 +20,7 @@ import {
   IconMovie,
   IconHome,
   IconTool,
+  IconMenu2,
 } from "@tabler/icons-react";
 import styles from "@/styles/header.module.css";
 import playConfetti from "@/components/playconfetti";
@@ -38,6 +40,7 @@ interface HeaderProps {
   filmList?: boolean; // Back button for our film list pages
   tools?: boolean; // Back button for our tools pages
   homeOnly?: boolean; // Just show the home button
+  title?: React.ReactNode; // The page's h1, centred in the header
 }
 
 export default function Header({
@@ -49,6 +52,7 @@ export default function Header({
   filmList = false,
   tools = false,
   homeOnly = false,
+  title,
 }: HeaderProps) {
   const mainJustify =
     noCrumbs && !game && !whiskyJournal && !filmList && !tools && !homeOnly
@@ -61,7 +65,10 @@ export default function Header({
 
   return (
     <header>
-      <Group justify={mainJustify} className={styles.bar}>
+      <Group
+        justify={mainJustify}
+        className={`${styles.bar} ${title ? styles.withTitle : ""}`}
+      >
         {!noCrumbs && (
           <Group>
             <Breadcrumbs>
@@ -161,7 +168,63 @@ export default function Header({
           </Tooltip>
         )}
 
-        <Group h="100%" gap="xs" justify="flex-end">
+        {title ? <div className={styles.title}>{title}</div> : null}
+
+        {title ? (
+          // A portrait phone has little width, so the extras fold into a menu
+          <Menu position="bottom-end" withinPortal>
+            <Menu.Target>
+              <ActionIcon
+                variant="default"
+                size="xl"
+                aria-label="Menu"
+                className={styles.menu}
+              >
+                <IconMenu2 />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconConfetti size={16} />}
+                onClick={playConfetti}
+              >
+                Unleash confetti
+              </Menu.Item>
+              <Menu.Item
+                leftSection={
+                  computedColorScheme === "dark" ? (
+                    <IconSun size={16} />
+                  ) : (
+                    <IconMoon size={16} />
+                  )
+                }
+                onClick={() => {
+                  setColorScheme(
+                    computedColorScheme === "light" ? "dark" : "light",
+                  );
+                }}
+              >
+                {computedColorScheme === "dark" ? "Light" : "Dark"} mode
+              </Menu.Item>
+              <Menu.Item
+                component="a"
+                href="https://github.com/cjrace/almostyellow"
+                target="_blank"
+                rel="noopener noreferrer"
+                leftSection={<IconBrandGithub size={16} />}
+              >
+                Source code (opens in new tab)
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        ) : null}
+
+        <Group
+          h="100%"
+          gap="xs"
+          justify="flex-end"
+          className={`${styles.tools} ${title ? styles.inlineTools : ""}`}
+        >
           <Tooltip label="Unleash confetti" openDelay={250}>
             <ActionIcon
               onClick={playConfetti}

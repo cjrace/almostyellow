@@ -31,6 +31,7 @@ import {
   shuffleDeck,
   SuitNames,
 } from "@/components/carddeck";
+import useGameInProgress from "@/components/usegameinprogress";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import {
@@ -121,6 +122,41 @@ interface PlayerRow {
   name: string;
 }
 
+// The title, instructions and credit, which the page puts in its header
+export function SuitsTitle() {
+  return (
+    <CardGameTitle title="Suits">
+      <Text mb="sm">
+        Another of Ben&apos;s games from university, for 2 to 13 players sharing
+        one phone.
+      </Text>
+      <List variant="ordered" mb="md">
+        <List.Item>on your turn, pick a suit and reveal four cards</List.Item>
+        <List.Item>
+          the magic number is the number of players minus one
+        </List.Item>
+        <List.Item>
+          if any cards match your suit, hand out the magic number of drinks for
+          each match
+        </List.Item>
+        <List.Item>if nothing matches, drink twice the magic number</List.Item>
+        <List.Item>
+          if the four cards are one of every suit, it&apos;s a safe round:
+          nobody hands out drinks, and everyone except you drinks one
+        </List.Item>
+        <List.Item>
+          the game lasts {TOTAL_TURNS} turns, using the whole deck
+        </List.Item>
+        <List.Item>the final turn counts double, safe rounds too</List.Item>
+      </List>
+      <Text>
+        For example, with 4 players the magic number is 3, so matching 2 cards
+        means handing out 6 drinks, and matching none means drinking 6.
+      </Text>
+    </CardGameTitle>
+  );
+}
+
 export default function Suits() {
   usePreloadCards();
   const [state, dispatch] = useReducer(suitsReducer, initialSuitsState);
@@ -131,6 +167,7 @@ export default function Suits() {
     { id: 1, name: "" },
   ]);
   const [confirmOpened, setConfirmOpened] = useState(false);
+  useGameInProgress(state.phase === "guessing");
 
   // Most buttons here disappear or disable once pressed, so focus moves on to
   // whatever comes next rather than dropping back to the top of the page
@@ -193,38 +230,6 @@ export default function Suits() {
 
   return (
     <div className={layout.game}>
-      <CardGameTitle title="Suits">
-        <Text mb="sm">
-          Another of Ben&apos;s games from university, for 2 to 13 players
-          sharing one phone.
-        </Text>
-        <List variant="ordered" mb="md">
-          <List.Item>on your turn, pick a suit and reveal four cards</List.Item>
-          <List.Item>
-            the magic number is the number of players minus one
-          </List.Item>
-          <List.Item>
-            if any cards match your suit, hand out the magic number of drinks
-            for each match
-          </List.Item>
-          <List.Item>
-            if nothing matches, drink twice the magic number
-          </List.Item>
-          <List.Item>
-            if the four cards are one of every suit, it&apos;s a safe round:
-            nobody hands out drinks, and everyone except you drinks one
-          </List.Item>
-          <List.Item>
-            the game lasts {TOTAL_TURNS} turns, using the whole deck
-          </List.Item>
-          <List.Item>the final turn counts double, safe rounds too</List.Item>
-        </List>
-        <Text>
-          For example, with 4 players the magic number is 3, so matching 2 cards
-          means handing out 6 drinks, and matching none means drinking 6.
-        </Text>
-      </CardGameTitle>
-
       {state.phase === "setup" ? (
         <div className={layout.board}>
           <PlayerSetup

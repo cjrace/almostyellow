@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "../playwright";
+import { choosePlayers } from "../gameplay";
 
 const desktop = { width: 1280, height: 800 };
 
@@ -179,7 +180,8 @@ test.describe("A visitor on a phone", { tag: "@phone" }, () => {
     // tap. With 50 the ropes may scroll within their grid, but the page doesn't
     const sizes = await ropes.evaluateAll((buttons) =>
       buttons.map((button) => {
-        const label = button.querySelector(".mantine-Button-label");
+        // The knot holds the rope's icon and number
+        const label = button.querySelector("span:last-child");
         return {
           cut: !label || label.scrollWidth > label.clientWidth,
           height: button.getBoundingClientRect().height,
@@ -386,7 +388,7 @@ test.describe("A visitor on a desktop", { tag: "@desktop" }, () => {
 test.describe("A player of Snakes and Ladders", () => {
   async function startGame(page: Page, players = 2) {
     await page.goto("/games/snakesandladders");
-    await page.getByLabel("Number of Players").fill(players.toString());
+    await choosePlayers(page, players);
     await page.getByLabel("Name of player 1:").fill("Al");
     await page.getByRole("button", { name: "Start game!" }).click();
     await expect(page.getByTestId("board")).toBeVisible();

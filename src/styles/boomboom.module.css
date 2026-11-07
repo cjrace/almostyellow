@@ -98,15 +98,15 @@
   flex: 1 1 0;
   min-height: 12rem;
   grid-template-columns: repeat(var(--rope-cols), minmax(0, 1fr));
-  grid-template-rows: repeat(var(--rope-rows), minmax(2.75rem, 1fr));
-  gap: var(--mantine-spacing-sm);
+  grid-template-rows: repeat(var(--rope-rows), minmax(3.75rem, 1fr));
+  gap: var(--mantine-spacing-md) var(--mantine-spacing-sm);
   overflow-y: auto;
   container-type: size;
 }
 
 @mixin larger-than $mantine-breakpoint-sm {
   .ropes {
-    --rope-cols: 4;
+    --rope-cols: 8;
     --rope-rows: var(--rope-rows-sm);
   }
 
@@ -118,7 +118,7 @@
 
 @mixin larger-than $mantine-breakpoint-md {
   .ropes {
-    --rope-cols: 6;
+    --rope-cols: 10;
     --rope-rows: var(--rope-rows-md);
   }
 }
@@ -137,10 +137,10 @@
 
   /* Each rope keeps its tap target, and the grid scrolls if they don't all fit */
   .ropes {
-    --rope-cols: 6;
+    --rope-cols: 10;
     --rope-rows: var(--rope-rows-md);
     min-height: 0;
-    gap: var(--mantine-spacing-xs);
+    gap: var(--mantine-spacing-sm) var(--mantine-spacing-xs);
   }
 
   /* The number of ropes and the Start button side by side */
@@ -148,5 +148,113 @@
     flex-direction: row;
     align-items: flex-end;
     justify-content: center;
+  }
+}
+
+/* Each rope hangs from the top of its space, with a knot at the bottom to pull.
+   It is still a button, so keyboards and screen readers use it as before */
+.rope {
+  --rope-light: #d9b779;
+  --rope-dark: #8a6a3a;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  /* Shorter than its row, so a tug (which moves it down about 1rem) stays
+     clear of the row below */
+  align-self: start;
+  height: calc(100% - 1rem);
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transform-origin: top;
+}
+
+.strand {
+  position: absolute;
+  top: 0;
+  bottom: 0.9rem;
+  left: 50%;
+  width: 10px;
+  margin-left: -5px;
+  border-radius: 5px;
+  background: repeating-linear-gradient(
+    55deg,
+    var(--rope-light) 0 3px,
+    var(--rope-dark) 3px 6px
+  );
+}
+
+.knot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 2rem;
+  justify-content: center;
+  padding: 2px 8px;
+  border: 2px solid var(--rope-dark);
+  border-radius: 999px;
+  background: var(--rope-light);
+  color: #2b1d0a;
+  font-size: min(var(--rope-fz), 1rem);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.rope[data-state="green"] {
+  --rope-light: #8ce99a;
+  --rope-dark: #2f9e44;
+}
+
+.rope[data-state="red"] {
+  --rope-light: #ffa8a8;
+  --rope-dark: #c92a2a;
+}
+
+.rope:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* The pulled rope stays bright and keeps tugging while the pirate decides */
+.rope[data-pulling] {
+  opacity: 1;
+  animation: tug 0.5s ease-in-out infinite;
+}
+
+.rope:hover:not(:disabled) .knot {
+  translate: 0 2px;
+}
+
+.rope:active:not(:disabled) {
+  transform: translateY(0.4rem) scaleY(1.02);
+}
+
+@keyframes tug {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(0.5rem) scaleY(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rope[data-pulling],
+  .rope:active:not(:disabled) {
+    animation: none;
+    transform: none;
+  }
+
+  .rope:hover:not(:disabled) .knot {
+    translate: none;
   }
 }

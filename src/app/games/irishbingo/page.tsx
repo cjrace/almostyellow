@@ -1,4 +1,4 @@
-import IrishBingo from "@/components/irishbingo";
+import IrishBingo, { IrishBingoTitle } from "@/components/irishbingo";
 import { pageMetadata } from "@/metadata";
 import Header from "@/components/header";
 import layout from "@/styles/cardgame.module.css";
@@ -11,9 +11,9 @@ export const metadata = pageMetadata(
 export default function IrishBingoPage() {
   return (
     <div className={layout.screen}>
-      <Header noCrumbs={true} game={true} />
+      <Header noCrumbs={true} game={true} title={<IrishBingoTitle />} />
 
-      <main id="main-content">
+      <main id="main-content" data-game>
         <IrishBingo />
       </main>
     </div>
