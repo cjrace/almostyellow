@@ -25,7 +25,12 @@ import {
   joinRoom,
   playerCommand,
 } from "@/rooms/service";
-import { controlUnoRoom, unoPlayerCommand } from "@/unogame/service";
+import {
+  controlUnoRoom,
+  saveRoomToTracker,
+  unoPlayerCommand,
+} from "@/unogame/service";
+import { trackerGameId } from "@/unogame/tracker";
 import { playableCards, type RoundState } from "@/unogame/engine/round";
 import type { Card } from "@/unogame/engine/cards";
 import type { UnoHand, UnoRoom } from "@/unogame/room";
@@ -585,3 +590,98 @@ async function exchange(customToken: string) {
   );
   return ((await response.json()) as { idToken: string }).idToken;
 }
+
+describe("saving a room to the Uno tracker", () => {
+  // A room between rounds with some rounds already won
+  async function finishedTable(players = 2, wins: number[] = [2, 1]) {
+    const setup = await table(players);
+    await adminDb()
+      .doc(`gameRooms/${setup.code}`)
+      .update({
+        stage: "finished",
+        scores: Object.fromEntries(
+          setup.seated.map((s, i) => [s.playerId, wins[i] ?? 0]),
+        ),
+      });
+    return setup;
+  }
+  async function save(code: string, camPlayerId: string, by = owner) {
+    const current = await room(code);
+    await saveRoomToTracker(by, {
+      code,
+      round: current.round,
+      version: current.version,
+      commandId: randomUUID(),
+      camPlayerId,
+      playedOn: "2026-11-07",
+    });
+  }
+  const scoreboard = async () =>
+    (await adminDb().doc("uno/scoreboard").get()).data() as
+      { cam: number; laura: number } | undefined;
+
+  test("the host's two-player scores become one finished tracker game", async () => {
+    const { code, seated } = await finishedTable();
+    await save(code, seated[1].playerId);
+    const saved = await room(code);
+    const id = trackerGameId(code, saved.expiresAt);
+    expect(saved.trackerGameId).toBe(id);
+    const game = (await adminDb().doc(`unoGames/${id}`).get()).data();
+    expect(game).toMatchObject({
+      cam: 1,
+      laura: 2,
+      winner: "laura",
+      status: "completed",
+      source: "historic",
+      playedOn: "2026-11-07",
+      notes: `Played online (room ${code})`,
+    });
+    expect(await scoreboard()).toMatchObject({ cam: 1, laura: 2 });
+  });
+
+  test("saving the same room twice counts it once", async () => {
+    const { code, seated } = await finishedTable();
+    await save(code, seated[0].playerId);
+    await save(code, seated[0].playerId);
+    expect(await scoreboard()).toMatchObject({ cam: 2, laura: 1 });
+    const games = await adminDb().collection("unoGames").get();
+    expect(games.size).toBe(1);
+  });
+
+  test("only the host can save, and only between rounds with two players", async () => {
+    const { code, seated } = await finishedTable();
+    await expect(save(code, seated[0].playerId, "stranger")).rejects.toThrow(
+      "do not host",
+    );
+    await adminDb().doc(`gameRooms/${code}`).update({ stage: "playing" });
+    await expect(save(code, seated[0].playerId)).rejects.toThrow(
+      "Finish a round",
+    );
+
+    const three = await finishedTable(3, [1, 1, 0]);
+    await expect(save(three.code, three.seated[0].playerId)).rejects.toThrow(
+      "two players",
+    );
+    const none = await finishedTable(2, [0, 0]);
+    await expect(save(none.code, none.seated[0].playerId)).rejects.toThrow(
+      "Nobody has won",
+    );
+    await expect(save(code, randomUUID())).rejects.toThrow();
+    expect(await scoreboard()).toBeUndefined();
+  });
+
+  test("a stale room is refused", async () => {
+    const { code, seated } = await finishedTable();
+    const current = await room(code);
+    await expect(
+      saveRoomToTracker(owner, {
+        code,
+        round: current.round,
+        version: current.version + 1,
+        commandId: randomUUID(),
+        camPlayerId: seated[0].playerId,
+        playedOn: "2026-11-07",
+      }),
+    ).rejects.toThrow("changed");
+  });
+});

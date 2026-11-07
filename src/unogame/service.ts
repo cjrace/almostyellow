@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { z } from "zod";
 import { adminDb } from "@/firebase/admin";
+import { historicGameEntry } from "@/uno/historic";
+import { HistoricGameSchema, type Board } from "@/uno/model";
 import { gameOf, RoomError, type RoomView } from "@/buzzer/model";
 import {
   fail,
@@ -29,6 +31,7 @@ import {
 import { privateView, publicEvent, publicView } from "./engine/views";
 import { RESULT_RETENTION_MS, type UnoHand, type UnoRoom } from "./room";
 import { secureShuffle } from "./shuffle";
+import { trackerGameId, trackerNotes } from "./tracker";
 
 // All of the game's rules are in the engine. This file decides who may ask
 // for what, runs the engine inside a transaction, and publishes the results:
@@ -394,5 +397,71 @@ export async function unoPlayerCommand(
 
     commitRound(tx, room, secret, state, result);
     tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+  });
+}
+
+const trackerSchema = commandSchema.extend({
+  // Which of the two players is Cam; the other is Laura
+  camPlayerId: z.uuid(),
+  playedOn: HistoricGameSchema.shape.playedOn,
+});
+
+/**
+ * Saves the room's scores to the Uno tracker as one finished game. It only
+ * works for the host, between rounds, with exactly two players, and a room
+ * can be saved once: its game id comes from the room, so a repeat changes
+ * nothing.
+ */
+export async function saveRoomToTracker(
+  owner: string,
+  input: unknown,
+): Promise<void> {
+  const data = trackerSchema.parse(input);
+  await transaction(async (tx) => {
+    const roomRef = adminDb().doc(`gameRooms/${data.code}`);
+    const [privateDoc, snapshot] = await Promise.all([
+      tx.get(adminDb().doc(`roomPrivate/${data.code}`)),
+      tx.get(roomRef),
+    ]);
+    if (!privateDoc.exists || (privateDoc.data() as PrivateUno).owner !== owner)
+      fail("forbidden", "You do not host this room.");
+    const room = unoRoom(snapshot.data());
+    live(room);
+    if (room.trackerGameId) return;
+    const id = trackerGameId(room.code, room.expiresAt);
+    const [game, board] = await Promise.all([
+      tx.get(adminDb().doc(`unoGames/${id}`)),
+      tx.get(adminDb().doc("uno/scoreboard")),
+    ]);
+    if (room.round !== data.round || room.version !== data.version)
+      fail("stale", "The room changed. Review it and try again.");
+    if (room.stage !== "finished")
+      fail("not_finished", "Finish a round before saving to the tracker.");
+    if (room.players.length !== 2)
+      fail("invalid", "Only a game with two players can be saved.");
+    const cam = room.players.find((p) => p.id === data.camPlayerId);
+    const laura = room.players.find((p) => p.id !== data.camPlayerId);
+    if (!cam || !laura) fail("invalid", "Choose which player is Cam.");
+    const scores = {
+      cam: room.scores[cam.id] ?? 0,
+      laura: room.scores[laura.id] ?? 0,
+    };
+    if (scores.cam + scores.laura === 0)
+      fail("invalid", "Nobody has won a round yet.");
+    if (!game.exists) {
+      const entry = historicGameEntry(
+        {
+          id,
+          ...scores,
+          playedOn: data.playedOn,
+          notes: trackerNotes(room.code),
+        },
+        board.exists ? (board.data() as Board) : undefined,
+        Date.now(),
+      );
+      tx.create(game.ref, entry.game);
+      tx.set(board.ref, entry.board);
+    }
+    tx.update(roomRef, { trackerGameId: id, version: room.version + 1 });
   });
 }
