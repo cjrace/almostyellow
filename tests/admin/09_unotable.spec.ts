@@ -244,6 +244,38 @@ async function expectTurnOnScreenOnce(page: Page, label: string) {
     .toEqual({ overlaps: [], off: [], sideways: 0, scrollsBy: 0 });
 }
 
+// Reads the hand from its accessible names, in the order it is shown, and
+// checks it runs red, yellow, green, blue, wilds, with numbers before actions
+async function expectHandSorted(page: Page) {
+  const labels = await page
+    .getByRole("list", { name: /^Your hand/ })
+    .getByRole("button")
+    .evaluateAll((buttons) =>
+      buttons.map((b) => b.getAttribute("aria-label") ?? ""),
+    );
+  const colours = ["Red", "Yellow", "Green", "Blue", "Wild"];
+  const actions = ["Skip", "Reverse", "Draw Two", "Draw Four"];
+  const keys = labels.map((label) => {
+    const [first, ...rest] = label.split(",")[0].split(" ");
+    const colour = colours.indexOf(first);
+    const what = rest.join(" ");
+    return [
+      colour,
+      /^\d$/.test(what) ? Number(what) : 10 + actions.indexOf(what),
+    ];
+  });
+  expect(keys.length).toBeGreaterThan(0);
+  keys.forEach((key, index) => {
+    expect(key[0], labels[index]).toBeGreaterThanOrEqual(0);
+    if (index === 0) return;
+    const before = keys[index - 1];
+    expect(
+      before[0] < key[0] || (before[0] === key[0] && before[1] <= key[1]),
+      `${labels[index - 1]} should come before ${labels[index]}`,
+    ).toBe(true);
+  });
+}
+
 test.describe("Looking at the Uno table in a real room", () => {
   test.slow();
 
@@ -358,6 +390,23 @@ test.describe("Looking at the Uno table in a real room", () => {
         page.getByRole("status").filter({ hasText: "You said Uno." }),
       ).toHaveCount(1);
     });
+  });
+
+  test("Your hand is sorted by colour and number, and a drawn card slots in", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "large-hand");
+    await expectHandSorted(page);
+
+    await show("two-players");
+    await expectHandSorted(page);
+    await page
+      .getByRole("button", { name: /^Draw pile, \d+ cards, draw/ })
+      .click();
+    await expect(
+      page.getByRole("list", { name: "Your hand, 8 cards" }),
+    ).toBeVisible();
+    await expectHandSorted(page);
   });
 
   test("Players, piles and turn are named for screen readers", async ({

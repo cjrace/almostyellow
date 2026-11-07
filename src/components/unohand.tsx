@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Card } from "@/unogame/engine/cards";
 import { fanLayout } from "@/unogame/handlayout";
+import { sortHand } from "@/unogame/handsort";
 import { UnoCardButton } from "@/components/unocard";
 import styles from "@/styles/unotable.module.css";
 
@@ -50,6 +51,9 @@ export default function UnoHand({
     };
   }, []);
 
+  // Sorted by colour and number, wherever the card came from
+  const sorted = useMemo(() => sortHand(cards), [cards]);
+
   const layout = fanLayout({
     width: size.width,
     viewportHeight: size.height,
@@ -64,7 +68,7 @@ export default function UnoHand({
       style={{ height: layout.height }}
       aria-label={`Your hand, ${String(cards.length)} ${cards.length === 1 ? "card" : "cards"}`}
     >
-      {cards.map((card, index) => (
+      {sorted.map((card, index) => (
         <li
           key={card.id}
           className={styles.handCard}
