@@ -103,31 +103,37 @@ async function openTable(
 // The hand never scrolls, and the top-left corner of every card is the
 // frontmost thing at that spot, so no card is covered
 async function expectWholeHandShowing(page: Page) {
-  const result = await page.evaluate(() => {
-    const list = document.querySelector('ul[aria-label^="Your hand"]');
-    if (!list) return { error: "no hand" };
-    const buttons = [...list.querySelectorAll("button")];
-    const bounds = list.getBoundingClientRect();
-    const covered: string[] = [];
-    let outside = 0;
-    for (const button of buttons) {
-      // elementFromPoint only sees what is on screen
-      button.scrollIntoView({ block: "nearest" });
-      const box = button.getBoundingClientRect();
-      if (box.left < bounds.left - 1 || box.right > bounds.right + 1) outside++;
-      const x = box.left + box.width * 0.1;
-      const y = box.top + box.height * 0.1;
-      const top = document.elementFromPoint(x, y)?.closest("button");
-      if (top !== button) covered.push(button.getAttribute("aria-label") ?? "");
-    }
-    return {
-      scrolls: list.scrollWidth > list.clientWidth,
-      outside,
-      covered,
-      cards: buttons.length,
-    };
-  });
-  expect(result).toMatchObject({ scrolls: false, outside: 0, covered: [] });
+  // Polled, as the fan settles a moment after a resize
+  const measure = () =>
+    page.evaluate(() => {
+      const list = document.querySelector('ul[aria-label^="Your hand"]');
+      if (!list) return { error: "no hand" };
+      const buttons = [...list.querySelectorAll("button")];
+      const bounds = list.getBoundingClientRect();
+      const covered: string[] = [];
+      let outside = 0;
+      for (const button of buttons) {
+        // elementFromPoint only sees what is on screen
+        button.scrollIntoView({ block: "nearest" });
+        const box = button.getBoundingClientRect();
+        if (box.left < bounds.left - 1 || box.right > bounds.right + 1)
+          outside++;
+        const x = box.left + box.width * 0.1;
+        const y = box.top + box.height * 0.1;
+        const top = document.elementFromPoint(x, y)?.closest("button");
+        if (top !== button)
+          covered.push(button.getAttribute("aria-label") ?? "");
+      }
+      return {
+        scrolls: list.scrollWidth > list.clientWidth,
+        outside,
+        covered,
+        cards: buttons.length,
+      };
+    });
+  await expect
+    .poll(measure)
+    .toMatchObject({ scrolls: false, outside: 0, covered: [] });
 }
 
 const overflowOf = (page: Page) =>
@@ -139,6 +145,110 @@ const overflowOf = (page: Page) =>
 
 // Cards overlap in the fan, so tap the corner strip that is always showing
 const CORNER = { x: 8, y: 8 };
+
+// Phones held sideways: wide and short
+const sidewaysPhones = [
+  { name: "iPhone 17", width: 874, height: 402 },
+  { name: "Pixel 9", width: 960, height: 448 },
+  { name: "small phone", width: 667, height: 320 },
+];
+
+// Everything needed to take a turn is on screen without scrolling
+async function expectTurnOnScreen(page: Page, label: string) {
+  try {
+    await expectTurnOnScreenOnce(page, label);
+  } catch (error) {
+    // Where everything is, so a failure on another machine can be read
+    const layout = await page.evaluate(() => ({
+      font: getComputedStyle(document.body).fontFamily,
+      page: [innerWidth, innerHeight, document.documentElement.scrollHeight],
+      boxes: [...document.querySelectorAll("h1, h2, p, button, ul")]
+        .slice(0, 30)
+        .map((e) => {
+          const b = e.getBoundingClientRect();
+          return `${e.tagName} ${(e.getAttribute("aria-label") ?? e.textContent).slice(0, 18)} ${String(Math.round(b.left))},${String(Math.round(b.top))},${String(Math.round(b.right))},${String(Math.round(b.bottom))}`;
+        }),
+    }));
+    throw new Error(
+      `${(error as Error).message}
+LAYOUT ${JSON.stringify(layout)}`,
+      { cause: error },
+    );
+  }
+}
+
+async function expectTurnOnScreenOnce(page: Page, label: string) {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const height = window.innerHeight;
+          const spots = {
+            heading: document.querySelector("h2[tabindex]:not([id])"),
+            hand: document.querySelector('ul[aria-label^="Your hand"]'),
+            drawPile: document.querySelector('button[aria-label^="Draw pile"]'),
+            unoButton: [...document.querySelectorAll("button")].find((b) =>
+              /^(Say Uno!|Uno said)$/.test(b.textContent),
+            ),
+          };
+          const off = Object.entries(spots)
+            .filter(([, el]) => {
+              if (!el) return true;
+              const box = el.getBoundingClientRect();
+              return box.top < 0 || box.bottom > height + 1;
+            })
+            .map(([name]) => name);
+          // Nothing sits on top of anything beside it
+          const button = (name: string) =>
+            [...document.querySelectorAll("button")].find(
+              (b) => b.textContent === name,
+            );
+          const named: Record<string, Element | undefined> = {
+            colour: [...document.querySelectorAll("p")].find((p) =>
+              p.textContent.startsWith("Colour"),
+            ),
+            scores: button("Scores"),
+            room: button("Room"),
+            catchUno: [...document.querySelectorAll("button")].find((b) =>
+              b.textContent.startsWith("Catch"),
+            ),
+            sayUno: spots.unoButton,
+            drawPile: spots.drawPile ?? undefined,
+            hand: spots.hand ?? undefined,
+          };
+          const boxes = Object.entries(named).flatMap(([name, el]) =>
+            el ? [[name, el.getBoundingClientRect()] as const] : [],
+          );
+          const overlaps = boxes.flatMap(([nameA, a], i) =>
+            boxes
+              .slice(i + 1)
+              .filter(
+                ([, b]) =>
+                  a.left < b.right &&
+                  b.left < a.right &&
+                  a.top < b.bottom &&
+                  b.top < a.bottom,
+              )
+              .map(([nameB]) => `${nameA} and ${nameB}`),
+          );
+          return {
+            overlaps,
+            off,
+            sideways:
+              document.documentElement.scrollWidth -
+              document.documentElement.clientWidth,
+            // A few pixels either way, as fonts differ from machine to machine,
+            // and the gap under the page makes up the rest
+            scrollsBy: Math.max(
+              0,
+              document.documentElement.scrollHeight - height - 12,
+            ),
+          };
+        }),
+      { message: label },
+    )
+    .toEqual({ overlaps: [], off: [], sideways: 0, scrollsBy: 0 });
+}
 
 // Reads the hand from its accessible names, in the order it is shown, and
 // checks it runs red, yellow, green, blue, wilds, with numbers before actions
@@ -328,16 +438,116 @@ test.describe("Looking at the Uno table in a real room", () => {
     const { show } = await openTable(page, "large-hand");
     for (const { value } of scenarios) {
       await show(value);
-      expect(
-        await overflowOf(page),
-        `${value} overflows the page sideways`,
-      ).toBeLessThanOrEqual(0);
+      await expect
+        .poll(() => overflowOf(page), {
+          message: `${value} overflows the page sideways`,
+        })
+        .toBeLessThanOrEqual(0);
     }
     await show("large-hand");
     await expect(
       page.getByRole("list", { name: /^Your hand, 5\d cards$/ }),
     ).toBeVisible();
     await expectWholeHandShowing(page);
+  });
+
+  test("A phone held sideways keeps the piles, buttons and hand on screen", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    for (const { name, width, height } of sidewaysPhones) {
+      await page.setViewportSize({ width, height });
+      for (const scenario of ["two-players", "catch-uno"] as const) {
+        await show(scenario);
+        await expectTurnOnScreen(page, `${scenario} on a ${name}`);
+        await expectWholeHandShowing(page);
+      }
+      // A hand of 50 or more cards wraps into rows and can be scrolled to, but
+      // still shows every card, as does a full table of ten
+      for (const scenario of ["large-hand", "ten-players"] as const) {
+        await show(scenario);
+        await expect
+          .poll(() => overflowOf(page), {
+            message: `${scenario} overflows sideways on a ${name}`,
+          })
+          .toBeLessThanOrEqual(0);
+        await expectWholeHandShowing(page);
+      }
+    }
+  });
+
+  test("A phone held sideways folds the room buttons into one menu", async ({
+    page,
+  }) => {
+    await openTable(page, "two-players");
+    await test.step("Given the table is the right way up, the buttons are all there", async () => {
+      await expect(
+        page.getByRole("button", { name: "End room" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Room options" }),
+      ).toHaveCount(0);
+    });
+
+    await test.step("When the phone is turned sideways, they are in a menu", async () => {
+      await page.setViewportSize({ width: 874, height: 402 });
+      const menu = page.getByRole("button", { name: "Room options" });
+      await expect(menu).toBeVisible();
+      await expect(page.getByRole("button", { name: "End room" })).toHaveCount(
+        0,
+      );
+      // From the keyboard: a click does not focus a button in Safari, so there
+      // would be nothing for focus to return to
+      await menu.focus();
+      await page.keyboard.press("Enter");
+      for (const name of [
+        "Copy join link",
+        "End round",
+        "End room",
+        "Leave game",
+      ])
+        await expect(page.getByRole("menuitem", { name })).toBeVisible();
+    });
+
+    await test.step("And closing it returns focus, as does the dialog it opens", async () => {
+      const menu = page.getByRole("button", { name: "Room options" });
+      await page.keyboard.press("Escape");
+      await expect(menu).toBeFocused();
+      await menu.click();
+      await page.getByRole("menuitem", { name: "Leave game" }).click();
+      const dialog = page.getByRole("dialog", { name: "Leave this round?" });
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(menu).toBeFocused();
+    });
+
+    await test.step("Then turning it back brings the buttons back", async () => {
+      await page.setViewportSize({ width: 402, height: 874 });
+      await expect(
+        page.getByRole("button", { name: "End room" }),
+      ).toBeVisible();
+    });
+  });
+
+  test("The colour in play, your turn and Uno are easy to see", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    const hand = page.getByRole("list", { name: /^Your hand/ });
+    await expect(hand).toHaveAttribute("data-myturn", "");
+    await expect(
+      page.locator("[data-colour][class*='pileSwatch']"),
+    ).toHaveAttribute("data-colour", /^(red|yellow|green|blue)$/);
+
+    const say = page.getByRole("button", { name: "Say Uno!" });
+    await expect(say).not.toHaveAttribute("data-ready");
+    await show("two-cards");
+    await expect(say).toHaveAttribute("data-ready", "");
+    await say.click();
+    await expect(
+      page.getByRole("button", { name: "Uno said" }),
+    ).not.toHaveAttribute("data-ready");
   });
 
   test("Stays inside a 320 pixel wide screen and at 200% zoom", async ({
@@ -348,10 +558,11 @@ test.describe("Looking at the Uno table in a real room", () => {
       await page.setViewportSize({ width, height: 700 });
       for (const { value } of scenarios) {
         await show(value);
-        expect(
-          await overflowOf(page),
-          `${value} overflows at ${String(width)} pixels`,
-        ).toBeLessThanOrEqual(0);
+        await expect
+          .poll(() => overflowOf(page), {
+            message: `${value} overflows at ${String(width)} pixels`,
+          })
+          .toBeLessThanOrEqual(0);
         await expectWholeHandShowing(page);
       }
     }
@@ -392,6 +603,21 @@ for (const scheme of schemes) {
           ).toBeVisible();
           await expectNoUnexpectedAxeViolations(page);
         });
+      });
+
+      test("A phone held sideways passes accessibility checks", async ({
+        page,
+      }) => {
+        const { show } = await openTable(page, "two-players");
+        await page.setViewportSize({ width: 874, height: 402 });
+        for (const scenario of [
+          "two-players",
+          "catch-uno",
+          "ten-players",
+        ] as const) {
+          await show(scenario);
+          await expectNoUnexpectedAxeViolations(page);
+        }
       });
 
       test("Scores open in a dialog and return focus when closed", async ({

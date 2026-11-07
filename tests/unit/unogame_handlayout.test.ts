@@ -6,6 +6,8 @@ import {
   MAX_CARD_WIDTH,
   MIN_CARD_WIDTH,
   ROW_STRIP,
+  SHORT_MIN_CARD_WIDTH,
+  SHORT_SCREEN,
   fanLayout,
 } from "@/unogame/handlayout";
 
@@ -15,6 +17,8 @@ const sizes = [
   { width: 390, viewportHeight: 800 },
   { width: 768, viewportHeight: 1024 },
   { width: 1100, viewportHeight: 650 },
+  // A small phone held sideways
+  { width: 647, viewportHeight: 320 },
 ];
 const counts = [0, 1, 2, 7, 15, 40, 70, 107];
 
@@ -25,7 +29,9 @@ describe("fanLayout", () => {
         const layout = fanLayout({ width, viewportHeight, count });
         const { cardWidth, positions } = layout;
         expect(positions).toHaveLength(count);
-        expect(cardWidth).toBeGreaterThanOrEqual(MIN_CARD_WIDTH);
+        expect(cardWidth).toBeGreaterThanOrEqual(
+          viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
+        );
         expect(cardWidth).toBeLessThanOrEqual(MAX_CARD_WIDTH);
 
         for (const { left, top } of positions) {

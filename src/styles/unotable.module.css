@@ -74,7 +74,8 @@
   align-items: center;
   justify-content: center;
   gap: var(--mantine-spacing-md);
-  height: min(100cqh, 20rem);
+  /* Two piles of 5 by 7 and the gap between them also have to fit the width */
+  height: min(100cqh, 20rem, calc(0.7 * (100cqw - var(--mantine-spacing-md))));
   max-width: 100cqw;
 }
 
@@ -235,5 +236,287 @@
 
   .board {
     margin-top: var(--mantine-spacing-xs);
+  }
+}
+
+/* The colour in play, on the corner of the discard pile. Its shape is
+   drawn by .swatch, so it never relies on colour alone. */
+.pileSwatch {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  z-index: 1;
+}
+
+/* A bar over your hand while it is your turn. "Your turn" is also written
+   out, so the bar is only a second signal. */
+.hand[data-myturn] {
+  box-shadow: 0 -3px 0 var(--mantine-color-orange-6);
+}
+
+/* Saying Uno matters right now: the button fills in and pulses three times,
+   and does not move at all when reduced motion is on */
+.controls button[data-ready] {
+  animation: sayUnoPulse 1.2s ease-out 3;
+}
+
+@keyframes sayUnoPulse {
+  from {
+    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+  }
+
+  to {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controls button[data-ready] {
+    animation: none;
+  }
+}
+
+/* A phone on its side is wide but short, so the portrait stack would push the
+   hand below the fold. Here the page has a side column down the left (the game
+   title, the room code and the room buttons) with the table beside it. In the
+   table, the turn, the other players and your buttons are on the left, the
+   piles on the right, and your hand runs across the bottom. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .page {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+    column-gap: var(--mantine-spacing-md);
+    align-items: start;
+    align-content: start;
+  }
+
+  /* The side column is on the right, with the table on the left */
+  .pageHead {
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--mantine-spacing-xs);
+    min-width: 0;
+  }
+
+  .stage {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  /* The room code, then its buttons, one under the other */
+  .roomRow {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  /* The room code is a small badge */
+  .roomRow > h2 {
+    --title-fz: var(--mantine-font-size-sm) !important;
+    align-self: flex-start;
+    padding: 1px var(--mantine-spacing-sm);
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-xl);
+    white-space: nowrap;
+  }
+
+  .roomRow > div {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 8.5rem;
+    column-gap: var(--mantine-spacing-md);
+    row-gap: 4px;
+    margin-top: 0;
+  }
+
+  .board > * {
+    grid-column: 1;
+  }
+
+  /* Whose turn it is, with Scores beside it and the colour under both */
+  div.head {
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--mantine-spacing-xs);
+    row-gap: 0;
+  }
+
+  div.head > div {
+    display: contents;
+  }
+
+  .head h2 {
+    grid-column: 1;
+    grid-row: 1;
+    --title-fz: var(--mantine-font-size-lg) !important;
+  }
+
+  .head > button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .head p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: nowrap;
+    font-size: var(--mantine-font-size-xs);
+  }
+
+  /* Each other player is a small pill, not a box */
+  .opponents {
+    grid-row: 2;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
+    overflow-x: visible;
+    overflow-y: auto;
+    max-height: 3.4rem;
+    padding: 0;
+  }
+
+  .opponent {
+    flex: 0 1 auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    border-width: 1px;
+    border-radius: var(--mantine-radius-xl);
+  }
+
+  .opponent[data-current] {
+    border-width: 3px;
+    padding: 0 calc(var(--mantine-spacing-xs) - 2px);
+  }
+
+  .opponent p {
+    font-size: var(--mantine-font-size-sm);
+    --text-line-clamp: 1 !important;
+  }
+
+  .opponent > p:first-child {
+    max-width: 7rem;
+  }
+
+  .opponent > div {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* "Waiting" is the same for everyone who is not playing, so it can go.
+     "Playing" and "Uno?" stay as words. */
+  .waiting,
+  .unit {
+    display: none;
+  }
+
+  /* Your buttons are in their own column beside the piles, within reach of a
+     thumb, and tall enough to tap */
+  .controls,
+  .picker {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    align-self: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .controls > button {
+    --button-height: auto !important;
+    min-height: 2.75rem;
+  }
+
+  .controls > button :global(.mantine-Button-label) {
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* The Uno hint is still read out as the button's description */
+  .hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Two lines at most, so a wider font cannot push the hand down. The whole
+     text is still there for screen readers. */
+  .reason {
+    margin: 0;
+    font-size: var(--mantine-font-size-xs);
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* A smaller swatch, so it does not cover the colour name on a small card */
+  .pileSwatch {
+    top: -0.6rem;
+    right: -0.6rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* The piles take the height the left side gives them */
+  .table {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    min-height: 0;
+  }
+
+  .hand {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+}
+
+/* Small phones, such as 667 by 320: everything above, but tighter */
+@media (orientation: landscape) and (max-height: 400px) {
+  .pageHead {
+    gap: 4px;
+  }
+
+  .roomRow > div > button,
+  .head > button {
+    --button-height: 1.625rem !important;
+    --button-fz: var(--mantine-font-size-xs) !important;
+    --button-padding-x: var(--mantine-spacing-xs) !important;
+  }
+
+  /* "Colour: Red · clockwise" */
+  .inPlay {
+    display: none;
+  }
+
+  /* The hints are still read out as each button's description, but there is
+     no room to show them */
+  .reason {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

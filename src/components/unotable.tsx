@@ -106,6 +106,8 @@ export default function UnoTable({
   // until the next draw or play. With two cards it can be said in advance.
   const unoWindowMine = view.uno?.player === me;
   const canSayUno = unoWindowMine || (myTurn && handSize === 2 && !declareUno);
+  // Saying Uno matters right now
+  const unoReady = canSayUno && !declareUno;
   const unoLabel = declareUno ? "Uno said" : "Say Uno!";
   const unoReason = unoWindowMine
     ? "Say it now, before anyone catches you."
@@ -125,7 +127,12 @@ export default function UnoTable({
   return (
     <div className={layout.game}>
       <div className={styles.board}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Group
+          justify="space-between"
+          align="flex-start"
+          wrap="nowrap"
+          className={styles.head}
+        >
           <div style={{ minWidth: 0 }}>
             <Title
               order={2}
@@ -137,7 +144,7 @@ export default function UnoTable({
               {heading}
             </Title>
             <Text c="dimmed">
-              Colour in play:{" "}
+              Colour<span className={styles.inPlay}> in play</span>:{" "}
               <span
                 className={styles.swatch}
                 data-colour={view.colour}
@@ -190,6 +197,13 @@ export default function UnoTable({
             </div>
             <div className={styles.pile}>
               <UnoCard card={view.top} />
+              {/* The colour in play, as a shape as well as a colour, so it can be
+                  seen at a glance after a wild */}
+              <span
+                className={`${styles.swatch} ${styles.pileSwatch}`}
+                data-colour={view.colour}
+                aria-hidden="true"
+              />
             </div>
           </div>
         </div>
@@ -219,7 +233,8 @@ export default function UnoTable({
             {/* Stays focusable when it cannot be used, so its reason can be
                 read; it is one-way, so it is a button and not a switch */}
             <Button
-              variant="default"
+              variant={unoReady ? "filled" : "default"}
+              data-ready={unoReady ? "" : undefined}
               aria-disabled={!canSayUno}
               data-disabled={!canSayUno || undefined}
               aria-describedby="uno_declare_reason"
@@ -233,10 +248,20 @@ export default function UnoTable({
             </Button>
           </div>
         )}
-        <Text size="sm" c="dimmed" id="uno_draw_reason">
+        <Text
+          size="sm"
+          c="dimmed"
+          id="uno_draw_reason"
+          className={styles.reason}
+        >
           {drawReason}
         </Text>
-        <Text size="sm" c="dimmed" id="uno_declare_reason">
+        <Text
+          size="sm"
+          c="dimmed"
+          id="uno_declare_reason"
+          className={`${styles.reason} ${styles.hint}`}
+        >
           {unoReason}
         </Text>
 
@@ -245,6 +270,7 @@ export default function UnoTable({
           playableIds={mine.playableIds}
           drawnCardId={mine.drawnCardId}
           reason={cardReason}
+          active={myTurn}
           onPlay={(card) => {
             if (isWild(card)) setWild(card);
             else play(card);

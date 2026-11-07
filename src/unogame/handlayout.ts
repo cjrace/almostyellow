@@ -6,6 +6,9 @@
 
 export const CARD_RATIO = 7 / 5; // Height over width
 export const MIN_CARD_WIDTH = 58;
+// A phone held sideways is under this tall, so its cards can be smaller
+export const SHORT_SCREEN = 400;
+export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 104;
 // Part of a card's width, from its left edge, that is never covered. The
 // corner label sits inside it.
@@ -35,7 +38,10 @@ export function fanLayout(options: {
   const cardWidth = Math.round(
     Math.min(
       MAX_CARD_WIDTH,
-      Math.max(MIN_CARD_WIDTH, Math.min(width * 0.17, viewportHeight * 0.13)),
+      Math.max(
+        viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
+        Math.min(width * 0.17, viewportHeight * 0.13),
+      ),
     ),
   );
   const cardHeight = cardWidth * CARD_RATIO;
