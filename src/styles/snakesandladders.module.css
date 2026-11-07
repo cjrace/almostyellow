@@ -112,3 +112,47 @@
     overflow-y: auto;
   }
 }
+
+/* A phone held sideways has the room of a desktop width but very little
+   height, so the players sit beside the board whatever the width */
+@media (orientation: landscape) and (max-height: 500px) {
+  .space {
+    container-type: size;
+    min-height: 0;
+  }
+
+  .game {
+    display: grid;
+    grid-template-columns: min(18rem, 45%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: var(--mantine-spacing-md);
+    width: min(100%, calc(100cqh + 18rem + var(--mantine-spacing-md)));
+    margin-inline: auto;
+  }
+
+  .controls {
+    order: 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .table {
+    min-height: 0;
+  }
+
+  .playerList {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Roll Dice names the player, so the buttons wrap rather than cut it off */
+  .controls > :last-child {
+    flex-wrap: wrap;
+  }
+
+  /* !important beats the `flex` style prop */
+  .controls > :last-child > button:first-child {
+    flex: 1 0 auto !important;
+  }
+}

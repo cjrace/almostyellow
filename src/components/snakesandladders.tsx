@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@mantine/hooks";
+import useGameInProgress from "@/components/usegameinprogress";
+import { vibrate } from "@/haptics";
 import useGameTimers from "@/components/usegametimers";
 import {
   Badge,
@@ -15,7 +17,6 @@ import {
   Text,
   Space,
   TextInput,
-  NumberInput,
   SimpleGrid,
   Group,
   SegmentedControl,
@@ -284,12 +285,13 @@ const SnakesAndLadders = () => {
   const [rollingDiceIcon, setRollingDiceIcon] = useState(<IconDice1 />);
   const [viewMode, setViewMode] = useState("names"); // "names" or "icons"
   const [playersOpened, setPlayersOpened] = useState(false); // Phones only
+  useGameInProgress(gameInitialized && winner === null);
   const reducedMotion = useReducedMotion();
   const { after, clear } = useGameTimers();
 
   // The buttons a keyboard user is on disappear or are disabled as the game
   // moves on, so put focus back where they can carry on playing
-  const setupRef = useRef<HTMLInputElement>(null);
+  const setupRef = useRef<HTMLDivElement>(null);
   const rollRef = useRef<HTMLButtonElement>(null);
   const backToSetupRef = useRef(false);
 
@@ -314,7 +316,9 @@ const SnakesAndLadders = () => {
   useEffect(() => {
     if (!gameInitialized && backToSetupRef.current) {
       backToSetupRef.current = false;
-      setupRef.current?.focus();
+      setupRef.current
+        ?.querySelector<HTMLInputElement>("input:checked")
+        ?.focus();
     }
   }, [gameInitialized]);
 
@@ -349,6 +353,7 @@ const SnakesAndLadders = () => {
         `Congratulations! ${players[currentPlayer]?.name} won the game!`,
       );
       playConfetti();
+      vibrate([100, 50, 100, 50, 300]);
     }
 
     setPlayerPositions((prevPositions) => {
@@ -461,6 +466,7 @@ const SnakesAndLadders = () => {
                     : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${String(moveDifference)} spaces!`;
 
                 setPopupMessage(message);
+                vibrate(80);
               } else {
                 finalizeMove(finalPosition);
               }
@@ -513,16 +519,20 @@ const SnakesAndLadders = () => {
     return (
       <Box maw="40rem">
         {/* Form to set up the players */}
-        <NumberInput
+        <Text id="snakes_players" fw={500} size="sm">
+          Number of Players
+        </Text>
+        <SegmentedControl
           ref={setupRef}
-          value={numPlayers}
+          aria-labelledby="snakes_players"
+          fullWidth
+          mt={4}
+          maw="30rem"
+          value={String(numPlayers)}
           onChange={(value) => {
-            setNumPlayers(Number(value) || 2);
+            setNumPlayers(Number(value));
           }}
-          label="Number of Players"
-          min={2}
-          max={10}
-          maw="12rem"
+          data={Array.from({ length: 9 }, (_, i) => String(i + 2))}
         />
 
         <Space h="xl" />

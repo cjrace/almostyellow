@@ -28,6 +28,13 @@ body {
   }
 }
 
+/* A phone held sideways has little height, so the frame gives up some of it */
+@media (orientation: landscape) and (max-height: 500px) {
+  .site-frame {
+    --site-frame-padding: 10px;
+  }
+}
+
 /* Keep whatever has focus clear of the sticky header (WCAG 2.4.11) */
 html {
   scroll-padding-top: 100px;
@@ -74,4 +81,39 @@ html {
 [data-mantine-color-scheme="light"] .mantine-Input-input:focus,
 [data-mantine-color-scheme="light"] .mantine-Input-input:focus-within {
   --input-bd: #c2410c;
+}
+
+/* A small phone held sideways gives up a little more */
+@media (orientation: landscape) and (max-height: 360px) {
+  .site-frame {
+    --site-frame-padding: 6px;
+  }
+}
+
+/* No double-tap zoom, so quick taps on a button count as taps. Pinch zoom
+   still works */
+:root {
+  touch-action: manipulation;
+}
+
+/* Safari zooms the page when a field under 16px is focused */
+@media (pointer: coarse) {
+  .mantine-Input-input,
+  .mantine-Textarea-input {
+    --input-fz: 1rem;
+  }
+}
+
+/* Keep the one-screen games from pulling to refresh or bouncing */
+html:has(main[data-game]) {
+  overscroll-behavior: none;
+}
+
+/* A notch or rounded corner beside a phone held sideways */
+.site-frame {
+  padding-left: max(var(--site-frame-padding), env(safe-area-inset-left, 0px));
+  padding-right: max(
+    var(--site-frame-padding),
+    env(safe-area-inset-right, 0px)
+  );
 }

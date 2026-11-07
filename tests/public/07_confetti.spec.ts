@@ -5,6 +5,7 @@ import {
   mockConfetti,
   showConfetti,
 } from "../confetti";
+import { choosePlayers } from "../gameplay";
 import { whiskies } from "../firebase/fixtures";
 import { signIn } from "../admin/helpers";
 
@@ -236,7 +237,7 @@ test.describe("Confetti on a phone", { tag: "@phone" }, () => {
     }) => {
       await mockConfetti(page);
       await page.goto("/games/snakesandladders");
-      await page.getByLabel("Number of Players").fill("10");
+      await choosePlayers(page, 10);
       await page.getByRole("button", { name: "Start game!" }).click();
       await showConfetti(page);
       await expectClearOfBadge(

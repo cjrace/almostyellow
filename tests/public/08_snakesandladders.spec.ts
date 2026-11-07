@@ -1,4 +1,5 @@
 import { test, expect } from "../playwright";
+import { choosePlayers } from "../gameplay";
 
 test.describe("Someone setting up Snakes and Ladders", () => {
   test.beforeEach(async ({ page }) => {
@@ -6,7 +7,7 @@ test.describe("Someone setting up Snakes and Ladders", () => {
   });
 
   test("sees a different avatar picked for each player", async ({ page }) => {
-    await page.getByLabel("Number of Players").fill("10");
+    await choosePlayers(page, 10);
     const groups = page.getByRole("group", { name: /^Avatar for player/ });
     await expect(groups).toHaveCount(10);
 
@@ -55,7 +56,7 @@ test.describe("Someone setting up Snakes and Ladders", () => {
   test("keeps the names typed in when others are left blank", async ({
     page,
   }) => {
-    await page.getByLabel("Number of Players").fill("3");
+    await choosePlayers(page, 3);
     await page.getByLabel("Name of player 1:").fill("Al");
     await page.getByLabel("Name of player 3:").fill("Cy");
     await page.getByRole("button", { name: "Start game!" }).click();

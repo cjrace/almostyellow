@@ -27,7 +27,14 @@ export const confettiBadge = (page: Page) =>
   page.locator("a[data-test-confetti]");
 
 export async function showConfetti(page: Page) {
-  await page.getByRole("button", { name: "Unleash confetti" }).click();
+  // Game pages fold the button into a menu on a portrait phone
+  const menu = page.getByRole("button", { name: "Menu", exact: true });
+  if (await menu.isVisible()) {
+    await menu.click();
+    await page.getByRole("menuitem", { name: "Unleash confetti" }).click();
+  } else {
+    await page.getByRole("button", { name: "Unleash confetti" }).click();
+  }
   await expect(confettiBadge(page)).toBeVisible();
 }
 

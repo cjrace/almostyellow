@@ -20,6 +20,7 @@ interface CardGameTitleProps {
   title: string;
   children: React.ReactNode; // The instructions
   creditLink?: string; // Where Ben published the game, if he did
+  credited?: boolean; // Whether it is one of Ben's games
 }
 
 // Title, instructions and credit for Ben Palmer's card games
@@ -27,55 +28,53 @@ export default function CardGameTitle({
   title,
   children,
   creditLink,
+  credited = true,
 }: CardGameTitleProps) {
   const [modalInstructionsOpened, setModalInstructionsOpened] = useState(false);
   const mounted = useMounted();
 
   return (
     <>
-      <Group gap="xs">
-        <Title
-          fz={{
-            base: "var(--mantine-h2-font-size)",
-            sm: "var(--mantine-h1-font-size)",
-          }}
-        >
-          {title}
-        </Title>
-        <Tooltip
-          label="Game instructions"
-          openDelay={250}
-          position="right"
-          offset={5}
-        >
-          <ActionIcon
-            variant="subtle"
-            size="lg"
-            aria-label="Open game instructions modal"
-            onClick={(event) => {
-              // Safari does not focus buttons on a tap; remember this opener.
-              event.currentTarget.focus();
-              setModalInstructionsOpened(true);
-            }}
+      <div>
+        <Group gap="xs">
+          <Title>{title}</Title>
+          <Tooltip
+            label="Game instructions"
+            openDelay={250}
+            position="right"
+            offset={5}
           >
-            <IconInfoCircle />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
-      <Text c="dimmed" mt={4}>
-        {creditLink ? (
-          <Anchor
-            href={creditLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="A Ben Palmer original (opens in new tab)"
-          >
-            A Ben Palmer original
-          </Anchor>
-        ) : (
-          "A Ben Palmer original"
+            <ActionIcon
+              variant="subtle"
+              size="lg"
+              aria-label="Open game instructions modal"
+              onClick={(event) => {
+                // Safari does not focus buttons on a tap; remember this opener.
+                event.currentTarget.focus();
+                setModalInstructionsOpened(true);
+              }}
+            >
+              <IconInfoCircle />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+        {credited && (
+          <Text c="dimmed" size="sm">
+            {creditLink ? (
+              <Anchor
+                href={creditLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="A Ben Palmer original (opens in new tab)"
+              >
+                A Ben Palmer original
+              </Anchor>
+            ) : (
+              "A Ben Palmer original"
+            )}
+          </Text>
         )}
-      </Text>
+      </div>
 
       {/* Built from parts so Modal.Title can name the dialog without the
           default header and close button */}

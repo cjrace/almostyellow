@@ -1,0 +1,105 @@
+/* Space under the header row. A phone held sideways is short, so the games
+   that fill one screen keep every pixel they can */
+.bar {
+  margin-bottom: 20px;
+}
+
+/* Game pages put their h1 in the header, centred. On a narrow screen it gets
+   a row of its own under the buttons. Wider screens, and phones held sideways
+   whatever their width, share one row */
+.bar.withTitle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "back tools"
+    "title title";
+  align-items: center;
+  row-gap: 4px;
+}
+
+.withTitle > :first-child {
+  grid-area: back;
+}
+
+.tools {
+  grid-area: tools;
+  justify-self: end;
+}
+
+.title {
+  grid-area: title;
+  min-width: 0;
+  text-align: center;
+}
+
+.title :global(.mantine-Group-root) {
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.title :global(.mantine-Title-root[data-order]) {
+  --title-fz: var(--mantine-h2-font-size) !important;
+  --title-lh: 1.2 !important;
+}
+
+@media (min-width: 40em), (orientation: landscape) and (max-height: 500px) {
+  .bar.withTitle {
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: "back title tools";
+  }
+}
+
+@media (min-width: 48em) {
+  .title :global(.mantine-Title-root[data-order]) {
+    --title-fz: var(--mantine-h1-font-size) !important;
+  }
+}
+
+/* Short and wide: less space under the header, slightly smaller buttons (still
+   well over the 24px minimum), and a smaller title, so the row stays low */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bar {
+    margin-bottom: 8px;
+  }
+
+  .bar :global(.mantine-ActionIcon-root) {
+    --ai-size: 2.25rem;
+  }
+
+  .title :global(.mantine-Title-root[data-order]) {
+    --title-fz: var(--mantine-h3-font-size) !important;
+    --title-lh: 1.1 !important;
+  }
+
+  .title :global(.mantine-ActionIcon-root) {
+    --ai-size: 1.75rem;
+  }
+
+  .title :global(.mantine-Text-root) {
+    font-size: var(--mantine-font-size-xs);
+    line-height: 1.1;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 360px) {
+  .bar {
+    margin-bottom: 4px;
+  }
+}
+
+/* The menu stands in for the buttons on a portrait phone */
+.bar .menu {
+  display: none;
+  grid-area: tools;
+  justify-self: end;
+}
+
+@media (max-width: 39.99em) and (orientation: portrait) {
+  .bar .menu {
+    display: flex;
+  }
+
+  .bar .inlineTools {
+    display: none;
+  }
+}

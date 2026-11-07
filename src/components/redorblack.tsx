@@ -9,10 +9,34 @@ import {
   getCardName,
   shuffleDeck,
 } from "@/components/carddeck";
+import useGameInProgress from "@/components/usegameinprogress";
 import CardGameTitle from "@/components/cardgametitle";
 import PlayingCard, { usePreloadCards } from "@/components/playingcard";
 import layout from "@/styles/cardgame.module.css";
 import styles from "@/styles/playingcard.module.css";
+
+// The title, instructions and credit, which the page puts in its header
+export function RedOrBlackTitle() {
+  return (
+    <CardGameTitle
+      title="Red or Black v1"
+      creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
+    >
+      <Text mb="sm">A Ben Palmer special designed to encourage drinking.</Text>
+      <List variant="ordered">
+        <List.Item>
+          guess out loud whether the next card is red or black
+        </List.Item>
+        <List.Item>&apos;Draw a card&apos; to see if you were right</List.Item>
+        <List.Item>if you guess wrong, take a drink</List.Item>
+        <List.Item>if you guess right, assign drinks to others</List.Item>
+        <List.Item>
+          keep going until the deck runs out, then shuffle a new one
+        </List.Item>
+      </List>
+    </CardGameTitle>
+  );
+}
 
 export default function RedOrBlack() {
   usePreloadCards();
@@ -22,6 +46,7 @@ export default function RedOrBlack() {
   const [drawnCards, setDrawnCards] = useState<Card[]>([]);
   const [drawnOpened, setDrawnOpened] = useState(false);
   const latestCard = drawnCards.at(-1) ?? null;
+  useGameInProgress(drawnCards.length > 0);
   const cardsRemaining = deck?.length ?? 52;
 
   // At one end of the deck each button goes, or disables itself, so focus
@@ -53,28 +78,6 @@ export default function RedOrBlack() {
 
   return (
     <div className={layout.game}>
-      <CardGameTitle
-        title="Red or Black v1"
-        creditLink="https://github.com/BenjaminJPalmer/red-or-black-v1"
-      >
-        <Text mb="sm">
-          A Ben Palmer special designed to encourage drinking.
-        </Text>
-        <List variant="ordered">
-          <List.Item>
-            guess out loud whether the next card is red or black
-          </List.Item>
-          <List.Item>
-            &apos;Draw a card&apos; to see if you were right
-          </List.Item>
-          <List.Item>if you guess wrong, take a drink</List.Item>
-          <List.Item>if you guess right, assign drinks to others</List.Item>
-          <List.Item>
-            keep going until the deck runs out, then shuffle a new one
-          </List.Item>
-        </List>
-      </CardGameTitle>
-
       <div className={`${layout.board} ${layout.sideBySide}`}>
         <div className={layout.table}>
           <div className={styles.single}>

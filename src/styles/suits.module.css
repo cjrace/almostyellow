@@ -59,3 +59,151 @@
     }
   }
 }
+
+/* A phone held sideways is as short as a small phone, so it gets the same
+   compact table whatever its width */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* The element type outranks the shared rules in cardgame.module.css */
+  div.board {
+    gap: var(--mantine-spacing-xs);
+  }
+
+  /* Tall enough for four cards in a row */
+  div.table {
+    min-height: 5.5rem;
+  }
+
+  /* Four in a row once the space is half as wide again as it is tall, as two
+     by two would make the cards smaller there */
+  @container (min-aspect-ratio: 3 / 2) {
+    .table .row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: min(100cqw, 100cqh * 20 / 7 + 3 * var(--mantine-spacing-sm));
+    }
+  }
+
+  /* The heading already says whose turn it is, so the prompt is left for
+     screen readers, which name the suit picker with it */
+  .prompt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Big enough to tap */
+  .board :global(.mantine-Button-root) {
+    --button-height: 2.75rem;
+    --button-padding-x: var(--mantine-spacing-sm);
+  }
+
+  /* Short phones put them side by side, as stacked they'd push the page into
+     scrolling. Stacked, a game needs up to 696px of height with long names, on
+     the final turn after a safe round. Play again keeps a row to itself */
+  @media (max-height: 45em) {
+    /* The element type outranks .controls in cardgame.module.css, which
+       stacks them everywhere else */
+    div.controls {
+      flex-flow: row wrap;
+    }
+
+    .controls > * {
+      flex: 1;
+    }
+
+    .controls > .wide {
+      flex-basis: 100%;
+    }
+  }
+
+  /* A phone held sideways has room across but not down, so the game sits in two
+   columns: whose turn it is, the last result and the cards on the left, and
+   what to do next on the right */
+  div.board.board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 20rem);
+    grid-template-areas:
+      "title magic"
+      "chosen picker"
+      "result picker"
+      "table controls";
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    align-content: start;
+    column-gap: var(--mantine-spacing-md);
+    row-gap: var(--mantine-spacing-xs);
+    max-width: 52rem;
+    margin-top: var(--mantine-spacing-xs);
+  }
+
+  div.board.board > * {
+    max-width: none;
+    margin-inline: 0;
+    min-width: 0;
+  }
+
+  /* The title and the magic number become grid items of their own */
+  .head {
+    display: contents;
+  }
+
+  .head > div:first-child {
+    grid-area: title;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--mantine-spacing-sm);
+  }
+
+  .head > :global(.mantine-Paper-root) {
+    grid-area: magic;
+    justify-self: end;
+  }
+
+  .alert {
+    grid-area: result;
+  }
+
+  .chosen {
+    grid-area: chosen;
+  }
+
+  div.board > .table {
+    grid-area: table;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .result {
+    grid-area: result;
+  }
+
+  .picker {
+    grid-area: picker;
+    align-self: start;
+  }
+
+  div.board > .controls {
+    grid-area: controls;
+    align-self: start;
+  }
+
+  /* No room for the keyboard hint beside the buttons on a short screen */
+  .hint {
+    display: none;
+  }
+
+  div.table {
+    min-height: 3.5rem;
+  }
+
+  /* Smaller buttons and a flatter suit picker, still well over 24px */
+  .board :global(.mantine-Button-root) {
+    --button-height: 2.25rem;
+  }
+
+  .picker :global(.mantine-SegmentedControl-label) {
+    padding-block: 4px;
+  }
+}
