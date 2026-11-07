@@ -47,6 +47,8 @@ interface UnoTableProps {
   version: number;
   // The clock, so the catch button can wait out the protected time
   now: number;
+  // The next move is refused until then, so everyone sees the last one
+  turnReadyAt: number;
   onInstructions: () => void;
   onPlay: (
     cardId: number,
@@ -72,6 +74,7 @@ export default function UnoTable({
   events,
   version,
   now,
+  turnReadyAt,
   onInstructions,
   onPlay,
   onDraw,
@@ -150,6 +153,8 @@ export default function UnoTable({
 
   const playing = view.phase === "playing";
   const myTurn = playing && view.currentPlayer === me;
+  // A short pause after the turn passes, in which nobody can move
+  const settling = myTurn && now < turnReadyAt && !view.drawPending;
   const heading = !playing
     ? view.outcome?.type === "win"
       ? view.outcome.winner === me
@@ -166,18 +171,22 @@ export default function UnoTable({
     ? "the round is over"
     : !myTurn
       ? "not your turn"
-      : view.drawPending
-        ? "play the card you drew, or keep it"
-        : "does not match the top card";
+      : settling
+        ? "wait a moment"
+        : view.drawPending
+          ? "play the card you drew, or keep it"
+          : "does not match the top card";
   const drawReason = !playing
     ? "The round is over."
     : !myTurn
       ? `Waiting for ${names[view.currentPlayer]} to play.`
-      : view.drawPending
-        ? "Play the card you drew, or keep it."
-        : mine.playableIds.length > 0
-          ? "You have a card you can play, so you cannot draw."
-          : "";
+      : settling
+        ? "One moment, so everyone can see the last move."
+        : view.drawPending
+          ? "Play the card you drew, or keep it."
+          : mine.playableIds.length > 0
+            ? "You have a card you can play, so you cannot draw."
+            : "";
   const canDraw = drawReason === "";
   // Nothing in your hand can be played, so the only move is to draw
   const mustDraw =
@@ -324,8 +333,9 @@ export default function UnoTable({
         </div>
 
         <div className={styles.controls}>
-          {view.drawPending ? (
-            <Button variant="default" disabled={!myTurn} onClick={onKeep}>
+          {/* Only the player who drew decides whether to keep it */}
+          {view.drawPending && myTurn ? (
+            <Button variant="default" onClick={onKeep}>
               Keep the card I drew
             </Button>
           ) : null}
@@ -382,7 +392,7 @@ export default function UnoTable({
 
         <UnoHand
           cards={mine.hand}
-          playableIds={mine.playableIds}
+          playableIds={settling ? [] : mine.playableIds}
           drawnCardId={mine.drawnCardId}
           reason={cardReason}
           active={myTurn}

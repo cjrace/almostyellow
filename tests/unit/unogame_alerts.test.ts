@@ -56,4 +56,24 @@ describe("Table alerts", () => {
     expect(alertDuration(mixed)).toBe(4000);
     expect(alertDuration([])).toBe(0);
   });
+
+  test("everyone else sees when a player draws or keeps a card", () => {
+    expect(
+      tableAlerts([{ type: "drew", player: "b", count: 1 }], names, "a"),
+    ).toEqual([{ tone: "special", ms: 2000, text: "Laura drew a card" }]);
+    expect(
+      tableAlerts([{ type: "kept", player: "b" }], names, "a")[0].text,
+    ).toBe("Laura kept the card they drew");
+    // Your own draw is shown by the card turning over
+    expect(
+      tableAlerts(
+        [
+          { type: "drew", player: "a", count: 1 },
+          { type: "kept", player: "a" },
+        ],
+        names,
+        "a",
+      ),
+    ).toEqual([]);
+  });
 });

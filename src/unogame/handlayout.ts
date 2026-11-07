@@ -1,8 +1,9 @@
 // Lays your hand out as an overlapping fan that always fits the width it has.
 // Each card is overlapped by the one after it, but the left strip with its
-// corner label stays clear. When even the narrowest strips would not fit, the
-// hand wraps into rows, each overlapping the one above it with the top strip,
-// and so the corner, still showing.
+// corner label stays clear. On a tall screen the hand wraps into rows once the
+// strips would be narrower than COMFORT_STEP; elsewhere only when even the
+// narrowest strips would not fit. Each row overlaps the one above it with the
+// top strip, and so the corner, still showing.
 
 export const CARD_RATIO = 7 / 5; // Height over width
 export const MIN_CARD_WIDTH = 58;
@@ -22,6 +23,12 @@ export const GAP = 6;
 export const MIN_TARGET = 24;
 // Room above the row for playable cards, which stand up from the rest
 export const LIFT = 12;
+// On screens with height to spare, a hand wraps into rows sooner, so each
+// card shows at least this much and is easy to tap. Up to COMFORT_ROWS rows;
+// a bigger hand narrows the strips down to MIN_TARGET instead.
+export const COMFORT_STEP = 40;
+export const COMFORT_ROWS = 3;
+export const COMFORT_HEIGHT = 600;
 
 export interface HandLayout {
   cardWidth: number;
@@ -51,7 +58,18 @@ export function fanLayout(options: {
   const cardHeight = cardWidth * CARD_RATIO;
   const minStep = Math.max(cardWidth * CORNER_STRIP, MIN_TARGET);
   const perRowMax = Math.max(1, Math.floor((width - cardWidth) / minStep) + 1);
-  const rows = Math.max(1, Math.ceil(count / perRowMax));
+  const comfortStep = Math.max(minStep, COMFORT_STEP);
+  const perRowComfort = Math.max(
+    1,
+    Math.floor((width - cardWidth) / comfortStep) + 1,
+  );
+  const rows = Math.max(
+    1,
+    Math.ceil(count / perRowMax),
+    viewportHeight >= COMFORT_HEIGHT
+      ? Math.min(COMFORT_ROWS, Math.ceil(count / perRowComfort))
+      : 1,
+  );
   const perRow = Math.max(1, Math.ceil(count / rows));
   const step =
     perRow > 1

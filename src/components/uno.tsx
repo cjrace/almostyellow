@@ -32,8 +32,14 @@ import { announceTable } from "@/unogame/announce";
 import { sendUno, watchUnoHand, watchUnoRoom } from "@/unogame/client";
 import type { Colour } from "@/unogame/engine/cards";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/unogame/engine/round";
-import type { UnoHand, UnoRoom } from "@/unogame/room";
+import {
+  FINAL_HOLD_MS,
+  unseenPlayers,
+  type UnoHand,
+  type UnoRoom,
+} from "@/unogame/room";
 import playConfetti from "@/components/playconfetti";
+import ViewportHeight from "@/components/viewportheight";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
 import UnoWinner from "@/components/unowinner";
@@ -90,6 +96,14 @@ export default function Uno({
   const roomRef = useRef<HTMLButtonElement>(null);
   const focusRoomRef = useRef(false);
   const prevStageRef = useRef<string | undefined>(undefined);
+  // After a win the table stays up for a few seconds, so everyone sees how it
+  // was won. The ref is read by effects in the same commit, the state draws.
+  const [holding, setHolding] = useState(false);
+  const holdingRef = useRef(false);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const seenSentRef = useRef<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
@@ -227,8 +241,8 @@ export default function Uno({
     });
   }, [stage]);
 
-  // A round won while this page was open ends with confetti. A reload into a
-  // finished room shows none.
+  // A round won while this page was open holds the final card, then ends with
+  // confetti. A reload into a finished room shows neither.
   useEffect(() => {
     const finishedNow =
       prevStageRef.current === "playing" &&
@@ -236,8 +250,49 @@ export default function Uno({
       !!playerId &&
       room?.view?.outcome?.type === "win";
     prevStageRef.current = stage;
-    if (finishedNow) playConfetti();
+    if (!finishedNow) return;
+    holdingRef.current = true;
+    queueMicrotask(() => {
+      setHolding(true);
+    });
+    clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      holdingRef.current = false;
+      setHolding(false);
+      playConfetti();
+    }, FINAL_HOLD_MS);
   }, [stage, room?.view?.outcome?.type, playerId]);
+  useEffect(
+    () => () => {
+      clearTimeout(holdTimerRef.current);
+    },
+    [],
+  );
+
+  // Once this device has shown the result, it says so, so the host can play
+  // again knowing nobody missed it
+  const finishedRound = room?.stage === "finished" ? room.round : null;
+  const wasSeated = !!room && room.seats.includes(playerId);
+  const canReport = !!client && online && !cached;
+  useEffect(() => {
+    if (
+      !client ||
+      !room ||
+      !finishedRound ||
+      !wasSeated ||
+      !canReport ||
+      holding ||
+      holdingRef.current ||
+      seenSentRef.current === finishedRound
+    )
+      return;
+    seenSentRef.current = finishedRound;
+    sendUno(client, "seen", { code: room.code, round: finishedRound }).catch(
+      () => {
+        // The host's button opens after a short wait anyway
+      },
+    );
+  }, [client, room, finishedRound, wasSeated, canReport, holding]);
 
   const connected = online && !cached && !ended;
   const announcement = useMemo(() => {
@@ -340,7 +395,8 @@ export default function Uno({
   }
 
   const inRound = room?.stage === "playing" && seated;
-  const tableShown = !!room?.view && inRound && !ended;
+  const tableShown =
+    !!room?.view && seated && (room.stage === "playing" || holding) && !ended;
   const players = room?.players ?? [];
   // Two players with a round won between them can be saved to the tracker
   const savable =
@@ -368,19 +424,23 @@ export default function Uno({
   const roundActions = () => {
     if (!room) return null;
     const reasonId = "uno_start_reason";
+    const unseen = unseenPlayers(room, now);
     return (
       <Stack gap="sm" className={table.bottomActions}>
         {hosting ? (
           <Stack gap={4}>
             <Text id={reasonId} size="sm" c="dimmed">
-              {players.length < MIN_PLAYERS
-                ? `Wait for at least ${String(MIN_PLAYERS)} players.`
-                : `${String(players.length)} players are ready.`}
+              {unseen.length > 0
+                ? `Waiting for ${unseen.map((p) => p.name).join(", ")} to see who won.`
+                : players.length < MIN_PLAYERS
+                  ? `Wait for at least ${String(MIN_PLAYERS)} players.`
+                  : `${String(players.length)} players are ready.`}
             </Text>
             <Button
               disabled={
                 busy ||
                 !connected ||
+                unseen.length > 0 ||
                 players.length < MIN_PLAYERS ||
                 players.length > MAX_PLAYERS
               }
@@ -451,6 +511,7 @@ export default function Uno({
       className={tableShown ? table.page : undefined}
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
+      <ViewportHeight />
       <Stack gap="md" className={tableShown ? table.pageHead : table.fill}>
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
@@ -646,7 +707,7 @@ export default function Uno({
           <Text role="status">Reconnecting. Moves are unavailable.</Text>
         )}
 
-        {room && !ended && room.stage !== "playing" && playerId && (
+        {room && !ended && room.stage !== "playing" && !holding && playerId && (
           <Stack gap="sm" className={table.fill}>
             <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
@@ -724,6 +785,7 @@ export default function Uno({
               events={room.events}
               version={room.version}
               now={now}
+              turnReadyAt={room.turnReadyAt ?? 0}
               onPlay={(cardId, colour: Colour | undefined, declareUno) => {
                 void play("play", {
                   cardId,

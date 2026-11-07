@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   CARD_RATIO,
+  COMFORT_ROWS,
+  COMFORT_STEP,
   CORNER_STRIP,
   MIN_TARGET,
   MAX_CARD_WIDTH,
@@ -71,10 +73,37 @@ describe("fanLayout", () => {
     expect(positions[0].left).toBeCloseTo((600 - used) / 2, 0);
   });
 
-  it("wraps only when the corner strips cannot fit in one row", () => {
-    const one = fanLayout({ width: 390, viewportHeight: 800, count: 12 });
+  it("on a tall phone, wraps a big hand into rows so each card shows at least 40 pixels", () => {
+    const seven = fanLayout({ width: 390, viewportHeight: 800, count: 7 });
+    expect(new Set(seven.positions.map((p) => p.top)).size).toBe(1);
+    for (const count of [10, 12, 18, 27]) {
+      const { positions } = fanLayout({
+        width: 390,
+        viewportHeight: 800,
+        count,
+      });
+      const rows = new Set(positions.map((p) => p.top)).size;
+      expect(rows).toBeGreaterThan(1);
+      expect(rows).toBeLessThanOrEqual(COMFORT_ROWS);
+      positions.forEach((position, index) => {
+        const next = positions[index + 1] as typeof position | undefined;
+        if (next?.top === position.top)
+          expect(next.left - position.left).toBeGreaterThanOrEqual(
+            COMFORT_STEP - 0.5,
+          );
+      });
+    }
+    // Rows are balanced: 10 cards are two rows of five
+    const ten = fanLayout({ width: 390, viewportHeight: 800, count: 10 });
+    expect(
+      ten.positions.filter((p) => p.top === ten.positions[0].top),
+    ).toHaveLength(5);
+  });
+
+  it("on a short screen, wraps only when the corner strips cannot fit in one row", () => {
+    const one = fanLayout({ width: 640, viewportHeight: 360, count: 12 });
     expect(new Set(one.positions.map((p) => p.top)).size).toBe(1);
-    const many = fanLayout({ width: 390, viewportHeight: 800, count: 70 });
+    const many = fanLayout({ width: 640, viewportHeight: 360, count: 70 });
     expect(new Set(many.positions.map((p) => p.top)).size).toBeGreaterThan(1);
   });
 

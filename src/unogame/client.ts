@@ -62,7 +62,8 @@ export function watchUnoHand(
   };
 }
 
-export type UnoAction = "leave" | "play" | "draw" | "keep" | "catch" | "sayUno";
+export type UnoAction =
+  "leave" | "play" | "draw" | "keep" | "catch" | "sayUno" | "seen";
 
 /**
  * Sends one command. When no answer arrives it is sent once more with the
