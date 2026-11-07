@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@mantine/hooks";
 import useGameInProgress from "@/components/usegameinprogress";
+import { vibrate } from "@/haptics";
 import useGameTimers from "@/components/usegametimers";
 import {
   Badge,
@@ -352,6 +353,7 @@ const SnakesAndLadders = () => {
         `Congratulations! ${players[currentPlayer]?.name} won the game!`,
       );
       playConfetti();
+      vibrate([100, 50, 100, 50, 300]);
     }
 
     setPlayerPositions((prevPositions) => {
@@ -464,6 +466,7 @@ const SnakesAndLadders = () => {
                     : `Hooray! ${players[currentPlayer]?.name} landed on a ${moveType} and climbed up ${String(moveDifference)} spaces!`;
 
                 setPopupMessage(message);
+                vibrate(80);
               } else {
                 finalizeMove(finalPosition);
               }

@@ -1,5 +1,6 @@
 "use client";
 
+import { vibrate } from "@/haptics";
 import useGameInProgress from "@/components/usegameinprogress";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "@mantine/hooks";
@@ -100,6 +101,7 @@ const BoomBoomPirate = () => {
         setIsExplosion(true);
         setRopeStates((prevState) => ({ ...prevState, [index]: "red" }));
         setLastPull(`Rope ${(index + 1).toString()} was the trap. Boom!`);
+        vibrate([200, 80, 200]);
         setShowExplosions(!reducedMotion);
         after(() => {
           setShowExplosions(false);
@@ -152,7 +154,7 @@ const BoomBoomPirate = () => {
   };
 
   // Fewer, bigger ropes on a phone when there's room for them
-  const phoneColumns = totalRopes <= 8 ? 2 : 3;
+  const phoneColumns = 5;
 
   return (
     <Box className={styles.game} data-setup={!gameInitialized || undefined}>
@@ -187,35 +189,42 @@ const BoomBoomPirate = () => {
               {
                 "--rope-cols-base": phoneColumns,
                 "--rope-rows-base": Math.ceil(totalRopes / phoneColumns),
-                "--rope-rows-sm": Math.ceil(totalRopes / 4),
-                "--rope-rows-md": Math.ceil(totalRopes / 6),
+                "--rope-rows-sm": Math.ceil(totalRopes / 8),
+                "--rope-rows-md": Math.ceil(totalRopes / 10),
               } as React.CSSProperties
             }
           >
             {Array.from({ length: totalRopes }, (_, rope) => rope).map(
               (rope) => (
-                <Button
+                <button
                   key={rope}
+                  type="button"
                   data-rope={rope}
+                  data-state={ropeStates[rope] || undefined}
+                  data-pulling={loadingRope === rope || undefined}
                   aria-label={ropeLabel(rope)}
-                  leftSection={ropeIcon(rope)}
-                  variant="outline"
-                  fullWidth
-                  h="100%"
-                  px="xs"
-                  styles={{ label: { fontSize: "var(--rope-fz)" } }}
+                  className={`${styles.rope} mantine-focus-auto`}
                   onClick={() => {
                     handleRopePull(rope);
                   }}
-                  color={ropeStates[rope] || "blue"}
                   disabled={loadingRope !== null}
                 >
-                  {loadingRope === rope
-                    ? reducedMotion
-                      ? "Loading..."
-                      : (currentIcon ?? "Loading...")
-                    : `Rope ${(rope + 1).toString()}`}
-                </Button>
+                  <span className={styles.strand} aria-hidden />
+                  <span className={styles.knot}>
+                    {loadingRope === rope ? (
+                      reducedMotion ? (
+                        "Loading..."
+                      ) : (
+                        (currentIcon ?? "Loading...")
+                      )
+                    ) : (
+                      <>
+                        {ropeIcon(rope)}
+                        {(rope + 1).toString()}
+                      </>
+                    )}
+                  </span>
+                </button>
               ),
             )}
           </div>

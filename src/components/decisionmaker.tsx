@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Textarea,
   Button,
@@ -10,6 +10,7 @@ import {
   Group,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useReducedMotion } from "@mantine/hooks";
 import classes from "@/styles/textarea.module.css";
 import playConfetti from "@/components/playconfetti";
 
@@ -34,6 +35,18 @@ export default function DecisionMaker() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // On a phone the result lands below the form, so scroll it into view
+  const resultRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  useEffect(() => {
+    if (chosenOption) {
+      resultRef.current?.scrollIntoView({
+        block: "nearest",
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    }
+  }, [chosenOption, reducedMotion]);
 
   const makeDecision = (data: DecisionOptions) => {
     if (isLoading) return;
@@ -113,7 +126,7 @@ Laura`;
       </form>
 
       {/* Always rendered, so screen readers announce the decision */}
-      <div role="status">
+      <div role="status" ref={resultRef}>
         {chosenOption && (
           <Stack>
             <Text ta="center" size="xl">
