@@ -231,6 +231,24 @@ describe("Quiz rooms and concurrent players", () => {
       ...(await command(code)),
       playerId: first.playerId,
     });
+    // The route does not look up token revocation, so the removed player's
+    // token is still valid. Their membership is what turns the buzz away.
+    const removedBuzz = await POST(
+      new NextRequest("http://localhost/api/buzzer", {
+        method: "POST",
+        headers: {
+          origin: "http://localhost",
+          authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "buzz", input: await command(code) }),
+      }),
+    );
+    expect(removedBuzz.ok).toBe(false);
+    expect(
+      (await adminDb().collection("roomBuzzes").where("code", "==", code).get())
+        .size,
+    ).toBe(0);
     await expect(joinGuestRoom({ code, name: "Cam", secret })).rejects.toThrow(
       "removed",
     );

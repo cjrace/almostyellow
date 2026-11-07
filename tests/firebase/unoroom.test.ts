@@ -136,6 +136,24 @@ async function noPlayableCards(
     .update({ hand: state.hands[playerId], playableIds: [] });
   return { state, seat };
 }
+// Gives the player to move a plain number card that matches the pile, so
+// playing it simply passes the turn on
+async function givePlainCard(
+  code: string,
+  seated: { uid: string; playerId: string }[],
+) {
+  const state = await secretState(code);
+  const mover = state.players[state.current];
+  const seat = seated.find((s) => s.playerId === mover);
+  if (!seat) throw new Error("Nobody is seated there.");
+  const index = state.stock.findIndex((c) => c.kind === "number");
+  const [plain] = state.stock.splice(index, 1);
+  if (plain.kind !== "number") throw new Error("Needs a number card.");
+  state.hands[mover].push(plain);
+  state.colour = plain.colour;
+  await adminDb().doc(`roomPrivate/${code}`).update({ state });
+  return { seat, plain };
+}
 async function play(
   code: string,
   uid: string,
@@ -251,13 +269,12 @@ describe("Uno rooms", () => {
   test("two copies of a command arriving together apply it once", async () => {
     // A resend can reach the server while the first copy is still running
     const { code, seated } = await started(2);
-    const { seat, playable } = await turn(code, seated);
-    if (playable.length === 0) return;
+    const { seat, plain } = await givePlainCard(code, seated);
     const before = await secretState(code);
     const commandId = randomUUID();
     const results = await Promise.allSettled([
-      play(code, seat.uid, playable[0], commandId),
-      play(code, seat.uid, playable[0], commandId),
+      play(code, seat.uid, plain, commandId),
+      play(code, seat.uid, plain, commandId),
     ]);
     expect(results.every((r) => r.status === "fulfilled")).toBe(true);
     const after = await secretState(code);
@@ -540,26 +557,13 @@ describe("Uno rooms", () => {
 
   test("the next player waits a moment after the turn passes", async () => {
     const { code, seated } = await started(2);
-    const state0 = await secretState(code);
-    const mover = state0.players[state0.current];
-    const seat = seated.find((s) => s.playerId === mover);
-    if (!seat) throw new Error("Nobody is seated there.");
-    // A plain number card that matches, so the turn simply passes on
-    const index = state0.stock.findIndex((c) => c.kind === "number");
-    const [plain] = state0.stock.splice(index, 1);
-    if (plain.kind !== "number") throw new Error("Needs a number card.");
-    state0.hands[mover].push(plain);
-    state0.colour = plain.colour;
-    await adminDb().doc(`roomPrivate/${code}`).update({ state: state0 });
+    const { seat, plain } = await givePlainCard(code, seated);
     await play(code, seat.uid, plain);
     const after = await room(code);
     expect(after.turnReadyAt).toBeGreaterThan(Date.now());
-    // Whoever is next is refused until the pause is over
-    const state = await secretState(code);
-    const next = seated.find(
-      (s) => s.playerId === state.players[state.current],
-    );
-    if (!next) throw new Error("Nobody is seated there.");
+    // Whoever is next, with nothing to play so drawing is their move, is
+    // refused until the pause is over
+    const { seat: next } = await noPlayableCards(code, seated);
     await expect(
       unoPlayerCommand(next.uid, "draw", {
         code,
@@ -567,14 +571,19 @@ describe("Uno rooms", () => {
         commandId: randomUUID(),
       }),
     ).rejects.toThrow("Wait a moment");
+    // Once the pause is over the same move goes through
     await adminDb()
       .doc(`gameRooms/${code}`)
       .update({ turnReadyAt: Date.now() - 1 });
-    await unoPlayerCommand(next.uid, "sayUno", {
+    const before = (await secretState(code)).hands[next.playerId].length;
+    await unoPlayerCommand(next.uid, "draw", {
       code,
       round: after.round,
       commandId: randomUUID(),
-    }).catch(() => undefined);
+    });
+    expect(
+      (await secretState(code)).hands[next.playerId].length,
+    ).toBeGreaterThan(before);
   });
 
   test("expired rooms go but their results stay for the week", async () => {

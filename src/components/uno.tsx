@@ -3,8 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { IconChevronDown } from "@tabler/icons-react";
 import {
+  IconChevronDown,
+  IconChevronLeft,
+  IconConfetti,
+  IconDeviceGamepad2,
+  IconMoon,
+  IconSun,
+} from "@tabler/icons-react";
+import {
+  ActionIcon,
   Alert,
   Anchor,
   Button,
@@ -18,6 +26,8 @@ import {
   Text,
   TextInput,
   Title,
+  useComputedColorScheme,
+  useMantineColorScheme,
 } from "@mantine/core";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
@@ -41,6 +51,7 @@ import {
 } from "@/unogame/room";
 import playConfetti from "@/components/playconfetti";
 import { sendingState, type Sent } from "@/unogame/sending";
+import useWakeLock from "@/components/usewakelock";
 import ViewportHeight from "@/components/viewportheight";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
@@ -99,18 +110,14 @@ export default function Uno({
   const createIdRef = useRef<string | null>(null);
   const roomRef = useRef<HTMLButtonElement>(null);
   const focusRoomRef = useRef(false);
-  const prevStageRef = useRef<string | undefined>(undefined);
-  // After a win the table stays up for a few seconds, so everyone sees how it
-  // was won. The ref is read by effects in the same commit, the state draws.
   // A move sent from the table that the room has not yet shown. It clears when
   // the room changes, when the command fails, or a few seconds after the
   // server answered (a repeat that changed nothing).
   const [sending, setSending] = useState<Sent | null>(null);
+  // After a win the table stays up for a few seconds, so everyone sees how it
+  // was won
   const [holding, setHolding] = useState(false);
-  const holdingRef = useRef(false);
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
+  const [prevStage, setPrevStage] = useState<string | undefined>(undefined);
   const seenSentRef = useRef<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
@@ -251,32 +258,29 @@ export default function Uno({
   }, [stage]);
 
   // A round won while this page was open holds the final card, then ends with
-  // confetti. A reload into a finished room shows neither.
-  useEffect(() => {
-    const finishedNow =
-      prevStageRef.current === "playing" &&
+  // confetti. A reload into a finished room shows neither. The hold starts
+  // while rendering, not in an effect, so the round-over page and an empty
+  // table never show for even one frame first.
+  if (stage !== prevStage) {
+    setPrevStage(stage);
+    if (
+      prevStage === "playing" &&
       stage === "finished" &&
       !!playerId &&
-      room?.view?.outcome?.type === "win";
-    prevStageRef.current = stage;
-    if (!finishedNow) return;
-    holdingRef.current = true;
-    queueMicrotask(() => {
+      room?.view?.outcome?.type === "win"
+    )
       setHolding(true);
-    });
-    clearTimeout(holdTimerRef.current);
-    holdTimerRef.current = setTimeout(() => {
-      holdingRef.current = false;
+  }
+  useEffect(() => {
+    if (!holding) return;
+    const timer = setTimeout(() => {
       setHolding(false);
       playConfetti();
     }, FINAL_HOLD_MS);
-  }, [stage, room?.view?.outcome?.type, playerId]);
-  useEffect(
-    () => () => {
-      clearTimeout(holdTimerRef.current);
-    },
-    [],
-  );
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [holding]);
 
   // The sign-in token is refreshed over the network about hourly. Doing it as
   // your turn starts keeps a slow refresh out of your move.
@@ -299,7 +303,6 @@ export default function Uno({
       !wasSeated ||
       !canReport ||
       holding ||
-      holdingRef.current ||
       seenSentRef.current === finishedRound
     )
       return;
@@ -427,6 +430,23 @@ export default function Uno({
   const tableShown =
     !!room?.view && seated && (room.stage === "playing" || holding) && !ended;
   const players = room?.players ?? [];
+  const { setColorScheme } = useMantineColorScheme();
+  const colourScheme = useComputedColorScheme("dark", {
+    getInitialValueInEffect: true,
+  });
+  // The screen stays awake during a round, so waiting for a turn does not
+  // lock the phone
+  useWakeLock(inRound);
+  // On a phone held sideways the site's header gives its height back to the
+  // table (see global.css); the page keeps its own back button and menu
+  useEffect(() => {
+    if (!tableShown) return;
+    const root = document.documentElement;
+    root.dataset.unoTable = "";
+    return () => {
+      delete root.dataset.unoTable;
+    };
+  }, [tableShown]);
   // Two players with a round won between them can be saved to the tracker
   const savable =
     hosting &&
@@ -542,6 +562,23 @@ export default function Uno({
     >
       <ViewportHeight />
       <Stack gap="md" className={tableShown ? table.pageHead : table.fill}>
+        {tableShown && (
+          <>
+            {/* On a phone held sideways the site's header is hidden, and these
+                stand in for it. They are hidden in every other layout. */}
+            <h1 className={table.landscapeTitle}>Uno</h1>
+            <ActionIcon
+              variant="default"
+              component={Link}
+              href="/games"
+              aria-label="Back to our games list"
+              className={table.back}
+            >
+              <IconChevronLeft size={16} />
+              <IconDeviceGamepad2 size={18} />
+            </ActionIcon>
+          </>
+        )}
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
           <Alert color="red" role="alert">
@@ -685,6 +722,35 @@ export default function Uno({
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Item onClick={copyLink}>Copy join link</Menu.Item>
+                {tableShown && (
+                  <>
+                    {/* The header's buttons, for a phone held sideways */}
+                    <Menu.Item
+                      className={table.menuExtra}
+                      leftSection={<IconConfetti size={16} />}
+                      onClick={playConfetti}
+                    >
+                      Unleash confetti
+                    </Menu.Item>
+                    <Menu.Item
+                      className={table.menuExtra}
+                      leftSection={
+                        colourScheme === "dark" ? (
+                          <IconSun size={16} />
+                        ) : (
+                          <IconMoon size={16} />
+                        )
+                      }
+                      onClick={() => {
+                        setColorScheme(
+                          colourScheme === "light" ? "dark" : "light",
+                        );
+                      }}
+                    >
+                      {colourScheme === "dark" ? "Light" : "Dark"} mode
+                    </Menu.Item>
+                  </>
+                )}
                 {hosting && room && !ended && room.stage === "playing" && (
                   <Menu.Item onClick={askEndRound}>End round</Menu.Item>
                 )}
