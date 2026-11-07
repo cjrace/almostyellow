@@ -309,7 +309,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
 
     await test.step("Then I am asked for a colour, starting on the first", async () => {
-      const picker = page.getByRole("group", {
+      const picker = page.getByRole("dialog", {
         name: "Choose a colour for your wild card",
       });
       await expect(picker).toBeVisible();
@@ -322,7 +322,7 @@ test.describe("Looking at the Uno table in a real room", () => {
 
     await test.step("When I choose blue, focus returns to the heading and the play is announced", async () => {
       await page
-        .getByRole("group", { name: "Choose a colour for your wild card" })
+        .getByRole("dialog", { name: "Choose a colour for your wild card" })
         .getByRole("button", { name: "Blue" })
         .click();
       await expect(
@@ -337,7 +337,7 @@ test.describe("Looking at the Uno table in a real room", () => {
   test("Cards that cannot be played say why and ignore clicks", async ({
     page,
   }) => {
-    await openTable(page, "two-players");
+    const { show } = await openTable(page, "two-players");
     const blocked = page
       .getByRole("list", { name: /^Your hand/ })
       .getByRole("button", { name: /does not match the top card$/ })
@@ -349,41 +349,46 @@ test.describe("Looking at the Uno table in a real room", () => {
       page.getByRole("status").filter({ hasText: "You played" }),
     ).toHaveCount(0);
 
-    await page
-      .getByRole("button", { name: /^Draw pile, \d+ cards, draw/ })
-      .click();
-    await expect(
-      page.getByRole("status").filter({ hasText: "You drew" }),
-    ).toContainText("You drew a card.");
+    await test.step("And I cannot draw while I have a card I can play", async () => {
+      const pile = page.getByRole("button", { name: /^Draw pile, \d+ cards/ });
+      await expect(pile).toHaveAttribute("aria-disabled", "true");
+      await expect(pile).toHaveAccessibleDescription(
+        "You have a card you can play, so you cannot draw.",
+      );
+    });
+
+    await test.step("But when nothing can be played I draw", async () => {
+      await show("no-play");
+      await page
+        .getByRole("button", { name: /^Draw pile, \d+ cards, draw/ })
+        .click();
+      await expect(
+        page.getByRole("status").filter({ hasText: "You drew" }),
+      ).toContainText("You drew a card.");
+    });
   });
 
   test("Uno is a button, pressed before the play or right after it", async ({
     page,
   }) => {
     const { show } = await openTable(page, "two-players");
-    await expect(
-      page.getByRole("button", { name: "Say Uno!" }),
-    ).toHaveAttribute("aria-disabled", "true");
-    await expect(
-      page.getByRole("button", { name: "Say Uno!" }),
-    ).toHaveAccessibleDescription(
-      "Saying Uno only matters when you play down to one card.",
-    );
+    // With seven cards, saying Uno does not matter yet, so there is no button
+    await expect(page.getByRole("button", { name: "Say Uno!" })).toHaveCount(0);
 
     await test.step("Given two cards left, when I say Uno before playing", async () => {
       await show("two-cards");
       const say = page.getByRole("button", { name: "Say Uno!" });
-      await expect(say).toHaveAttribute("aria-disabled", "false");
+      await expect(say).toBeEnabled();
       await say.click();
       await expect(
         page.getByRole("button", { name: "Uno said" }),
-      ).toHaveAttribute("aria-disabled", "true");
+      ).toBeDisabled();
       await page
         .getByRole("list", { name: /^Your hand/ })
         .getByRole("button", { name: /, play$/ })
         .first()
         .click({ position: CORNER });
-      const picker = page.getByRole("group", { name: /Choose a colour/ });
+      const picker = page.getByRole("dialog", { name: /Choose a colour/ });
       if (await picker.isVisible())
         await picker.getByRole("button", { name: "Red" }).click();
       await expect(
@@ -406,7 +411,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     const { show } = await openTable(page, "large-hand");
     await expectHandSorted(page);
 
-    await show("two-players");
+    await show("no-play");
     await expectHandSorted(page);
     await page
       .getByRole("button", { name: /^Draw pile, \d+ cards, draw/ })
@@ -434,6 +439,31 @@ test.describe("Looking at the Uno table in a real room", () => {
     ).toContainText(
       "You caught Laura for Uno. Laura drew 2 cards for not saying Uno.",
     );
+  });
+
+  test("Everyone is in one strip in seat order, with the current player filled in", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    const strip = page.getByRole("list", { name: "Players" });
+    await expect(strip.getByRole("listitem")).toHaveCount(2);
+    const you = strip.getByRole("listitem", {
+      name: /^You, 7 cards, playing now/,
+    });
+    await expect(you).toBeVisible();
+    await expect(you).toContainText("Playing");
+    await expect(you).toHaveCSS("background-color", "rgb(194, 65, 12)");
+    await expect(
+      strip.getByRole("listitem", { name: "Laura, 7 cards" }),
+    ).toBeVisible();
+
+    await test.step("And a player down to one card who said Uno keeps an UNO! badge", async () => {
+      await show("uno-said");
+      const laura = strip.getByRole("listitem", {
+        name: "Laura, 1 card, said Uno",
+      });
+      await expect(laura).toContainText("UNO!");
+    });
   });
 
   test("A large hand fans out to fit, with every corner showing", async ({
@@ -538,7 +568,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     ).toHaveAttribute("data-colour", /^(red|yellow|green|blue)$/);
 
     const say = page.getByRole("button", { name: "Say Uno!" });
-    await expect(say).not.toHaveAttribute("data-ready");
+    await expect(say).toHaveCount(0);
     await show("two-cards");
     await expect(say).toHaveAttribute("data-ready", "");
     await say.click();
@@ -594,7 +624,7 @@ for (const scheme of schemes) {
             .first()
             .click({ position: CORNER });
           await expect(
-            page.getByRole("group", {
+            page.getByRole("dialog", {
               name: "Choose a colour for your wild card",
             }),
           ).toBeVisible();

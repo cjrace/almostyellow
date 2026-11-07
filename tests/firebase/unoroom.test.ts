@@ -32,7 +32,7 @@ import {
 } from "@/unogame/service";
 import { trackerGameId } from "@/unogame/tracker";
 import { playableCards, type RoundState } from "@/unogame/engine/round";
-import type { Card } from "@/unogame/engine/cards";
+import { canPlayOn, type Card } from "@/unogame/engine/cards";
 import type { UnoHand, UnoRoom } from "@/unogame/room";
 import { POST } from "@/app/api/uno/route";
 import { POST as buzzerPOST } from "@/app/api/buzzer/route";
@@ -110,6 +110,31 @@ async function turn(code: string, seated: { uid: string; playerId: string }[]) {
   const seat = seated.find((s) => s.playerId === playerId);
   if (!seat) throw new Error("Nobody is seated there.");
   return { state, seat, playable: playableCards(state, playerId) };
+}
+// Swaps any card the player to move could play for one they could not, in the
+// server's record and in their published hand, so drawing is their only move
+async function noPlayableCards(
+  code: string,
+  seated: { uid: string; playerId: string }[],
+) {
+  const ref = adminDb().doc(`roomPrivate/${code}`);
+  const state = await secretState(code);
+  const playerId = state.players[state.current];
+  const seat = seated.find((s) => s.playerId === playerId);
+  if (!seat) throw new Error("Nobody is seated there.");
+  const top = state.discard[state.discard.length - 1];
+  const dead = (card: Card) => !canPlayOn(card, top, state.colour);
+  state.hands[playerId] = state.hands[playerId].map((card) => {
+    if (dead(card)) return card;
+    const index = state.stock.findIndex(dead);
+    const [swap] = state.stock.splice(index, 1, card);
+    return swap;
+  });
+  await ref.update({ state });
+  await adminDb()
+    .doc(`roomHands/${code}_${playerId}`)
+    .update({ hand: state.hands[playerId], playableIds: [] });
+  return { state, seat };
 }
 async function play(
   code: string,
@@ -238,9 +263,24 @@ describe("Uno rooms", () => {
     expect(playable).toBeDefined();
   });
 
+  test("a player holding a card they can play cannot draw", async () => {
+    const { code, seated } = await started(2);
+    const { seat, playable } = await turn(code, seated);
+    if (playable.length === 0) return;
+    const current = await room(code);
+    await expect(
+      unoPlayerCommand(seat.uid, "draw", {
+        code,
+        round: current.round,
+        commandId: randomUUID(),
+      }),
+    ).rejects.toThrow("cannot draw");
+    expect((await room(code)).version).toBe(current.version);
+  });
+
   test("drawing adds a card to the drawer's hand only", async () => {
     const { code, seated } = await started(2);
-    const { seat } = await turn(code, seated);
+    const { seat } = await noPlayableCards(code, seated);
     const current = await room(code);
     await unoPlayerCommand(seat.uid, "draw", {
       code,

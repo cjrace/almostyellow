@@ -61,6 +61,11 @@ export function UnoCardButton({
       }}
     >
       <UnoCard card={card} decorative />
+      {justDrawn && (
+        <span className={styles.newTag} aria-hidden="true">
+          New
+        </span>
+      )}
     </UnstyledButton>
   );
 }

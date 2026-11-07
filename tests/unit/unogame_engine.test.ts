@@ -469,9 +469,27 @@ describe("drawing", () => {
     expect(kept.drawnCardId).toBeNull();
   });
 
-  it("allows drawing while holding a playable card", () => {
+  it("does not allow drawing while holding a playable card", () => {
     const state = rig({
       hands: { a: ["R1", "B2"], b: ["R3"] },
+      top: "R5",
+      stock: ["B9"],
+    });
+    expect(errorOf(state, { type: "draw", player: "a" })).toBe("must_play");
+  });
+
+  it("does not allow drawing while holding a wild card, which is always playable", () => {
+    const state = rig({
+      hands: { a: ["B2", "W"], b: ["R3"] },
+      top: "R5",
+      stock: ["B9"],
+    });
+    expect(errorOf(state, { type: "draw", player: "a" })).toBe("must_play");
+  });
+
+  it("allows drawing when nothing in the hand can be played", () => {
+    const state = rig({
+      hands: { a: ["B1", "B2"], b: ["R3"] },
       top: "R5",
       stock: ["B9"],
     });
@@ -482,7 +500,7 @@ describe("drawing", () => {
 
   it("limits the private view to the drawn card while a decision is pending", () => {
     const state = rig({
-      hands: { a: ["R1", "B2"], b: ["R3"] },
+      hands: { a: ["B1", "B2"], b: ["R3"] },
       top: "R5",
       stock: ["R9"],
     });
@@ -584,8 +602,19 @@ describe("Uno declaration and catching", () => {
 
   it("lets the next player's draw or play end the opportunity", () => {
     const { state } = play(setup(), "a", 0, {}, at(0));
+    // b holds nothing that matches, so drawing is their move
     const { state: afterDraw } = run(
-      state,
+      play(
+        rig({
+          hands: { a: ["R1", "R2"], b: ["B3", "B4"], c: ["R4"] },
+          top: "R5",
+          stock: ["G1", "G2", "G3", "G4"],
+        }),
+        "a",
+        0,
+        {},
+        at(0),
+      ).state,
       { type: "draw", player: "b" },
       at(1000),
     );
@@ -629,7 +658,7 @@ describe("Uno declaration and catching", () => {
   it("clears the window when the caught player is not the one holding one card any more", () => {
     // Skip in a two-player game gives the same player another go.
     const state = rig({
-      hands: { a: ["Rskip", "R2"], b: ["B3", "B4"] },
+      hands: { a: ["Rskip", "B2"], b: ["B3", "B4"] },
       top: "R5",
     });
     const { state: next } = play(state, "a", 0, {}, at(0));
@@ -789,18 +818,17 @@ describe("complete rounds", () => {
                 : { type: "keep", player };
           else {
             const options = playableCards(state, player);
-            command =
-              options.length && random() < 0.9
-                ? {
-                    type: "play",
-                    player,
-                    cardId: options[Math.floor(random() * options.length)].id,
-                    colour: (["red", "yellow", "green", "blue"] as const)[
-                      Math.floor(random() * 4)
-                    ],
-                    declareUno: random() < 0.7,
-                  }
-                : { type: "draw", player };
+            command = options.length
+              ? {
+                  type: "play",
+                  player,
+                  cardId: options[Math.floor(random() * options.length)].id,
+                  colour: (["red", "yellow", "green", "blue"] as const)[
+                    Math.floor(random() * 4)
+                  ],
+                  declareUno: random() < 0.7,
+                }
+              : { type: "draw", player };
           }
           const result = applyCommand(state, command, ctx);
           if (!result.ok)
@@ -885,7 +913,7 @@ describe("saying Uno after the play", () => {
   const exposed = () =>
     play(
       rig({
-        hands: { a: ["R1", "R2"], b: ["R3", "B4"], c: ["R4"] },
+        hands: { a: ["R1", "R2"], b: ["B3", "B4"], c: ["R4"] },
         top: "R5",
         stock: ["G1", "G2", "G3", "G4"],
       }),
@@ -964,7 +992,12 @@ describe("players leaving and rounds ending early", () => {
   });
 
   it("refills an empty draw pile without touching the discard pile", () => {
-    const state = three({ stock: [], discardBelow: ["G9", "Y9"], current: 1 });
+    const state = three({
+      hands: { a: ["R1", "R2"], b: ["B3", "G4", "B6"], c: ["R6", "Y7"] },
+      stock: [],
+      discardBelow: ["G9", "Y9"],
+      current: 1,
+    });
     const leaverIds = state.hands.a.map((c) => c.id).sort((x, y) => x - y);
     const { state: next } = leave(state, "a");
     expect(next.stock.map((c) => c.id).sort((x, y) => x - y)).toEqual(
@@ -989,7 +1022,10 @@ describe("players leaving and rounds ending early", () => {
   });
 
   it("clears a card drawn by the player who left", () => {
-    const state = three({ current: 1 });
+    const state = three({
+      hands: { a: ["R1", "R2"], b: ["B3", "G4", "B6"], c: ["R6", "Y7"] },
+      current: 1,
+    });
     const { state: drawn } = run(state, { type: "draw", player: "b" });
     const { state: next } = leave(
       { ...drawn, drawnCardId: drawn.hands.b[0].id, current: 1 },

@@ -36,6 +36,7 @@ import type { UnoHand, UnoRoom } from "@/unogame/room";
 import playConfetti from "@/components/playconfetti";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
+import UnoWinner from "@/components/unowinner";
 import layout from "@/styles/cardgame.module.css";
 import table from "@/styles/unotable.module.css";
 
@@ -83,7 +84,6 @@ export default function Uno({
   const [camId, setCamId] = useState("");
   const [playedOn, setPlayedOn] = useState("");
   const [instructions, setInstructions] = useState(false);
-  const [winOpen, setWinOpen] = useState(false);
   const [now, setNow] = useState(0);
   const flightRef = useRef(false);
   const createIdRef = useRef<string | null>(null);
@@ -227,8 +227,8 @@ export default function Uno({
     });
   }, [stage]);
 
-  // A round won while this page was open ends with confetti and a modal. A
-  // reload into a finished room shows neither.
+  // A round won while this page was open ends with confetti. A reload into a
+  // finished room shows none.
   useEffect(() => {
     const finishedNow =
       prevStageRef.current === "playing" &&
@@ -236,11 +236,7 @@ export default function Uno({
       !!playerId &&
       room?.view?.outcome?.type === "win";
     prevStageRef.current = stage;
-    if (!finishedNow) return;
-    queueMicrotask(() => {
-      setWinOpen(true);
-    });
-    playConfetti();
+    if (finishedNow) playConfetti();
   }, [stage, room?.view?.outcome?.type, playerId]);
 
   const connected = online && !cached && !ended;
@@ -368,11 +364,10 @@ export default function Uno({
     setFocusHistory(true);
   }
 
-  // Start / play again and save to tracker, shared by the lobby and the win
-  // modal so they cannot drift apart
-  const roundActions = (inModal = false) => {
+  // Start / play again and save to tracker
+  const roundActions = () => {
     if (!room) return null;
-    const reasonId = inModal ? "uno_start_reason_modal" : "uno_start_reason";
+    const reasonId = "uno_start_reason";
     return (
       <Stack gap="sm">
         {hosting ? (
@@ -386,7 +381,6 @@ export default function Uno({
               }
               aria-describedby={reasonId}
               onClick={() => {
-                setWinOpen(false);
                 void run(() => control("start"));
               }}
             >
@@ -423,7 +417,6 @@ export default function Uno({
               onClick={() => {
                 setCamId(players[0].id);
                 setPlayedOn(new Date().toLocaleDateString("en-CA"));
-                if (inModal) setWinOpen(false);
                 setSaving(true);
               }}
             >
@@ -658,15 +651,20 @@ export default function Uno({
             <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
             </Title>
-            {room.stage === "finished" && room.view?.outcome && (
-              <Text role="status">
-                {room.view.outcome.type === "win"
-                  ? `${room.names[room.view.outcome.winner] ?? "A player"} won the round.`
-                  : room.view.outcome.type === "abandoned"
+            {room.stage === "finished" &&
+              room.view?.outcome &&
+              (room.view.outcome.type === "win" ? (
+                <UnoWinner
+                  name={room.names[room.view.outcome.winner] ?? "A player"}
+                  you={room.view.outcome.winner === playerId}
+                />
+              ) : (
+                <Text role="status">
+                  {room.view.outcome.type === "abandoned"
                     ? "The host ended the round."
                     : "Nobody could move, so nobody won."}
-              </Text>
-            )}
+                </Text>
+              ))}
             <Title order={3} size="h4">
               Players ({players.length}/{MAX_PLAYERS})
             </Title>
@@ -895,46 +893,6 @@ export default function Uno({
         </Stack>
       </Modal>
       <Modal
-        opened={winOpen}
-        onClose={() => {
-          setWinOpen(false);
-        }}
-        centered
-        title={
-          room?.view?.outcome?.type === "win"
-            ? room.view.outcome.winner === playerId
-              ? "You won the round!"
-              : `${room.names[room.view.outcome.winner] ?? "A player"} won the round!`
-            : "Round over"
-        }
-        closeButtonProps={{ "aria-label": "Close and see the lobby" }}
-      >
-        <Stack gap="md" pt="xs">
-          {/* After the first round of the room, show how everyone stands */}
-          {room &&
-            Object.values(room.scores).reduce((a, b) => a + b, 0) > 1 && (
-              <UnoScoreboard
-                players={room.seats.map((id) => ({
-                  id,
-                  name: room.names[id] ?? "A player",
-                  wins: room.scores[id] ?? 0,
-                }))}
-              />
-            )}
-          {roundActions(true)}
-          {!hosting && (
-            <Button
-              variant="subtle"
-              onClick={() => {
-                setWinOpen(false);
-              }}
-            >
-              Close
-            </Button>
-          )}
-        </Stack>
-      </Modal>
-      <Modal
         opened={instructions}
         onClose={() => {
           setInstructions(false);
@@ -945,8 +903,9 @@ export default function Uno({
         <Stack>
           <Text>
             Play a card that matches the top card by colour, number or symbol,
-            or play a wild card. If you cannot, draw a card, and play it or keep
-            it. First to empty their hand wins the round.
+            or play a wild card. If you can play, you must; only if you cannot
+            do you draw a card, and then play it or keep it. First to empty
+            their hand wins the round.
           </Text>
           <Text>
             Say Uno when you play down to one card. If you forget, anyone can

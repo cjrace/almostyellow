@@ -11,6 +11,7 @@ import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 import { mockConfetti } from "../confetti";
 import { signIn } from "./helpers";
 import type { RoundState } from "../../src/unogame/engine/round";
+import { canPlayOn, type Card } from "../../src/unogame/engine/cards";
 
 // Cam hosts and plays on the page under test, and Laura joins from a second
 // browser, as on two phones. The cards are dealt at random, so the test only
@@ -67,6 +68,26 @@ async function leaveOnLastCard(code: string) {
   await db
     .doc(`roomHands/${code}_${playerId}`)
     .update({ hand: [last], playableIds: [last.id], drawnCardId: null });
+}
+
+// Swaps every card the player to move could play for one they could not, in
+// the server's record and in their published hand, so drawing is their move
+async function leaveWithNoPlay(code: string) {
+  const db = database();
+  const ref = db.doc(`roomPrivate/${code}`);
+  const state = (await ref.get()).get("state") as RoundState;
+  const playerId = state.players[state.current];
+  const top = state.discard[state.discard.length - 1];
+  const dead = (card: Card) => !canPlayOn(card, top, state.colour);
+  state.hands[playerId] = state.hands[playerId].map((card) => {
+    if (dead(card)) return card;
+    const [swap] = state.stock.splice(state.stock.findIndex(dead), 1, card);
+    return swap;
+  });
+  await ref.update({ state });
+  await db
+    .doc(`roomHands/${code}_${playerId}`)
+    .update({ hand: state.hands[playerId], playableIds: [] });
 }
 
 async function whoseTurn(pages: Page[]) {
@@ -162,6 +183,8 @@ async function playRound(
   });
 
   await test.step("When the player to move draws, the other hears about it", async () => {
+    // Drawing is only allowed with nothing to play, which the deal cannot promise
+    await leaveWithNoPlay(code);
     const actor = await whoseTurn([page, guest]);
     const other = actor === page ? guest : page;
     const name = actor === page ? "Cam" : "Laura";
@@ -196,31 +219,26 @@ async function playRound(
       position: CORNER,
     });
     const names = winner === page ? ["Cam", "Laura"] : ["Laura", "Cam"];
-    await expect(winner.getByText("won the round.")).toContainText(names[0]);
-    await expect(loser.getByText("won the round.")).toContainText(names[0]);
+    // The winner is shown on a card, not in a modal
+    await expect(
+      winner.getByRole("status").filter({ hasText: "won the round!" }),
+    ).toContainText("You");
+    await expect(
+      loser.getByRole("status").filter({ hasText: "won the round!" }),
+    ).toContainText(names[0]);
   });
 
   await test.step("Then the round is over and the host can play again", async () => {
     await expect(
       page.getByRole("heading", { name: "Round over" }),
     ).toBeVisible();
-    // The win is announced in a modal, with the next steps at the bottom
-    const winner = page.getByRole("dialog", { name: /won the round!$/ });
-    await expect(winner).toBeVisible();
-    await expect(
-      winner.getByRole("button", { name: "Play again" }),
-    ).toBeEnabled();
-    await expect(
-      guest
-        .getByRole("dialog")
-        .getByText("Waiting for the host to start the round."),
-    ).toBeVisible();
-    await checkAccessibility?.(page);
-    await page.keyboard.press("Escape");
-    await expect(winner).toBeHidden();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(
       page.getByRole("button", { name: "Play again" }),
     ).toBeEnabled();
+    await expect(
+      guest.getByText("Waiting for the host to start the round."),
+    ).toBeVisible();
     await expectNoSidewaysScroll(page);
     await checkAccessibility?.(page);
     await page.getByRole("button", { name: /^Room \w{4}, options$/ }).click();

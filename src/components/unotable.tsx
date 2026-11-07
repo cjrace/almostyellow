@@ -18,7 +18,7 @@ import type {
   PublicEvent,
   PublicView,
 } from "@/unogame/engine/views";
-import { tableAlerts, type TableAlert } from "@/unogame/alerts";
+import { alertDuration, tableAlerts, type TableAlert } from "@/unogame/alerts";
 import { colourNames } from "@/unogame/cards";
 import { UnoCard } from "@/components/unocard";
 import {
@@ -111,7 +111,7 @@ export default function UnoTable({
     });
     alertTimerRef.current = setTimeout(() => {
       setAlerts(null);
-    }, 2200);
+    }, alertDuration(next));
   }, [version, events, names, me]);
   useEffect(
     () => () => {
@@ -167,21 +167,20 @@ export default function UnoTable({
       ? `Waiting for ${names[view.currentPlayer]} to play.`
       : view.drawPending
         ? "Play the card you drew, or keep it."
-        : "";
+        : mine.playableIds.length > 0
+          ? "You have a card you can play, so you cannot draw."
+          : "";
   const canDraw = drawReason === "";
   // Nothing in your hand can be played, so the only move is to draw
   const mustDraw =
     canDraw && !view.drawPending && mine.playableIds.length === 0;
 
   const order = view.players.map((p) => p.id);
-  const mineAt = order.indexOf(me);
-  const others = [...order.slice(mineAt + 1), ...order.slice(0, mineAt)].map(
-    (id) => ({
-      id,
-      name: names[id],
-      cards: view.players.find((p) => p.id === id)?.cards ?? 0,
-    }),
-  );
+  const seats = view.players.map((p) => ({
+    id: p.id,
+    name: names[p.id],
+    cards: p.cards,
+  }));
   const catchable = view.uno && view.uno.player !== me ? view.uno.player : null;
   // Catching only works once the player's protected time is up
   const canCatch = !!view.uno && !!catchable && now >= view.uno.protectedUntil;
@@ -189,7 +188,11 @@ export default function UnoTable({
   // After playing down to one card without saying it, Uno can still be said
   // until the next draw or play. With two cards it can be said in advance.
   const unoWindowMine = view.uno?.player === me;
-  const canSayUno = unoWindowMine || (myTurn && handSize === 2 && !declareUno);
+  // With two cards it only makes sense when one of them can be played
+  const canSayUno =
+    unoWindowMine ||
+    (myTurn && handSize === 2 && mine.playableIds.length > 0 && !declareUno);
+  const showSayUno = canSayUno || declareUno;
   // Saying Uno matters right now
   const unoReady = canSayUno && !declareUno;
   const unoLabel = declareUno ? "Uno said" : "Say Uno!";
@@ -197,9 +200,7 @@ export default function UnoTable({
     ? "Say it now, before anyone catches you."
     : declareUno
       ? "It will count when you play your next card."
-      : handSize === 2 && myTurn
-        ? "Say it before you play your second-last card, or right after."
-        : "Saying Uno only matters when you play down to one card.";
+      : "Say it before you play your second-last card, or right after.";
 
   const play = (card: Card, colour?: Colour) => {
     const from = document
@@ -273,7 +274,9 @@ export default function UnoTable({
         </VisuallyHidden>
 
         <UnoOpponents
-          players={others}
+          players={seats}
+          me={me}
+          direction={view.direction}
           currentPlayer={view.currentPlayer}
           unoPlayer={catchable}
         />
@@ -313,46 +316,34 @@ export default function UnoTable({
           </div>
         </div>
 
-        {wild ? (
-          <UnoColourPicker
-            onChoose={(colour) => {
-              play(wild, colour);
-            }}
-            onCancel={() => {
-              setWild(null);
-              headingRef.current?.focus();
-            }}
-          />
-        ) : (
-          <div className={styles.controls}>
-            {view.drawPending ? (
-              <Button variant="default" disabled={!myTurn} onClick={onKeep}>
-                Keep the card I drew
-              </Button>
-            ) : null}
-            {canCatch && catchable ? (
-              <Button variant="default" onClick={onCatch}>
-                Call out {names[catchable]} for not saying Uno
-              </Button>
-            ) : null}
-            {/* Stays focusable when it cannot be used, so its reason can be
-                read; it is one-way, so it is a button and not a switch */}
+        <div className={styles.controls}>
+          {view.drawPending ? (
+            <Button variant="default" disabled={!myTurn} onClick={onKeep}>
+              Keep the card I drew
+            </Button>
+          ) : null}
+          {canCatch && catchable ? (
+            <Button variant="default" onClick={onCatch}>
+              Call out {names[catchable]} for not saying Uno
+            </Button>
+          ) : null}
+          {/* Only there when it matters. Once said before playing, it stays
+              as "Uno said" until the card is played. */}
+          {showSayUno ? (
             <Button
               variant={unoReady ? "filled" : "default"}
               data-ready={unoReady ? "" : undefined}
-              aria-disabled={!canSayUno}
-              data-disabled={!canSayUno || undefined}
+              disabled={declareUno}
               aria-describedby="uno_declare_reason"
               onClick={() => {
-                if (!canSayUno) return;
                 if (unoWindowMine) onSayUno();
                 else setDeclareUno(true);
               }}
             >
               {unoLabel}
             </Button>
-          </div>
-        )}
+          ) : null}
+        </div>
         <Text
           size="sm"
           c="dimmed"
@@ -361,14 +352,26 @@ export default function UnoTable({
         >
           {drawReason}
         </Text>
-        <Text
-          size="sm"
-          c="dimmed"
-          id="uno_declare_reason"
-          className={`${styles.reason} ${styles.visuallyHidden}`}
-        >
-          {unoReason}
-        </Text>
+        {showSayUno ? (
+          <Text
+            size="sm"
+            c="dimmed"
+            id="uno_declare_reason"
+            className={`${styles.reason} ${styles.visuallyHidden}`}
+          >
+            {unoReason}
+          </Text>
+        ) : null}
+        <UnoColourPicker
+          opened={!!wild}
+          onChoose={(colour) => {
+            if (wild) play(wild, colour);
+          }}
+          onCancel={() => {
+            setWild(null);
+            headingRef.current?.focus();
+          }}
+        />
 
         <UnoHand
           cards={mine.hand}

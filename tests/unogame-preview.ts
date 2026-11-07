@@ -1,7 +1,7 @@
 // Synthetic table states for the card and table unit tests. They are real
 // engine states, dealt with a fixed shuffle, so the views have exactly the
 // shape the server publishes. Nothing here is used in play.
-import { buildDeck } from "@/unogame/engine/cards";
+import { buildDeck, canPlayOn, type Card } from "@/unogame/engine/cards";
 import {
   playableCards,
   startRound,
@@ -19,6 +19,8 @@ export type PreviewScenario =
   | "catch-uno"
   | "two-cards"
   | "say-uno"
+  | "no-play"
+  | "uno-said"
   | "round-over";
 
 export const previewScenarios: { value: PreviewScenario; label: string }[] = [
@@ -29,6 +31,8 @@ export const previewScenarios: { value: PreviewScenario; label: string }[] = [
   { value: "catch-uno", label: "Catch Uno" },
   { value: "two-cards", label: "Two cards left" },
   { value: "say-uno", label: "Say Uno" },
+  { value: "no-play", label: "Nothing to play" },
+  { value: "uno-said", label: "Uno said" },
   { value: "round-over", label: "Round over" },
 ];
 
@@ -87,7 +91,9 @@ export function buildPreview(scenario: PreviewScenario): PreviewTable {
     scenario === "two-players" ||
     scenario === "round-over" ||
     scenario === "two-cards" ||
-    scenario === "say-uno"
+    scenario === "say-uno" ||
+    scenario === "no-play" ||
+    scenario === "uno-said"
       ? 2
       : scenario === "ten-players"
         ? 10
@@ -105,12 +111,24 @@ export function buildPreview(scenario: PreviewScenario): PreviewTable {
     // Pulls the whole stock into one hand, as after many penalties
     state.hands[me].push(...state.stock.splice(0, state.stock.length - 30));
   }
-  if (scenario === "catch-uno") {
+  if (scenario === "catch-uno" || scenario === "uno-said") {
     const other = ids[1];
     const spare = state.hands[other].splice(1);
     state.stock.push(...spare);
-    state.uno = { player: other, protectedUntil: 0 };
+    // In "uno-said" the other player has already said it, so nothing is open
+    state.uno =
+      scenario === "catch-uno" ? { player: other, protectedUntil: 0 } : null;
     state.current = 0;
+  }
+  if (scenario === "no-play") {
+    // Swaps anything playable for a card that is not, so drawing is the move
+    const top = state.discard[state.discard.length - 1];
+    const dead = (card: Card) => !canPlayOn(card, top, state.colour);
+    state.hands[me] = state.hands[me].map((card) => {
+      if (dead(card)) return card;
+      const [swap] = state.stock.splice(state.stock.findIndex(dead), 1, card);
+      return swap;
+    });
   }
   if (scenario === "two-cards" || scenario === "say-uno") {
     // Keeps a playable card first, so there is a move to make

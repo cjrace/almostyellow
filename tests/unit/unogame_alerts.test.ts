@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { tableAlerts } from "@/unogame/alerts";
+import { alertDuration, tableAlerts } from "@/unogame/alerts";
 import type { PublicEvent } from "@/unogame/engine/views";
 
 const names = { a: "Cam", b: "Laura" };
@@ -11,7 +11,11 @@ describe("Table alerts", () => {
       { type: "skipped", player: "b" },
     ];
     expect(tableAlerts(events, names, "a")).toEqual([
-      { tone: "special", text: "Laura picks up 2 cards and misses a go" },
+      {
+        tone: "special",
+        ms: 2500,
+        text: "Laura picks up 2 cards and misses a go",
+      },
     ]);
   });
 
@@ -28,9 +32,28 @@ describe("Table alerts", () => {
     ).toBe("You miss a go");
     expect(
       tableAlerts([{ type: "uno-declared", player: "b" }], names, "a"),
-    ).toEqual([{ tone: "uno", text: "Laura said Uno!" }]);
+    ).toEqual([{ tone: "uno", ms: 4000, text: "Laura said Uno!" }]);
     expect(
       tableAlerts([{ type: "uno-declared", player: "a" }], names, "a"),
     ).toEqual([]);
+  });
+
+  test("Uno calls stay up longer than other pop-ups, and a batch uses its longest", () => {
+    const caught = tableAlerts(
+      [{ type: "uno-caught", catcher: "a", player: "b" }],
+      names,
+      "a",
+    );
+    expect(alertDuration(caught)).toBe(5000);
+    const mixed = tableAlerts(
+      [
+        { type: "uno-declared", player: "b" },
+        { type: "skipped", player: "a" },
+      ],
+      names,
+      "a",
+    );
+    expect(alertDuration(mixed)).toBe(4000);
+    expect(alertDuration([])).toBe(0);
   });
 });

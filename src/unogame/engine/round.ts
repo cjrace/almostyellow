@@ -95,6 +95,7 @@ export type ErrorCode =
   | "not_playable"
   | "colour_required"
   | "must_play_or_keep"
+  | "must_play"
   | "nothing_drawn"
   | "no_uno_window"
   | "nothing_to_declare"
@@ -113,6 +114,7 @@ const messages: Record<ErrorCode, string> = {
   not_playable: "That card cannot be played now.",
   colour_required: "Choose a colour for a wild card.",
   must_play_or_keep: "Play the card you drew or keep it.",
+  must_play: "You have a card you can play, so you cannot draw.",
   nothing_drawn: "You have not drawn a card.",
   no_uno_window: "There is nobody to catch.",
   nothing_to_declare: "You have no Uno to say right now.",
@@ -386,6 +388,7 @@ export function applyCommand(
 
   if (command.type === "draw") {
     if (state.drawnCardId !== null) return reject("must_play_or_keep");
+    if (playableCards(state, player).length > 0) return reject("must_play");
     state.uno = null;
     const drawn = drawCards(state, ctx, player, 1, events);
     if (drawn.length === 0) {

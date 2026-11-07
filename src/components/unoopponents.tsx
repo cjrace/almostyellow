@@ -2,26 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Group, Text } from "@mantine/core";
-import { IconCards } from "@tabler/icons-react";
+import {
+  IconArrowBackUp,
+  IconArrowForwardUp,
+  IconCards,
+} from "@tabler/icons-react";
 import styles from "@/styles/unotable.module.css";
 
-interface Opponent {
+interface Seat {
   id: string;
   name: string;
   cards: number;
 }
 
 interface UnoOpponentsProps {
-  players: Opponent[]; // In turn order, starting after you
+  players: Seat[]; // Everyone, you included, in seat order
+  me: string;
   currentPlayer: string;
+  direction: 1 | -1;
   unoPlayer: string | null; // Anyone sitting on one card without saying Uno
 }
 
-// Who else is playing, how many cards they hold and whose turn it is. The
-// count and "Playing" are words, so none of it depends on colour.
+// Everyone in the round, in seat order, with their card count and whose turn it
+// is. The turn is a filled pill with the word "Playing", and "UNO!" stays on
+// anyone down to one card who has said it, so none of it depends on colour.
 export default function UnoOpponents({
   players,
+  me,
   currentPlayer,
+  direction,
   unoPlayer,
 }: UnoOpponentsProps) {
   const listRef = useRef<HTMLUListElement>(null);
@@ -51,7 +60,7 @@ export default function UnoOpponents({
     <ul
       ref={listRef}
       className={styles.opponents}
-      aria-label="Other players"
+      aria-label="Players"
       // A scrolling box needs a keyboard stop (WCAG 2.1.1) or its players
       // cannot be reached; it only gets one while it really scrolls
       // eslint-disable-next-line jsx-a11y-x/no-noninteractive-tabindex
@@ -59,21 +68,24 @@ export default function UnoOpponents({
     >
       {players.map((player) => {
         const current = player.id === currentPlayer;
+        const you = player.id === me;
+        const label = you ? "You" : player.name;
+        const said = player.cards === 1 && unoPlayer !== player.id;
         const cards = `${String(player.cards)} ${player.cards === 1 ? "card" : "cards"}`;
         return (
           <li
             key={player.id}
             className={styles.opponent}
             data-current={current ? "" : undefined}
-            aria-label={`${player.name}, ${cards}${current ? ", playing now" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
+            aria-label={`${label}, ${cards}${current ? ", playing now" : ""}${said ? ", said Uno" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
           >
             <Text
               fw={700}
               lineClamp={2}
-              title={player.name}
+              title={label}
               style={{ overflowWrap: "anywhere" }}
             >
-              {player.name}
+              {label}
             </Text>
             <Group gap="0 xs" justify="space-between" aria-hidden="true">
               <Group gap={6} wrap="nowrap">
@@ -87,18 +99,29 @@ export default function UnoOpponents({
               </Group>
               <Text
                 size="sm"
-                c="dimmed"
+                fw={said || current ? 700 : undefined}
                 className={
-                  current || unoPlayer === player.id
-                    ? undefined
+                  current || said || unoPlayer === player.id
+                    ? styles.status
                     : styles.waiting
                 }
               >
+                {current && (
+                  <span className={styles.direction}>
+                    {direction === 1 ? (
+                      <IconArrowForwardUp size={14} />
+                    ) : (
+                      <IconArrowBackUp size={14} />
+                    )}
+                  </span>
+                )}
                 {current
                   ? "Playing"
                   : unoPlayer === player.id
                     ? "Uno?"
-                    : "Waiting"}
+                    : said
+                      ? "UNO!"
+                      : "Waiting"}
               </Text>
             </Group>
           </li>

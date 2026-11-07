@@ -32,26 +32,15 @@ export function UnoAlert({
       window.removeEventListener("keydown", onKey);
     };
   }, [onDismiss]);
-  const special = alerts.some((a) => a.tone === "special");
   return (
     <div
-      className={special ? styles.alertBackdrop : styles.alertTop}
+      className={styles.alertBackdrop}
       aria-hidden="true"
       onClick={onDismiss}
     >
-      <Paper
-        withBorder
-        shadow="xl"
-        p={special ? "xl" : "sm"}
-        className={styles.alertBox}
-      >
+      <Paper withBorder shadow="xl" p="xl" className={styles.alertBox}>
         {alerts.map((alert) => (
-          <Text
-            key={alert.text}
-            ta="center"
-            fw={700}
-            size={special ? "xl" : "md"}
-          >
+          <Text key={alert.text} ta="center" fw={700} size="xl">
             {alert.text}
           </Text>
         ))}
