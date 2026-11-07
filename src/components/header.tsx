@@ -20,6 +20,7 @@ import {
   IconHome,
   IconTool,
 } from "@tabler/icons-react";
+import styles from "@/styles/header.module.css";
 import playConfetti from "@/components/playconfetti";
 import { IconMoon, IconSun } from "@tabler/icons-react";
 
@@ -60,7 +61,7 @@ export default function Header({
 
   return (
     <header>
-      <Group justify={mainJustify} mb={20}>
+      <Group justify={mainJustify} className={styles.bar}>
         {!noCrumbs && (
           <Group>
             <Breadcrumbs>

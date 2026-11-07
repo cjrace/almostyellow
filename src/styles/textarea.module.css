@@ -7,3 +7,26 @@
 .input {
   min-height: 150px;
 }
+
+/* A phone held sideways: less to scroll past before the buttons */
+.submit {
+  margin-top: var(--mantine-spacing-xl);
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .input {
+    min-height: 4.5rem;
+  }
+
+  .submit {
+    margin-top: var(--mantine-spacing-md);
+  }
+}
+
+/* Two columns however narrow, as the height is what is short */
+@media (orientation: landscape) and (max-height: 500px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: var(--mantine-spacing-md);
+  }
+}

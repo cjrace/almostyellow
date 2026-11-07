@@ -72,3 +72,113 @@
     min-height: 8rem;
   }
 }
+
+/* A phone held sideways: the card sits beside Mr. Tayto's call and the
+   buttons, so it all fits in the height. The small Mr. Tayto stays with the
+   call, and the big one makes way */
+@media (orientation: landscape) and (max-height: 500px) {
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    margin-top: var(--mantine-spacing-xs);
+    min-height: 0;
+  }
+
+  div.mascot {
+    display: none;
+  }
+
+  .caller {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: var(--mantine-spacing-md);
+    row-gap: var(--mantine-spacing-xs);
+    min-height: 0;
+  }
+
+  .callout {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  img.calloutMascot {
+    display: block !important;
+    height: 2.5rem;
+    width: auto;
+  }
+
+  div.table {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .controls {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .controls > * {
+    grid-column: 1 / -1;
+  }
+
+  /* View all and Shuffle share a row */
+  .controls > button:nth-last-of-type(-n + 2) {
+    grid-column: auto;
+    --button-padding-x: var(--mantine-spacing-xs);
+  }
+
+  .bubble {
+    padding: 2px var(--mantine-spacing-sm);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .callout {
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .callout h2 {
+    font-size: var(--mantine-h4-font-size);
+  }
+
+  .controls {
+    --progress-size: 8px;
+  }
+
+  .controls :global(.mantine-Group-root) {
+    min-height: 1.75rem !important;
+  }
+
+  .controls :global(.mantine-Group-root) button {
+    --button-height: 1.75rem;
+  }
+
+  /* Calling and the card's name share a line */
+  .bubble {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: center;
+    column-gap: var(--mantine-spacing-xs);
+  }
+
+  .bubble > * {
+    margin-top: 0 !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .controls {
+    gap: 4px;
+  }
+}
