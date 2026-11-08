@@ -36,6 +36,7 @@ import {
   useComputedColorScheme,
   useMantineColorScheme,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import type { FirebaseClientConfig } from "@/firebase/client";
 import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
@@ -82,6 +83,8 @@ interface Saved {
 const JOIN_COPIED = "Join link copied.";
 // Every item in the room menu has an icon this size
 const ICON = 16;
+// A phone held sideways, as in unotable.module.css and global.css
+const SIDEWAYS = "(orientation: landscape) and (max-height: 500px)";
 
 export default function Uno({
   config,
@@ -123,6 +126,9 @@ export default function Uno({
   const createIdRef = useRef<string | null>(null);
   const roomRef = useRef<HTMLButtonElement>(null);
   const focusRoomRef = useRef(false);
+  // Joining swaps the Room button for the way out while the lobby opens, so
+  // focus is put back on the new button if it was lost
+  const focusLobbyRef = useRef(false);
   // A move sent from the table that the room has not yet shown. It clears when
   // the room changes, when the command fails, or a few seconds after the
   // server answered (a repeat that changed nothing).
@@ -210,6 +216,9 @@ export default function Uno({
         setCached(fromCache);
       },
       () => {
+        // The listener has stopped, so what was last shown is no longer live.
+        // With no room, the menu offers the way out.
+        setRoom(null);
         setCached(true);
         setError(
           "This room is unavailable, ended, expired, or you have been removed.",
@@ -328,6 +337,7 @@ export default function Uno({
   }, [client, room, finishedRound, wasSeated, canReport, holding]);
 
   const connected = online && !cached && !ended;
+  const reconnecting = !!active && !!playerId && !ended && (!online || cached);
   const announcement = useMemo(() => {
     if (!room?.view || !playerId) return "";
     return announceTable({ ...room, view: room.view }, playerId);
@@ -341,6 +351,7 @@ export default function Uno({
     setHosting(next.hosting);
     window.history.replaceState(null, "", `?room=${next.code}`);
     focusRoomRef.current = true;
+    focusLobbyRef.current = true;
   }
 
   async function run(operation: () => Promise<void>): Promise<boolean> {
@@ -454,9 +465,19 @@ export default function Uno({
   const colourScheme = useComputedColorScheme("dark", {
     getInitialValueInEffect: true,
   });
+  // Only a phone held sideways has the header's buttons in the room menu. They
+  // are not rendered elsewhere, so the arrow keys never land on a hidden item.
+  const sideways = useMediaQuery(SIDEWAYS);
   // The screen stays awake during a round, so waiting for a turn does not
-  // lock the phone
-  useWakeLock(inRound);
+  // lock the phone. Ending the room mid-round leaves the stage as it was.
+  useWakeLock(inRound && !ended);
+  // The Room button became the way out as the lobby opened
+  useEffect(() => {
+    if (!inLobby || !focusLobbyRef.current) return;
+    focusLobbyRef.current = false;
+    const now = document.activeElement;
+    if (!now || now === document.body) leaveRef.current?.focus();
+  }, [inLobby]);
   // On a phone held sideways the site's header gives its height back to the
   // table (see global.css); the page keeps its own back button and menu
   useEffect(() => {
@@ -596,17 +617,26 @@ export default function Uno({
             </ActionIcon>
           </>
         )}
-        {notice && <Text role="status">{notice}</Text>}
-        {identityError && (
-          <Alert color="red" role="alert">
-            {identityError}
-            {host && " You can still create and host a room."}
-          </Alert>
-        )}
-        {error && (
-          <Alert color="red" role="alert">
-            {error}
-          </Alert>
+        {/* One box, so that sideways, where the table takes the whole screen,
+            they stack in the row above the strip, not on top of each other */}
+        {(notice || identityError || error || reconnecting) && (
+          <Stack gap="md" className={table.notices}>
+            {notice && <Text role="status">{notice}</Text>}
+            {identityError && (
+              <Alert color="red" role="alert">
+                {identityError}
+                {host && " You can still create and host a room."}
+              </Alert>
+            )}
+            {error && (
+              <Alert color="red" role="alert">
+                {error}
+              </Alert>
+            )}
+            {reconnecting && (
+              <Text role="status">Reconnecting. Moves are unavailable.</Text>
+            )}
+          </Stack>
         )}
 
         {!active && joinView === "choose" && (
@@ -723,7 +753,7 @@ export default function Uno({
             {inLobby ? (
               <Button
                 size="compact-sm"
-                variant="default"
+                variant={hosting ? "outline" : "default"}
                 color={hosting ? "red" : undefined}
                 disabled={busy}
                 ref={(button) => {
@@ -761,18 +791,16 @@ export default function Uno({
                   >
                     Copy join link
                   </Menu.Item>
-                  {tableShown && (
+                  {tableShown && sideways && (
                     <>
                       {/* The header's buttons, for a phone held sideways */}
                       <Menu.Item
-                        className={table.menuExtra}
                         leftSection={<IconConfetti size={ICON} />}
                         onClick={playConfetti}
                       >
                         Unleash confetti
                       </Menu.Item>
                       <Menu.Item
-                        className={table.menuExtra}
                         leftSection={
                           colourScheme === "dark" ? (
                             <IconSun size={ICON} />
@@ -807,8 +835,10 @@ export default function Uno({
                       End room
                     </Menu.Item>
                   )}
-                  {/* The host never leaves without ending, so this is for everyone else, and for the host once the room has ended */}
-                  {(!hosting || ended) && (
+                  {/* The host never leaves without ending, so this is for everyone
+                      else, and for the host once the room has ended or when
+                      there is no room to end (not joined yet, or deleted) */}
+                  {(!hosting || ended || !room) && (
                     <>
                       <Menu.Divider />
                       <Menu.Item
@@ -867,9 +897,6 @@ export default function Uno({
           >
             View in tracker history
           </Anchor>
-        )}
-        {active && playerId && !ended && (!online || cached) && (
-          <Text role="status">Reconnecting. Moves are unavailable.</Text>
         )}
 
         {room && !ended && room.stage !== "playing" && !holding && playerId && (

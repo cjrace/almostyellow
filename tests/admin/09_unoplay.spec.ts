@@ -145,6 +145,8 @@ async function playRound(
     await expect(
       page.getByRole("button", { name: "Start the round" }),
     ).toBeDisabled();
+    // The Room button became the way out, and focus stayed on it
+    await expect(page.getByRole("button", { name: "End game" })).toBeFocused();
   });
 
   await test.step("When a guest joins from the link", async () => {
@@ -161,6 +163,9 @@ async function playRound(
     await expect(
       guest.getByText("Waiting for the host to start the round."),
     ).toBeVisible();
+    await expect(
+      guest.getByRole("button", { name: "Leave game" }),
+    ).toBeFocused();
   });
 
   await test.step("Then the host sees both players and can start", async () => {
@@ -171,7 +176,7 @@ async function playRound(
     await expect(page.getByText(code, { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "End game" })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /^Room w{4}, options$/ }),
+      page.getByRole("button", { name: /^Room \w{4}, options$/ }),
     ).toHaveCount(0);
     await checkAccessibility?.(page);
     await page.getByRole("button", { name: "Start the round" }).click();

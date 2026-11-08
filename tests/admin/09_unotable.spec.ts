@@ -97,7 +97,7 @@ async function openTable(
     ).toBeVisible();
   };
   await show(scenario);
-  return { code, show };
+  return { code, show, me };
 }
 
 // The hand never scrolls, and the top-left corner of every card is the
@@ -679,6 +679,307 @@ test.describe("Looking at the Uno table in a real room", () => {
         0,
       );
     });
+  });
+
+  test(
+    "The room menu can be walked with the arrow keys, at any size",
+    { tag: "@desktop" },
+    async ({ page }) => {
+      await openTable(page, "two-players");
+      const menu = page.getByRole("button", { name: /^Room \w{4}, options$/ });
+      const confetti = page.getByRole("menuitem", { name: "Unleash confetti" });
+      const walk = async (names: RegExp[]) => {
+        await menu.focus();
+        await page.keyboard.press("Enter");
+        // Keys sent before the items have mounted are lost
+        await expect(
+          page.getByRole("menuitem", { name: /^Copy join link$/ }),
+        ).toBeVisible();
+        for (const name of names) {
+          await page.keyboard.press("ArrowDown");
+          await expect(page.getByRole("menuitem", { name })).toBeFocused();
+        }
+        await page.keyboard.press("Escape");
+        await expect(page.getByRole("menu")).toBeHidden();
+        await expect(menu).toBeFocused();
+      };
+
+      await test.step("Given a desktop or upright screen, the arrow keys visit every item and none is hidden", async () => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await walk([/^Copy join link$/, /^End round$/, /^End room$/]);
+        await menu.focus();
+        await page.keyboard.press("Enter");
+        await expect(confetti).toHaveCount(0);
+        await page.keyboard.press("Escape");
+        await expect(page.getByRole("menu")).toBeHidden();
+        await expect(menu).toBeFocused();
+      });
+
+      await test.step("When the phone is held sideways, the header's buttons are in the menu too", async () => {
+        await page.setViewportSize({ width: 874, height: 402 });
+        await walk([
+          /^Copy join link$/,
+          /^Unleash confetti$/,
+          /^(Light|Dark) mode$/,
+          /^End round$/,
+          /^End room$/,
+        ]);
+      });
+    },
+  );
+
+  test("A host with no room to end can still leave", async ({ page }) => {
+    await signIn(page);
+    await page.goto("/games/uno");
+    await page.getByRole("button", { name: "Create a room" }).click();
+    const menu = page.getByRole("button", { name: /^Room \w{4}, options$/ });
+
+    await test.step("Given a host who has made a room but not joined it, the menu has a way out", async () => {
+      await expect(menu).toBeVisible();
+      await menu.focus();
+      await page.keyboard.press("Enter");
+      await expect(
+        page.getByRole("menuitem", { name: "Leave game" }),
+      ).toBeVisible();
+    });
+
+    await test.step("When they leave, they are back at the games list and the room is forgotten", async () => {
+      await page.getByRole("menuitem", { name: "Leave game" }).click();
+      await expect(page).toHaveURL((url) => url.pathname === "/games");
+      await page.goto("/games/uno");
+      await expect(
+        page.getByRole("button", { name: "Create a room" }),
+      ).toBeVisible();
+    });
+  });
+
+  test("A host whose room has gone can still leave", async ({ page }) => {
+    const { code } = await openTable(page, "two-players");
+
+    await test.step("Given the room is deleted while the host has it open", async () => {
+      await database().doc(`gameRooms/${code}`).delete();
+      await expect(
+        page.getByRole("alert").filter({ hasText: "This room is unavailable" }),
+      ).toBeVisible();
+    });
+
+    await test.step("Then the menu has Leave game, and it takes them to the games list", async () => {
+      const menu = page.getByRole("button", { name: /^Room \w{4}, options$/ });
+      await menu.focus();
+      await page.keyboard.press("Enter");
+      await page.getByRole("menuitem", { name: "Leave game" }).click();
+      await expect(page).toHaveURL((url) => url.pathname === "/games");
+    });
+  });
+
+  test("Notices stack instead of covering each other on a phone held sideways", async ({
+    page,
+    context,
+  }) => {
+    await openTable(page, "two-players");
+    await page.setViewportSize({ width: 874, height: 402 });
+    const reconnecting = page.getByText(
+      "Reconnecting. Moves are unavailable.",
+      {
+        exact: true,
+      },
+    );
+    // Next's own route announcer is also an alert, so find ours by its words
+    const failure = page
+      .getByRole("alert")
+      .filter({ hasText: "Moves are unavailable until you are back" });
+
+    await test.step("Given the phone goes offline and a move fails", async () => {
+      await context.setOffline(true);
+      await expect(reconnecting).toBeVisible();
+      await page
+        .getByRole("list", { name: /^Your hand/ })
+        .getByRole("button", { name: /, play$/ })
+        .first()
+        .click({ position: CORNER });
+      await expect(failure).toBeVisible();
+    });
+
+    await test.step("Then the two messages do not overlap", async () => {
+      const box = async (locator: ReturnType<Page["locator"]>) =>
+        (await locator.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 };
+      const message = await box(reconnecting);
+      const alert = await box(failure);
+      expect(message.height).toBeGreaterThan(0);
+      expect(alert.height).toBeGreaterThan(0);
+      const apart =
+        message.y >= alert.y + alert.height - 1 ||
+        alert.y >= message.y + message.height - 1;
+      expect(apart).toBe(true);
+      await context.setOffline(false);
+    });
+  });
+
+  test("The phone buzzes as your turn starts, when saying Uno matters and when you pick cards up", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const buzzes: unknown[] = [];
+      (window as unknown as { buzzes: unknown[] }).buzzes = buzzes;
+      Object.defineProperty(navigator, "vibrate", {
+        configurable: true,
+        value: (pattern: unknown) => {
+          buzzes.push(pattern);
+          return true;
+        },
+      });
+    });
+    const buzzes = () =>
+      page.evaluate(() => (window as unknown as { buzzes: unknown[] }).buzzes);
+    const { code, show, me } = await openTable(page, "large-hand-waiting");
+
+    await test.step("Given it is someone else's turn, then nothing buzzes", async () => {
+      await expect(
+        page.getByRole("heading", { level: 2, name: /'s turn$/ }),
+      ).toBeVisible();
+      expect(await buzzes()).toEqual([]);
+    });
+
+    await test.step("When my turn starts, then one short buzz", async () => {
+      await show("two-players");
+      await expect.poll(buzzes).toEqual([40]);
+    });
+
+    await test.step("And when saying Uno starts to matter, a double buzz", async () => {
+      await show("two-cards");
+      await expect.poll(buzzes).toEqual([40, [40, 60, 40]]);
+    });
+
+    await test.step("And the same state again does not buzz again", async () => {
+      await show("two-cards");
+      await page.waitForTimeout(500);
+      expect(await buzzes()).toEqual([40, [40, 60, 40]]);
+    });
+
+    await test.step("And when I have to pick cards up, a long double buzz", async () => {
+      const ref = database().doc(`gameRooms/${code}`);
+      const room = (await ref.get()).data() as { version: number };
+      await ref.update({
+        version: room.version + 1,
+        events: [{ type: "penalty", player: me.id, reason: "draw2", count: 2 }],
+      });
+      await expect.poll(buzzes).toEqual([40, [40, 60, 40], [120, 60, 120]]);
+    });
+  });
+
+  test("The phone does not buzz for someone who has asked for less motion", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.addInitScript(() => {
+      const buzzes: unknown[] = [];
+      (window as unknown as { buzzes: unknown[] }).buzzes = buzzes;
+      Object.defineProperty(navigator, "vibrate", {
+        configurable: true,
+        value: (pattern: unknown) => {
+          buzzes.push(pattern);
+          return true;
+        },
+      });
+    });
+    const { show } = await openTable(page, "large-hand-waiting");
+    await show("two-cards");
+    await page.waitForTimeout(500);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { buzzes: unknown[] }).buzzes,
+      ),
+    ).toEqual([]);
+  });
+
+  test("The screen is kept awake in a round and let go when the room ends", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const locks = { held: 0 };
+      (window as unknown as { locks: typeof locks }).locks = locks;
+      Object.defineProperty(navigator, "wakeLock", {
+        configurable: true,
+        value: {
+          request: () => {
+            locks.held++;
+            return Promise.resolve({
+              release: () => {
+                locks.held--;
+                return Promise.resolve();
+              },
+            });
+          },
+        },
+      });
+    });
+    const held = () =>
+      page.evaluate(
+        () => (window as unknown as { locks: { held: number } }).locks.held,
+      );
+    const { code } = await openTable(page, "two-players");
+
+    await test.step("Given a round is being played, the screen is kept awake", async () => {
+      await expect.poll(held).toBe(1);
+    });
+
+    await test.step("When the host ends the room mid-round, the screen is let go", async () => {
+      const ref = database().doc(`gameRooms/${code}`);
+      const room = (await ref.get()).data() as { version: number };
+      await ref.update({ phase: "ended", version: room.version + 1 });
+      await expect(page.getByText("This room has ended.")).toBeVisible();
+      await expect.poll(held).toBe(0);
+    });
+  });
+
+  test("The players stay readable at 200% zoom on a phone held sideways", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "two-players");
+    // 874 by 402 at 200% zoom
+    await page.setViewportSize({ width: 437, height: 201 });
+    await show("two-players");
+    const seats = page.getByRole("list", { name: "Players" });
+
+    await test.step("Then the seats have a row of their own, wide enough to read", async () => {
+      await expect
+        .poll(async () => (await seats.boundingBox())?.width ?? 0)
+        .toBeGreaterThanOrEqual(300);
+      // Nothing is cut off, and the names are visible, not only the card backs
+      expect(
+        await seats.evaluate((list) => list.scrollWidth - list.clientWidth),
+      ).toBeLessThanOrEqual(0);
+      await expect(seats.getByText("You", { exact: true })).toBeVisible();
+      await expect(seats.getByText("Laura", { exact: true })).toBeVisible();
+    });
+
+    await test.step("And the row sits under the strip, not over the table", async () => {
+      const box = async (locator: ReturnType<Page["locator"]>) =>
+        (await locator.boundingBox()) ?? { y: 0, height: 0 };
+      const strip = await box(page.getByRole("button", { name: /^Room / }));
+      const row = await box(seats);
+      const pile = await box(page.getByRole("button", { name: /^Draw pile/ }));
+      expect(row.y).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
+      expect(pile.y).toBeGreaterThanOrEqual(row.y + row.height - 1);
+      expect(await overflowOf(page)).toBeLessThanOrEqual(0);
+    });
+  });
+
+  test("The draw pile stays big enough to use at 200% zoom on a phone held sideways", async ({
+    page,
+  }) => {
+    await openTable(page, "two-players");
+    // 874 by 402 at 200% zoom
+    await page.setViewportSize({ width: 437, height: 201 });
+    const pile = page.getByRole("button", { name: /^Draw pile/ });
+    await expect(pile).toBeVisible();
+    await expect
+      .poll(async () => (await pile.boundingBox())?.width ?? 0)
+      .toBeGreaterThanOrEqual(44);
+    const box = await pile.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    // The page scrolls to the rest, and never sideways
+    expect(await overflowOf(page)).toBeLessThanOrEqual(0);
   });
 
   test("The colour in play, your turn and Uno are easy to see", async ({

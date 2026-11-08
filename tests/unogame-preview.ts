@@ -90,15 +90,9 @@ export interface PreviewTable {
   announcement: string;
 }
 
-// `players` seats a different number than the scenario's own, for example two
-// for screenshots of a table with just Cam and Laura
-export function buildPreview(
-  scenario: PreviewScenario,
-  options: { players?: number } = {},
-): PreviewTable {
+export function buildPreview(scenario: PreviewScenario): PreviewTable {
   const count =
-    options.players ??
-    (scenario === "two-players" ||
+    scenario === "two-players" ||
     scenario === "round-over" ||
     scenario === "two-cards" ||
     scenario === "say-uno" ||
@@ -109,7 +103,7 @@ export function buildPreview(
         ? 10
         : scenario === "long-names"
           ? longNames.length
-          : 4);
+          : 4;
   const labels = scenario === "long-names" ? longNames : friends;
   const ids = Array.from({ length: count }, (_, i) => `player-${String(i)}`);
   const names = Object.fromEntries(ids.map((id, i) => [id, labels[i]]));

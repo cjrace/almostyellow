@@ -108,10 +108,6 @@
   display: none;
 }
 
-.menuExtra {
-  display: none !important;
-}
-
 .status {
   display: inline-flex;
   align-items: center;
@@ -429,16 +425,20 @@
    hand below the fold. Here the site's header is hidden (global.css) and one
    slim strip runs across the top: back, whose turn it is, the other players as
    seats, the info and Scores buttons, and the room menu. Below it the piles are
-   on the left with your buttons in a column on the right, within reach of a
-   thumb, and your hand runs across the bottom at full width.
+   in the middle of the screen, with your buttons in a column on the right, at
+   the bottom and within reach of a thumb, and your hand runs across the bottom
+   at full width.
    The page, its head, the table and its board are all display: contents, so
    every piece is a cell of one grid and is placed by line. */
 @media (orientation: landscape) and (max-height: 500px) {
   .page {
     display: grid !important;
     grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
-    /* A row for notices, the strip, the table and the hand */
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    /* A row for notices, the strip, the table and the hand. The table keeps
+       enough height to draw from, so on a screen too short for everything (a
+       small phone at 200% zoom) the page scrolls instead of the piles
+       shrinking to nothing. */
+    grid-template-rows: auto auto minmax(5rem, 1fr) auto;
     column-gap: var(--mantine-spacing-xs);
     row-gap: 0;
     align-content: stretch;
@@ -462,6 +462,11 @@
     grid-row: 1;
   }
 
+  /* Those notices are in one box, so they stack rather than overlap */
+  .notices {
+    margin-bottom: 4px;
+  }
+
   /* The site's header is hidden, so the page has its own back button and a
      title for screen readers */
   .page .pageHead > .back {
@@ -483,11 +488,6 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
-  }
-
-  /* The header's confetti and colour scheme buttons are in the room menu */
-  .menuExtra {
-    display: flex !important;
   }
 
   .page .pageHead > .roomRow {
@@ -715,6 +715,30 @@
 
   .controls > button {
     min-height: 2.25rem;
+  }
+}
+
+/* Narrow as well as short, such as a phone at 200% zoom: the strip has no room
+   left for the seats beside the buttons, so they get a row of their own under
+   it, and the table and hand move down a row. The page scrolls if it must. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 600px) {
+  .page {
+    grid-template-rows: auto auto auto minmax(5rem, 1fr) auto;
+  }
+
+  .page .opponents {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 4px;
+  }
+
+  .page .table,
+  .page .controls {
+    grid-row: 4;
+  }
+
+  .page .hand {
+    grid-row: 5;
   }
 }
 
