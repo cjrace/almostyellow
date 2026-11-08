@@ -568,34 +568,41 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
   });
 
-  test("A phone held sideways scrolls the seats to whoever is playing", async ({
+  test("A phone held sideways shows a few seats and +N for the rest, keeping whoever is playing", async ({
     page,
   }) => {
     const { show } = await openTable(page, "ten-players");
     await page.setViewportSize({ width: 874, height: 402 });
     const seats = page.getByRole("list", { name: "Players" });
-    const playing = async () =>
+    const state = async () =>
       seats.evaluate((list) => {
         const box = list.getBoundingClientRect();
-        const at = list
+        const visible = [...list.querySelectorAll("li:not([data-extra])")]
+          .filter((li) => !li.getAttribute("aria-hidden"))
+          .map((li) => li.getBoundingClientRect());
+        const current = list
           .querySelector("[data-current]")
-          ?.getBoundingClientRect();
+          ?.hasAttribute("data-extra");
         return {
-          scrolls: list.scrollHeight > list.clientHeight,
-          inside: !!at && at.top >= box.top - 1 && at.bottom <= box.bottom + 1,
+          shown: visible.length,
+          one: list.scrollHeight <= box.height + 1,
+          currentShown: current === false,
+          more: list.querySelector("li[aria-hidden='true']")?.textContent,
         };
       });
 
-    await test.step("Given ten players, so the seats scroll", async () => {
-      expect((await playing()).scrolls).toBe(true);
+    await test.step("Given ten players, then three show and +7 stands for the rest", async () => {
+      const now = await state();
+      expect(now.shown).toBe(3);
+      expect(now.more).toBe("+7");
+      expect(now.one).toBe(true);
+      await expect(seats.getByRole("listitem")).toHaveCount(10);
     });
 
-    await test.step("When a late seat is to move", async () => {
+    await test.step("When a late seat is to move, then that seat is one of the three", async () => {
       await show("ten-players-late");
-    });
-
-    await test.step("Then that seat is scrolled into view", async () => {
-      await expect.poll(async () => (await playing()).inside).toBe(true);
+      await expect.poll(async () => (await state()).currentShown).toBe(true);
+      expect((await state()).shown).toBe(3);
     });
   });
 

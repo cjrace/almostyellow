@@ -103,8 +103,8 @@
 .pageHead > .back,
 .landscapeTitle,
 .infoButton,
-.controls > .drawButton,
-.opponent .backs {
+.opponent .backs,
+.more {
   display: none;
 }
 
@@ -149,10 +149,12 @@
 
 .table[data-colour] {
   border-radius: var(--mantine-radius-lg);
+  /* Reaches nothing at every edge, so it fades into the page */
   background: radial-gradient(
-    ellipse at center,
+    ellipse closest-side at center,
     color-mix(in srgb, var(--in-play) 22%, transparent) 0%,
-    color-mix(in srgb, var(--in-play) 6%, transparent) 70%,
+    color-mix(in srgb, var(--in-play) 13%, transparent) 35%,
+    color-mix(in srgb, var(--in-play) 4%, transparent) 70%,
     transparent 100%
   );
 }
@@ -401,7 +403,7 @@
   }
 }
 
-/* Saying Uno matters right now: the button fills in and pulses three times,
+/* Saying Uno matters right now: the button pulses three times,
    and does not move at all when reduced motion is on */
 .controls button[data-ready] {
   animation: sayUnoPulse 1.2s ease-out 3;
@@ -409,7 +411,7 @@
 
 @keyframes sayUnoPulse {
   from {
-    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+    box-shadow: 0 0 0 0 var(--mantine-color-gray-6);
   }
 
   to {
@@ -588,6 +590,29 @@
     align-items: center;
   }
 
+  /* Only a few seats show, and "+2" stands for the rest, so the strip stays on
+     one line. The others are still read out. */
+  .opponent[data-extra] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    padding: 0;
+    border: 0;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-xl);
+    font-size: var(--mantine-font-size-sm);
+    font-weight: 700;
+    color: var(--mantine-color-dimmed);
+  }
+
   .backs i {
     display: none;
     width: 9px;
@@ -671,10 +696,6 @@
     right: -0.6rem;
     width: 1.25rem;
     height: 1.25rem;
-  }
-
-  .page .controls > .drawButton {
-    display: inline-grid;
   }
 }
 

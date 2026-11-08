@@ -23,6 +23,9 @@ interface UnoOpponentsProps {
   unoPlayer: string | null; // Anyone sitting on one card without saying Uno
 }
 
+// How many seats show on a phone held sideways
+const SHOWN_SEATS = 3;
+
 // Everyone in the round, in seat order, with their card count and whose turn it
 // is. The turn is a filled pill with the word "Playing", and "UNO!" stays on
 // anyone down to one card who has said it, so none of it depends on colour.
@@ -71,6 +74,19 @@ export default function UnoOpponents({
     list.scrollTo({ top: Math.max(0, top), left: Math.max(0, left) });
   }, [currentPlayer, players.length]);
 
+  // A phone held sideways has room for a few seats, so the rest become "+N".
+  // You, whoever is playing and anyone who can be caught always show.
+  const shown = new Set(
+    [me, currentPlayer, unoPlayer].filter(
+      (id): id is string => !!id && players.some((p) => p.id === id),
+    ),
+  );
+  for (const player of players) {
+    if (shown.size >= SHOWN_SEATS) break;
+    shown.add(player.id);
+  }
+  const hidden = players.length - shown.size;
+
   return (
     <ul
       ref={listRef}
@@ -93,6 +109,7 @@ export default function UnoOpponents({
             className={styles.opponent}
             data-current={current ? "" : undefined}
             data-catch={unoPlayer === player.id ? "" : undefined}
+            data-extra={shown.has(player.id) ? undefined : ""}
             aria-label={`${label}, ${cards}${current ? ", playing now" : ""}${said ? ", said Uno" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
           >
             <Text
@@ -153,6 +170,15 @@ export default function UnoOpponents({
           </li>
         );
       })}
+      {hidden > 0 ? (
+        <li
+          className={styles.more}
+          aria-hidden="true"
+          title={`${String(hidden)} more ${hidden === 1 ? "player" : "players"}`}
+        >
+          +{hidden}
+        </li>
+      ) : null}
     </ul>
   );
 }

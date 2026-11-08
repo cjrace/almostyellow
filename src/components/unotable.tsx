@@ -396,21 +396,6 @@ export default function UnoTable({
         </div>
 
         <div className={styles.controls}>
-          {/* The draw pile is the main way to draw. This button repeats it in
-              reach of a thumb, in the column beside the table on a phone held
-              sideways, and is hidden in other layouts. */}
-          {canDraw ? (
-            <Button
-              className={styles.drawButton}
-              variant={mustDraw ? "filled" : "default"}
-              aria-disabled={!!sending}
-              onClick={() => {
-                if (!sending) onDraw();
-              }}
-            >
-              Draw a card
-            </Button>
-          ) : null}
           {/* Only the player who drew decides whether to keep it */}
           {view.drawPending && myTurn ? (
             <Button
@@ -439,7 +424,7 @@ export default function UnoTable({
               as "Uno said" until the card is played. */}
           {showSayUno ? (
             <Button
-              variant={unoReady ? "filled" : "default"}
+              variant="default"
               data-ready={unoReady ? "" : undefined}
               disabled={declareUno}
               aria-disabled={!!sending}
