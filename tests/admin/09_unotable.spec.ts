@@ -525,7 +525,11 @@ test.describe("Looking at the Uno table in a real room", () => {
         els.map((e) => e.getAttribute("aria-label") ?? ""),
       ))
         expect(label).toMatch(/, play$/);
-      await page.getByRole("button", { name: "Show all cards" }).click();
+      // One button with one name, so it is announced as pressed, not renamed
+      const toggle = page.getByRole("button", { name: /^Playable only/ });
+      await expect(toggle).toHaveAttribute("aria-pressed", "true");
+      await toggle.click();
+      await expect(toggle).toHaveAttribute("aria-pressed", "false");
       await expect(hand.getByRole("button")).toHaveCount(all);
     });
   });
@@ -536,27 +540,63 @@ test.describe("Looking at the Uno table in a real room", () => {
     const { show } = await openTable(page, "large-hand");
 
     await test.step("Given I have narrowed my hand to the cards I can play", async () => {
-      await page.getByRole("button", { name: /^Playable only (d+)$/ }).click();
+      await page
+        .getByRole("button", { name: /^Playable only \(\d+\)$/ })
+        .click();
       await expect(
-        page.getByRole("button", { name: "Show all cards" }),
+        page.getByRole("button", { name: /^Playable only/, pressed: true }),
       ).toBeVisible();
     });
 
     await test.step("When the turn passes to someone else and then comes back", async () => {
       await show("large-hand-waiting");
       await expect(
-        page.getByRole("button", { name: /Playable only|Show all cards/ }),
+        page.getByRole("button", { name: /^Playable only/ }),
       ).toBeHidden();
       await show("large-hand");
     });
 
     await test.step("Then I see my whole hand and can narrow it again", async () => {
       await expect(
-        page.getByRole("button", { name: /^Playable only (d+)$/ }),
+        page.getByRole("button", {
+          name: /^Playable only \(\d+\)$/,
+          pressed: false,
+        }),
       ).toBeVisible();
       await expect(
-        page.getByRole("list", { name: /^Your hand, d+ cards$/ }),
+        page.getByRole("list", { name: /^Your hand, \d+ cards$/ }),
       ).toBeVisible();
+    });
+  });
+
+  test("A phone held sideways scrolls the seats to whoever is playing", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "ten-players");
+    await page.setViewportSize({ width: 874, height: 402 });
+    const seats = page.getByRole("list", { name: "Players" });
+    const playing = async () =>
+      seats.evaluate((list) => {
+        const box = list.getBoundingClientRect();
+        const at = list
+          .querySelector("[data-current]")
+          ?.getBoundingClientRect();
+        return {
+          scrolls: list.scrollHeight > list.clientHeight,
+          inside: !!at && at.top >= box.top - 1 && at.bottom <= box.bottom + 1,
+        };
+      });
+
+    await test.step("Given ten players, so the seats scroll", async () => {
+      expect((await playing()).scrolls).toBe(true);
+    });
+
+    await test.step("When a late seat is to move", async () => {
+      await show("ten-players-late");
+    });
+
+    await test.step("Then that seat is scrolled into view", async () => {
+      await expect.poll(async () => (await playing()).inside).toBe(true);
     });
   });
 

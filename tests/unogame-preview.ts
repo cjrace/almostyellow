@@ -13,6 +13,7 @@ import { privateView, publicView } from "@/unogame/engine/views";
 export type PreviewScenario =
   | "two-players"
   | "ten-players"
+  | "ten-players-late"
   | "long-names"
   | "large-hand"
   | "large-hand-waiting"
@@ -27,6 +28,7 @@ export type PreviewScenario =
 export const previewScenarios: { value: PreviewScenario; label: string }[] = [
   { value: "two-players", label: "Two players" },
   { value: "ten-players", label: "Ten players" },
+  { value: "ten-players-late", label: "Ten players, late seat to move" },
   { value: "long-names", label: "Long names" },
   { value: "large-hand", label: "Large hand" },
   { value: "large-hand-waiting", label: "Large hand, not my turn" },
@@ -103,7 +105,7 @@ export function buildPreview(
     scenario === "no-play" ||
     scenario === "uno-said"
       ? 2
-      : scenario === "ten-players"
+      : scenario === "ten-players" || scenario === "ten-players-late"
         ? 10
         : scenario === "long-names"
           ? longNames.length
@@ -120,6 +122,8 @@ export function buildPreview(
     state.hands[me].push(...state.stock.splice(0, state.stock.length - 30));
     if (scenario === "large-hand-waiting") state.current = 1;
   }
+  // The last seats are off the end of a scrolling list of players
+  if (scenario === "ten-players-late") state.current = 8;
   if (scenario === "catch-uno" || scenario === "uno-said") {
     const other = ids[1];
     const spare = state.hands[other].splice(1);

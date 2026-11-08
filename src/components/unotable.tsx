@@ -453,9 +453,7 @@ export default function UnoTable({
                 setPlayableOnly(!playableOnly);
               }}
             >
-              {playableOnly
-                ? "Show all cards"
-                : `Playable only (${String(mine.playableIds.length)})`}
+              {`Playable only (${String(mine.playableIds.length)})`}
             </Button>
           ) : null}
         </div>
