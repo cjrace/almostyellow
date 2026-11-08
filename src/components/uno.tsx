@@ -506,34 +506,20 @@ export default function Uno({
         ) : (
           <Text>Waiting for the host to start the round.</Text>
         )}
-        {savable &&
-          (room.trackerGameId ? (
-            <Group gap="xs">
-              <Button variant="default" disabled>
-                Saved to tracker
-              </Button>
-              <Anchor
-                component={Link}
-                href="/games/uno-tracker/history"
-                ref={historyRef}
-              >
-                View in tracker history
-              </Anchor>
-            </Group>
-          ) : (
-            <Button
-              ref={saveRef}
-              variant="default"
-              disabled={busy || !connected}
-              onClick={() => {
-                setCamId(players[0].id);
-                setPlayedOn(new Date().toLocaleDateString("en-CA"));
-                setSaving(true);
-              }}
-            >
-              Save to tracker
-            </Button>
-          ))}
+        {savable && (
+          <Button
+            ref={saveRef}
+            variant="default"
+            disabled={busy || !connected}
+            onClick={() => {
+              setCamId(players[0].id);
+              setPlayedOn(new Date().toLocaleDateString("en-CA"));
+              setSaving(true);
+            }}
+          >
+            Save to tracker and end room
+          </Button>
+        )}
       </Stack>
     );
   };
@@ -798,7 +784,19 @@ export default function Uno({
         {ended && (
           <Text role="status">
             {expired ? "This room has expired." : "This room has ended."}
+            {hosting && trackerSaved
+              ? " The scores were saved to the tracker."
+              : ""}
           </Text>
+        )}
+        {ended && hosting && trackerSaved && (
+          <Anchor
+            component={Link}
+            href="/games/uno-tracker/history"
+            ref={historyRef}
+          >
+            View in tracker history
+          </Anchor>
         )}
         {active && playerId && !ended && (!online || cached) && (
           <Text role="status">Reconnecting. Moves are unavailable.</Text>
@@ -958,7 +956,8 @@ export default function Uno({
         <Stack gap="md" align="stretch" pt="xs">
           <Text>
             This adds this room&apos;s score as one finished game to the Cam and
-            Laura tracker. You can only save a room once.
+            Laura tracker. You can only save a room once, and saving ends the
+            room for everyone.
           </Text>
           <NativeSelect
             label="Who is Cam?"
@@ -990,7 +989,7 @@ export default function Uno({
             disabled={busy || !connected || !playedOn}
             onClick={() => void run(saveToTracker)}
           >
-            Save to tracker
+            Save and end room
           </Button>
         </Stack>
       </Modal>

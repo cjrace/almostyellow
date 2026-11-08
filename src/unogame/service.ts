@@ -464,8 +464,9 @@ export async function saveRoomToTracker(
     if (!privateDoc.exists || (privateDoc.data() as PrivateUno).owner !== owner)
       fail("forbidden", "You do not host this room.");
     const room = unoRoom(snapshot.data());
-    live(room);
+    // Saving ends the room, so a repeat of a save that worked has nothing to do
     if (room.trackerGameId) return;
+    live(room);
     const id = trackerGameId(room.code, room.expiresAt);
     const [game, board] = await Promise.all([
       tx.get(adminDb().doc(`unoGames/${id}`)),
@@ -500,6 +501,11 @@ export async function saveRoomToTracker(
       tx.create(game.ref, entry.game);
       tx.set(board.ref, entry.board);
     }
-    tx.update(roomRef, { trackerGameId: id, version: room.version + 1 });
+    // The score is saved once, so the room ends with it
+    tx.update(roomRef, {
+      trackerGameId: id,
+      phase: "ended",
+      version: room.version + 1,
+    });
   });
 }
