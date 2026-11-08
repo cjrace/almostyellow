@@ -424,6 +424,11 @@ export default function Uno({
         // Nothing must trap the player in the room
       }
     }
+    exit();
+  }
+
+  // Back to the games list, forgetting the room
+  function exit() {
     sessionStorage.removeItem(STORAGE_KEY);
     router.push("/games");
   }
@@ -537,7 +542,7 @@ export default function Uno({
     setEnding(true);
   };
   const askLeave = () => {
-    if (inRound || (hosting && room && !ended)) setLeaving(true);
+    if (inRound && !ended) setLeaving(true);
     else void run(leave);
   };
 
@@ -747,10 +752,15 @@ export default function Uno({
                     End room
                   </Menu.Item>
                 )}
-                <Menu.Divider />
-                <Menu.Item disabled={busy} onClick={askLeave}>
-                  Leave game
-                </Menu.Item>
+                {/* The host never leaves without ending, so this is for everyone else, and for the host once the room has ended */}
+                {(!hosting || ended) && (
+                  <>
+                    <Menu.Divider />
+                    <Menu.Item disabled={busy} onClick={askLeave}>
+                      Leave game
+                    </Menu.Item>
+                  </>
+                )}
               </Menu.Dropdown>
             </Menu>
           </Group>
@@ -922,13 +932,6 @@ export default function Uno({
               without you. You can join again for the next round.
             </Text>
           )}
-          {hosting && (
-            <Text>
-              You host this room. If you leave, nobody can end the round or the
-              room, and you will not get the host controls back. Use End room to
-              finish the game for everyone instead.
-            </Text>
-          )}
           <Button
             color="red.9"
             disabled={busy}
@@ -1036,7 +1039,9 @@ export default function Uno({
         closeButtonProps={{ "aria-label": "Cancel ending the room" }}
       >
         <Stack gap="md" align="flex-start" pt="xs">
-          <Text>Everyone will lose access to the game.</Text>
+          <Text>
+            Everyone will lose access to the game, and you will leave it too.
+          </Text>
           <Button
             color="red.9"
             disabled={busy}
@@ -1044,6 +1049,7 @@ export default function Uno({
               void run(async () => {
                 await control("end");
                 setEnding(false);
+                exit();
               })
             }
           >

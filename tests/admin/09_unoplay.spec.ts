@@ -266,6 +266,8 @@ async function playRound(
       .getByRole("button", { name: "End room" })
       .click();
     await expect(guest.getByText("This room has ended.")).toBeVisible();
+    // Ending the room leaves it too
+    await expect(page).toHaveURL((url) => url.pathname === "/games");
   });
 }
 
@@ -340,12 +342,10 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
 
     await test.step("When the host ends the round", async () => {
       await page.getByRole("button", { name: /^Room \w{4}, options$/ }).click();
-      await page.getByRole("menuitem", { name: "Leave game" }).click();
-      const warning = page.getByRole("dialog", { name: "Leave this round?" });
-      await expect(warning).toContainText("You host this room");
-      await page.keyboard.press("Escape");
-      await expect(warning).toBeHidden();
-      await page.getByRole("button", { name: /^Room \w{4}, options$/ }).click();
+      // The host never leaves without ending
+      await expect(
+        page.getByRole("menuitem", { name: "Leave game" }),
+      ).toHaveCount(0);
       await page.getByRole("menuitem", { name: "End round" }).click();
       const dialog = page.getByRole("dialog", { name: "End this round?" });
       await expect(dialog).toBeVisible();

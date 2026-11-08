@@ -649,13 +649,12 @@ test.describe("Looking at the Uno table in a real room", () => {
       // would be nothing for focus to return to
       await menu.focus();
       await page.keyboard.press("Enter");
-      for (const name of [
-        "Copy join link",
-        "End round",
-        "End room",
-        "Leave game",
-      ])
+      for (const name of ["Copy join link", "End round", "End room"])
         await expect(page.getByRole("menuitem", { name })).toBeVisible();
+      // The host never leaves without ending
+      await expect(
+        page.getByRole("menuitem", { name: "Leave game" }),
+      ).toHaveCount(0);
     });
 
     await test.step("When I close it, or the dialog it opens, focus comes back to it", async () => {
@@ -665,8 +664,8 @@ test.describe("Looking at the Uno table in a real room", () => {
       // would be nothing for focus to return to
       await menu.focus();
       await page.keyboard.press("Enter");
-      await page.getByRole("menuitem", { name: "Leave game" }).click();
-      const dialog = page.getByRole("dialog", { name: "Leave this round?" });
+      await page.getByRole("menuitem", { name: "End room" }).click();
+      const dialog = page.getByRole("dialog", { name: "End this room?" });
       await expect(dialog).toBeVisible();
       await page.keyboard.press("Escape");
       await expect(dialog).toBeHidden();
