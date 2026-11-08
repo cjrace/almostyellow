@@ -61,10 +61,13 @@ export default function UnoOpponents({
     const list = listRef.current;
     const current = list?.querySelector<HTMLElement>("[data-current]");
     if (!list || !current) return;
+    // Measured against the list itself, as it is not a positioned parent
+    const box = list.getBoundingClientRect();
+    const at = current.getBoundingClientRect();
     const top =
-      current.offsetTop - (list.clientHeight - current.offsetHeight) / 2;
+      list.scrollTop + (at.top - box.top) - (box.height - at.height) / 2;
     const left =
-      current.offsetLeft - (list.clientWidth - current.offsetWidth) / 2;
+      list.scrollLeft + (at.left - box.left) - (box.width - at.width) / 2;
     list.scrollTo({ top: Math.max(0, top), left: Math.max(0, left) });
   }, [currentPlayer, players.length]);
 
