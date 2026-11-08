@@ -11,6 +11,9 @@ export const MIN_CARD_WIDTH = 58;
 export const SHORT_SCREEN = 400;
 export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
+// A card is at most this share of the hand's width, which is what limits it on
+// a phone held upright
+export const WIDTH_SHARE = 0.19;
 // A phone held sideways (500 pixels tall or less, as in unotable.module.css)
 // gives the hand more: a card's width is this share of the screen's height,
 // about 80 pixels at 402
@@ -54,7 +57,7 @@ export function fanLayout(options: {
         viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
         // Tall screens have room for bigger cards
         Math.min(
-          width * 0.17,
+          width * WIDTH_SHARE,
           viewportHeight *
             (viewportHeight <= LANDSCAPE_SCREEN
               ? LANDSCAPE_CARD_HEIGHT_SHARE

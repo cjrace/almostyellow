@@ -11,6 +11,7 @@ import {
   ROW_STRIP,
   SHORT_MIN_CARD_WIDTH,
   SHORT_SCREEN,
+  WIDTH_SHARE,
   fanLayout,
 } from "@/unogame/handlayout";
 
@@ -145,5 +146,11 @@ describe("fanLayout", () => {
     expect(
       fanLayout({ width: 1100, viewportHeight: 800, count: 7 }).cardWidth,
     ).toBe(Math.round(800 * 0.16));
+  });
+
+  it("sizes cards on a phone held upright by the width, at 19% of it", () => {
+    expect(
+      fanLayout({ width: 360, viewportHeight: 780, count: 7 }).cardWidth,
+    ).toBe(Math.round(360 * WIDTH_SHARE));
   });
 });
