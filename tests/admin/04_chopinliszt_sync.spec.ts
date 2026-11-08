@@ -297,10 +297,9 @@ test.describe("Someone leaving Chopin Liszt", () => {
   }
 });
 
-test("Opening the list without signal says it needs a connection", async ({
-  page,
-}) => {
-  // The page loads, then the signal drops before it can fetch the list
+// Logs in and opens the list, with the signal dropping before the list can be
+// fetched
+async function openWithoutSignal(page: Page) {
   const listPage = (url: URL) => url.pathname === "/admin/chopinliszt";
   await page.route(listPage, async (route) => {
     if (route.request().method() !== "POST") {
@@ -315,6 +314,30 @@ test("Opening the list without signal says it needs a connection", async ({
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
+}
+
+test("Opening the list without signal says it needs a connection", async ({
+  page,
+}) => {
+  await openWithoutSignal(page);
+
+  await expect(
+    page.getByText("The list needs a connection to open"),
+  ).toBeVisible();
+});
+
+// A phone on a weak signal, and a browser that has not yet noticed the signal
+// go, can both still say they are online when the request fails
+test("Opening the list says it needs a connection even while the browser still reports being online", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, "onLine", {
+      configurable: true,
+      get: () => true,
+    });
+  });
+  await openWithoutSignal(page);
 
   await expect(
     page.getByText("The list needs a connection to open"),
