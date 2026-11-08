@@ -107,13 +107,55 @@ export async function joinGuest(
 }
 // The request never got an answer, so it may or may not have been applied
 export class NetworkError extends Error {}
+// Firebase refreshes the sign-in token over the network about once an hour,
+// and a poor connection can stall that for as long as it likes. Waiting longer
+// than this counts as no answer, so the command can be sent again.
+export const TOKEN_WAIT_MS = 5000;
+
+async function currentToken(client: GuestClient) {
+  const user = client.auth.currentUser;
+  if (!user) return undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      user.getIdToken(),
+      new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          reject(new NetworkError("Could not refresh the sign-in in time."));
+        }, TOKEN_WAIT_MS);
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof NetworkError) throw error;
+    throw new NetworkError(
+      error instanceof Error ? error.message : "Could not refresh the sign-in.",
+      { cause: error },
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Refreshes the sign-in token ahead of time if it is about to expire, so the
+ * next command does not have to wait for it. Failing is harmless: sending
+ * tries again.
+ */
+export async function warmToken(client: GuestClient) {
+  try {
+    await client.auth.currentUser?.getIdToken();
+  } catch {
+    // The command will try again when it needs the token
+  }
+}
+
 export async function send(
   client: GuestClient,
   action: string,
   input: unknown,
   game: Game = "buzzer",
 ) {
-  const token = await client.auth.currentUser?.getIdToken();
+  const token = await currentToken(client);
   let response: Response;
   try {
     response = await fetch(`/api/${game}`, {

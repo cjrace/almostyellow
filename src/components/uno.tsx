@@ -24,6 +24,7 @@ import { controlUno, createUnoRoom, saveUnoToTracker } from "@/actions/unoroom";
 import {
   guestClient,
   joinGuest,
+  warmToken,
   send,
   type GuestClient,
 } from "@/buzzer/client";
@@ -32,8 +33,15 @@ import { announceTable } from "@/unogame/announce";
 import { sendUno, watchUnoHand, watchUnoRoom } from "@/unogame/client";
 import type { Colour } from "@/unogame/engine/cards";
 import { MAX_PLAYERS, MIN_PLAYERS } from "@/unogame/engine/round";
-import type { UnoHand, UnoRoom } from "@/unogame/room";
+import {
+  FINAL_HOLD_MS,
+  unseenPlayers,
+  type UnoHand,
+  type UnoRoom,
+} from "@/unogame/room";
 import playConfetti from "@/components/playconfetti";
+import { sendingState, type Sent } from "@/unogame/sending";
+import ViewportHeight from "@/components/viewportheight";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
 import UnoWinner from "@/components/unowinner";
@@ -41,6 +49,8 @@ import layout from "@/styles/cardgame.module.css";
 import table from "@/styles/unotable.module.css";
 
 const STORAGE_KEY = "uno-room";
+// The clock, read when a move is sent or answered
+const timestamp = () => Date.now();
 
 interface Saved {
   code: string;
@@ -89,7 +99,15 @@ export default function Uno({
   const createIdRef = useRef<string | null>(null);
   const roomRef = useRef<HTMLButtonElement>(null);
   const focusRoomRef = useRef(false);
-  const prevStageRef = useRef<string | undefined>(undefined);
+  // A move sent from the table that the room has not yet shown. It clears when
+  // the room changes, when the command fails, or a few seconds after the
+  // server answered (a repeat that changed nothing).
+  const [sending, setSending] = useState<Sent | null>(null);
+  // After a win the table stays up for a few seconds, so everyone sees how it
+  // was won
+  const [holding, setHolding] = useState(false);
+  const [prevStage, setPrevStage] = useState<string | undefined>(undefined);
+  const seenSentRef = useRef<string | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLButtonElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
@@ -176,6 +194,7 @@ export default function Uno({
     );
   }, [client, active]);
 
+  const sendingNow = sendingState(sending, room?.version, now);
   const seated = !!room && room.seats.includes(playerId);
   const expired = !!room && room.expiresAt <= now;
   const ended = room?.phase === "ended" || expired;
@@ -227,17 +246,62 @@ export default function Uno({
     });
   }, [stage]);
 
-  // A round won while this page was open ends with confetti. A reload into a
-  // finished room shows none.
-  useEffect(() => {
-    const finishedNow =
-      prevStageRef.current === "playing" &&
+  // A round won while this page was open holds the final card, then ends with
+  // confetti. A reload into a finished room shows neither. The hold starts
+  // while rendering, not in an effect, so the round-over page and an empty
+  // table never show for even one frame first.
+  if (stage !== prevStage) {
+    setPrevStage(stage);
+    if (
+      prevStage === "playing" &&
       stage === "finished" &&
       !!playerId &&
-      room?.view?.outcome?.type === "win";
-    prevStageRef.current = stage;
-    if (finishedNow) playConfetti();
-  }, [stage, room?.view?.outcome?.type, playerId]);
+      room?.view?.outcome?.type === "win"
+    )
+      setHolding(true);
+  }
+  useEffect(() => {
+    if (!holding) return;
+    const timer = setTimeout(() => {
+      setHolding(false);
+      playConfetti();
+    }, FINAL_HOLD_MS);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [holding]);
+
+  // The sign-in token is refreshed over the network about hourly. Doing it as
+  // your turn starts keeps a slow refresh out of your move.
+  const myTurn =
+    room?.stage === "playing" && room.view?.currentPlayer === playerId;
+  useEffect(() => {
+    if (client && myTurn) void warmToken(client);
+  }, [client, myTurn]);
+
+  // Once this device has shown the result, it says so, so the host can play
+  // again knowing nobody missed it
+  const finishedRound = room?.stage === "finished" ? room.round : null;
+  const wasSeated = !!room && room.seats.includes(playerId);
+  const canReport = !!client && online && !cached;
+  useEffect(() => {
+    if (
+      !client ||
+      !room ||
+      !finishedRound ||
+      !wasSeated ||
+      !canReport ||
+      holding ||
+      seenSentRef.current === finishedRound
+    )
+      return;
+    seenSentRef.current = finishedRound;
+    sendUno(client, "seen", { code: room.code, round: finishedRound }).catch(
+      () => {
+        // The host's button opens after a short wait anyway
+      },
+    );
+  }, [client, room, finishedRound, wasSeated, canReport, holding]);
 
   const connected = online && !cached && !ended;
   const announcement = useMemo(() => {
@@ -255,19 +319,21 @@ export default function Uno({
     focusRoomRef.current = true;
   }
 
-  async function run(operation: () => Promise<void>) {
-    if (flightRef.current) return;
+  async function run(operation: () => Promise<void>): Promise<boolean> {
+    if (flightRef.current) return false;
     flightRef.current = true;
     setBusy(true);
     setError("");
     try {
       await operation();
+      return true;
     } catch (failure) {
       setError(
         failure instanceof Error
           ? failure.message
           : "Could not complete the change.",
       );
+      return false;
     } finally {
       flightRef.current = false;
       setBusy(false);
@@ -290,7 +356,10 @@ export default function Uno({
       setError("Reconnecting. Moves are unavailable until you are back.");
       return;
     }
-    await run(() =>
+    const sentAt = timestamp();
+    const started = { version: room.version, at: sentAt };
+    setSending(started);
+    const ok = await run(() =>
       sendUno(client, action, {
         code: room.code,
         round: room.round,
@@ -298,6 +367,13 @@ export default function Uno({
         ...(action === "catch" ? { version: room.version } : {}),
         ...extra,
       }),
+    );
+    setSending((current) =>
+      current?.at !== sentAt
+        ? current
+        : ok
+          ? { ...current, answeredAt: timestamp() }
+          : null,
     );
   }
 
@@ -340,7 +416,8 @@ export default function Uno({
   }
 
   const inRound = room?.stage === "playing" && seated;
-  const tableShown = !!room?.view && inRound && !ended;
+  const tableShown =
+    !!room?.view && seated && (room.stage === "playing" || holding) && !ended;
   const players = room?.players ?? [];
   // Two players with a round won between them can be saved to the tracker
   const savable =
@@ -368,19 +445,23 @@ export default function Uno({
   const roundActions = () => {
     if (!room) return null;
     const reasonId = "uno_start_reason";
+    const unseen = unseenPlayers(room, now);
     return (
       <Stack gap="sm" className={table.bottomActions}>
         {hosting ? (
           <Stack gap={4}>
             <Text id={reasonId} size="sm" c="dimmed">
-              {players.length < MIN_PLAYERS
-                ? `Wait for at least ${String(MIN_PLAYERS)} players.`
-                : `${String(players.length)} players are ready.`}
+              {unseen.length > 0
+                ? `Waiting for ${unseen.map((p) => p.name).join(", ")} to see who won.`
+                : players.length < MIN_PLAYERS
+                  ? `Wait for at least ${String(MIN_PLAYERS)} players.`
+                  : `${String(players.length)} players are ready.`}
             </Text>
             <Button
               disabled={
                 busy ||
                 !connected ||
+                unseen.length > 0 ||
                 players.length < MIN_PLAYERS ||
                 players.length > MAX_PLAYERS
               }
@@ -451,6 +532,7 @@ export default function Uno({
       className={tableShown ? table.page : undefined}
       style={{ display: "flex", flexDirection: "column", flex: 1 }}
     >
+      <ViewportHeight />
       <Stack gap="md" className={tableShown ? table.pageHead : table.fill}>
         {notice && <Text role="status">{notice}</Text>}
         {identityError && (
@@ -646,7 +728,7 @@ export default function Uno({
           <Text role="status">Reconnecting. Moves are unavailable.</Text>
         )}
 
-        {room && !ended && room.stage !== "playing" && playerId && (
+        {room && !ended && room.stage !== "playing" && !holding && playerId && (
           <Stack gap="sm" className={table.fill}>
             <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
@@ -724,6 +806,8 @@ export default function Uno({
               events={room.events}
               version={room.version}
               now={now}
+              turnReadyAt={room.turnReadyAt ?? 0}
+              sending={sendingNow}
               onPlay={(cardId, colour: Colour | undefined, declareUno) => {
                 void play("play", {
                   cardId,
