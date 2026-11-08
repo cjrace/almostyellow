@@ -119,19 +119,10 @@ html:has(main[data-game]) {
 }
 
 /* The Uno table on a phone held sideways takes the height the site's header
-   and the gap kept for the confetti credit would use. The page puts its own
-   back button, title and menu in their place (see unotable.module.css), and
-   sets this attribute only while the table is showing. */
+   would use. The page puts its own back button, title and menu in its place
+   (see unotable.module.css), and sets this attribute only while the table is
+   showing. */
 @media (orientation: landscape) and (max-height: 500px) {
-  html[data-uno-table] {
-    --confetti-gap: 0px;
-  }
-
-  /* The credit only shows once confetti has played, and then needs its room */
-  html[data-uno-table][data-confetti-played] {
-    --confetti-gap: 2.5rem;
-  }
-
   html[data-uno-table] .site-frame header {
     display: none;
   }

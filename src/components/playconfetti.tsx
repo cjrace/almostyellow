@@ -46,12 +46,8 @@ export default function playConfetti() {
     .then((page) => {
       // Query again after loading rather than retaining the pre-download
       // MediaQueryList across a change of preference.
-      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        // Its credit sits along the bottom of the screen from now on, so pages
-        // that gave that space back take it again (see global.css)
-        document.documentElement.dataset.confettiPlayed = "";
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
         page?.play();
-      }
     })
     .catch(() => undefined);
 }
