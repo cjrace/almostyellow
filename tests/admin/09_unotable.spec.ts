@@ -499,7 +499,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     page,
   }) => {
     await openTable(page, "large-hand");
-    const hand = page.getByRole("list", { name: /^Your hand, d+ cards$/ });
+    const hand = page.getByRole("list", { name: /^Your hand, \d+ cards$/ });
     const all = await hand.getByRole("button").count();
 
     await test.step("Given I have a big hand and it is my turn", async () => {
@@ -509,12 +509,14 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
 
     await test.step("When I ask for the playable cards only", async () => {
-      await page.getByRole("button", { name: /^Playable only (d+)$/ }).click();
+      await page
+        .getByRole("button", { name: /^Playable only \(\d+\)$/ })
+        .click();
     });
 
     await test.step("Then I only see cards I can play, and can show them all again", async () => {
       const narrowed = page.getByRole("list", {
-        name: /^Your hand, d+ cards, showing the d+ you can play$/,
+        name: /^Your hand, \d+ cards, showing the \d+ you can play$/,
       });
       await expect(narrowed).toBeVisible();
       const buttons = narrowed.getByRole("button");
