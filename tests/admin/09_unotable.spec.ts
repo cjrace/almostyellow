@@ -530,6 +530,36 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
   });
 
+  test("Narrowing a big hand lasts one turn, so the next starts with every card", async ({
+    page,
+  }) => {
+    const { show } = await openTable(page, "large-hand");
+
+    await test.step("Given I have narrowed my hand to the cards I can play", async () => {
+      await page.getByRole("button", { name: /^Playable only (d+)$/ }).click();
+      await expect(
+        page.getByRole("button", { name: "Show all cards" }),
+      ).toBeVisible();
+    });
+
+    await test.step("When the turn passes to someone else and then comes back", async () => {
+      await show("large-hand-waiting");
+      await expect(
+        page.getByRole("button", { name: /Playable only|Show all cards/ }),
+      ).toBeHidden();
+      await show("large-hand");
+    });
+
+    await test.step("Then I see my whole hand and can narrow it again", async () => {
+      await expect(
+        page.getByRole("button", { name: /^Playable only (d+)$/ }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("list", { name: /^Your hand, d+ cards$/ }),
+      ).toBeVisible();
+    });
+  });
+
   test("A phone held sideways keeps the piles, buttons and hand on screen", async ({
     page,
   }) => {

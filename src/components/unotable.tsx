@@ -246,6 +246,12 @@ export default function UnoTable({
   // Only on your turn, and only while something can be played
   const canFilter =
     handSize >= BIG_HAND && myTurn && mine.playableIds.length > 0;
+  // Narrowing lasts for one turn, so the next one starts with the whole hand
+  const [wasMyTurn, setWasMyTurn] = useState(myTurn);
+  if (wasMyTurn !== myTurn) {
+    setWasMyTurn(myTurn);
+    if (!myTurn) setPlayableOnly(false);
+  }
   const filtered = canFilter && playableOnly && !settling;
   const shownHand = filtered
     ? mine.hand.filter((c) => mine.playableIds.includes(c.id))

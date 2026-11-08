@@ -15,6 +15,7 @@ export type PreviewScenario =
   | "ten-players"
   | "long-names"
   | "large-hand"
+  | "large-hand-waiting"
   | "wild-colour"
   | "catch-uno"
   | "two-cards"
@@ -28,6 +29,7 @@ export const previewScenarios: { value: PreviewScenario; label: string }[] = [
   { value: "ten-players", label: "Ten players" },
   { value: "long-names", label: "Long names" },
   { value: "large-hand", label: "Large hand" },
+  { value: "large-hand-waiting", label: "Large hand, not my turn" },
   { value: "catch-uno", label: "Catch Uno" },
   { value: "two-cards", label: "Two cards left" },
   { value: "say-uno", label: "Say Uno" },
@@ -113,9 +115,10 @@ export function buildPreview(
   const state = startRound({ players: ids, startingIndex: 0, shuffle });
   const me = ids[0];
 
-  if (scenario === "large-hand") {
+  if (scenario === "large-hand" || scenario === "large-hand-waiting") {
     // Pulls the whole stock into one hand, as after many penalties
     state.hands[me].push(...state.stock.splice(0, state.stock.length - 30));
+    if (scenario === "large-hand-waiting") state.current = 1;
   }
   if (scenario === "catch-uno" || scenario === "uno-said") {
     const other = ids[1];
