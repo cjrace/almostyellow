@@ -10,8 +10,11 @@ import {
   IconConfetti,
   IconCopy,
   IconDeviceGamepad2,
+  IconDoorExit,
   IconHourglass,
+  IconLogout,
   IconMoon,
+  IconPlayerStop,
   IconSun,
 } from "@tabler/icons-react";
 import {
@@ -77,6 +80,8 @@ interface Saved {
 // The online game: joining, the lobby and the table. The server decides
 // everything; this shows what it publishes and sends what the player chooses.
 const JOIN_COPIED = "Join link copied.";
+// Every item in the room menu has an icon this size
+const ICON = 16;
 
 export default function Uno({
   config,
@@ -440,6 +445,8 @@ export default function Uno({
   }
 
   const inRound = room?.stage === "playing" && seated;
+  // Joined and waiting for the host to start
+  const inLobby = room?.stage === "lobby" && !!playerId && !ended;
   const tableShown =
     !!room?.view && seated && (room.stage === "playing" || holding) && !ended;
   const players = room?.players ?? [];
@@ -711,75 +718,111 @@ export default function Uno({
             wrap="nowrap"
             className={tableShown ? table.roomRow : undefined}
           >
-            <Menu position="bottom-end" withinPortal>
-              <Menu.Target>
-                <Button
-                  size="compact-sm"
-                  variant="default"
-                  aria-label={`Room ${active}, options`}
-                  rightSection={<IconChevronDown size={14} />}
-                  ref={(button) => {
-                    // The end round, end room and leave dialogs each return focus to their
-                    // own ref, so all of them point at this one button
-                    roomRef.current = button;
-                    roundRef.current = button;
-                    endRef.current = button;
-                    leaveRef.current = button;
-                  }}
-                >
-                  Room {active}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item onClick={copyLink}>Copy join link</Menu.Item>
-                {tableShown && (
-                  <>
-                    {/* The header's buttons, for a phone held sideways */}
-                    <Menu.Item
-                      className={table.menuExtra}
-                      leftSection={<IconConfetti size={16} />}
-                      onClick={playConfetti}
-                    >
-                      Unleash confetti
-                    </Menu.Item>
-                    <Menu.Item
-                      className={table.menuExtra}
-                      leftSection={
-                        colourScheme === "dark" ? (
-                          <IconSun size={16} />
-                        ) : (
-                          <IconMoon size={16} />
-                        )
-                      }
-                      onClick={() => {
-                        setColorScheme(
-                          colourScheme === "light" ? "dark" : "light",
-                        );
-                      }}
-                    >
-                      {colourScheme === "dark" ? "Light" : "Dark"} mode
-                    </Menu.Item>
-                  </>
-                )}
-                {hosting && room && !ended && room.stage === "playing" && (
-                  <Menu.Item onClick={askEndRound}>End round</Menu.Item>
-                )}
-                {hosting && room && !ended && (
-                  <Menu.Item color="red" onClick={askEndRoom}>
-                    End room
+            {/* Waiting to start, the room code and link are in the invite card, so
+                the menu would only hold the way out */}
+            {inLobby ? (
+              <Button
+                size="compact-sm"
+                variant="default"
+                color={hosting ? "red" : undefined}
+                disabled={busy}
+                ref={(button) => {
+                  endRef.current = button;
+                  leaveRef.current = button;
+                }}
+                onClick={hosting ? askEndRoom : askLeave}
+              >
+                {hosting ? "End game" : "Leave game"}
+              </Button>
+            ) : (
+              <Menu position="bottom-end" withinPortal>
+                <Menu.Target>
+                  <Button
+                    size="compact-sm"
+                    variant="default"
+                    aria-label={`Room ${active}, options`}
+                    rightSection={<IconChevronDown size={14} />}
+                    ref={(button) => {
+                      // The end round, end room and leave dialogs each return focus to their
+                      // own ref, so all of them point at this one button
+                      roomRef.current = button;
+                      roundRef.current = button;
+                      endRef.current = button;
+                      leaveRef.current = button;
+                    }}
+                  >
+                    Room {active}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconCopy size={ICON} />}
+                    onClick={copyLink}
+                  >
+                    Copy join link
                   </Menu.Item>
-                )}
-                {/* The host never leaves without ending, so this is for everyone else, and for the host once the room has ended */}
-                {(!hosting || ended) && (
-                  <>
-                    <Menu.Divider />
-                    <Menu.Item disabled={busy} onClick={askLeave}>
-                      Leave game
+                  {tableShown && (
+                    <>
+                      {/* The header's buttons, for a phone held sideways */}
+                      <Menu.Item
+                        className={table.menuExtra}
+                        leftSection={<IconConfetti size={ICON} />}
+                        onClick={playConfetti}
+                      >
+                        Unleash confetti
+                      </Menu.Item>
+                      <Menu.Item
+                        className={table.menuExtra}
+                        leftSection={
+                          colourScheme === "dark" ? (
+                            <IconSun size={ICON} />
+                          ) : (
+                            <IconMoon size={ICON} />
+                          )
+                        }
+                        onClick={() => {
+                          setColorScheme(
+                            colourScheme === "light" ? "dark" : "light",
+                          );
+                        }}
+                      >
+                        {colourScheme === "dark" ? "Light" : "Dark"} mode
+                      </Menu.Item>
+                    </>
+                  )}
+                  {hosting && room && !ended && room.stage === "playing" && (
+                    <Menu.Item
+                      leftSection={<IconPlayerStop size={ICON} />}
+                      onClick={askEndRound}
+                    >
+                      End round
                     </Menu.Item>
-                  </>
-                )}
-              </Menu.Dropdown>
-            </Menu>
+                  )}
+                  {hosting && room && !ended && (
+                    <Menu.Item
+                      color="red"
+                      leftSection={<IconDoorExit size={ICON} />}
+                      onClick={askEndRoom}
+                    >
+                      End room
+                    </Menu.Item>
+                  )}
+                  {/* The host never leaves without ending, so this is for everyone else, and for the host once the room has ended */}
+                  {(!hosting || ended) && (
+                    <>
+                      <Menu.Divider />
+                      <Menu.Item
+                        disabled={busy}
+                        leftSection={<IconLogout size={ICON} />}
+                        onClick={askLeave}
+                      >
+                        Leave game
+                      </Menu.Item>
+                    </>
+                  )}
+                </Menu.Dropdown>
+              </Menu>
+            )}
           </Group>
         )}
 

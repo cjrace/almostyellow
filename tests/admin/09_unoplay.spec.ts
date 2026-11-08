@@ -166,9 +166,12 @@ async function playRound(
     const players = page.getByRole("list", { name: "Players" });
     await expect(players.getByRole("listitem")).toHaveCount(2);
     await expect(players).toContainText("Laura");
+    // The lobby has the invite card, and one button as the way out
+    await expect(page.getByText(code, { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "End game" })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: `Room ${code}, options` }),
-    ).toHaveText(`Room ${code}`);
+      page.getByRole("button", { name: /^Room w{4}, options$/ }),
+    ).toHaveCount(0);
     await checkAccessibility?.(page);
     await page.getByRole("button", { name: "Start the round" }).click();
   });
@@ -406,8 +409,9 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
       guestPage.getByRole("heading", { name: "Waiting to start" }),
     ).toBeVisible();
     await guestPage.reload();
+    await expect(guestPage.getByText(code, { exact: true })).toBeVisible();
     await expect(
-      guestPage.getByRole("button", { name: `Room ${code}, options` }),
+      guestPage.getByRole("button", { name: "Leave game" }),
     ).toBeVisible();
     await expect(
       guestPage.getByRole("heading", { name: "Waiting to start" }),

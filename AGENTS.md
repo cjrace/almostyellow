@@ -22,6 +22,8 @@ pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 
 Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
+Suggestion: let CI run the Playwright tests rather than running them locally, as a push gives feedback sooner than a local build and run. It matters most in a worktree, where the app and emulators use fixed ports (3000, 8080 and 9099) that clash with other worktrees and sessions running at the same time. Run single specs locally only when working out a failure, with nothing else on those ports.
+
 Husky pre-commit hooks run Prettier automatically on staged files.
 
 CI (`.github/workflows/playwright.yml`) runs format, lint and unit tests, Firebase tests, and four Playwright shards in parallel. Each shard has its own emulators and 2 workers. A final job merges their reports and requires every shard to pass. `dep-comment.yml` tells Dependabot PRs to run `pnpm test` locally.
