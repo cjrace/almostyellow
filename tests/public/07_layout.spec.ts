@@ -10,12 +10,12 @@ for (const viewport of [desktop, { width: 1366, height: 650 }]) {
     () => {
       test.use({ viewport });
 
-      test("sees all eight games and their Play buttons without scrolling", async ({
+      test("sees all nine games and their Play buttons without scrolling", async ({
         page,
       }) => {
         await page.goto("/games");
         const play = page.getByRole("link", { name: /^Play / });
-        await expect(play).toHaveCount(8);
+        await expect(play).toHaveCount(9);
         for (const button of await play.all()) {
           await expect(button).toBeInViewport({ ratio: 1 });
         }
@@ -122,16 +122,17 @@ test.describe("A visitor on a phone", { tag: "@phone" }, () => {
   }) => {
     await page.goto("/games");
     const cards = page.locator("main article");
-    await expect(cards).toHaveCount(8);
+    await expect(cards).toHaveCount(9);
     await expect(cards.getByRole("heading", { level: 2 })).toHaveText([
+      "Boom Boom Pirate",
+      "Cow race",
       "Irish Bingo",
+      "Quiz buzzer",
+      "Red or Black v1",
       "Snakes and Ladders",
       "Suits",
-      "Uno tracker",
-      "Red or Black v1",
-      "Boom Boom Pirate",
-      "Quiz buzzer",
       "Uno",
+      "Uno tracker",
     ]);
 
     await expect(cards.filter({ hasText: "Experimental" })).toHaveCount(1);

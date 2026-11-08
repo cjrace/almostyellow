@@ -5,6 +5,7 @@ test.describe(
   { tag: "@desktop" },
   () => {
     for (const [game, title] of [
+      ["cowrace", "Cow race"],
       ["irishbingo", "Irish Bingo"],
       ["redorblack", "Red or Black v1"],
       ["suits", "Suits"],

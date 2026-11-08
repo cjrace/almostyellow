@@ -1,5 +1,6 @@
 import { test, expect } from "../playwright";
 import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
+import { mockConfetti } from "../confetti";
 // Distinct page layouts; game states and dialogs are exercised below.
 const publicRoutes = [
   "/",
@@ -129,6 +130,11 @@ for (const scheme of schemes) {
         dialog: "Quiz buzzer instructions",
       },
       {
+        path: "/games/cowrace",
+        button: "Open game instructions modal",
+        dialog: "Cow race instructions",
+      },
+      {
         path: "/games/irishbingo",
         button: "Open game instructions modal",
         dialog: "Irish Bingo instructions",
@@ -156,6 +162,37 @@ for (const scheme of schemes) {
         await expectNoUnexpectedAxeViolations(page);
       });
     }
+
+    test("Cow race setup, track and results pass accessibility checks", async ({
+      page,
+    }) => {
+      await mockConfetti(page);
+      await page.goto("/games/cowrace");
+      await expect(
+        page.getByRole("slider", { name: "Number of cows" }),
+      ).toBeVisible();
+      await expectNoUnexpectedAxeViolations(page);
+
+      // A long race, so the track is checked while the cows are still running
+      await page.getByText("Long", { exact: false }).first().click();
+      await page.getByRole("button", { name: "Start race" }).click();
+      await expect(
+        page.getByRole("button", { name: "Cancel race" }),
+      ).toBeVisible();
+      await expectNoUnexpectedAxeViolations(page);
+
+      await page.getByRole("button", { name: "Cancel race" }).click();
+      await page.getByText("Short", { exact: false }).first().click();
+      await page.getByRole("button", { name: "Start race" }).click();
+      await expect(page.getByTestId("winner")).toBeVisible({ timeout: 12000 });
+      const results = page.getByRole("dialog", { name: "Race results" });
+      await expect(results).toBeVisible();
+      // Axe would read the text mid-fade, which is not its real colour
+      await expect
+        .poll(() => results.evaluate((el) => getComputedStyle(el).opacity))
+        .toBe("1");
+      await expectNoUnexpectedAxeViolations(page);
+    });
 
     test("Called cards and catalogue values have accessible text", async ({
       page,
