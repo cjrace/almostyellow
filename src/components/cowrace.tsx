@@ -153,10 +153,9 @@ function Cow({ number, running }: { number: number; running: boolean }) {
 
 function ordinal(n: number) {
   const mod100 = n % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${n.toString()}th`;
-  const suffix = ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[
-    n % 10
-  ];
+  const suffixes: Record<number, string> = { 1: "st", 2: "nd", 3: "rd" };
+  const suffix =
+    mod100 >= 11 && mod100 <= 13 ? "th" : (suffixes[n % 10] ?? "th");
   return `${n.toString()}${suffix}`;
 }
 
