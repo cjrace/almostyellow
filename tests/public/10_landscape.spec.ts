@@ -43,6 +43,18 @@ for (const viewport of viewports) {
       await expectGameFits(page);
     });
 
+    test("sees all ten cows and the finish line without scrolling", async ({
+      page,
+    }) => {
+      await page.goto("/games/cowrace");
+      await expectGameFits(page);
+      await page.getByRole("slider", { name: "Number of cows" }).press("End");
+      await expectGameFits(page);
+      await page.getByRole("button", { name: "Start race" }).click();
+      await expect(page.getByTestId("finish")).toHaveCount(10);
+      await expectGameFits(page);
+    });
+
     test("sees the Snakes and Ladders board and dice without scrolling", async ({
       page,
     }) => {

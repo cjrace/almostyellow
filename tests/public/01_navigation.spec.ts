@@ -95,6 +95,17 @@ test.describe("A visitor on the homepage", () => {
       page.getByLabel("Back to our games list").click(),
     ]);
     await Promise.all([
+      page.waitForURL("/games/cowrace"),
+      page.getByRole("link", { name: "Cow race" }).click(),
+    ]);
+    await expect(page).toHaveTitle("Cow race | Almost Yellow");
+    await expect(page.locator("h1")).toContainText("Cow race");
+
+    await Promise.all([
+      page.waitForURL("/games"),
+      page.getByLabel("Back to our games list").click(),
+    ]);
+    await Promise.all([
       page.waitForURL("/"),
       page.getByRole("link", { name: "Home" }).click(),
     ]);
