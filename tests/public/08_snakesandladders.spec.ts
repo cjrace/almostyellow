@@ -42,7 +42,9 @@ test.describe("Someone setting up Snakes and Ladders", () => {
     await expect(second.getByRole("radio", { name: "Dog" })).toBeChecked();
 
     // Player 1 takes player 2's dog, so player 2 is given the free cat
-    await first.getByText("Dog").click({ force: true });
+    // Click the chip itself, as a person does. The "Dog" text inside it is a
+    // 1 pixel box for screen readers, which WebKit does not pass the click on from.
+    await first.locator("label", { hasText: "Dog" }).click();
     await expect(first.getByRole("radio", { name: "Dog" })).toBeChecked();
     await expect(second.getByRole("radio", { name: "Dog" })).toBeDisabled();
     await expect(second.getByRole("radio", { name: "Cat" })).toBeChecked();
