@@ -80,6 +80,17 @@ test.describe("A spectator at the cow race", () => {
       await expect(confettiBadge(page)).toBeVisible();
     });
 
+    await test.step("And each cow shows where it finished", async () => {
+      const places: string[] = [];
+      for (let cow = 1; cow <= 4; cow++) {
+        places.push(
+          (await page.getByTestId(`place-${cow.toString()}`).textContent()) ??
+            "",
+        );
+      }
+      expect(places.sort()).toEqual(["1st", "2nd", "3rd", "4th"]);
+    });
+
     await test.step("And the results list every cow once, in order", async () => {
       await tickUntilDialog(page, true);
       const results = page.getByRole("dialog", { name: "Race results" });
