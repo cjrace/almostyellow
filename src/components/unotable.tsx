@@ -252,6 +252,15 @@ export default function UnoTable({
     setWasMyTurn(myTurn);
     if (!myTurn) setPlayableOnly(false);
   }
+  // Uno said in advance goes with the play, so it stays until the hand changes
+  // or the turn passes. Clearing it as the card was tapped made Say Uno! flash
+  // back while the move was still being sent.
+  const [declaredAt, setDeclaredAt] = useState(handSize);
+  if (declaredAt !== handSize) {
+    setDeclaredAt(handSize);
+    if (declareUno) setDeclareUno(false);
+  }
+  if (declareUno && !myTurn) setDeclareUno(false);
   const filtered = canFilter && playableOnly && !settling;
   const shownHand = filtered
     ? mine.hand.filter((c) => mine.playableIds.includes(c.id))
@@ -263,7 +272,6 @@ export default function UnoTable({
       ?.getBoundingClientRect();
     if (from && !reducedMotion()) setFlight({ card, from });
     onPlay(card.id, colour, declareUno);
-    setDeclareUno(false);
     setWild(null);
     headingRef.current?.focus();
   };
