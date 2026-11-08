@@ -64,7 +64,7 @@ Running `pnpm test` needs one thing on top of Node and pnpm:
 
   On Mac use `brew install --cask temurin@21`, and on Linux install `openjdk-21-jdk` with your package manager.
 
-The tests use fixed ports, so stop `pnpm dev` (port 3000) and `pnpm emulators` (ports 8080 and 9099) before running them. If a port is in use the end to end script says which one.
+The tests use ports 3000 (the app), 8080 and 9099 (the emulators), plus 4400 and 4500 for the Firebase CLI. If any is busy, say another copy of the project is running them, the test scripts use the next free set instead (3010, 8090, 9109, 4410 and 4510, then 3020...) and say so. Only `pnpm emulators`, started by hand, always uses 8080 and 9099. `pnpm dev` likewise moves to the next free port.
 
 ### Running one set of tests
 

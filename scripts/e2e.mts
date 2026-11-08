@@ -8,8 +8,8 @@
 //
 // Settings come from tests/test-env.ts.
 import { spawnSync } from "node:child_process";
-import { connect } from "node:net";
 import "../tests/test-env.ts";
+import { runWithEmulators } from "./emulators.mts";
 
 const args = process.argv.slice(2);
 const build = !args.includes("--no-build");
@@ -17,38 +17,6 @@ const serve = args.includes("--serve");
 const playwrightArgs = args.filter(
   (arg) => arg !== "--no-build" && arg !== "--serve",
 );
-
-// Resolves true if something is already listening on the port
-function inUse(port: number) {
-  return new Promise<boolean>((resolve) => {
-    const socket = connect({ port, host: "127.0.0.1" });
-    socket.setTimeout(1000, () => socket.destroy());
-    socket.once("connect", () => {
-      socket.destroy();
-      resolve(true);
-    });
-    socket.once("error", () => resolve(false));
-  });
-}
-
-// Fail early and clearly rather than part way through the run. Another copy of
-// this script or a dev server would otherwise clash.
-const needed = {
-  3000: "the app",
-  8080: "the Firestore emulator",
-  9099: "the Auth emulator",
-};
-const clashes: string[] = [];
-for (const [port, what] of Object.entries(needed)) {
-  if (await inUse(Number(port))) clashes.push(`  port ${port} (${what})`);
-}
-if (clashes.length > 0) {
-  console.error(
-    `Cannot start, these ports are already in use:\n${clashes.join("\n")}\n` +
-      "Stop whatever is using them (a dev server or another test run) and try again.",
-  );
-  process.exit(1);
-}
 
 // emulators:exec runs its script through a shell, so quote any argument that
 // is not plain, such as --project="Google Chrome". Double quotes work in both
@@ -87,27 +55,14 @@ function buildApp() {
 
 let status = build ? buildApp() : 0;
 if (status === 0) {
-  // emulators:exec sets the emulator hosts for Playwright and next start, and
-  // stops the emulators when the tests finish. The CLI is run with node rather
-  // than through a shell, so the script reaches it as one argument.
+  // The emulators are set up for Playwright and next start, and stopped when
+  // the tests finish, on ports nothing else is using (scripts/ports.mts)
   const script = serve
     ? ["node scripts/serve-test.mts --seed"]
     : ["pnpm exec playwright test", ...playwrightArgs.map(quote)];
-  const result = spawnSync(
-    process.execPath,
-    [
-      "node_modules/firebase-tools/lib/bin/firebase.js",
-      "emulators:exec",
-      "--log-verbosity",
-      "QUIET",
-      "--project",
-      process.env.FIREBASE_PROJECT_ID ?? "",
-      "--only",
-      "auth,firestore",
-      script.join(" "),
-    ],
-    { stdio: "inherit" },
+  status = await runWithEmulators(
+    process.env.FIREBASE_PROJECT_ID ?? "",
+    script.join(" "),
   );
-  status = result.status ?? 1;
 }
 process.exit(status);

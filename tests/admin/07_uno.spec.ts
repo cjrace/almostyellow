@@ -12,6 +12,7 @@ import { getCredentials, getSecondCredentials } from "./helpers";
 import type { LocalData } from "../../src/uno/storage";
 import { expectNoUnexpectedAxeViolations, schemes, useScheme } from "../axe";
 import { expectClearOfBadge, mockConfetti, showConfetti } from "../confetti";
+import { BASE_URL } from "../ports.mts";
 
 const SYNC = { timeout: 30_000 };
 async function signIn(page: Page, credentials = getCredentials()) {
@@ -722,7 +723,7 @@ test.describe("Uno durable scoring", () => {
       test.slow();
       await useScheme(page, scheme);
       const context = await browser.newContext({
-        baseURL: "http://localhost:3000/",
+        baseURL: `${BASE_URL}/`,
       });
       const guest = waitsForHydration(await context.newPage());
       try {

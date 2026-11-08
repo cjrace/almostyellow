@@ -12,6 +12,7 @@ import { mockConfetti } from "../confetti";
 import { signIn } from "./helpers";
 import type { RoundState } from "../../src/unogame/engine/round";
 import { canPlayOn, type Card } from "../../src/unogame/engine/cards";
+import { BASE_URL } from "../ports.mts";
 
 // Cam hosts and plays on the page under test, and Laura joins from a second
 // browser, as on two phones. The cards are dealt at random, so the test only
@@ -25,7 +26,7 @@ const test = base.extend<{ guestPage: Page; thirdPage: Page }>({
   },
   guestPage: async ({ browser }, use) => {
     const context = await browser.newContext({
-      baseURL: "http://localhost:3000/",
+      baseURL: `${BASE_URL}/`,
     });
     const page = waitsForHydration(await context.newPage());
     await mockConfetti(page);
@@ -34,7 +35,7 @@ const test = base.extend<{ guestPage: Page; thirdPage: Page }>({
   },
   thirdPage: async ({ browser }, use) => {
     const context = await browser.newContext({
-      baseURL: "http://localhost:3000/",
+      baseURL: `${BASE_URL}/`,
     });
     const page = waitsForHydration(await context.newPage());
     await mockConfetti(page);

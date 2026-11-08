@@ -30,7 +30,7 @@ For a manual preview, `pnpm serve:test` uses the existing end-to-end runner to b
 
 - Node and pnpm, as for the rest of the project.
 - Java 21 or later for the Firestore emulator (stages 4 and 5). The [main README](../README.md#what-you-need-installed) says how to install it.
-- Ports 3000, 8080 and 9099 free, so stop `pnpm dev` and `pnpm emulators` first.
+- Ports 3000, 8080 and 9099 (plus 4400 and 4500) free, or the scripts use the next free set and say so. Stop a hand-started `pnpm emulators` first.
 
 ## Reading the output
 

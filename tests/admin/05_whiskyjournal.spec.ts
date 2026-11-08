@@ -1,13 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { test, expect, type Page } from "../playwright";
 import { getCredentials } from "./helpers";
+import { BASE_URL } from "../ports.mts";
 
 // Every test running at the same time shares the one journal, so this only
 // changes a whisky it adds itself, with a name of its own
 
 async function signInTo(page: Page, path: string) {
   const { email, password } = getCredentials();
-  await page.goto(`/admin/login?callbackUrl=http://localhost:3000${path}`);
+  await page.goto(`/admin/login?callbackUrl=${BASE_URL}${path}`);
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
   await Promise.all([
