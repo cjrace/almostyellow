@@ -57,7 +57,7 @@ Screenshots for PR descriptions go on the long-lived `pr-assets` branch, in a fo
   - `(homepage)/` — Home page (route group, no URL segment)
   - `admin/` — Protected admin area: whisky journal CRUD, film list CRUD, Chopin Liszt shopping list, holidays
   - `cocktails/`, `films/`, `whiskyjournal/`, `games/`, `decisionmaker/` — Public-facing features
-  - `games/` holds Boom Boom Pirate, Irish Bingo, Red or Black, Snakes and Ladders, Suits, the Uno tracker, online Uno and the quiz buzzer. Both Uno pages and the buzzer use Firestore
+  - `games/` holds Boom Boom Pirate, Cow race, Irish Bingo, Red or Black, Snakes and Ladders, Suits, the Uno tracker, online Uno and the quiz buzzer. Both Uno pages and the buzzer use Firestore
 - `src/components/` — All React components in a flat structure (no subdirectories)
 - `src/services/` — Server-side data functions for the whisky journal, film list and cocktails, using Firestore through the Admin SDK
 - `src/actions/` — Next.js server actions (`signInAction.ts`, `signOutAction.ts`, `firestoreTokenAction.ts`)
@@ -84,6 +84,10 @@ Both are public, so `src/services/whiskyjournal.ts` and `src/services/filmlist.t
 ### Chopin Liszt (Firestore)
 
 The shopping list reads and writes the `shoppingItems` collection straight from the browser (`src/components/chopinliszt.tsx`), with a live listener. Changes queue in memory while offline and are lost if the page closes with some unsent, so the page asks before unloading while any are waiting. The list needs a connection to open. The offline message also shows while the listener is serving cached data, as phones can report being online on a signal too weak to reach Firestore. The last change to reach Firestore wins, and a deleted item stays deleted. The Security Rules are the only check on these reads and writes, so test them in `tests/firebase/rules.test.ts`. The two-browser tests are in `tests/admin/04_chopinliszt_sync.spec.ts`; they share one list, so give any item a test adds a unique name.
+
+### Cow race
+
+The spectator race at `/games/cowrace` (`src/components/cowrace.tsx`) needs no server. `src/cowrace/race.ts` pre-rolls the whole race when it starts, with per-cow stretches and distinct finish times, so there are no ties and the finishing order is known up front. The animation only plays the plan back: a `requestAnimationFrame` loop writes `--p` (0 to 1) straight onto each cow, and the CSS places the cow with `calc(var(--p) * (100% - var(--cow-width)))`, so a finished cow touches the finish line at any width. Reduced motion steps the cows and skips confetti.
 
 ### Uno (Firestore)
 

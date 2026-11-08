@@ -184,6 +184,7 @@ export default function CowRace() {
   const cancelRace = () => {
     setStatus("Race cancelled");
     setPlan(null);
+    setLeader(null);
     focusTargetRef.current = "start";
     setPhase("setup");
   };

@@ -145,6 +145,10 @@ test.describe("A spectator at the cow race", () => {
     await expect(page.getByTestId("winner")).toHaveCount(0);
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByRole("status")).toHaveText("Race cancelled");
+    // No lane is left highlighted as the leader
+    await expect(
+      page.getByTestId("lanes").locator("[class*='lead']"),
+    ).toHaveCount(0);
   });
 
   test("sees each cow stay on the track and finish on the line at any width", async ({
