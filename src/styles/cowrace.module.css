@@ -1,0 +1,358 @@
+/* The cow race. It fills the height the page leaves it (cardgame.module.css's
+   .screen) and never scrolls. One bar of controls sits above a track that is
+   always on screen, so the cows wait at the start while the race is set up.
+   Every cow's position is a fraction from 0 to 1 in --p, measured along the
+   lane between the start and the finish line, so a cow at 1 sits against the
+   finish line whatever the width */
+
+.space {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: var(--mantine-spacing-sm);
+  min-height: 0;
+}
+
+/* The controls, the status and the buttons share one row on wide screens and
+   stack on a phone. Both views keep the same height so the track never jumps */
+.bar {
+  display: grid;
+  align-items: end;
+  gap: var(--mantine-spacing-sm) var(--mantine-spacing-lg);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@mixin larger-than $mantine-breakpoint-sm {
+  .bar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+}
+
+.barAction {
+  min-width: 10rem;
+}
+
+/* Cancel, or the buttons after the race, fill the bar's last column */
+.barStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--mantine-spacing-md);
+  min-height: 2.75rem;
+  align-content: center;
+}
+
+.barButtons {
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+}
+
+.barButtons > * {
+  flex: 1 1 0;
+}
+
+@mixin larger-than $mantine-breakpoint-sm {
+  .barStatus {
+    grid-column: 1 / 3;
+  }
+
+  .barButtons > * {
+    flex: none;
+  }
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: min-content;
+  border-radius: var(--mantine-radius-md);
+  overflow: hidden;
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-4));
+  background: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-8)
+  );
+}
+
+/* Start and Finish, above the ends of the lanes */
+.marks,
+.lane {
+  display: grid;
+  grid-template-columns: var(--name-width, 4.5rem) minmax(0, 1fr) 0.75rem;
+  align-items: center;
+}
+
+.marks {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+  background: light-dark(
+    var(--mantine-color-gray-2),
+    var(--mantine-color-dark-6)
+  );
+}
+
+.markLabels {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 0.3rem;
+}
+
+/* A size container, so the lanes can share the height left. The zero basis
+   matters, as in cardgame.module.css's .table */
+.lanes {
+  flex: 1 1 0;
+  /* Never so short that lanes are cut off: the page scrolls instead */
+  min-height: max(8rem, calc(var(--n) * 1.25rem));
+  container-type: size;
+}
+
+.lanesInner {
+  --cow: min(5.5rem, calc(100cqh / var(--n) - 0.25rem));
+  --cow-width: calc(var(--cow) * 64 / 44);
+
+  display: grid;
+  grid-template-rows: repeat(var(--n), minmax(0, 1fr));
+  height: 100cqh;
+}
+
+.lane {
+  min-height: 0;
+  height: 100%;
+  background: light-dark(
+    var(--mantine-color-gray-1),
+    var(--mantine-color-dark-7)
+  );
+  transition: background-color 0.2s;
+}
+
+.lane:nth-child(even) {
+  background: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-8)
+  );
+}
+
+/* Whoever is in front, and then the winner */
+.lane.lead {
+  background: light-dark(var(--mantine-color-orange-1), rgb(253 126 20 / 22%));
+}
+
+.laneName {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding-left: 0.4rem;
+  font-size: clamp(0.7rem, 36% + 0.1rem, 0.9rem);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-dark-0));
+}
+
+.lead .laneName {
+  color: light-dark(var(--mantine-color-gray-9), var(--mantine-color-orange-3));
+}
+
+.field {
+  position: relative;
+  height: 100%;
+  /* The start line, then a faint mark every tenth of the way */
+  border-left: 3px solid
+    light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-3));
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 9.9%,
+    light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 8%)) 9.9% 10%
+  );
+}
+
+.cow {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--p, 0) * (100% - var(--cow-width)));
+  width: var(--cow-width);
+  height: var(--cow);
+  translate: 0 -50%;
+}
+
+/* A chequered strip. A cow at 1 stops where the strip begins */
+.finish {
+  height: 100%;
+  background: repeating-conic-gradient(
+      var(--mantine-color-black) 0 25%,
+      var(--mantine-color-white) 0 50%
+    )
+    0 0 / 0.75rem 0.75rem;
+}
+
+.cowImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
+}
+
+.trot {
+  animation: trot 0.35s ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+
+@keyframes trot {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  to {
+    transform: translateY(-6%) rotate(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trot {
+    animation: none;
+  }
+
+  .lane {
+    transition: none;
+  }
+}
+
+.results {
+  margin: 0;
+  padding: 0;
+  list-style-position: inside;
+}
+
+.results li {
+  padding-block: 0.2rem;
+  break-inside: avoid;
+}
+
+/* Keeps the names lined up whether or not there is a trophy */
+.trophy {
+  display: inline-block;
+  width: 1.5rem;
+  margin-inline: 0.3rem;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+/* A short screen has room for more across than down */
+@media (max-height: 30rem) {
+  .results {
+    columns: 2;
+    column-gap: 1.5rem;
+  }
+}
+
+/* Phones are narrow, so the lane names shrink */
+@mixin smaller-than $mantine-breakpoint-sm {
+  .marks,
+  .lane {
+    --name-width: 3.6rem;
+  }
+}
+
+/* The numbers under the slider, which a short screen cannot spare. The label
+   above still says how many cows there are */
+.slider {
+  margin-bottom: 1.4rem;
+}
+
+@media (max-height: 30rem) {
+  .slider {
+    margin-bottom: 0.25rem;
+  }
+
+  .markLabel {
+    display: none;
+  }
+}
+
+/* The winner hops on the spot */
+.won .cow {
+  z-index: 1;
+}
+
+.won .cowImage {
+  animation: hop 0.45s ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+
+@keyframes hop {
+  from {
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    transform: translateY(-12%) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .won .cowImage {
+    animation: none;
+    transform: scale(1.12);
+  }
+}
+
+/* A phone held sideways has plenty of width and very little height, so the
+   controls move into a narrow column beside the track and the track takes
+   the whole height. Nothing scrolls */
+@media (orientation: landscape) and (max-height: 30rem) {
+  .game {
+    flex-direction: row;
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .bar {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    flex: none;
+    width: 13rem;
+    gap: var(--mantine-spacing-xs);
+  }
+
+  .barStatus {
+    grid-column: auto;
+    min-height: 0;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .barButtons {
+    flex-direction: column;
+  }
+
+  .barButtons > * {
+    flex: none;
+  }
+
+  .barAction {
+    min-width: 0;
+  }
+
+  /* "Short", not "Short (5s)", so the three fit side by side */
+  .seconds {
+    display: none;
+  }
+
+  .track {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
