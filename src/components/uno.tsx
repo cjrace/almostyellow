@@ -5,9 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   IconChevronDown,
+  IconCheck,
   IconChevronLeft,
   IconConfetti,
+  IconCopy,
   IconDeviceGamepad2,
+  IconHourglass,
   IconMoon,
   IconSun,
 } from "@tabler/icons-react";
@@ -22,6 +25,7 @@ import {
   Menu,
   Modal,
   NativeSelect,
+  Paper,
   Stack,
   Text,
   TextInput,
@@ -72,6 +76,8 @@ interface Saved {
 
 // The online game: joining, the lobby and the table. The server decides
 // everything; this shows what it publishes and sends what the player chooses.
+const JOIN_COPIED = "Join link copied.";
+
 export default function Uno({
   config,
   initialCode,
@@ -484,14 +490,25 @@ export default function Uno({
     return (
       <Stack gap="sm" className={table.bottomActions}>
         {hosting ? (
-          <Stack gap={4}>
-            <Text id={reasonId} size="sm" c="dimmed">
-              {unseen.length > 0
-                ? `Waiting for ${unseen.map((p) => p.name).join(", ")} to see who won.`
-                : players.length < MIN_PLAYERS
-                  ? `Wait for at least ${String(MIN_PLAYERS)} players.`
-                  : `${String(players.length)} players are ready.`}
-            </Text>
+          <Stack gap="sm">
+            <Group gap="xs" wrap="nowrap" align="center">
+              {unseen.length > 0 || players.length < MIN_PLAYERS ? (
+                <IconHourglass size={20} aria-hidden="true" />
+              ) : (
+                <IconCheck
+                  size={20}
+                  aria-hidden="true"
+                  color="var(--mantine-color-teal-6)"
+                />
+              )}
+              <Text id={reasonId} fw={600}>
+                {unseen.length > 0
+                  ? `Waiting for ${unseen.map((p) => p.name).join(", ")} to see who won.`
+                  : players.length < MIN_PLAYERS
+                    ? `Wait for at least ${String(MIN_PLAYERS)} players.`
+                    : `${String(players.length)} players are ready.`}
+              </Text>
+            </Group>
             <Button
               disabled={
                 busy ||
@@ -533,7 +550,7 @@ export default function Uno({
       await navigator.clipboard.writeText(
         `${location.origin}/games/uno?room=${active}`,
       );
-      setNotice("Join link copied.");
+      setNotice(JOIN_COPIED);
     });
   const askEndRound = () => {
     setAbandoning(true);
@@ -817,6 +834,35 @@ export default function Uno({
             <Title order={2} size="h3">
               {room.stage === "lobby" ? "Waiting to start" : "Round over"}
             </Title>
+            {/* Inviting is part of waiting, so it is here to use, not in a menu */}
+            {room.stage === "lobby" && (
+              <Paper withBorder p="sm" radius="md">
+                <Group justify="space-between" gap="sm">
+                  <Stack gap={0}>
+                    <Text size="sm" c="dimmed">
+                      Room code
+                    </Text>
+                    <Text fw={700} fz="xl" style={{ letterSpacing: "0.15em" }}>
+                      {room.code}
+                    </Text>
+                  </Stack>
+                  <Button
+                    variant="default"
+                    disabled={busy}
+                    leftSection={
+                      notice === JOIN_COPIED ? (
+                        <IconCheck size={16} />
+                      ) : (
+                        <IconCopy size={16} />
+                      )
+                    }
+                    onClick={copyLink}
+                  >
+                    {notice === JOIN_COPIED ? "Link copied" : "Copy join link"}
+                  </Button>
+                </Group>
+              </Paper>
+            )}
             {room.stage === "finished" &&
               room.view?.outcome &&
               (room.view.outcome.type === "win" ? (
