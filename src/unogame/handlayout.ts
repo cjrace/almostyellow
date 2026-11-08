@@ -12,8 +12,8 @@ export const SHORT_SCREEN = 400;
 export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
 // A card's width as a share of the screen's height, so the hand grows with the
-// space it has: about 64 pixels on a phone held sideways, 100 on a tall one
-export const CARD_HEIGHT_SHARE = 0.16;
+// space it has: about 80 pixels on a phone held sideways, 120 on a tall one
+export const CARD_HEIGHT_SHARE = 0.2;
 // Part of a card's width, from its left edge, that is never covered. The
 // corner label sits inside it.
 export const CORNER_STRIP = 0.26;

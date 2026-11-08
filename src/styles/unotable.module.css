@@ -75,12 +75,16 @@
   flex-wrap: nowrap;
 }
 
-/* The player whose turn it is has a thick outline, and says "Playing", so it
-   never relies on colour alone. Only one thing on the table is filled with the
-   bright colour at a time: the button that is the move to make. */
+/* The player whose turn it is fills solid, and says "Playing", so it never
+   relies on colour alone */
 .opponent[data-current] {
-  border: 2px solid #c2410c;
-  padding-block: 0;
+  background: #c2410c;
+  border-color: #c2410c;
+  color: #fff;
+}
+
+.opponent[data-current] p {
+  color: #fff;
 }
 
 /* Someone who can be caught for not saying Uno is the most urgent seat on the
@@ -172,7 +176,12 @@
   justify-content: center;
   gap: var(--mantine-spacing-md);
   /* Two piles of 5 by 7 and the gap between them also have to fit the width */
-  height: min(100cqh, 20rem, calc(0.7 * (100cqw - var(--mantine-spacing-md))));
+  height: min(
+    100cqh,
+    20rem,
+    var(--pile-max, 20rem),
+    calc(0.7 * (100cqw - var(--mantine-spacing-md)))
+  );
   max-width: 100cqw;
 }
 
@@ -599,6 +608,8 @@
 
   /* The piles take the height left between the strip and your hand */
   .page .table {
+    /* The piles are the smaller part: the hand is the main action */
+    --pile-max: 36vh;
     grid-column: 1 / 5;
     grid-row: 3;
     min-height: 0;
@@ -680,13 +691,14 @@
   }
 }
 
-/* Whose turn it is. Your turn gets a thick outline and the words "Your turn";
+/* Whose turn it is. Your turn is a solid pill with the words "Your turn";
    everyone else's turn is quieter. */
 .heading[data-myturn] {
   display: inline-block;
   margin-bottom: 6px;
   padding: 0 var(--mantine-spacing-sm);
-  border: 2px solid #c2410c;
+  background: #c2410c;
+  color: #fff;
   border-radius: var(--mantine-radius-md);
 }
 

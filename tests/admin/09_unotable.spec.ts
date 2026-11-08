@@ -450,7 +450,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     );
   });
 
-  test("Everyone is in one strip in seat order, with the current player outlined", async ({
+  test("Everyone is in one strip in seat order, with the current player filled", async ({
     page,
   }) => {
     const { show } = await openTable(page, "two-players");
@@ -461,8 +461,7 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
     await expect(you).toBeVisible();
     await expect(you).toContainText("Playing");
-    await expect(you).toHaveCSS("border-top-color", "rgb(194, 65, 12)");
-    await expect(you).toHaveCSS("border-top-width", "2px");
+    await expect(you).toHaveCSS("background-color", "rgb(194, 65, 12)");
     await expect(
       strip.getByRole("listitem", { name: "Laura, 7 cards" }),
     ).toBeVisible();

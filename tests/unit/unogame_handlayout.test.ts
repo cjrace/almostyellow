@@ -115,7 +115,7 @@ describe("fanLayout", () => {
   });
 
   it("sizes the cards by the screen's height, up to the largest", () => {
-    // A phone held sideways gets cards of about 64 pixels, not much smaller
+    // A phone held sideways gets cards of about 80 pixels, not much smaller
     // than a tall screen's
     for (const viewportHeight of [402, 448, 599, 600]) {
       const { cardWidth } = fanLayout({
