@@ -906,6 +906,11 @@
     position: relative;
   }
 
+  /* The piles give way to the hand, which is the main action */
+  .table {
+    --pile-max: 13rem;
+  }
+
   .roomRow {
     position: absolute;
     top: 4px;

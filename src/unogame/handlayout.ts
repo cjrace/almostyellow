@@ -13,7 +13,7 @@ export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
 // A card is at most this share of the hand's width, which is what limits it on
 // a phone held upright
-export const WIDTH_SHARE = 0.19;
+export const WIDTH_SHARE = 0.23;
 // A phone held sideways (500 pixels tall or less, as in unotable.module.css)
 // gives the hand more: a card's width is this share of the screen's height,
 // about 80 pixels at 402
@@ -35,7 +35,7 @@ export const LIFT = 12;
 // card shows at least this much and is easy to tap. Up to COMFORT_ROWS rows;
 // a bigger hand narrows the strips down to MIN_TARGET instead.
 export const COMFORT_STEP = 40;
-export const COMFORT_ROWS = 3;
+export const COMFORT_ROWS = 4;
 export const COMFORT_HEIGHT = 600;
 
 export interface HandLayout {

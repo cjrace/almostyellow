@@ -148,7 +148,7 @@ describe("fanLayout", () => {
     ).toBe(Math.round(800 * 0.16));
   });
 
-  it("sizes cards on a phone held upright by the width, at 19% of it", () => {
+  it("sizes cards on a phone held upright by the width, at 23% of it", () => {
     expect(
       fanLayout({ width: 360, viewportHeight: 780, count: 7 }).cardWidth,
     ).toBe(Math.round(360 * WIDTH_SHARE));
