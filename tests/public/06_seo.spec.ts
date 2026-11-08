@@ -51,6 +51,20 @@ for (const { path } of publicRoutes) {
   });
 }
 
+test("A shared Uno room link shows the challenge picture", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/games/uno?room=ABCD");
+  const image = await page
+    .locator('meta[property="og:image"]')
+    .first()
+    .getAttribute("content");
+  expect(image).toBe(`${siteUrl}/images/uno-challenge.jpg`);
+  const response = await request.get("/images/uno-challenge.jpg");
+  expect(response.headers()["content-type"]).toBe("image/jpeg");
+});
+
 test("Every page has its own title and description", async ({ page }) => {
   const titles: string[] = [];
   const descriptions: string[] = [];

@@ -13,7 +13,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { room } = await searchParams;
   return {
-    ...pageMetadata("Uno", "Play Uno online with friends in a private room."),
+    ...pageMetadata("Uno", "Play Uno online with friends in a private room.", {
+      url: "/images/uno-challenge.jpg",
+      width: 1200,
+      height: 630,
+      alt: "Almo the cow points and says: I challenge you to Uno!",
+    }),
     robots: room ? { index: false, follow: false } : undefined,
   };
 }
