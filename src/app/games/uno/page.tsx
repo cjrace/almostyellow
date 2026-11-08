@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import { Title } from "@mantine/core";
 import Header from "@/components/header";
 import Uno from "@/components/uno";
+import {
+  UnoInstructionsProvider,
+  UnoTitle,
+} from "@/components/unoinstructions";
 import { firebaseClientConfig, getSession } from "@/auth";
 import { pageMetadata } from "@/metadata";
 import layout from "@/styles/cardgame.module.css";
@@ -35,15 +38,17 @@ export default async function UnoPage({
   const { room } = await searchParams;
   const session = await getSession();
   return (
-    <div className={layout.screen}>
-      <Header noCrumbs game title={<Title>Uno</Title>} />
-      <main id="main-content">
-        <Uno
-          config={firebaseClientConfig()}
-          initialCode={room ?? ""}
-          host={!!session}
-        />
-      </main>
-    </div>
+    <UnoInstructionsProvider>
+      <div className={layout.screen}>
+        <Header noCrumbs game title={<UnoTitle />} />
+        <main id="main-content">
+          <Uno
+            config={firebaseClientConfig()}
+            initialCode={room ?? ""}
+            host={!!session}
+          />
+        </main>
+      </div>
+    </UnoInstructionsProvider>
   );
 }

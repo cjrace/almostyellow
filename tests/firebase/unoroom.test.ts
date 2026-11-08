@@ -789,6 +789,7 @@ describe("saving a room to the Uno tracker", () => {
     const saved = await room(code);
     const id = trackerGameId(code, saved.expiresAt);
     expect(saved.trackerGameId).toBe(id);
+    expect(saved.phase).toBe("ended");
     const game = (await adminDb().doc(`unoGames/${id}`).get()).data();
     expect(game).toMatchObject({
       cam: 1,

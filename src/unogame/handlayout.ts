@@ -11,6 +11,14 @@ export const MIN_CARD_WIDTH = 58;
 export const SHORT_SCREEN = 400;
 export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
+// A card is at most this share of the hand's width, which is what limits it on
+// a phone held upright
+export const WIDTH_SHARE = 0.23;
+// A phone held sideways (500 pixels tall or less, as in unotable.module.css)
+// gives the hand more: a card's width is this share of the screen's height,
+// about 80 pixels at 402
+export const LANDSCAPE_SCREEN = 500;
+export const LANDSCAPE_CARD_HEIGHT_SHARE = 0.2;
 // Part of a card's width, from its left edge, that is never covered. The
 // corner label sits inside it.
 export const CORNER_STRIP = 0.26;
@@ -27,7 +35,7 @@ export const LIFT = 12;
 // card shows at least this much and is easy to tap. Up to COMFORT_ROWS rows;
 // a bigger hand narrows the strips down to MIN_TARGET instead.
 export const COMFORT_STEP = 40;
-export const COMFORT_ROWS = 3;
+export const COMFORT_ROWS = 4;
 export const COMFORT_HEIGHT = 600;
 
 export interface HandLayout {
@@ -49,8 +57,13 @@ export function fanLayout(options: {
         viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
         // Tall screens have room for bigger cards
         Math.min(
-          width * 0.17,
-          viewportHeight * (viewportHeight >= 600 ? 0.16 : 0.13),
+          width * WIDTH_SHARE,
+          viewportHeight *
+            (viewportHeight <= LANDSCAPE_SCREEN
+              ? LANDSCAPE_CARD_HEIGHT_SHARE
+              : viewportHeight >= 600
+                ? 0.16
+                : 0.13),
         ),
       ),
     ),

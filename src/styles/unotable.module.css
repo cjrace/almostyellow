@@ -87,6 +87,27 @@
   color: #fff;
 }
 
+/* Someone who can be caught for not saying Uno is the most urgent seat on the
+   table, so it is filled, and says "Uno?" */
+.opponent[data-catch] {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+.opponent[data-catch] p {
+  color: #fff;
+}
+
+/* Things that only exist in a phone held sideways */
+.pageHead > .back,
+.landscapeTitle,
+.infoButton,
+.opponent .backs,
+.more {
+  display: none;
+}
+
 .status {
   display: inline-flex;
   align-items: center;
@@ -104,6 +125,41 @@
   white-space: nowrap;
 }
 
+/* The colour in play tints the table and rings the discard pile, as well as
+   the shape on the pile's corner, so it is seen at a glance after a wild */
+.table[data-colour="red"] {
+  --in-play: #d62828;
+}
+
+.table[data-colour="yellow"] {
+  --in-play: #f5c518;
+}
+
+.table[data-colour="green"] {
+  --in-play: #2a9d4a;
+}
+
+.table[data-colour="blue"] {
+  --in-play: #1f5fd1;
+}
+
+.table[data-colour] {
+  border-radius: var(--mantine-radius-lg);
+  /* Reaches nothing at every edge, so it fades into the page */
+  background: radial-gradient(
+    ellipse closest-side at center,
+    color-mix(in srgb, var(--in-play) 22%, transparent) 0%,
+    color-mix(in srgb, var(--in-play) 13%, transparent) 35%,
+    color-mix(in srgb, var(--in-play) 4%, transparent) 70%,
+    transparent 100%
+  );
+}
+
+.table[data-colour] [data-uno-pile="discard"] > div {
+  border-radius: 6%;
+  box-shadow: 0 0 0 4px var(--in-play);
+}
+
 /* A size container, so the piles take the height that is left */
 .table {
   display: grid;
@@ -119,7 +175,12 @@
   justify-content: center;
   gap: var(--mantine-spacing-md);
   /* Two piles of 5 by 7 and the gap between them also have to fit the width */
-  height: min(100cqh, 20rem, calc(0.7 * (100cqw - var(--mantine-spacing-md))));
+  height: min(
+    100cqh,
+    20rem,
+    var(--pile-max, 20rem),
+    calc(0.7 * (100cqw - var(--mantine-spacing-md)))
+  );
   max-width: 100cqw;
 }
 
@@ -338,7 +399,7 @@
   }
 }
 
-/* Saying Uno matters right now: the button fills in and pulses three times,
+/* Saying Uno matters right now: the button pulses three times,
    and does not move at all when reduced motion is on */
 .controls button[data-ready] {
   animation: sayUnoPulse 1.2s ease-out 3;
@@ -346,7 +407,7 @@
 
 @keyframes sayUnoPulse {
   from {
-    box-shadow: 0 0 0 0 var(--mantine-color-orange-6);
+    box-shadow: 0 0 0 0 var(--mantine-color-gray-6);
   }
 
   to {
@@ -361,92 +422,126 @@
 }
 
 /* A phone on its side is wide but short, so the portrait stack would push the
-   hand below the fold. Here the page has a side column down the left (the game
-   title, the room code and the room buttons) with the table beside it. In the
-   table, the turn, the other players and your buttons are on the left, the
-   piles on the right, and your hand runs across the bottom. */
+   hand below the fold. Here the site's header is hidden (global.css) and one
+   slim strip runs across the top: back, whose turn it is, the other players as
+   seats, the info and Scores buttons, and the room menu. Below it the piles are
+   in the middle of the screen, with your buttons in a column on the right, at
+   the bottom and within reach of a thumb, and your hand runs across the bottom
+   at full width.
+   The page, its head, the table and its board are all display: contents, so
+   every piece is a cell of one grid and is placed by line. */
 @media (orientation: landscape) and (max-height: 500px) {
   .page {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 6.5rem;
-    column-gap: var(--mantine-spacing-md);
-    align-items: start;
-    align-content: start;
-  }
-
-  /* The side column is on the right, with the table on the left */
-  .pageHead {
-    grid-column: 2;
-    grid-row: 1;
-    gap: var(--mantine-spacing-xs);
-    min-width: 0;
-  }
-
-  .stage {
-    grid-column: 1;
-    grid-row: 1;
-    min-width: 0;
-  }
-
-  /* The room button fills the side column */
-  .roomRow {
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 4px;
-  }
-
-  .board {
-    display: grid;
-    grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 8.5rem;
-    column-gap: var(--mantine-spacing-md);
-    row-gap: 4px;
-    margin-top: 0;
-  }
-
-  .board > * {
-    grid-column: 1;
-  }
-
-  /* Whose turn it is, with Scores beside it and the colour under both */
-  div.head {
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+    /* A row for notices, the strip, the table and the hand. The table keeps
+       enough height to draw from, so on a screen too short for everything (a
+       small phone at 200% zoom) the page scrolls instead of the piles
+       shrinking to nothing. */
+    grid-template-rows: auto auto minmax(5rem, 1fr) auto;
     column-gap: var(--mantine-spacing-xs);
     row-gap: 0;
+    align-content: stretch;
+    max-width: none;
+    padding-inline: 0;
   }
 
-  div.head > div:first-child {
+  .page > .pageHead,
+  .page > .stage,
+  .page > .stage > div,
+  .page .board,
+  .page div.head,
+  .page div.head > div {
     display: contents;
   }
 
-  .head h2 {
-    grid-column: 1;
+  /* Notices ("Reconnecting", "Join link copied") take a row of their own, which
+     is empty, so has no height, until there is one */
+  .pageHead > * {
+    grid-column: 1 / -1;
     grid-row: 1;
+  }
+
+  /* Those notices are in one box, so they stack rather than overlap */
+  .notices {
+    margin-bottom: 4px;
+  }
+
+  /* The site's header is hidden, so the page has its own back button and a
+     title for screen readers */
+  .page .pageHead > .back {
+    display: inline-flex;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: center;
+    width: 3.25rem;
+    height: 2.25rem;
+    min-width: 0;
+  }
+
+  .landscapeTitle {
+    display: block;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .page .pageHead > .roomRow {
+    grid-column: 6;
+    grid-row: 2;
+    align-self: center;
+    justify-content: flex-end;
+  }
+
+  /* Whose turn it is, on one line */
+  .page .head h2 {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    margin: 0;
+    white-space: nowrap;
     --title-fz: var(--mantine-font-size-lg) !important;
   }
 
-  .head > div:last-child {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .head p {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  /* The colour in play is on the table, so its words are only read out */
+  .page .head p {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
-    font-size: var(--mantine-font-size-xs);
   }
 
-  /* Each other player is a small pill, not a box */
-  .opponents {
+  .page .infoButton {
+    display: flex;
+    grid-column: 4;
     grid-row: 2;
+    align-self: center;
+  }
+
+  .page .scoresButton {
+    grid-column: 5;
+    grid-row: 2;
+    align-self: center;
+  }
+
+  /* The other players sit along the top, up to two rows, and scroll inside
+     their box when there are more. It follows the turn. */
+  .page .opponents {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: center;
+    position: relative;
     flex-wrap: wrap;
-    align-content: flex-start;
+    align-content: center;
     gap: 4px;
-    overflow-x: visible;
+    overflow-x: hidden;
     overflow-y: auto;
     max-height: 3.4rem;
     padding: 0;
@@ -485,16 +580,86 @@
     display: none;
   }
 
-  /* Your buttons are in their own column beside the piles, within reach of a
-     thumb, and tall enough to tap */
-  .controls {
-    grid-column: 3;
-    grid-row: 1 / 4;
-    align-self: center;
+  /* A few card backs stand for the hand, in place of the icon */
+  .cardsIcon {
+    display: none;
+  }
+
+  .opponent .backs {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Only a few seats show, and "+2" stands for the rest, so the strip stays on
+     one line. The others are still read out. */
+  .opponent[data-extra] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    padding: 0;
+    border: 0;
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 8px;
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-xl);
+    font-size: var(--mantine-font-size-sm);
+    font-weight: 700;
+    color: var(--mantine-color-dimmed);
+  }
+
+  .backs i {
+    display: none;
+    width: 9px;
+    height: 13px;
+    margin-inline-end: -4px;
+    border: 1px solid var(--mantine-color-text);
+    border-radius: 2px;
+    background: var(--mantine-color-default-border);
+  }
+
+  .backs[data-count="1"] i:nth-child(-n + 1),
+  .backs[data-count="2"] i:nth-child(-n + 2),
+  .backs[data-count="3"] i:nth-child(-n + 3) {
+    display: block;
+  }
+
+  .backs[data-count] {
+    margin-inline-end: 4px;
+  }
+
+  /* The piles take the height left between the strip and your hand */
+  .page .table {
+    /* The piles are the smaller part: the hand is the main action */
+    --pile-max: 36vh;
+    /* Across the whole width, so the piles sit in the middle of the screen;
+       the buttons sit on top of its right-hand end */
+    grid-column: 1 / -1;
+    grid-row: 3;
+    min-height: 0;
+    margin-block: 4px;
+  }
+
+  /* Your buttons are in their own column beside the piles, at the bottom,
+     within reach of a thumb, and tall enough to tap */
+  .page .controls {
+    grid-column: 5 / 7;
+    grid-row: 3;
+    position: relative;
+    z-index: 1;
+    align-self: end;
+    justify-self: stretch;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: stretch;
     gap: var(--mantine-spacing-xs);
+    margin-block: 4px 12px;
+    min-width: 8.5rem;
   }
 
   .controls > button {
@@ -507,59 +672,14 @@
     text-align: center;
   }
 
-  /* Two lines at most, so a wider font cannot push the hand down. The whole
-     text is still there for screen readers. */
-  .reason {
-    margin: 0;
-    font-size: var(--mantine-font-size-xs);
-    line-height: 1.25;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-  }
-
-  /* A smaller swatch, so it does not cover the colour name on a small card */
-  .pileSwatch {
-    top: -0.6rem;
-    right: -0.6rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  /* The piles take the height the left side gives them */
-  .table {
-    grid-column: 2;
-    grid-row: 1 / 4;
-    min-height: 0;
-  }
-
-  .hand {
+  /* The hand fills the bottom, at the full width of the screen */
+  .page .hand {
     grid-column: 1 / -1;
     grid-row: 4;
   }
-}
 
-/* Small phones, such as 667 by 320: everything above, but tighter */
-@media (orientation: landscape) and (max-height: 400px) {
-  .pageHead {
-    gap: 4px;
-  }
-
-  .roomRow button,
-  .head button {
-    --button-height: 1.625rem !important;
-    --button-fz: var(--mantine-font-size-xs) !important;
-    --button-padding-x: var(--mantine-spacing-xs) !important;
-  }
-
-  /* "Colour: Red · clockwise" */
-  .inPlay {
-    display: none;
-  }
-
-  /* The hints are still read out as each button's description, but there is
-     no room to show them */
+  /* The hints under the buttons are still read out as each button's
+     description, but there is no room to show them */
   .reason {
     position: absolute;
     width: 1px;
@@ -569,9 +689,60 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+
+  /* A smaller swatch, so it does not cover the colour name on a small card */
+  .pileSwatch {
+    top: -0.6rem;
+    right: -0.6rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
-/* Whose turn it is. Your turn gets a thick outline and the words "Your turn";
+/* Small phones, such as 667 by 320: everything above, but tighter */
+@media (orientation: landscape) and (max-height: 400px) {
+  .page .pageHead > .back,
+  .roomRow button,
+  .head button {
+    --button-height: 1.625rem !important;
+    --button-fz: var(--mantine-font-size-xs) !important;
+    --button-padding-x: var(--mantine-spacing-xs) !important;
+  }
+
+  .page .pageHead > .back {
+    height: 1.75rem;
+  }
+
+  .controls > button {
+    min-height: 2.25rem;
+  }
+}
+
+/* Narrow as well as short, such as a phone at 200% zoom: the strip has no room
+   left for the seats beside the buttons, so they get a row of their own under
+   it, and the table and hand move down a row. The page scrolls if it must. */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 600px) {
+  .page {
+    grid-template-rows: auto auto auto minmax(5rem, 1fr) auto;
+  }
+
+  .page .opponents {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 4px;
+  }
+
+  .page .table,
+  .page .controls {
+    grid-row: 4;
+  }
+
+  .page .hand {
+    grid-row: 5;
+  }
+}
+
+/* Whose turn it is. Your turn is a solid pill with the words "Your turn";
    everyone else's turn is quieter. */
 .heading[data-myturn] {
   display: inline-block;
@@ -784,6 +955,11 @@
 @media (max-width: 47.99em) and (orientation: portrait) {
   .page {
     position: relative;
+  }
+
+  /* The piles give way to the hand, which is the main action */
+  .table {
+    --pile-max: 13rem;
   }
 
   .roomRow {

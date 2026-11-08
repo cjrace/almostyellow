@@ -145,6 +145,8 @@ async function playRound(
     await expect(
       page.getByRole("button", { name: "Start the round" }),
     ).toBeDisabled();
+    // The Room button became the way out, and focus stayed on it
+    await expect(page.getByRole("button", { name: "End game" })).toBeFocused();
   });
 
   await test.step("When a guest joins from the link", async () => {
@@ -161,15 +163,21 @@ async function playRound(
     await expect(
       guest.getByText("Waiting for the host to start the round."),
     ).toBeVisible();
+    await expect(
+      guest.getByRole("button", { name: "Leave game" }),
+    ).toBeFocused();
   });
 
   await test.step("Then the host sees both players and can start", async () => {
     const players = page.getByRole("list", { name: "Players" });
     await expect(players.getByRole("listitem")).toHaveCount(2);
     await expect(players).toContainText("Laura");
+    // The lobby has the invite card, and one button as the way out
+    await expect(page.getByText(code, { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "End game" })).toBeVisible();
     await expect(
-      page.getByRole("button", { name: `Room ${code}, options` }),
-    ).toHaveText(`Room ${code}`);
+      page.getByRole("button", { name: /^Room \w{4}, options$/ }),
+    ).toHaveCount(0);
     await checkAccessibility?.(page);
     await page.getByRole("button", { name: "Start the round" }).click();
   });
@@ -267,6 +275,8 @@ async function playRound(
       .getByRole("button", { name: "End room" })
       .click();
     await expect(guest.getByText("This room has ended.")).toBeVisible();
+    // Ending the room leaves it too
+    await expect(page).toHaveURL((url) => url.pathname === "/games");
   });
 }
 
@@ -341,12 +351,10 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
 
     await test.step("When the host ends the round", async () => {
       await page.getByRole("button", { name: /^Room \w{4}, options$/ }).click();
-      await page.getByRole("menuitem", { name: "Leave game" }).click();
-      const warning = page.getByRole("dialog", { name: "Leave this round?" });
-      await expect(warning).toContainText("You host this room");
-      await page.keyboard.press("Escape");
-      await expect(warning).toBeHidden();
-      await page.getByRole("button", { name: /^Room \w{4}, options$/ }).click();
+      // The host never leaves without ending
+      await expect(
+        page.getByRole("menuitem", { name: "Leave game" }),
+      ).toHaveCount(0);
       await page.getByRole("menuitem", { name: "End round" }).click();
       const dialog = page.getByRole("dialog", { name: "End this round?" });
       await expect(dialog).toBeVisible();
@@ -407,8 +415,9 @@ test.describe("Playing Uno online", { tag: "@no-android" }, () => {
       guestPage.getByRole("heading", { name: "Waiting to start" }),
     ).toBeVisible();
     await guestPage.reload();
+    await expect(guestPage.getByText(code, { exact: true })).toBeVisible();
     await expect(
-      guestPage.getByRole("button", { name: `Room ${code}, options` }),
+      guestPage.getByRole("button", { name: "Leave game" }),
     ).toBeVisible();
     await expect(
       guestPage.getByRole("heading", { name: "Waiting to start" }),

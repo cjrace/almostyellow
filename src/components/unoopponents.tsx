@@ -23,6 +23,9 @@ interface UnoOpponentsProps {
   unoPlayer: string | null; // Anyone sitting on one card without saying Uno
 }
 
+// How many seats show on a phone held sideways
+const SHOWN_SEATS = 3;
+
 // Everyone in the round, in seat order, with their card count and whose turn it
 // is. The turn is a filled pill with the word "Playing", and "UNO!" stays on
 // anyone down to one card who has said it, so none of it depends on colour.
@@ -56,6 +59,34 @@ export default function UnoOpponents({
     };
   }, [players.length]);
 
+  // When the list scrolls, keep whoever is playing in view as the turn moves
+  useEffect(() => {
+    const list = listRef.current;
+    const current = list?.querySelector<HTMLElement>("[data-current]");
+    if (!list || !current) return;
+    // Measured against the list itself, as it is not a positioned parent
+    const box = list.getBoundingClientRect();
+    const at = current.getBoundingClientRect();
+    const top =
+      list.scrollTop + (at.top - box.top) - (box.height - at.height) / 2;
+    const left =
+      list.scrollLeft + (at.left - box.left) - (box.width - at.width) / 2;
+    list.scrollTo({ top: Math.max(0, top), left: Math.max(0, left) });
+  }, [currentPlayer, players.length]);
+
+  // A phone held sideways has room for a few seats, so the rest become "+N".
+  // You, whoever is playing and anyone who can be caught always show.
+  const shown = new Set(
+    [me, currentPlayer, unoPlayer].filter(
+      (id): id is string => !!id && players.some((p) => p.id === id),
+    ),
+  );
+  for (const player of players) {
+    if (shown.size >= SHOWN_SEATS) break;
+    shown.add(player.id);
+  }
+  const hidden = players.length - shown.size;
+
   return (
     <ul
       ref={listRef}
@@ -77,6 +108,8 @@ export default function UnoOpponents({
             key={player.id}
             className={styles.opponent}
             data-current={current ? "" : undefined}
+            data-catch={unoPlayer === player.id ? "" : undefined}
+            data-extra={shown.has(player.id) ? undefined : ""}
             aria-label={`${label}, ${cards}${current ? ", playing now" : ""}${said ? ", said Uno" : ""}${unoPlayer === player.id ? ", can be caught for Uno" : ""}`}
           >
             <Text
@@ -89,7 +122,17 @@ export default function UnoOpponents({
             </Text>
             <Group gap="0 xs" justify="space-between" aria-hidden="true">
               <Group gap={6} wrap="nowrap">
-                <IconCards size={18} />
+                {/* A few card backs stand for the hand when the seats sit
+                    along the top of a phone held sideways */}
+                <span
+                  className={styles.backs}
+                  data-count={Math.min(player.cards, 3)}
+                >
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <IconCards size={18} className={styles.cardsIcon} />
                 <Text>
                   {player.cards}
                   <span className={styles.unit}>
@@ -127,6 +170,15 @@ export default function UnoOpponents({
           </li>
         );
       })}
+      {hidden > 0 ? (
+        <li
+          className={styles.more}
+          aria-hidden="true"
+          title={`${String(hidden)} more ${hidden === 1 ? "player" : "players"}`}
+        >
+          +{hidden}
+        </li>
+      ) : null}
     </ul>
   );
 }

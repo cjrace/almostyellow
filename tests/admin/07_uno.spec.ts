@@ -780,24 +780,26 @@ test.describe("Uno durable scoring", () => {
           await expect(dialog.getByLabel("Who is Cam?")).toHaveValue(/.+/);
           await expect(dialog).toContainText("Cam (Cam): 2, Laura (Laura): 1");
           await expectNoUnexpectedAxeViolations(page);
-          await dialog.getByRole("button", { name: "Save to tracker" }).click();
+          await expect(dialog).toContainText("ends the room for everyone");
+          await dialog
+            .getByRole("button", { name: "Save and end room" })
+            .click();
         });
 
-        await test.step("And the button becomes 'Saved to tracker' for good", async () => {
-          await expect(
-            page.getByRole("button", { name: "Saved to tracker" }),
-          ).toBeDisabled();
+        await test.step("And the room ends for both of them, leaving a link to the history", async () => {
+          await expect(page.getByText("This room has ended.")).toBeVisible();
+          await expect(guest.getByText("This room has ended.")).toBeVisible();
           // Focus moves on to the link, as the button can no longer be used
           await expect(
             page.getByRole("link", { name: "View in tracker history" }),
           ).toBeFocused();
-          await expect(
-            page.getByRole("button", { name: "Save to tracker" }),
-          ).toHaveCount(0);
+          await expect(page.getByRole("button", { name: /Save/ })).toHaveCount(
+            0,
+          );
           await page.reload();
           await expect(
-            page.getByRole("button", { name: "Saved to tracker" }),
-          ).toBeDisabled();
+            page.getByRole("link", { name: "View in tracker history" }),
+          ).toBeVisible();
         });
 
         await test.step("And the game is in the tracker history once", async () => {

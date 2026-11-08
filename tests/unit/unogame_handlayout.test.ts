@@ -4,12 +4,14 @@ import {
   COMFORT_ROWS,
   COMFORT_STEP,
   CORNER_STRIP,
+  LANDSCAPE_CARD_HEIGHT_SHARE,
   MIN_TARGET,
   MAX_CARD_WIDTH,
   MIN_CARD_WIDTH,
   ROW_STRIP,
   SHORT_MIN_CARD_WIDTH,
   SHORT_SCREEN,
+  WIDTH_SHARE,
   fanLayout,
 } from "@/unogame/handlayout";
 
@@ -121,5 +123,34 @@ describe("fanLayout", () => {
     expect(tall.cardWidth).toBeGreaterThan(justUnder.cardWidth);
     const tallest = fanLayout({ width: 1600, viewportHeight: 1200, count: 7 });
     expect(tallest.cardWidth).toBe(MAX_CARD_WIDTH);
+  });
+
+  it("gives a phone held sideways bigger cards, and leaves other screens alone", () => {
+    for (const viewportHeight of [320, 402, 448, 500]) {
+      const { cardWidth } = fanLayout({
+        width: 1100,
+        viewportHeight,
+        count: 7,
+      });
+      expect(cardWidth).toBe(
+        Math.max(
+          viewportHeight < 400 ? 46 : 58,
+          Math.round(viewportHeight * LANDSCAPE_CARD_HEIGHT_SHARE),
+        ),
+      );
+    }
+    // Above that the sizes are as they were
+    expect(
+      fanLayout({ width: 1100, viewportHeight: 501, count: 7 }).cardWidth,
+    ).toBe(Math.max(58, Math.round(501 * 0.13)));
+    expect(
+      fanLayout({ width: 1100, viewportHeight: 800, count: 7 }).cardWidth,
+    ).toBe(Math.round(800 * 0.16));
+  });
+
+  it("sizes cards on a phone held upright by the width, at 23% of it", () => {
+    expect(
+      fanLayout({ width: 360, viewportHeight: 780, count: 7 }).cardWidth,
+    ).toBe(Math.round(360 * WIDTH_SHARE));
   });
 });
