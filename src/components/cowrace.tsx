@@ -151,6 +151,15 @@ function Cow({ number, running }: { number: number; running: boolean }) {
   );
 }
 
+function ordinal(n: number) {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n.toString()}th`;
+  const suffix = ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[
+    n % 10
+  ];
+  return `${n.toString()}${suffix}`;
+}
+
 export default function CowRace() {
   const reducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>("setup");
@@ -160,6 +169,8 @@ export default function CowRace() {
   const [status, setStatus] = useState("");
   const [resultsOpen, setResultsOpen] = useState(false);
   const [leader, setLeader] = useState<number | null>(null);
+  // How many cows have crossed the line, so each can show where it came
+  const [home, setHome] = useState(0);
 
   const cowRef = useRef<(HTMLDivElement | null)[]>([]);
   const cancelRef = useRef<HTMLButtonElement>(null);
@@ -176,6 +187,7 @@ export default function CowRace() {
     setPlan(planRace(cowCount, duration));
     setStatus("The race has started");
     setLeader(null);
+    setHome(0);
     setResultsOpen(false);
     focusTargetRef.current = "cancel";
     setPhase("racing");
@@ -198,6 +210,8 @@ export default function CowRace() {
     let elapsed = 0;
     let halfway = false;
     let showing: number | null = null;
+    let arrived = 0;
+    const times = [...plan.finishTimes].sort((a, b) => a - b);
 
     const show = (seconds: number) => {
       plan.cows.forEach((_, cow) => {
@@ -221,6 +235,13 @@ export default function CowRace() {
         showing = front;
         setLeader(front);
       }
+      // Redraw once per cow that crosses the line
+      let crossed = arrived;
+      while (crossed < times.length && elapsed >= times[crossed]) crossed++;
+      if (crossed !== arrived) {
+        arrived = crossed;
+        setHome(crossed);
+      }
       if (!halfway && elapsed >= plan.duration / 2) {
         halfway = true;
         setStatus(`${name(front)} is in the lead`);
@@ -229,6 +250,7 @@ export default function CowRace() {
         show(plan.duration);
         const first = finishingOrder(plan)[0];
         setLeader(first);
+        setHome(times.length);
         setStatus(`${name(first)} wins the race`);
         focusTargetRef.current = "again";
         setPhase("finished");
@@ -444,6 +466,16 @@ export default function CowRace() {
                         number={cow}
                         running={phase === "racing" && !reducedMotion}
                       />
+                      {order.indexOf(cow) < home && (
+                        <span
+                          className={layout.place}
+                          data-place={order.indexOf(cow) + 1}
+                          data-testid={`place-${(cow + 1).toString()}`}
+                          aria-hidden="true"
+                        >
+                          {ordinal(order.indexOf(cow) + 1)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className={layout.finish} data-testid="finish" />
