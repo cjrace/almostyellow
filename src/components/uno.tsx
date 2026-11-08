@@ -758,8 +758,8 @@ export default function Uno({
             {inLobby ? (
               <Button
                 size="compact-sm"
-                variant={hosting ? "outline" : "default"}
-                color={hosting ? "red" : undefined}
+                variant={hosting ? "filled" : "default"}
+                color={hosting ? "red.9" : undefined}
                 disabled={busy}
                 ref={(button) => {
                   endRef.current = button;
