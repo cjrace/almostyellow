@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 /* Point at the Firebase emulators, never production */
 import "./tests/test-env";
+/* The app's port, which moves when the usual one is busy (scripts/ports.mts) */
+import { BASE_URL } from "./tests/ports.mts";
 
 /* Vitest has separate runners for unit and Firebase tests. */
 const vitestTests = ["unit/**", "firebase/**"];
@@ -47,7 +49,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:3000/",
+    baseURL: `${BASE_URL}/`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -89,7 +91,7 @@ export default defineConfig({
   webServer: {
     // Runs next start, hiding the error 03_server_actions causes on purpose
     command: "node scripts/serve-test.mts",
-    url: "http://localhost:3000/",
+    url: `${BASE_URL}/`,
     reuseExistingServer: false,
   },
 });

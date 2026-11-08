@@ -1,5 +1,6 @@
 import { test, expect } from "../playwright";
 import { getCredentials, getUnauthorisedCredentials } from "./helpers";
+import { BASE_URL } from "../ports.mts";
 
 async function tryLogin(
   page: import("@playwright/test").Page,
@@ -51,9 +52,7 @@ test("An expired session on an open page leads back to sign-in", async ({
 }) => {
   const { email, password } = getCredentials();
 
-  await page.goto(
-    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
-  );
+  await page.goto(`/admin/login?callbackUrl=${BASE_URL}/admin/chopinliszt`);
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
   await Promise.all([

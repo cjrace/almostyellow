@@ -7,6 +7,7 @@ import {
 } from "../playwright";
 import { getCredentials, getSecondCredentials } from "./helpers";
 import { users } from "../firebase/fixtures";
+import { BASE_URL } from "../ports.mts";
 
 // How the list behaves for the people using it, each tested below:
 //
@@ -32,7 +33,7 @@ import { users } from "../firebase/fixtures";
 const test = base.extend<{ bobPage: Page }>({
   bobPage: async ({ browser }, use) => {
     const context = await browser.newContext({
-      baseURL: "http://localhost:3000/",
+      baseURL: `${BASE_URL}/`,
     });
     await use(waitsForHydration(await context.newPage()));
     await context.close();
@@ -52,9 +53,7 @@ async function openList(
   page: Page,
   { email, password }: { email: string; password: string },
 ) {
-  await page.goto(
-    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
-  );
+  await page.goto(`/admin/login?callbackUrl=${BASE_URL}/admin/chopinliszt`);
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);
   await Promise.all([
@@ -311,9 +310,7 @@ test("Opening the list without signal says it needs a connection", async ({
     await page.context().setOffline(true);
     await route.abort("internetdisconnected");
   });
-  await page.goto(
-    "/admin/login?callbackUrl=http://localhost:3000/admin/chopinliszt",
-  );
+  await page.goto(`/admin/login?callbackUrl=${BASE_URL}/admin/chopinliszt`);
   const { email, password } = getCredentials();
   await page.getByPlaceholder("e.g. simply@thebest.co.uk").fill(email);
   await page.getByPlaceholder("Enter password").fill(password);

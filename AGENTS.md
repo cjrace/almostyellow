@@ -3,7 +3,7 @@
 ## Commands
 
 ```bash
-pnpm dev           # Start dev server (auto-opens browser at localhost:3000)
+pnpm dev           # Start dev server on port 3000, or the next free one, and open the browser (--no-open to skip that)
 pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
 pnpm test-only     # The same without reformatting files or rebuilding the app
@@ -20,7 +20,7 @@ Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) 
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts
 ```
 
-Playwright will not reuse a server already on port 3000, so stop `pnpm dev` first. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
+Playwright never reuses a server already running, so a dev server cannot be mistaken for the test one. The app (3000) and the emulators (8080 and 9099, plus the Firebase hub on 4400 and log on 4500) use those ports when they are free, as on CI. When any is busy, such as another worktree or session running, `scripts/ports.mts` moves all of them up together by 10 until a set is free, shares it with everything the run starts (`E2E_PORT_OFFSET` and `PORT`), and says so; set `E2E_PORT_OFFSET` to choose one yourself. Specs and the config take the site's address from `tests/ports.mts` (`BASE_URL`, `ENCODED_BASE_URL` for a `callbackUrl` in a URL), never a written-out `localhost:3000`. `pnpm serve:test` and `pnpm dev` print the address they end up on, so read it rather than assuming 3000, and pass `--no-open` to `pnpm dev` in an automated session. Locally it runs 4 browsers at once, as more starves them and makes tests time out at random. The HTML report is not opened automatically; view it with `pnpm exec playwright show-report`.
 
 Husky pre-commit hooks run Prettier automatically on staged files.
 
@@ -167,4 +167,4 @@ pnpm emulators         # Start the emulators by hand, for example while writing 
 - `firebase.json`, `firestore.rules` and `firestore.indexes.json` configure the emulators and rules.
 - `tests/firebase/fixtures.ts` holds the synthetic users and records, and `tests/firebase/seed.ts` resets the emulators to them. Seeding happens before every test, so each starts from the same data.
 - `tests/firebase/guard.ts` refuses to run unless the project is one of the two `demo-` projects, both emulator hosts are local, Security Rules are loaded and no Google or Firebase credentials are set. Its own tests are in `tests/unit/firebase_guard.test.ts`.
-- `pnpm test` and `pnpm test-only` run `pnpm test:firebase` after the unit tests, so Java is needed for them. The emulators use fixed ports (8080 and 9099), so stop `pnpm emulators` first. The files share one emulator, so they run one at a time.
+- `pnpm test` and `pnpm test-only` run `pnpm test:firebase` after the unit tests, so Java is needed for them. `pnpm test:firebase` and `pnpm test:rules` pick free ports the same way (`scripts/emulators.mts`); `pnpm emulators` by hand always uses the ports in `firebase.json` (8080 and 9099), so stop it first. The files share one emulator, so they run one at a time.

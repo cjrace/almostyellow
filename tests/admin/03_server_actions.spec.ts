@@ -1,12 +1,11 @@
 import { test, expect, request, type Page } from "../playwright";
 import { getCredentials } from "./helpers";
+import { BASE_URL } from "../ports.mts";
 
 // Server actions are plain POSTs, so anyone can send one without going through
 // the site. This captures the real request the Chopin Liszt page makes for the
 // token that signs the browser in to Firestore, then replays it outside the
 // browser with and without a valid session cookie.
-
-const BASE_URL = "http://localhost:3000";
 
 // A Firebase custom token is a JWT, so starts with an encoded JSON header
 const TOKEN = /eyJ[\w-]+\.eyJ/;

@@ -1,4 +1,5 @@
 import { test, expect } from "../playwright";
+import { ENCODED_BASE_URL } from "../ports.mts";
 
 test.describe("A visitor on the homepage", () => {
   test("can open the cocktails page and come back", async ({ page }) => {
@@ -133,9 +134,7 @@ test.describe("A visitor on the homepage", () => {
     await page.goto("/");
 
     await Promise.all([
-      page.waitForURL(
-        "/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
-      ),
+      page.waitForURL(`/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin`),
       page.getByRole("link", { name: "Admin stuff" }).click(),
     ]);
     await expect(page).toHaveTitle("Login | Almost Yellow");
