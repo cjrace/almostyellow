@@ -696,7 +696,7 @@
 .heading[data-myturn] {
   display: inline-block;
   margin-bottom: 6px;
-  padding: 0 var(--mantine-spacing-sm);
+  padding: 2px var(--mantine-spacing-sm);
   background: #c2410c;
   color: #fff;
   border-radius: var(--mantine-radius-md);

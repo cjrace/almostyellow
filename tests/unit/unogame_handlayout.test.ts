@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  CARD_HEIGHT_SHARE,
   CARD_RATIO,
   COMFORT_ROWS,
   COMFORT_STEP,
   CORNER_STRIP,
+  LANDSCAPE_CARD_HEIGHT_SHARE,
   MIN_TARGET,
   MAX_CARD_WIDTH,
   MIN_CARD_WIDTH,
@@ -114,22 +114,36 @@ describe("fanLayout", () => {
     expect(short.cardWidth).toBeLessThan(tall.cardWidth);
   });
 
-  it("sizes the cards by the screen's height, up to the largest", () => {
-    // A phone held sideways gets cards of about 80 pixels, not much smaller
-    // than a tall screen's
-    for (const viewportHeight of [402, 448, 599, 600]) {
+  it("gives screens 600 pixels tall or more bigger cards, up to the largest", () => {
+    const justUnder = fanLayout({ width: 1100, viewportHeight: 599, count: 7 });
+    const tall = fanLayout({ width: 1100, viewportHeight: 600, count: 7 });
+    expect(tall.cardWidth).toBe(Math.round(600 * 0.16));
+    expect(justUnder.cardWidth).toBe(Math.round(599 * 0.13));
+    expect(tall.cardWidth).toBeGreaterThan(justUnder.cardWidth);
+    const tallest = fanLayout({ width: 1600, viewportHeight: 1200, count: 7 });
+    expect(tallest.cardWidth).toBe(MAX_CARD_WIDTH);
+  });
+
+  it("gives a phone held sideways bigger cards, and leaves other screens alone", () => {
+    for (const viewportHeight of [320, 402, 448, 500]) {
       const { cardWidth } = fanLayout({
         width: 1100,
         viewportHeight,
         count: 7,
       });
-      expect(cardWidth).toBe(Math.round(viewportHeight * CARD_HEIGHT_SHARE));
+      expect(cardWidth).toBe(
+        Math.max(
+          viewportHeight < 400 ? 46 : 58,
+          Math.round(viewportHeight * LANDSCAPE_CARD_HEIGHT_SHARE),
+        ),
+      );
     }
-    const taller = fanLayout({ width: 1100, viewportHeight: 800, count: 7 });
-    expect(taller.cardWidth).toBeGreaterThan(
-      fanLayout({ width: 1100, viewportHeight: 600, count: 7 }).cardWidth,
-    );
-    const tallest = fanLayout({ width: 1600, viewportHeight: 1200, count: 7 });
-    expect(tallest.cardWidth).toBe(MAX_CARD_WIDTH);
+    // Above that the sizes are as they were
+    expect(
+      fanLayout({ width: 1100, viewportHeight: 501, count: 7 }).cardWidth,
+    ).toBe(Math.max(58, Math.round(501 * 0.13)));
+    expect(
+      fanLayout({ width: 1100, viewportHeight: 800, count: 7 }).cardWidth,
+    ).toBe(Math.round(800 * 0.16));
   });
 });

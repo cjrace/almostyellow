@@ -11,9 +11,11 @@ export const MIN_CARD_WIDTH = 58;
 export const SHORT_SCREEN = 400;
 export const SHORT_MIN_CARD_WIDTH = 46;
 export const MAX_CARD_WIDTH = 132;
-// A card's width as a share of the screen's height, so the hand grows with the
-// space it has: about 80 pixels on a phone held sideways, 120 on a tall one
-export const CARD_HEIGHT_SHARE = 0.2;
+// A phone held sideways (500 pixels tall or less, as in unotable.module.css)
+// gives the hand more: a card's width is this share of the screen's height,
+// about 80 pixels at 402
+export const LANDSCAPE_SCREEN = 500;
+export const LANDSCAPE_CARD_HEIGHT_SHARE = 0.2;
 // Part of a card's width, from its left edge, that is never covered. The
 // corner label sits inside it.
 export const CORNER_STRIP = 0.26;
@@ -51,7 +53,15 @@ export function fanLayout(options: {
       Math.max(
         viewportHeight < SHORT_SCREEN ? SHORT_MIN_CARD_WIDTH : MIN_CARD_WIDTH,
         // Tall screens have room for bigger cards
-        Math.min(width * 0.17, viewportHeight * CARD_HEIGHT_SHARE),
+        Math.min(
+          width * 0.17,
+          viewportHeight *
+            (viewportHeight <= LANDSCAPE_SCREEN
+              ? LANDSCAPE_CARD_HEIGHT_SHARE
+              : viewportHeight >= 600
+                ? 0.16
+                : 0.13),
+        ),
       ),
     ),
   );
