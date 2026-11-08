@@ -772,6 +772,36 @@ test.describe("Looking at the Uno table in a real room", () => {
     });
   });
 
+  test("A host whose room is still loading after a reload is not offered Leave game", async ({
+    page,
+  }) => {
+    await openTable(page, "two-players");
+
+    await test.step("Given the page is reloaded while the room is still on its way", async () => {
+      // Held, not refused: Firestore takes about ten seconds to give up on a
+      // request, and calls a refused one offline at once
+      await page.route(
+        (url) => url.host === process.env.FIRESTORE_EMULATOR_HOST,
+        () => new Promise<void>(() => undefined),
+      );
+      await page.reload();
+    });
+
+    await test.step("Then the menu has no Leave game, which would abandon a live room", async () => {
+      const menu = page.getByRole("button", { name: /^Room \w{4}, options$/ });
+      await expect(menu).toBeVisible();
+      await menu.focus();
+      await page.keyboard.press("Enter");
+      await expect(
+        page.getByRole("menuitem", { name: "Copy join link" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("menuitem", { name: "Leave game" }),
+      ).toHaveCount(0);
+      await page.unrouteAll({ behavior: "ignoreErrors" });
+    });
+  });
+
   test("Notices stack instead of covering each other on a phone held sideways", async ({
     page,
     context,

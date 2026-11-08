@@ -106,6 +106,8 @@ export default function Uno({
   const [hosting, setHosting] = useState(false);
   const [client, setClient] = useState<GuestClient | null>(null);
   const [room, setRoom] = useState<UnoRoom | null>(null);
+  // The room could not be read, as opposed to not having arrived yet
+  const [gone, setGone] = useState(false);
   const [hand, setHand] = useState<UnoHand | null>(null);
   const [cached, setCached] = useState(true);
   const [online, setOnline] = useState(true);
@@ -217,8 +219,10 @@ export default function Uno({
       },
       () => {
         // The listener has stopped, so what was last shown is no longer live.
-        // With no room, the menu offers the way out.
+        // The host is then offered the way out, which is not the case while the
+        // room is only still loading.
         setRoom(null);
+        setGone(true);
         setCached(true);
         setError(
           "This room is unavailable, ended, expired, or you have been removed.",
@@ -352,6 +356,7 @@ export default function Uno({
     window.history.replaceState(null, "", `?room=${next.code}`);
     focusRoomRef.current = true;
     focusLobbyRef.current = true;
+    setGone(false);
   }
 
   async function run(operation: () => Promise<void>): Promise<boolean> {
@@ -836,9 +841,11 @@ export default function Uno({
                     </Menu.Item>
                   )}
                   {/* The host never leaves without ending, so this is for everyone
-                      else, and for the host once the room has ended or when
-                      there is no room to end (not joined yet, or deleted) */}
-                  {(!hosting || ended || !room) && (
+                      else, and for the host once the room has ended, when there
+                      is no room to end (not joined yet, or it could not be
+                      read). Not while it is still loading after a reload, as
+                      leaving then would abandon a live room. */}
+                  {(!hosting || ended || !playerId || gone) && (
                     <>
                       <Menu.Divider />
                       <Menu.Item
