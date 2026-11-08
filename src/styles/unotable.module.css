@@ -826,3 +826,54 @@
     grid-row: 2;
   }
 }
+
+/* A move has been sent and the table has not changed yet. Only the card
+   images fade, as the draw pile does when you cannot draw, so the count, the
+   "New" tag and the buttons keep their contrast. The buttons are also marked
+   aria-disabled, and the words in .sending say why. The pill floats above the
+   confetti credit so it never moves the layout. */
+.board[data-sending] .hand img,
+.board[data-sending] .pileButton img {
+  filter: grayscale(1) brightness(0.55);
+  opacity: 0.75;
+}
+
+.board[data-sending] .hand,
+.board[data-sending] .controls,
+.board[data-sending] .pileButton {
+  pointer-events: none;
+}
+
+.sendingStatus {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--confetti-gap) + var(--mantine-spacing-xs));
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sending {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  padding: 4px var(--mantine-spacing-md);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-xl);
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sending svg {
+    animation: sendingSpin 1s linear infinite;
+  }
+}
+
+@keyframes sendingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

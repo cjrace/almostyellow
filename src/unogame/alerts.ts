@@ -10,6 +10,7 @@ export interface TableAlert {
 }
 
 const SPECIAL_MS = 2500;
+const DREW_MS = 2000;
 const SAID_UNO_MS = 4000;
 const CAUGHT_MS = 5000;
 
@@ -66,6 +67,23 @@ export function tableAlerts(
             tone: "special",
             ms: SPECIAL_MS,
             text: `${name(event.player)} ${event.player === me ? "miss" : "misses"} a go`,
+          });
+        break;
+      // Your own draw is shown by the card turning over above the pile
+      case "drew":
+        if (event.player !== me)
+          alerts.push({
+            tone: "special",
+            ms: DREW_MS,
+            text: `${name(event.player)} drew ${event.count === 1 ? "a card" : plural(event.count)}`,
+          });
+        break;
+      case "kept":
+        if (event.player !== me)
+          alerts.push({
+            tone: "special",
+            ms: DREW_MS,
+            text: `${name(event.player)} kept the card they drew`,
           });
         break;
       case "uno-declared":

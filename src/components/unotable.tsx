@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
 import {
   ActionIcon,
   Button,
@@ -47,6 +47,10 @@ interface UnoTableProps {
   version: number;
   // The clock, so the catch button can wait out the protected time
   now: number;
+  // The next move is refused until then, so everyone sees the last one
+  turnReadyAt: number;
+  // A move has been sent and the table has not changed yet
+  sending?: "sending" | "slow" | null;
   onInstructions: () => void;
   onPlay: (
     cardId: number,
@@ -72,6 +76,8 @@ export default function UnoTable({
   events,
   version,
   now,
+  turnReadyAt,
+  sending = null,
   onInstructions,
   onPlay,
   onDraw,
@@ -150,6 +156,8 @@ export default function UnoTable({
 
   const playing = view.phase === "playing";
   const myTurn = playing && view.currentPlayer === me;
+  // A short pause after the turn passes, in which nobody can move
+  const settling = myTurn && now < turnReadyAt && !view.drawPending;
   const heading = !playing
     ? view.outcome?.type === "win"
       ? view.outcome.winner === me
@@ -166,18 +174,22 @@ export default function UnoTable({
     ? "the round is over"
     : !myTurn
       ? "not your turn"
-      : view.drawPending
-        ? "play the card you drew, or keep it"
-        : "does not match the top card";
+      : settling
+        ? "wait a moment"
+        : view.drawPending
+          ? "play the card you drew, or keep it"
+          : "does not match the top card";
   const drawReason = !playing
     ? "The round is over."
     : !myTurn
       ? `Waiting for ${names[view.currentPlayer]} to play.`
-      : view.drawPending
-        ? "Play the card you drew, or keep it."
-        : mine.playableIds.length > 0
-          ? "You have a card you can play, so you cannot draw."
-          : "";
+      : settling
+        ? "One moment, so everyone can see the last move."
+        : view.drawPending
+          ? "Play the card you drew, or keep it."
+          : mine.playableIds.length > 0
+            ? "You have a card you can play, so you cannot draw."
+            : "";
   const canDraw = drawReason === "";
   // Nothing in your hand can be played, so the only move is to draw
   const mustDraw =
@@ -223,7 +235,11 @@ export default function UnoTable({
 
   return (
     <div className={layout.game}>
-      <div className={styles.board}>
+      <div
+        className={styles.board}
+        data-sending={sending ? "" : undefined}
+        aria-busy={sending ? true : undefined}
+      >
         <Group
           justify="space-between"
           align="flex-start"
@@ -278,6 +294,16 @@ export default function UnoTable({
         <VisuallyHidden>
           <div role="status">{announcement}</div>
         </VisuallyHidden>
+        {/* The words are what tell you, not the dimming. The region is always
+            there so a screen reader hears it appear. */}
+        <div role="status" className={styles.sendingStatus}>
+          {sending ? (
+            <span className={styles.sending}>
+              <IconLoader2 aria-hidden="true" size={16} />
+              {sending === "slow" ? "Still sending…" : "Sending…"}
+            </span>
+          ) : null}
+        </div>
 
         <UnoOpponents
           players={seats}
@@ -294,10 +320,11 @@ export default function UnoTable({
                 type="button"
                 className={styles.pileButton}
                 data-attention={mustDraw ? "" : undefined}
-                aria-disabled={!canDraw}
+                aria-disabled={!canDraw || !!sending}
                 aria-label={`Draw pile, ${String(view.stockCount)} cards${canDraw ? ", draw a card" : ""}`}
                 aria-describedby={canDraw ? undefined : "uno_draw_reason"}
                 onClick={() => {
+                  if (sending) return;
                   if (canDraw) onDraw();
                   else warn(drawReason);
                 }}
@@ -324,13 +351,26 @@ export default function UnoTable({
         </div>
 
         <div className={styles.controls}>
-          {view.drawPending ? (
-            <Button variant="default" disabled={!myTurn} onClick={onKeep}>
+          {/* Only the player who drew decides whether to keep it */}
+          {view.drawPending && myTurn ? (
+            <Button
+              variant="default"
+              aria-disabled={!!sending}
+              onClick={() => {
+                if (!sending) onKeep();
+              }}
+            >
               Keep the card I drew
             </Button>
           ) : null}
           {canCatch && catchable ? (
-            <Button variant="default" onClick={onCatch}>
+            <Button
+              variant="default"
+              aria-disabled={!!sending}
+              onClick={() => {
+                if (!sending) onCatch();
+              }}
+            >
               Call out {names[catchable]} for not saying Uno
             </Button>
           ) : null}
@@ -341,8 +381,10 @@ export default function UnoTable({
               variant={unoReady ? "filled" : "default"}
               data-ready={unoReady ? "" : undefined}
               disabled={declareUno}
+              aria-disabled={!!sending}
               aria-describedby="uno_declare_reason"
               onClick={() => {
+                if (sending) return;
                 if (unoWindowMine) onSayUno();
                 else setDeclareUno(true);
               }}
@@ -382,11 +424,12 @@ export default function UnoTable({
 
         <UnoHand
           cards={mine.hand}
-          playableIds={mine.playableIds}
+          playableIds={settling ? [] : mine.playableIds}
           drawnCardId={mine.drawnCardId}
           reason={cardReason}
           active={myTurn}
           onPlay={(card) => {
+            if (sending) return;
             if (isWild(card)) setWild(card);
             else play(card);
           }}

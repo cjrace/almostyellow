@@ -136,6 +136,24 @@ async function noPlayableCards(
     .update({ hand: state.hands[playerId], playableIds: [] });
   return { state, seat };
 }
+// Gives the player to move a plain number card that matches the pile, so
+// playing it simply passes the turn on
+async function givePlainCard(
+  code: string,
+  seated: { uid: string; playerId: string }[],
+) {
+  const state = await secretState(code);
+  const mover = state.players[state.current];
+  const seat = seated.find((s) => s.playerId === mover);
+  if (!seat) throw new Error("Nobody is seated there.");
+  const index = state.stock.findIndex((c) => c.kind === "number");
+  const [plain] = state.stock.splice(index, 1);
+  if (plain.kind !== "number") throw new Error("Needs a number card.");
+  state.hands[mover].push(plain);
+  state.colour = plain.colour;
+  await adminDb().doc(`roomPrivate/${code}`).update({ state });
+  return { seat, plain };
+}
 async function play(
   code: string,
   uid: string,
@@ -246,6 +264,24 @@ describe("Uno rooms", () => {
     const once = await room(code);
     await play(code, seat.uid, playable[0], commandId);
     expect((await room(code)).version).toBe(once.version);
+  });
+
+  test("two copies of a command arriving together apply it once", async () => {
+    // A resend can reach the server while the first copy is still running
+    const { code, seated } = await started(2);
+    const { seat, plain } = await givePlainCard(code, seated);
+    const before = await secretState(code);
+    const commandId = randomUUID();
+    const results = await Promise.allSettled([
+      play(code, seat.uid, plain, commandId),
+      play(code, seat.uid, plain, commandId),
+    ]);
+    expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+    const after = await secretState(code);
+    expect(after.discard).toHaveLength(before.discard.length + 1);
+    expect(after.hands[seat.playerId]).toHaveLength(
+      before.hands[seat.playerId].length - 1,
+    );
   });
 
   test("playing out of turn or with a card you do not hold is refused", async () => {
@@ -477,6 +513,16 @@ describe("Uno rooms", () => {
     expect(days).toBeLessThanOrEqual(7);
     await expect(play(code, seat.uid, last)).rejects.toThrow();
 
+    // The next round waits until every seated player has shown the result
+    expect(finished.seen).toEqual([]);
+    await expect(host(code, "start")).rejects.toThrow("see who won");
+    for (const s of seated)
+      await unoPlayerCommand(s.uid, "seen", {
+        code,
+        round: finished.round,
+        commandId: randomUUID(),
+      });
+    expect((await room(code)).seen).toHaveLength(3);
     await host(code, "start");
     const next = await room(code);
     expect(next.stage).toBe("playing");
@@ -486,6 +532,58 @@ describe("Uno rooms", () => {
     expect(second.players[second.current]).toBe(
       state.players[(state.current + 1) % 3],
     );
+  });
+
+  test("a won round starts again after the wait even if a device never reports", async () => {
+    const { code, seated } = await started(2);
+    const state = await secretState(code);
+    const winner = state.players[state.current];
+    const seat = seated.find((s) => s.playerId === winner);
+    if (!seat) throw new Error("Nobody is seated there.");
+    const index = state.stock.findIndex((c) => c.kind === "number");
+    const [last] = state.stock.splice(index, 1);
+    if (last.kind !== "number") throw new Error("Needs a number card.");
+    state.hands[winner] = [last];
+    state.colour = last.colour;
+    await adminDb().doc(`roomPrivate/${code}`).update({ state });
+    await play(code, seat.uid, last);
+    await expect(host(code, "start")).rejects.toThrow("see who won");
+    await adminDb()
+      .doc(`gameRooms/${code}`)
+      .update({ finishedAt: Date.now() - 16_000 });
+    await host(code, "start");
+    expect((await room(code)).stage).toBe("playing");
+  });
+
+  test("the next player waits a moment after the turn passes", async () => {
+    const { code, seated } = await started(2);
+    const { seat, plain } = await givePlainCard(code, seated);
+    await play(code, seat.uid, plain);
+    const after = await room(code);
+    expect(after.turnReadyAt).toBeGreaterThan(Date.now());
+    // Whoever is next, with nothing to play so drawing is their move, is
+    // refused until the pause is over
+    const { seat: next } = await noPlayableCards(code, seated);
+    await expect(
+      unoPlayerCommand(next.uid, "draw", {
+        code,
+        round: after.round,
+        commandId: randomUUID(),
+      }),
+    ).rejects.toThrow("Wait a moment");
+    // Once the pause is over the same move goes through
+    await adminDb()
+      .doc(`gameRooms/${code}`)
+      .update({ turnReadyAt: Date.now() - 1 });
+    const before = (await secretState(code)).hands[next.playerId].length;
+    await unoPlayerCommand(next.uid, "draw", {
+      code,
+      round: after.round,
+      commandId: randomUUID(),
+    });
+    expect(
+      (await secretState(code)).hands[next.playerId].length,
+    ).toBeGreaterThan(before);
   });
 
   test("expired rooms go but their results stay for the week", async () => {

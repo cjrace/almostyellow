@@ -29,7 +29,12 @@ import {
   type RoundState,
 } from "./engine/round";
 import { privateView, publicEvent, publicView } from "./engine/views";
-import { RESULT_RETENTION_MS, type UnoHand, type UnoRoom } from "./room";
+import {
+  RESULT_RETENTION_MS,
+  unseenPlayers,
+  type UnoHand,
+  type UnoRoom,
+} from "./room";
 import { secureShuffle } from "./shuffle";
 import { trackerGameId, trackerNotes } from "./tracker";
 
@@ -53,6 +58,7 @@ export const unoPlayerActions = [
   "keep",
   "catch",
   "sayUno",
+  "seen",
 ] as const;
 type UnoPlayerAction = (typeof unoPlayerActions)[number];
 
@@ -66,6 +72,9 @@ const playSchema = playerSchema.extend({
   colour: z.enum(colours).optional(),
   declareUno: z.boolean().optional(),
 });
+
+// The pause before the next player may move
+export const TURN_GAP_MS = 1500;
 
 const handRef = (code: string, playerId: string) =>
   adminDb().doc(`roomHands/${code}_${playerId}`);
@@ -114,6 +123,15 @@ function commitRound(
     version: room.version + 1,
     stage: finished ? "finished" : "playing",
     scores,
+    // When the turn passes on, the next player waits a moment so everyone
+    // sees what just happened
+    ...(finished && next.outcome?.type === "win"
+      ? { finishedAt: Date.now(), seen: [] }
+      : {}),
+    ...(!finished &&
+    previous.players[previous.current] !== next.players[next.current]
+      ? { turnReadyAt: Date.now() + TURN_GAP_MS }
+      : {}),
     view: publicView(next),
     events: result.events.map(publicEvent),
   });
@@ -185,6 +203,8 @@ export async function startUnoRound(
       fail("stale", "The room changed. Review it and try again.");
     if (room.stage === "playing")
       fail("in_round", "A round is already being played.");
+    if (unseenPlayers(room, Date.now()).length > 0)
+      fail("not_seen", "Wait for everyone to see who won.");
     if (room.players.length < MIN_PLAYERS)
       fail("too_few", `A round needs at least ${String(MIN_PLAYERS)} players.`);
     if (room.players.length > MAX_PLAYERS)
@@ -209,6 +229,8 @@ export async function startUnoRound(
       round: randomUUID(),
       version: room.version + 1,
       stage: "playing",
+      finishedAt: 0,
+      seen: [],
       seats,
       names: Object.fromEntries(room.players.map((p) => [p.id, p.name])),
       view: publicView(state),
@@ -301,7 +323,7 @@ export async function controlUnoRoom(
 }
 
 function toCommand(
-  action: Exclude<UnoPlayerAction, "leave">,
+  action: Exclude<UnoPlayerAction, "leave" | "seen">,
   player: string,
   input: unknown,
 ): Command {
@@ -377,6 +399,13 @@ export async function unoPlayerCommand(
       tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
       return;
     }
+    if (action === "seen") {
+      // A device reports it has shown the result of the round just won
+      if (room.stage === "finished" && data.round === room.round)
+        tx.update(roomRef, { seen: FieldValue.arrayUnion(member.playerId) });
+      tx.create(receiptRef, { code: data.code, expiresAt: expiryOf(room) });
+      return;
+    }
     if (room.stage !== "playing")
       fail("not_playing", "There is no round being played.");
     if (data.round !== room.round) fail("stale", "That round has finished.");
@@ -386,6 +415,14 @@ export async function unoPlayerCommand(
     const state = secret?.state;
     if (!secret || !state)
       return fail("unavailable", "The round is not ready.");
+
+    // Moves wait for the previous turn to have been seen. Uno calls and
+    // catches do not, as they have their own timing.
+    if (
+      (action === "play" || action === "draw" || action === "keep") &&
+      Date.now() < (room.turnReadyAt ?? 0)
+    )
+      fail("too_soon", "Wait a moment so everyone can see the last move.");
 
     const result = applyCommand(
       state,
