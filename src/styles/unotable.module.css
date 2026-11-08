@@ -610,7 +610,9 @@
   .page .table {
     /* The piles are the smaller part: the hand is the main action */
     --pile-max: 36vh;
-    grid-column: 1 / 5;
+    /* Across the whole width, so the piles sit in the middle of the screen;
+       the buttons sit on top of its right-hand end */
+    grid-column: 1 / -1;
     grid-row: 3;
     min-height: 0;
     margin-block: 4px;
@@ -621,6 +623,8 @@
   .page .controls {
     grid-column: 5 / 7;
     grid-row: 3;
+    position: relative;
+    z-index: 1;
     align-self: end;
     justify-self: stretch;
     flex-direction: column;
