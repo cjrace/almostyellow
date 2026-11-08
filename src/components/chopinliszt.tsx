@@ -87,6 +87,21 @@ const SAVE_FAILED =
 // than flashing a message every time
 const SHOW_AFTER_MS = 1000;
 
+// A request that never reached the server (fetch rejects with a TypeError) or
+// Firebase's own network failure. The browser may not have noticed the signal
+// go yet, or may think a weak one is fine, so navigator.onLine cannot be relied
+// on to tell this from the server refusing.
+function lostTheNetwork(failure: unknown) {
+  return (
+    !navigator.onLine ||
+    failure instanceof TypeError ||
+    (typeof failure === "object" &&
+      failure !== null &&
+      "code" in failure &&
+      failure.code === "auth/network-request-failed")
+  );
+}
+
 function subscribeToConnection(callback: () => void) {
   window.addEventListener("online", callback);
   window.addEventListener("offline", callback);
@@ -233,7 +248,7 @@ const ChopinLiszt = ({
       );
     })().catch((signInError: unknown) => {
       console.error("Error signing in to Firestore:", signInError);
-      setError(navigator.onLine ? LOAD_FAILED : LOAD_OFFLINE);
+      setError(lostTheNetwork(signInError) ? LOAD_OFFLINE : LOAD_FAILED);
     });
 
     return () => {
