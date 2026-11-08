@@ -102,6 +102,7 @@
 /* Things that only exist in a phone held sideways */
 .pageHead > .back,
 .landscapeTitle,
+.infoButton,
 .controls > .drawButton,
 .opponent .backs {
   display: none;
@@ -516,6 +517,7 @@
   }
 
   .page .infoButton {
+    display: flex;
     grid-column: 4;
     grid-row: 2;
     align-self: center;

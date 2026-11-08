@@ -53,6 +53,7 @@ import playConfetti from "@/components/playconfetti";
 import { sendingState, type Sent } from "@/unogame/sending";
 import useWakeLock from "@/components/usewakelock";
 import ViewportHeight from "@/components/viewportheight";
+import { useUnoInstructions } from "@/components/unoinstructions";
 import UnoTable from "@/components/unotable";
 import UnoScoreboard from "@/components/unoscoreboard";
 import UnoWinner from "@/components/unowinner";
@@ -104,7 +105,8 @@ export default function Uno({
   const [saving, setSaving] = useState(false);
   const [camId, setCamId] = useState("");
   const [playedOn, setPlayedOn] = useState("");
-  const [instructions, setInstructions] = useState(false);
+  const { opened: instructions, setOpened: setInstructions } =
+    useUnoInstructions();
   const [now, setNow] = useState(0);
   const flightRef = useRef(false);
   const createIdRef = useRef<string | null>(null);
