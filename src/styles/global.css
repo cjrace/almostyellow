@@ -127,6 +127,11 @@ html:has(main[data-game]) {
     --confetti-gap: 0px;
   }
 
+  /* The credit only shows once confetti has played, and then needs its room */
+  html[data-uno-table][data-confetti-played] {
+    --confetti-gap: 2.5rem;
+  }
+
   html[data-uno-table] .site-frame header {
     display: none;
   }
