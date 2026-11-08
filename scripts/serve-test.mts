@@ -5,6 +5,7 @@
 import { spawn } from "node:child_process";
 import { registerHooks } from "node:module";
 import { createInterface } from "node:readline";
+import { BASE_URL } from "../tests/ports.mts";
 
 // The preview uses the same server and fixtures as Playwright. Node needs
 // extensions on the test helpers' relative imports; Playwright handles those
@@ -26,6 +27,8 @@ if (process.argv.includes("--seed")) {
 
 const madeUpAction = `Failed to find Server Action "${"0".repeat(42)}"`;
 
+// next start reads PORT, which scripts/ports.mts sets to a free one
+if (process.argv.includes("--seed")) console.log(`Preview at ${BASE_URL}`);
 const server = spawn("next start", {
   shell: true,
   stdio: ["inherit", "inherit", "pipe"],

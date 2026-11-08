@@ -1,5 +1,6 @@
 import { test, expect } from "../playwright";
 import { getCredentials } from "./helpers";
+import { ENCODED_BASE_URL } from "../ports.mts";
 
 test("Can sign in and navigate admin", async ({ page }) => {
   const { email, password } = getCredentials();
@@ -84,7 +85,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Admin
   await page.goto("/admin");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -94,7 +95,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Chopin Liszt
   await page.goto("/admin/chopinliszt");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fchopinliszt",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Fchopinliszt`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -104,7 +105,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Holidays
   await page.goto("/admin/holidays");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fholidays",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Fholidays`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -114,7 +115,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Whisky Journal
   await page.goto("/admin/whiskyjournal/add");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fwhiskyjournal%2Fadd",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Fwhiskyjournal%2Fadd`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -124,7 +125,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
     "/admin/whiskyjournal/33675c13-6835-4cc8-b7de-2823b37ae78a/edit/",
   );
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fwhiskyjournal%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Fwhiskyjournal%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -134,7 +135,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Dummy link
   await page.goto("/admin/dummylink");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Fdummylink",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Fdummylink`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -144,7 +145,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   // Films
   await page.goto("/admin/films/add");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Ffilms%2Fadd",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Ffilms%2Fadd`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
@@ -152,7 +153,7 @@ test("Redirected to login if tried to get to admin pages while not signed in", a
   );
   await page.goto("/admin/films/33675c13-6835-4cc8-b7de-2823b37ae78a/edit/");
   await page.waitForURL(
-    "**/admin/login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fadmin%2Ffilms%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit",
+    `**/admin/login?callbackUrl=${ENCODED_BASE_URL}%2Fadmin%2Ffilms%2F33675c13-6835-4cc8-b7de-2823b37ae78a%2Fedit`,
   );
   await expect(page).toHaveTitle("Login | Almost Yellow");
   await expect(page.locator("h1")).toContainText(
