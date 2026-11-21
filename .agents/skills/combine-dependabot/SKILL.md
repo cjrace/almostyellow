@@ -25,16 +25,20 @@ Prepare one focused dependency update using the user's selected PRs or package v
 
 - Run a targeted `pnpm update` with explicit package versions. Preserve the repository's existing version-range style. Avoid a broad update that selects unrelated newer releases.
 - Review both `package.json` and `pnpm-lock.yaml`. Confirm every selected target is covered, related versions agree and unrelated direct dependencies retained their locked versions. Explain additional transitive changes where needed.
-- Format only the changed dependency files with the installed Prettier version. Prefer the following checks over `pnpm test`, which currently formats the whole repository:
+- Format only the changed dependency files with the installed Prettier version. Prefer the following checks over `pnpm test`, which formats the whole repository:
 
   ```sh
   pnpm exec prettier package.json pnpm-lock.yaml --write
-  pnpm run build
-  pnpm exec playwright test
   git diff --check
+  pnpm run build
+  pnpm test:unit
+  pnpm test:firebase
+  pnpm test:e2e
   ```
 
-- Re-read the scripts and Playwright configuration before running these commands. Use the new production build for browser tests. Confirm any server being reused serves that build; do not stop an unrelated server.
+  `pnpm run build` lints and checks the production build, but the browser tests need their own: `pnpm test:e2e` rebuilds with `tests/test-env.ts`, whose `SERVED_OVER_HTTP` leaves out `upgrade-insecure-requests`. Without it, WebKit fetches the scripts over HTTPS and the admin pages never hydrate. Don't follow `pnpm run build` with `pnpm test-only`, which reuses that build, or run `pnpm exec playwright test` directly, which skips the emulators.
+
+- Re-read the scripts and Playwright configuration before running these commands. Do not stop an unrelated server. Playwright stops after 10 failed tests; when it does, rerun one failing spec on its own (`pnpm test:e2e --no-build <spec> --project=<name> --retries=0`) to diagnose it rather than rerunning the suite.
 - Use existing environment variables and browser installations without printing secrets. Report missing prerequisites and the affected checks explicitly.
 - Investigate failures before changing application code or tests. Distinguish dependency regressions from environment problems. If cleanup hangs, inspect the processes and stop only processes started by this run. Retain the actual test result and exit status.
 

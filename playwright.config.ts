@@ -31,6 +31,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on all environments to reduce flakiness */
   retries: 3,
+  /* Stop once 10 tests have failed every retry. That many at once means
+     something broken, such as the server or emulators, and finishing the run
+     would take an hour of timeouts. Flaky tests that pass on a retry don't
+     count. Override with --max-failures=N. */
+  maxFailures: 10,
   /* More than 4 browsers alongside the app and the Firebase emulators starves
      them, and tests time out at random. CI has fewer cores than that. */
   workers: process.env.CI ? 2 : 4,
