@@ -6,15 +6,15 @@
 pnpm dev           # Start dev server on port 3000, or the next free one, and open the browser (--no-open to skip that)
 pnpm build         # Lint + production build
 pnpm test          # Format + lint + unit tests + Firebase emulator tests + build + Playwright E2E tests (full CI suite)
-pnpm test-only     # The same without reformatting files or rebuilding the app
+pnpm test-only     # The same without reformatting files or rebuilding the app (needs a test build, see below)
 pnpm test:unit     # Vitest unit tests only (tests/unit/, no server or emulators needed)
 pnpm test:e2e      # Build, then Playwright against the Firebase emulators
 pnpm serve:test    # Preview the app against Firebase emulators with synthetic fixtures
 ```
 
-`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
+`pnpm test` is `scripts/test.mts`. It stops at the first failing stage and puts a heading above each one, then ends with an `=== [Overall] ... ===` line giving the result, the stage that failed if any, and the time taken. Prettier and ESLint print a single line each, with the number of files checked. ESLint warnings fail the run, as they do in `pnpm lint` and CI. `pnpm test` caches ESLint results in `node_modules/.cache/eslint/`; CI does not. Test output is kept short: dots and a summary per stage, with console output, stack traces and server logs shown only for failing tests. `tests/reporters/summary.ts` ends the Playwright run with counts and lists any failed, skipped or flaky (passed only after a retry) tests by name. Playwright stops once 10 tests have failed every retry (`maxFailures` in `playwright.config.ts`), as that many means something is broken, such as the server or emulators, rather than a test; flaky tests don't count. Pass `--max-failures=N` to `pnpm test:e2e` to change it. Investigate a stopped run rather than rerunning the whole suite. Tests that only make sense in some browsers are left out of the other Playwright projects with `testIgnore` in `playwright.config.ts`, not skipped.
 
-Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build:
+Playwright tests never use production data. `pnpm test:e2e` (`scripts/e2e.mts`) builds the app, then runs `next start` and Playwright inside the Firebase emulators with the settings in `tests/test-env.ts`. Extra arguments go to Playwright, and `--no-build` reuses the last build. That must be a test build from `pnpm test` or `pnpm test:e2e`: one from `pnpm build` keeps the CSP's `upgrade-insecure-requests`, so WebKit loads the scripts over HTTPS and the admin tests time out waiting for hydration. For example:
 
 ```bash
 pnpm test:e2e --no-build tests/public/00_initial_load.spec.ts

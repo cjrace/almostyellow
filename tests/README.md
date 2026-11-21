@@ -34,7 +34,7 @@ For a manual preview, `pnpm serve:test` uses the existing end-to-end runner to b
 
 ## Reading the output
 
-Each stage starts with a heading such as `=== [3/5] Unit tests with Vitest ===`. Passing tests print a dot each; anything that fails prints its details. The end-to-end stage finishes with a count of passed, failed, skipped and flaky tests (flaky means it passed only after a retry), listing any that need a look by name. The last line always says how the whole run went:
+Each stage starts with a heading such as `=== [3/5] Unit tests with Vitest ===`. Passing tests print a dot each; anything that fails prints its details. The end-to-end stage finishes with a count of passed, failed, skipped and flaky tests (flaky means it passed only after a retry), listing any that need a look by name. Each test is retried up to three times, and the end-to-end tests stop early once 10 tests have failed every retry, since that usually means the server or emulators have broken rather than the tests. Flaky tests don't count towards the 10. To change the limit, pass `--max-failures=N` to `pnpm test:e2e`. The last line always says how the whole run went:
 
 ```
 === [Overall] All checks passed in 5m 27s ===

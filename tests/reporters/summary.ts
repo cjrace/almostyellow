@@ -1,4 +1,5 @@
 import type {
+  FullConfig,
   FullResult,
   Reporter,
   TestCase,
@@ -13,9 +14,14 @@ export default class SummaryReporter implements Reporter {
   private skipped: TestCase[] = [];
   private failed: TestCase[] = [];
   private passed = 0;
+  private maxFailures = 0;
 
   printsToStdio() {
     return false;
+  }
+
+  onBegin(config: FullConfig) {
+    this.maxFailures = config.maxFailures;
   }
 
   onTestEnd(test: TestCase, result: TestResult) {
@@ -46,6 +52,10 @@ export default class SummaryReporter implements Reporter {
         lines.push("  [" + (test.parent.project()?.name ?? "") + "] " + name);
       }
     };
+    if (this.maxFailures > 0 && this.failed.length >= this.maxFailures)
+      lines.push(
+        `Stopped early after ${String(this.maxFailures)} failed tests, so the rest did not run.`,
+      );
     list("Failed", this.failed);
     list("Skipped", this.skipped);
     list("Flaky (passed only after a retry)", this.flaky);
